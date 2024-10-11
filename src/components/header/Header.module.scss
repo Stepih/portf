@@ -1,0 +1,79 @@
+@use '/src/styles/variables.scss' as vars;
+
+.header {
+    position: fixed;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    align-items: center;
+
+    left: 0;
+    top: 0;
+
+    height: 100%;
+    max-width: 92px;
+    width: 100%;
+    
+
+    color: white;
+
+    background: vars.$black-8;
+    box-shadow: vars.$shadow;
+
+    z-index: 11;
+
+    .contacts {
+        border-top: 2px solid white;
+        padding: 20px 10px;
+
+        .contactsTitle {
+            display: block;
+            margin-bottom: 15px;
+        }
+
+        .contactsLink {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+
+            gap: 10px;
+
+            .contactImg {
+                transition: transform .1s;
+                -moz-transition: transform .1s;
+                transform: translateY(0);
+
+                &:hover {
+                transition: transform .1s;
+                -moz-transition: transform .1s;
+                transform: translateY(-2px);
+                }
+            }
+        }
+    }
+}
+
+@media screen and (max-width: 1200px) {
+    .header {
+        position: relative;
+        flex-direction: row;
+
+        left: 0;
+        top: 0;
+
+        height: auto;
+        max-width: 100%;
+        width: 100%;
+
+        padding: 10px 20px;
+
+        
+        .contacts {
+            border: none;
+
+            .contactsTitle {
+                display: none;
+            }
+        }
+    }
+}

@@ -1,0 +1,132 @@
+@use '/src/styles/variables.scss' as vars;
+
+
+/* Оболочка громкости и метки */
+.wrapper {
+  position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;  
+
+    .hz {
+      position: absolute;
+      height: 140px;
+      width: 100%;
+      
+    }
+    
+    .volumeControl {
+        
+      position: absolute;
+      display: flex;
+      align-items: center;
+    
+      bottom: 130px;
+      padding: 20px;
+    
+      transform: rotate(-90deg);
+      gap: 10px;
+          
+      box-shadow: vars.$shadow;
+      border-radius: 5px;
+      opacity: 0;
+      
+      
+      background: vars.$black-8;
+      overflow: hidden;
+    
+      .line {
+        position: absolute;
+        height: 8px;
+        max-width: 100px;
+    
+        background: vars.$blue-100;
+        border-radius: 5px;
+    
+        z-index: 1;
+        user-select: none;
+        pointer-events: none;
+      }
+    
+    
+      /* Применение стилей для конкретного input внутри .volumeControl */
+      .customRangeInput {
+        -webkit-appearance: none; /* Убираем стандартный стиль */
+        width: 100px; /* Ширина ползунка */
+        height: 6px; /* Высота линии трека */
+        background: black; /* Цвет задней линии */
+        border-radius: 5px;
+        outline: none;
+        transition: background 0.3s;  
+        cursor: pointer;
+       
+    
+        /* Стили для заполненной части трека */
+        &::-webkit-slider-runnable-track {
+          height: 6px;
+          background: black; /* Градиент для активного трека */
+          border-radius: 5px;
+        }
+    
+        /* Бегунок для Chrome */
+        &::-webkit-slider-thumb {
+          -webkit-appearance: none;
+          background: unset;
+          border: unset;
+        }
+    
+        /* Бегунок для Firefox */
+        &::-moz-range-thumb {
+          background: unset;
+          border: unset;
+        }
+    
+        /* Стили для линии трека в Firefox */
+        &::-moz-range-track {
+          height: 4px;
+          background: black;
+          border-radius: 5px;
+          outline: none;
+        }
+    
+        /* Активная часть трека в IE */
+        &::-ms-fill-lower {
+          background: black;
+        }
+    
+        &::-ms-fill-upper {
+          background: #ddd;
+        }
+    
+        &::-ms-thumb {
+          width: 15px;
+          height: 15px;
+          background: black;
+          border-radius: 50%;
+          cursor: pointer;
+          border: 2px solid #ffffff;
+        }
+    
+        /* Основной трек в IE */
+        &::-ms-track {
+          width: 100%;
+          height: 4px;
+          cursor: pointer;
+          background: transparent;
+          border-color: transparent;
+          color: transparent;
+        }
+    
+        /* Трек при фокусе */
+        
+      }
+    }
+}
+
+
+@media (hover: none){
+  .wrapper {
+    display: none;
+  }
+}

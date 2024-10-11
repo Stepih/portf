@@ -1,0 +1,53 @@
+.wrapper {
+    width: 100%;
+    margin-top: 100px;   
+    
+    .albumList {
+        display: flex;
+        justify-content: flex-start; /* Элементы выравниваются по левому краю */
+        align-items: flex-start;
+        flex-wrap: wrap;
+        max-width: 100%;
+
+        
+    }
+
+    .albumHeader {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+
+        margin-bottom: 30px;
+
+        .popupBtn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            gap: 20px;
+
+            cursor: pointer;
+
+            .title {
+                font-weight: 400;
+                font-size: 1rem;
+            }
+        }
+    }
+}
+
+
+
+
+@media screen and (max-width: 440px) {
+    .wrapper {
+        .albumHeader {
+            display: flex;
+            flex-direction: column;
+            gap: 40px;
+            .popupBtn {
+                
+            }
+        }
+    }
+}

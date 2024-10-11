@@ -1,0 +1,41 @@
+@use '/src/styles/variables.scss' as vars;
+
+.body {
+
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    
+    .main {
+        position: relative;
+        flex: 1 0 auto;
+
+        max-width: 1220px;
+        width: 100%;
+        
+    
+        margin: 0 auto;
+        padding: 60px 20px 0;
+    
+        color: vars.$white-50;
+
+        z-index: 2;
+    }
+}
+
+@media screen and (max-width: 1400px) {
+    .body {
+
+        .main {
+            max-width: 1000px;
+        }
+    }
+}
+@media screen and (max-width: 1200px) {
+    .body {
+
+        .main {
+            max-width: 1200px;
+        }
+    }
+}

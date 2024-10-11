@@ -1,0 +1,42 @@
+// Переменные для стилей
+$primary-color: #0070f3;
+$separator-color: #ccc;
+$current-color: #555;
+$hover-color: darken($primary-color, 10%);
+
+.breadcrumbs {
+  display: flex;
+  align-items: center;
+  list-style: none;
+  padding: 0;
+  margin: 16px 0;
+
+  .breadcrumbItem {
+    display: flex;
+    align-items: center;
+
+    // Для разделителей между элементами
+    .separator {
+      margin: 0 8px;
+      color: $separator-color;
+    }
+
+    // Стили для ссылок
+    a {
+      text-decoration: none;
+      color: $primary-color;
+      transition: color 0.3s;
+
+      &:hover {
+        text-decoration: underline;
+        color: $hover-color;
+      }
+    }
+
+    // Стили для последней активной крошки
+    .current {
+      color: $current-color;
+      font-weight: bold;
+    }
+  }
+}

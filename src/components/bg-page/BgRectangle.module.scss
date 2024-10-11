@@ -1,0 +1,70 @@
+@use '/src/styles/variables.scss' as vars;
+
+.BgRectangle1, .BgRectangle2 {
+    position: absolute;
+    width: 200px;
+    height: auto;
+    aspect-ratio: 1;
+
+    border-radius: 50%;
+    opacity: .7;
+    filter: blur(57px);
+
+    z-index: 2;
+}
+
+@media screen and (min-width: 1200px) {
+    .BgRectangle1, .BgRectangle2 {
+    position: absolute;
+    width: calc(100vw * 20 / 100);
+    height: auto;
+    aspect-ratio: 1;
+    }
+}
+
+.BgRectangle1 {
+    top: 1%;
+    left: 3%;
+
+    scale: .6;
+    background: vars.$redPink-100;
+
+    animation: anim1 20s 5s infinite;
+}
+
+.BgRectangle2 {
+    bottom: 10%;
+    right: 6%;
+
+    background: vars.$blue-100;
+
+    animation:  anim2 20s 5s infinite;
+}
+
+@keyframes anim1 {
+    0% {
+        scale: .6;
+        background: vars.$redPink-100;
+    }
+    33% {
+        scale: .8;
+        background: vars.$green-100;
+    }
+    66% {
+        scale: 1;
+        background: vars.$blue-100;
+    }
+}
+
+@keyframes anim2 {
+    0% {
+        
+        background: vars.$blue-100;
+    }
+    33% {
+        background: vars.$redPink-100;
+    }
+    66% {
+        background: vars.$green-100;
+    }
+}

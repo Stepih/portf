@@ -1,0 +1,24 @@
+.comands {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    gap: 20px;
+    cursor: pointer;
+    
+
+    .unsetActive {
+      cursor: unset;
+      opacity: .2;
+    }
+}
+
+@media screen and (max-width: 480px) {
+  .comands {
+    gap: 10px;
+
+    .back {
+      display: none;
+    }
+  }
+}

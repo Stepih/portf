@@ -1,0 +1,39 @@
+.theme {
+    width: 70px;
+    height: 38px;
+    height: auto;
+    background-color: rgb(255, 255, 255);
+    display: flex;
+    justify-content: flex-start;
+    border-radius: 50px;
+
+    margin-top: 70px;
+    padding: 4px;
+    cursor: pointer;
+
+    &[data-ison="true"] {
+        justify-content: flex-end;
+    }
+    
+    .touch {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 30px;
+        height: 30px;
+        background-color: rgb(0, 0, 0);
+        border-radius: 40px;
+
+        .touchImg {
+            width: 14px;
+            height: 14px;
+        }
+    }
+}
+
+@media screen and (max-width: 1100px) {
+
+    .theme {
+        margin: 0;
+    }
+}

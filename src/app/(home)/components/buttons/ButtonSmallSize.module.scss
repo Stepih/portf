@@ -1,0 +1,45 @@
+@use '/src/styles/variables.scss' as vars;
+
+.wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+
+    height: 100%;
+    padding: 0 20px;
+
+    background: vars.$black-8;
+    box-shadow: vars.$shadow;
+    border-radius: 13px;
+    
+    .img {
+        position: relative;
+        display: block;
+
+
+        transition: .3s;
+    }
+
+    .title {
+        position: absolute;
+
+        width: 120px;
+        max-width: 160px;
+
+        text-align: center;
+        color: white;
+
+        opacity: 0;
+    }
+
+    .arrow {
+        opacity: 0;
+    }
+}
+
+@media screen and (max-width: 850px) {
+    
+}
+

@@ -1,0 +1,97 @@
+@use '/src/styles/variables.scss' as vars;
+
+.imgWrapper {
+
+    .image {
+        position: relative;
+        display: block;
+    
+        max-width: 100%;
+        margin: 0 auto -30px auto;
+        
+        border-radius: 50%;
+    }
+}
+
+
+.wrapper {
+    position: relative;
+    
+    
+    border-radius: 13px;
+
+    .wrapperContent {
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    
+        width: 100%;
+    
+        padding: 50px;
+        box-shadow: 34px 34px 48px 0px rgba(0, 0, 0, 0.25);
+        background: vars.$black-8;
+        border-radius: 13px;
+        
+    
+        &.noHome {
+            clip-path: polygon(
+            160px -100px,    /* Точка 1 (x: 182, y: 0) */
+            12000px -100px,   /* Точка 2 (x: 1200, y: 0) */
+            12000px 3000px, /* Точка 3 (x: 1200, y: 300) */
+            -100px 3000px,    /* Точка 4 (x: 0, y: 300) */
+            -100px 83px,     /* Точка 5 (x: 0, y: 88) */
+            160px 83px  /* Точка 6 (x: 182, y: 88) */
+            
+        );
+        }
+    
+        .content {
+            text-align: center;
+            
+            .title {
+                text-transform: uppercase;
+            }
+            .description {
+                color: vars.$white-50;
+            }
+        }
+    }
+}
+
+
+@media screen and (max-width: 1400px) {
+    .wrapper {
+        width: 100%;
+        max-width: 850px;
+        margin: auto;
+
+        
+        
+        .wrapperContent {
+            padding: 60px 20px;
+            &.noHome {
+                clip-path: polygon(
+                121px 0,    /* Точка 1 (x: 182, y: 0) */
+                1000px 0,   /* Точка 2 (x: 1200, y: 0) */
+                1000px 300px, /* Точка 3 (x: 1200, y: 300) */
+                0 300px,    /* Точка 4 (x: 0, y: 300) */
+                0 60px,     /* Точка 5 (x: 0, y: 88) */
+                121px 60px  /* Точка 6 (x: 182, y: 88) */
+                
+            );
+            }   
+        } 
+    }
+}
+
+@media screen and (max-width: 560px) {
+    .wrapper {
+        .wrapperContent {
+            padding: 30px 20px;
+            &.noHome {
+                clip-path:none;
+            }  
+        }
+    } 
+}

@@ -1,0 +1,9 @@
+@use '/src/styles/variables.scss' as vars;
+
+.bg {
+    position: absolute;
+    height: 100%; 
+    width: 100%;
+
+    background: vars.$black-100;
+}
