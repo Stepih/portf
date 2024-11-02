@@ -17,8 +17,9 @@
 .wrapper {
     position: relative;
     
-    
     border-radius: 13px;
+    box-shadow: vars.$shadow;
+
 
     .wrapperContent {
         position: relative;
@@ -29,11 +30,11 @@
         width: 100%;
     
         padding: 50px;
-        box-shadow: 34px 34px 48px 0px rgba(0, 0, 0, 0.25);
+        
         background: vars.$black-8;
         border-radius: 13px;
+
         
-    
         &.noHome {
             clip-path: polygon(
             160px -100px,    /* Точка 1 (x: 182, y: 0) */
@@ -51,16 +52,19 @@
             
             .title {
                 text-transform: uppercase;
+                color: var(--color-text-100);
+                transition: vars.$transition;
             }
             .description {
-                color: vars.$white-50;
+                color: var(--color-text-50);
+                transition: vars.$transition;
             }
         }
     }
 }
 
 
-@media screen and (max-width: 1400px) {
+@media screen and (max-width: 1150px) {
     .wrapper {
         width: 100%;
         max-width: 850px;

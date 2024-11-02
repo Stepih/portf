@@ -6,11 +6,73 @@
     height: auto;
     aspect-ratio: 1;
 
-    border-radius: 50%;
     opacity: .7;
-    filter: blur(57px);
 
     z-index: 2;
+}
+
+.BgRectangle1 {
+    top: 1%;
+
+    .circle {
+        scale: .6;
+        opacity: .8;
+        background: vars.$redPink-100;
+        animation: anim1 20s 5s infinite;
+    }
+
+    .img {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+
+
+        transform: translate(-50%, -50%);
+
+        filter: blur(7px);
+
+        >path {
+            fill: vars.$redPink-100;
+            animation: anim1 20s 5s infinite;
+        }
+    }
+}
+
+.BgRectangle2 {
+    bottom: 10%;
+    right: 6%;
+
+    
+
+    .circle {
+        background: vars.$blue-100;
+        opacity: .8;
+        animation:  anim2 20s 3s infinite;
+    }
+    .img {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        height: 70%;
+        width: auto;
+
+        transform: translate(-50%, -50%);
+
+        filter: blur(7px);        
+
+        >path {
+            fill: vars.$blue-100;
+            border: 4px solid white;
+            animation:  anim2 20s 3s infinite;
+        }
+    }
+}
+
+.circle {
+    filter: blur(57px);
+    border-radius: 50%;
+    width: 100%;
+    height: 100%;
 }
 
 @media screen and (min-width: 1200px) {
@@ -22,49 +84,35 @@
     }
 }
 
-.BgRectangle1 {
-    top: 1%;
-    left: 3%;
-
-    scale: .6;
-    background: vars.$redPink-100;
-
-    animation: anim1 20s 5s infinite;
-}
-
-.BgRectangle2 {
-    bottom: 10%;
-    right: 6%;
-
-    background: vars.$blue-100;
-
-    animation:  anim2 20s 5s infinite;
-}
 
 @keyframes anim1 {
     0% {
-        scale: .6;
         background: vars.$redPink-100;
+        fill: vars.$redPink-100;
     }
     33% {
-        scale: .8;
+        
         background: vars.$green-100;
+        fill: vars.$green-100;;
     }
     66% {
-        scale: 1;
+        
         background: vars.$blue-100;
+        fill: vars.$blue-100;
     }
 }
 
 @keyframes anim2 {
     0% {
-        
         background: vars.$blue-100;
+        fill: vars.$blue-100;
     }
     33% {
         background: vars.$redPink-100;
+        fill: vars.$redPink-100;
     }
     66% {
         background: vars.$green-100;
+        fill: vars.$green-100;
     }
 }

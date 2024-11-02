@@ -1,0 +1,33 @@
+@use '/src/styles/variables.scss' as vars;
+
+.title {
+    font-size: 1.5rem;
+    margin-bottom: 30px;
+
+    color: var(--color-text-100);
+    transition: vars.$transition;
+}
+
+.imgList {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 20px;
+
+    flex-wrap: wrap;
+}
+.btnMB {
+    display: none;
+}
+
+@media screen and (max-width: 490px) {
+    .imgList {
+        justify-content: center;
+    }
+    .btnPC {
+        display: none;
+    }
+    .btnMB {
+        display: block;
+    }
+}

@@ -25,7 +25,8 @@
     max-width: 208px;
     
 
-    background: vars.$black-8;
+    background: var(--color-overlay);
+    transition: vars.$transition;
     box-shadow: vars.$shadow;
     border-radius: 13px;
 

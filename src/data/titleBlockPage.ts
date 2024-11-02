@@ -1,4 +1,5 @@
-import { ITitleBlockPage } from "../_interfaces/titleBlockPage";
+import { ITitleBlockPage } from "@/interfaces/titleBlockPage"
+
 
 export const homeTitleData:ITitleBlockPage = {
     title: "Frontend developer",
@@ -7,7 +8,7 @@ export const homeTitleData:ITitleBlockPage = {
 }
 
 export const mediaTitleData:ITitleBlockPage = {
-    title: "media content",
+    title: "Media content",
     description: "Создание видеороликов, улучшение качества видео и фото, склейка, цветокоррекция и другие услуги медиаконтента по доступной цене"
 }
 

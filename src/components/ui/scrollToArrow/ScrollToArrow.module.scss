@@ -1,0 +1,15 @@
+@use '/src/styles/variables.scss' as vars;
+
+.arrow {
+    display: block;
+    
+    margin: auto;
+
+    cursor: pointer;
+
+    
+    path {
+        stroke: var(--color-text-100);
+        transition: vars.$transition;
+    }
+}

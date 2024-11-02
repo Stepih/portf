@@ -12,6 +12,7 @@ export async function GET() {
         .filter(dirent => dirent.isDirectory())
         .map(dirent => dirent.name);
 
+
     // Задаем массив допустимых аудиоформатов
     const audioFormats = ['.mp3', '.wav', '.ogg', '.flac'];
 
@@ -35,8 +36,9 @@ export async function GET() {
     // Получаем информацию о треках для каждого альбома
     const albumData = await Promise.all(
         albums.map(async (album, albumIndex) => {
+            
             const albumPath = path.join(musicDirectory, album);
-
+            
             // Функция для удаления формата из имени трека
             const sliceFormat = (name: string): string => {
                 for (let i = 0; i < audioFormats.length; i++) {
@@ -98,6 +100,7 @@ export async function GET() {
         status: 200,
         headers: {
             'Content-Type': 'application/json',
+            'Cache-Control': 'public, max-age=600, stale-while-revalidate=30'
         },
     });
 }

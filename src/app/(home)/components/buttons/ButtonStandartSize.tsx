@@ -49,7 +49,7 @@ const ButtonStandartSize: FC<IStandartHomeButtons> = ({ img, title, srcStandart 
         variants={hoverVariants}
       >
         <Image className={s.img} src={img} alt={title} />
-        <p>{title}</p>
+        <p className={s.titleBtn}>{title}</p>
       </motion.div>
 
       {/* Подменю кнопок */}

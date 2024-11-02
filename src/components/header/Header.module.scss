@@ -1,5 +1,7 @@
 @use '/src/styles/variables.scss' as vars;
 
+
+
 .header {
     position: fixed;
     display: flex;
@@ -21,6 +23,28 @@
     box-shadow: vars.$shadow;
 
     z-index: 11;
+
+    
+
+    .headerTouch {
+        
+        position: absolute;
+        top: 50%;
+        left: 120%;
+        transform: translate(0, -50%);
+
+        border-radius: 50%;
+
+        &::after {
+            content: "";
+            position: absolute;
+            bottom: 0;
+            transform: translateY(50%);
+            width: 60px;
+            height: 100vh;
+            left: -30px;
+        }
+    }
 
     .contacts {
         border-top: 2px solid white;
@@ -58,7 +82,7 @@
         position: relative;
         flex-direction: row;
 
-        left: 0;
+        left: 0 !important;
         top: 0;
 
         height: auto;

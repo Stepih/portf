@@ -1,0 +1,15 @@
+.test {
+    position: fixed;
+    padding: 20px;
+
+    top: 50px;
+    left: 50%;
+    transform: translateX(-50%);
+
+    background: rgb(234, 70, 70);
+    color: white;
+    font-weight: 700;
+    border-radius: 13px;
+
+    z-index: 12;
+}

@@ -4,20 +4,25 @@
     position: absolute;
     top: 0;
     left: 0;
-    padding: 25px 28px;
+    padding: 25px 27px;
 
-    box-shadow: vars.$shadow;
+    
     background: vars.$black-8;
     outline: none;
     border: none;
     border-radius: 13px 0 0 0;
-    color: white;
+    color: var(--color-text-100);
+    transition: vars.$transition;
     font-size: 1rem;
     
     font-weight: 700;
     text-decoration: none;
 
     overflow: hidden;
+
+    .borderAnimation path {
+        stroke: var(--color-text-100);
+    }
   
     &:hover {
       .borderAnimation {
@@ -47,7 +52,7 @@
   }
   
 
-@media screen and (max-width: 1400px) {
+@media screen and (max-width: 1150px) {
   .button {
     display: block;
     padding: 15px 9px;

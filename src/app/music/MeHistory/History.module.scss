@@ -1,0 +1,20 @@
+@use '/src/styles/variables.scss' as vars;
+
+.wrapper {
+    position: relative;
+
+    margin-top: 80px;
+
+    
+
+    .title {
+        text-align: center;
+        margin-bottom: 110px;
+        margin-top: 150px;
+
+        color: var(--color-text-100);
+        transition: vars.$transition;
+    }
+
+    
+}

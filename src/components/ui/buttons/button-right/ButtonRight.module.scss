@@ -1,0 +1,34 @@
+@use '/src/styles/variables.scss' as vars;
+
+.btn {
+    position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+
+    padding: 33px 5px;
+
+    background: var(--color-overlay);
+    transition: vars.$transition;
+    box-shadow: vars.$shadow;
+    outline: none;
+    border: none;
+    border-radius: 13px;
+    
+    overflow: hidden;
+    cursor: pointer;
+
+    .img {
+        rotate: -90deg;
+
+        &.active {
+            rotate: 90deg;
+        }
+    }
+    .title {
+        position: absolute;
+        color: white;
+        font-weight: 600;
+    }
+}

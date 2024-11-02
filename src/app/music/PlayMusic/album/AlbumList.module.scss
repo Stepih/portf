@@ -1,0 +1,72 @@
+@use '/src/styles/variables.scss' as vars;
+
+.wrapper {
+    width: 100%;
+    margin-top: 100px; 
+    margin-bottom: 100px;  
+    
+    .albumList {
+        position: relative;
+        display: flex;
+        justify-content: flex-start; /* Элементы выравниваются по левому краю */
+        align-items: flex-start;
+        flex-wrap: wrap;
+        max-width: 100%;
+        row-gap: 30px;
+
+        z-index: 11;
+
+        
+    }
+
+    .albumHeader {
+        position: relative;
+        
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+
+        margin-bottom: 30px;
+        z-index: 11;
+
+        .title {
+            color: var(--color-text-100);
+            transition: vars.$transition;
+        }
+
+        .popupBtn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            gap: 20px;
+
+            cursor: pointer;
+
+            .title {
+                font-weight: 400;
+                font-size: 1rem;
+            }
+            .arrow>path {
+                stroke: var(--color-text-100);
+                transition: vars.$transition;
+            }
+        }
+    }
+}
+
+
+
+
+@media screen and (max-width: 440px) {
+    .wrapper {
+        .albumHeader {
+            display: flex;
+            flex-direction: column;
+            gap: 40px;
+            .popupBtn {
+                
+            }
+        }
+    }
+}

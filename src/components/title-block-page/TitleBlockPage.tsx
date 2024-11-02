@@ -1,11 +1,6 @@
 import { FC } from "react";
 import Image from "next/image";
 
-import { Allerta_Stencil, Raleway, Radio_Canada } from 'next/font/google';
-
-
-
-
 import i from '@/assets/_img/rectangles/title-page/i.png'
 
 import s from './TitleBlockPage.module.scss'

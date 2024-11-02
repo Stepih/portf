@@ -1,0 +1,16 @@
+@use '/src/styles/variables.scss' as vars;
+
+.btn {
+    rotate: 180deg;
+
+    padding: 0 5px;
+
+    background: vars.$black-8;
+    box-shadow: vars.$shadow;
+
+    outline: none;
+    border: none;
+    border-radius: 13px;
+
+    cursor: pointer;
+}

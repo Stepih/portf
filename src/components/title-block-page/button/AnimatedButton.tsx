@@ -30,7 +30,6 @@ const AnimatedButton: FC = () => {
             V13 
             Z" // Путь с закругленным верхним левым углом
           fill="none"
-          stroke="white"
           strokeWidth="8"
           strokeDasharray="600"
           strokeDashoffset="600"

@@ -1,0 +1,25 @@
+// theme.scss
+
+@use './variables' as vars;
+
+:root {
+    /* Light Theme */
+    --color-bg: #{vars.$white-100};
+
+    --color-text-100: #{vars.$black-100};
+    --color-text-50: #{vars.$black-50};
+
+    --color-overlay: #{vars.$black-50};
+}
+
+[data-theme="dark"] {
+    /* Dark Theme */
+    --color-bg: #{vars.$black-100};
+    
+    --color-text-100: #{vars.$white-100};
+    --color-text-50: #{vars.$white-50};
+
+   
+    --color-overlay: #{vars.$black-8};
+}
+

@@ -1,0 +1,13 @@
+.bg {
+    position: fixed;
+    width: 100vw;
+    height: 100vh;
+
+    background: black;
+
+    inset: 0;
+    z-index: 10;
+
+    pointer-events: none;
+    user-select: none;
+}

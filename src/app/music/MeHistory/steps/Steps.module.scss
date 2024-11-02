@@ -1,0 +1,13 @@
+@use '/src/styles/variables.scss' as vars;
+
+.wrapper {
+
+    .description {
+        text-align: justify;
+
+        margin-top: 100px;
+
+        color: var(--color-text-50);
+        transition: vars.$transition;
+    }
+}

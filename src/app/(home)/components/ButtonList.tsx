@@ -8,8 +8,6 @@ import ButtonStandartSize from "./buttons/ButtonStandartSize";
 import ButtonSmallSize from "./buttons/ButtonSmallSize";
 import { smallHomebuttons, standartHomeButtons } from "@/data/homeButtons";
 
-
-
 const ButtonList:FC = () => {
     
     return (

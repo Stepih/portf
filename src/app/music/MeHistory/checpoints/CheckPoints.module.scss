@@ -1,0 +1,81 @@
+@use '/src/styles/variables.scss' as vars;
+
+.wrapper {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 20px;
+
+    max-width: 950px;
+    margin: auto;
+
+    .checkBlock {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 20px;
+        flex-direction: column;
+
+        min-width: 147px;
+
+        opacity: .5;
+        cursor: pointer;
+
+        .title {
+            color: var(--color-text-100);
+            transition: vars.$transition;
+
+            &.active {
+                color: var(--color-text-100);
+            }
+        }
+
+        .img {
+            svg {
+                path {
+                    stroke: var(--color-text-100);
+                    transition: vars.$transition;
+                }
+            }
+        }
+
+    }
+
+    .line {
+        position: relative;
+        width: 30%;
+        background: var(--color-text-50);
+        transition: vars.$transition;
+
+        height: 2px;
+
+        overflow: hidden;
+
+        .subline {
+            position: absolute;
+            
+            top: 0px;
+            width: 100%;
+            background: var(--color-text-100);
+            transition: vars.$transition;
+
+            height: 2px;
+            z-index: 2;
+        }
+    }
+}
+
+
+@media screen and (max-width: 700px) {
+    .wrapper {
+
+        .checkBlock {
+            min-width: 100px;
+            img {
+                height: 90px;
+            }
+        }
+    }
+}
+
+

@@ -22,12 +22,14 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`${raleway.className} ${s.body}`}>
-        <BackgroundPage />
-        <Header />
-        <main className={`${s.main}`}>
-          {children}
-        </main>
-        <Footer />
+        
+          <BackgroundPage />
+          <Header />
+          <main id="main" className={`${s.main}`}>
+            {children}
+          </main>
+          <Footer />
+        
       </body>
     </html>
   );

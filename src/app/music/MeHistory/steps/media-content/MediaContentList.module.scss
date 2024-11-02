@@ -1,0 +1,56 @@
+@use '/src/styles/variables.scss' as vars;
+
+.wrapper {
+    display: flex;
+    justify-content: space-between;
+    
+    gap: 40px;
+
+    margin-top: 70px;
+    
+    
+    .imgContent {
+        width: 100%;
+        max-width: 100%;
+    }
+
+    .btns {
+        display: flex;
+        align-self: center;
+        gap: 30px;
+
+        margin: auto;
+
+        .mainBtn {
+            padding: 25px 18px;
+
+            text-decoration: none;
+            color: white;
+            font-weight: 600;
+
+            background: vars.$black-8;
+            box-shadow: vars.$shadow;
+            border-radius: 13px;
+        }
+    }
+}
+
+
+@media screen and (max-width: 1100px) {
+    .wrapper {
+        flex-wrap: wrap;
+
+        .imgContent {
+            width: auto;
+        }
+    }
+}
+
+@media screen and (max-width: 620px) {
+    .wrapper {
+
+        .imgContent {
+            width: 100%;
+        }
+    }
+}

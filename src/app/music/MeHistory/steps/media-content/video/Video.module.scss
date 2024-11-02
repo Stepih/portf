@@ -1,0 +1,10 @@
+.video {
+    border-radius: 10px;
+    max-height: 130px;
+}
+
+@media screen and (max-width: 550px) {
+    .video {
+        max-height: 200px;
+    }
+}
