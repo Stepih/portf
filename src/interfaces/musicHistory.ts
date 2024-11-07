@@ -16,3 +16,8 @@ export interface IImageMedia {
     id: number,
     src: StaticImageData
 }
+
+export interface ICheckICO {
+    title: string,
+    Img: React.ElementType
+}

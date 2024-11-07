@@ -14,5 +14,5 @@ export const mediaTitleData:ITitleBlockPage = {
 
 export const musicTitleData:ITitleBlockPage = {
     title: "My musical creativity",
-    description: "„Жизнь, как пианино. С чёрными и белыми полосами, но живя, нельзя забывать, что чёрные клавиши тоже создают музыку. Автор: Гарри Стайлз"
+    description: "„Жизнь, как пианино. С чёрными и белыми полосами, но живя, нельзя забывать, что чёрные клавиши тоже создают музыку"
 }

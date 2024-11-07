@@ -1,6 +1,10 @@
 @use '/src/styles/variables.scss' as vars;
 
 .wrapper {
+    padding-bottom: 100px;
+    opacity: 0;
+    animation: anim 1s both;
+    
 
     .description {
         text-align: justify;
@@ -9,5 +13,20 @@
 
         color: var(--color-text-50);
         transition: vars.$transition;
+    }
+}
+
+@keyframes anim {
+    0% {
+        opacity: 0;
+    }
+    100% {
+        opacity: 1;
+    }
+}
+
+@media screen and (max-width: 700px) {
+    .wrapper .description {
+        margin-top: 50px;
     }
 }

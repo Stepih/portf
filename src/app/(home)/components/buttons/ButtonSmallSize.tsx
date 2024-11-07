@@ -1,7 +1,7 @@
 "use client";
 
 import { FC } from "react";
-import Image from "next/image";
+
 import Link from "next/link";
 import { motion } from "framer-motion";
 
@@ -12,12 +12,12 @@ import ArrowLink from "@/components/arrow-link/ArrowLink";
 
 const animationVariants = {
   img: { hover: { opacity: 0 } },
-  txt: { hover: { opacity: 1, width: 160, color: 'white' } },
+  txt: { hover: { opacity: 1, width: 160} },
   arrow: { hover: { opacity: 1 } },
   wrapper: { hover: { width: 210, cursor: 'pointer' } },
 };
 
-const ButtonSmallSize: FC<ISmallHomeButtons> = ({ img, title, srcSmall }) => (
+const ButtonSmallSize: FC<ISmallHomeButtons> = ({ Icon, title, srcSmall }) => (
   <Link className={s.link} href={srcSmall || '/'}>
     <motion.div 
       whileHover="hover" 
@@ -25,7 +25,8 @@ const ButtonSmallSize: FC<ISmallHomeButtons> = ({ img, title, srcSmall }) => (
       className={s.wrapper}
     >
       <motion.div variants={animationVariants.img}>
-        <Image className={s.img} src={img} alt={title} />
+        
+        <Icon className={s.img} />
       </motion.div>
 
       <motion.span variants={animationVariants.txt} className={s.title}>

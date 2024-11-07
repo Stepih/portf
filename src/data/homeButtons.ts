@@ -1,4 +1,4 @@
-import site from '@/assets/_img/icons/webpack.svg'
+import Site from '@/assets/_img/icons/webpack.svg'
 import webSolid from '@/assets/_img/icons/web-solid.svg'
 import video from '@/assets/_img/icons/video.svg'
 import music from '@/assets/_img/icons/music.svg'
@@ -20,39 +20,39 @@ interface ISmallButtons extends ISmallHomeButtons {
 export const standartHomeButtons:IStandartBtns[] = [
     {
         key: "one",
-        img: site,
+        Icon: Site,
         title: 'Заказать сайт',
         srcStandart: [
             {
                 key: "one",
                 src: myTg,
                 title: 'Написать мне',
-                img: tg
+                Icon: tg
             },
             {
                 key: "two",
                 src: popupPageURL,
                 title: 'Оставить заявку',
-                img: message
+                Icon: message
             }
         ]
     },
     {
         key: "two",
-        img: webSolid,
+        Icon: webSolid,
         title: 'Портфолио',
         srcStandart: [
             {
                 key: "one",
                 src: siteBox,
                 title: 'Сайт портфолио',
-                img: webSolid
+                Icon: webSolid
             },
             {
                 key: "two",
                 src: portfolioTg,
                 title: 'Портфолио телеграмм',
-                img: tg
+                Icon: tg
             },
         ]
     }
@@ -61,13 +61,13 @@ export const standartHomeButtons:IStandartBtns[] = [
 export const smallHomebuttons:ISmallButtons[] = [
     {
         key: "three",
-        img: video,
+        Icon: video,
         title: 'Услуги медиаконтента',
         srcSmall: mediaPageURL
     },
     {
         key: "four",
-        img: music,
+        Icon: music,
         title: 'Музыкальное творчество',
         srcSmall: musicPageURL
     }

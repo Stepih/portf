@@ -1,6 +1,12 @@
 .content {
     height: 100%;
 
+    max-width: 1220px;
+        width: 100%;
+        
+    
+        margin: 0 auto;
+
     &.wc {
         will-change: unset !important;
     }

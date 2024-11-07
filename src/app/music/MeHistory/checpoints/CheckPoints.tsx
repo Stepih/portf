@@ -16,16 +16,18 @@ const CheckPoints:FC<{step: number, handleSetStep: (id:number) => void}> = ({ste
                     <motion.div 
                         animate={{opacity: step === 0 ? (idx === step ? 1 : .5) : step === 1 ? (idx !== step + 1 ? 1 : .5) : 1}} 
                         onClick={handleSetStep.bind(this, idx)} 
-                        className={s.checkBlock}
+                        className={`${s.checkBlock} ${idx !== step ? s.noActiveMobile : ''}`}
                     >
-                        <div id={`check-${idx}`} className={s.img} dangerouslySetInnerHTML={{ __html: block.img }} />
+                        
+                        <block.Img id={`check-${idx}`} className={s.img} />
                         <motion.p className={`${s.title} ${idx === step ? s.active : ''}`}>{block.title}</motion.p>
                     </motion.div>
-                    {idx < 2 && (<div className={s.line}>
-                        <motion.div 
-                            animate={{width: step === 1 ? (idx + 1 === step ? '100%' : 0) : step === 0 ? 0 : "100%"}} 
-                            className={s.subline}
-                        >
+                    {idx < 2 && (
+                        <div className={`${s.line} ${s.noActiveMobile}`}>
+                            <motion.div 
+                                animate={{width: step === 1 ? (idx + 1 === step ? '100%' : 0) : step === 0 ? 0 : "100%"}} 
+                                className={`${s.subline} `}
+                            >
                         </motion.div>
                     </div>)}
                 </div>

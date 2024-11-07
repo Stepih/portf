@@ -1,8 +1,4 @@
-// Переменные для стилей
-$primary-color: #0070f3;
-$separator-color: #ccc;
-$current-color: #555;
-$hover-color: darken($primary-color, 10%);
+@use '/src/styles/variables.scss' as vars;
 
 .breadcrumbs {
   display: flex;
@@ -18,24 +14,27 @@ $hover-color: darken($primary-color, 10%);
     // Для разделителей между элементами
     .separator {
       margin: 0 8px;
-      color: $separator-color;
+      color: var(--color-text-50);
+      transition: vars.$transition;
     }
 
     // Стили для ссылок
     a {
       text-decoration: none;
-      color: $primary-color;
-      transition: color 0.3s;
+      color: var(--color-text-50);
+      transition: vars.$transition;
 
       &:hover {
         text-decoration: underline;
-        color: $hover-color;
+        color: var(--color-text-100);
+        transition: vars.$transition;
       }
     }
 
     // Стили для последней активной крошки
     .current {
-      color: $current-color;
+      color: var(--color-text-100);
+      transition: vars.$transition;
       font-weight: bold;
     }
   }

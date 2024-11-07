@@ -6,6 +6,7 @@ import { musicTitleData } from "@/data/titleBlockPage";
 import MusicClient from "./PlayMusic/PlayMusicClient";
 import History from "./MeHistory/History";
 import { IMusicHistory } from "@/interfaces/musicHistory";
+import Breadcrumbs from "@/components/breadCrumb/BreadCrumb";
 
 
 // Функция для получения данных с сервера
@@ -53,6 +54,7 @@ const MusicPage:FC = async() => {
 
     return (
         <>
+            <Breadcrumbs />
           <TitleBlockPage props={musicTitleData}/>
           <MusicClient albums={albums} error={errorMessage} />
           

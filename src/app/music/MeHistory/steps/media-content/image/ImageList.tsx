@@ -6,7 +6,7 @@ import { IImageMedia } from "@/interfaces/musicHistory";
 import ButtonRight from "@/components/ui/buttons/button-right/ButtonRight";
 import ButtonDown from "@/components/ui/buttons/button-down/ButtonDown";
 
-const ImageList:FC<{title: string, images: IImageMedia[], count: number, handleOpenImage: () => void}> = ({title, images, count, handleOpenImage}) => {
+const ImageList:FC<{title: string, images: IImageMedia[], count: number, handleOpenImage?: () => void}> = ({title, images, count, handleOpenImage}) => {
 
     return (
         <>
@@ -16,12 +16,16 @@ const ImageList:FC<{title: string, images: IImageMedia[], count: number, handleO
                 idx < count &&
                 <Image key={img.id} src={img.src} alt="Награда 1" />
             )}
-            <div className={s.btnPC}>
-                <ButtonRight action={handleOpenImage} />
-            </div>
-            <div className={s.btnMB}>
-                <ButtonDown action={handleOpenImage}/>
-            </div>
+            {handleOpenImage && (
+                <>
+                <div className={s.btnPC}>
+                    <ButtonRight action={handleOpenImage} />
+                </div>
+                <div className={s.btnMB}>
+                    <ButtonDown action={handleOpenImage}/>
+                </div>
+                </>
+            )}
         </div>
         </>
     )

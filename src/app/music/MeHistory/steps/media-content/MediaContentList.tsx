@@ -9,6 +9,7 @@ import Link from "next/link";
 
 
 import ButtonUp from "@/components/ui/buttons/button-up/ButtonUp";
+import { bodyUnLock } from "@/scripts/scrollTo";
 
 
 const MediaList: FC<{ videos: IVideoMedia[], images: IImageMedia[], step: number }> = ({step, videos, images }) => {
@@ -52,12 +53,12 @@ const MediaList: FC<{ videos: IVideoMedia[], images: IImageMedia[], step: number
                         title="Награды:" 
                         images={images} 
                         count={step === 1 ? images.length : imagePopup ? images.length : 3} 
-                        handleOpenImage={handleOpenImage}/>
+                        handleOpenImage={step === 0 ? handleOpenImage : undefined}/>
                 </div>
             )}
             {images.length === 0 && videos.length === 0 && (
                 <div className={s.btns}>
-                    <Link className={s.mainBtn} href="/">На главную</Link>
+                    <Link onClick={()=> bodyUnLock()} className={s.mainBtn} href="/">На главную</Link>
                     <ButtonUp />
                 </div>
             )}

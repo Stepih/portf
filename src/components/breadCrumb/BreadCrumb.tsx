@@ -6,6 +6,7 @@ import { usePathname } from 'next/navigation'; // Хук для получени
 import styles from './Breadcrumbs.module.scss'; 
 
 const Breadcrumbs: React.FC = () => {
+  if (window.innerWidth >= 560) return  
   const pathname = usePathname();
 
   // Разделяем текущий путь на части и создаем массив для хлебных крошек

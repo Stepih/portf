@@ -8,6 +8,7 @@ import Link from "next/link";
 import s from './ButtonStandartSize.module.scss';
 import { IStandartHomeButtons } from "@/interfaces/homeButtons";
 import ArrowLink from "@/components/arrow-link/ArrowLink";
+import { isTouchDevive } from "@/scripts/typeDevice";
 
 
 const hoverVariants = {
@@ -23,8 +24,10 @@ const subtitleVariants = {
   hover: { opacity: 1 },
 };
 
-const ButtonStandartSize: FC<IStandartHomeButtons> = ({ img, title, srcStandart }) => {
+const ButtonStandartSize: FC<IStandartHomeButtons> = ({ Icon, title, srcStandart }) => {
   const [clicked, setClicked] = useState(false);
+
+  const mobileDevice = isTouchDevive()
 
   return (
     <motion.div
@@ -48,7 +51,7 @@ const ButtonStandartSize: FC<IStandartHomeButtons> = ({ img, title, srcStandart 
         animate={clicked ? 'hide' : 'visible'}
         variants={hoverVariants}
       >
-        <Image className={s.img} src={img} alt={title} />
+        <Icon className={s.img}/>
         <p className={s.titleBtn}>{title}</p>
       </motion.div>
 
@@ -69,10 +72,10 @@ const ButtonStandartSize: FC<IStandartHomeButtons> = ({ img, title, srcStandart 
             </motion.div>
 
             <motion.div variants={subImgVariants}>
-              <Image className={s.subimg} src={btn.img} alt={btn.title} />
+              {!mobileDevice && <btn.Icon className={s.subimg} />}
             </motion.div>
 
-            <motion.span className={s.subtitle} variants={subtitleVariants}>
+            <motion.span initial={{opacity: mobileDevice ? 1 : 0}} className={s.subtitle} variants={subtitleVariants}>
               {btn.title}
             </motion.span>
 

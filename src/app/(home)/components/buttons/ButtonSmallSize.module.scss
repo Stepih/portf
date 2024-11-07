@@ -1,6 +1,7 @@
 @use '/src/styles/variables.scss' as vars;
 
-.wrapper {
+.link {
+    .wrapper {
     position: relative;
     display: flex;
     align-items: center;
@@ -10,8 +11,8 @@
     height: 100%;
     padding: 0 20px;
 
-    background: var(--color-overlay);
-    transition: vars.$transition;
+    background: vars.$black-8;
+    
     box-shadow: vars.$shadow;
     border-radius: 13px;
     
@@ -19,8 +20,13 @@
         position: relative;
         display: block;
 
-
         transition: .3s;
+
+        path {
+            fill: var(--color-text-50);
+            opacity: .7;
+            transition: vars.$transition;
+        }
     }
 
     .title {
@@ -30,7 +36,8 @@
         max-width: 160px;
 
         text-align: center;
-        color: white;
+        color: var(--color-text-100);
+        transition: vars.$transition;
 
         opacity: 0;
     }
@@ -39,6 +46,9 @@
         opacity: 0;
     }
 }
+}
+
+
 
 @media screen and (max-width: 850px) {
     

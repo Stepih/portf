@@ -11,13 +11,13 @@ body {
   max-width: 100vw;
   
   height: 100%;
-  overflow-x: hidden;
 
   font-size: 16px;
 }
 
 body {
   font-family: var(--font-raleway);
+  min-height: 100vh;
 }
 
 * {

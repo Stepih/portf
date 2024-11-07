@@ -1,31 +1,29 @@
-export const scrollToElementById = (id: string): void => {
+export const scrollToElementById = (id: string, isBlock:boolean): void => {
   const element = document.getElementById(id);
   
   if (element) {
       // Блокируем прокрутку
-      document.body.style.overflow = 'hidden'; // Отключаем прокрутку
-
+      if (isBlock) {
+        bodyLock()
+      }
+      const elementPosition = element.getBoundingClientRect().top + window.scrollY;
       // Плавный скроллинг к элементу
-      element.scrollIntoView({
+      window.scrollTo({
           behavior: 'smooth',  // Плавный скроллинг
-          block: 'start'       // Скролл к началу элемента
+          top: elementPosition - 50,      // Скролл к началу элемента
       });
 
       // Используем setTimeout, чтобы подождать завершения скролла
       setTimeout(() => {
-          document.body.style.overflow = ''; // Включаем прокрутку обратно
-      }, 500); // Время ожидания, чтобы плавный скролл завершился
+        if (isBlock) {
+          bodyUnLock()
+        }
+      }, 1200);
   } else {
       console.warn(`Элемент с id: ${id} не найден.`);
   }
 };
 
 
-export const getElementBottomPosition = (element: HTMLElement | null) => {
-  if (element) {
-    const rect = element.getBoundingClientRect();
-    const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
-    return rect.bottom + scrollTop;
-  }
-  return null; // Если элемент не найден
-};
+export const bodyLock = () => document.body.style.overflow = 'hidden'
+export const bodyUnLock = () => document.body.style.overflow = ''

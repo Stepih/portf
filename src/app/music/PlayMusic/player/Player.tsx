@@ -15,6 +15,7 @@ import Krest from '@/assets/_img/icons/krest.svg';
 import List from '@/assets/_img/icons/list.svg';
 
 import BgFocus from "@/components/bg-page/BgFocus";
+import { isTouchDevive } from "@/scripts/typeDevice";
 
 interface IPlayer extends ISwitchTrack {
   album: IAlbums,
@@ -30,6 +31,8 @@ const Player: FC<IPlayer> = ({isAudioReady, setIsAudioReady, handleAlbumSelect, 
   const [anim, setAnim] = useState(0)
   const [hover, setHover] = useState(false)
   const [loadProgress, setLoadProgress] = useState(0);
+
+  const mobileDevice = isTouchDevive()
   
 
   if (anim === 0) {
@@ -56,16 +59,12 @@ const Player: FC<IPlayer> = ({isAudioReady, setIsAudioReady, handleAlbumSelect, 
   };
   
 
-  const isVolumeInitialized = useRef(false);
-
   // Загружаем громкость из localStorage при первом рендере и инициализируем аудио
   useEffect(() => {
+    if (mobileDevice) return setVolume(1)
     const savedVolume = parseFloat(localStorage.getItem("playerVolume") || "1");
     setVolume(savedVolume);
-    if (audioRef.current) {
-      audioRef.current.volume = savedVolume;
-      isVolumeInitialized.current = true;
-    }
+    
   }, []);
 
   // Обновляем громкость и управляем воспроизведением
@@ -82,13 +81,12 @@ const Player: FC<IPlayer> = ({isAudioReady, setIsAudioReady, handleAlbumSelect, 
     localStorage.setItem("playerVolume", num);
   };
 
-  
 
   return (
     <>
     <BgFocus status={hover}/>
     
-    <motion.div onHoverEnd={() => setHover(false)} onHoverStart={() => setHover(true)} className={`${s.wrapper} ${canada.className}`} initial={{ y: 40, opacity: 0 }} animate={{ y: !hover ? 60 : 0, opacity: 1 }}>
+    <motion.div onHoverEnd={() => setHover(false)} onHoverStart={() => setHover(true)} className={`${s.wrapper} ${canada.className}`} initial={{ y: 40, opacity: 0 }} animate={{ y: !hover && !isTouchDevive() ? 60 : 0, opacity: 1 }}>
       <div className={s.content}>
         <LineTrack isAudioReady={isAudioReady} loadProgress={loadProgress} audioRef={audioRef} trackId={trackId} albumId={album.id} />
 
@@ -109,7 +107,7 @@ const Player: FC<IPlayer> = ({isAudioReady, setIsAudioReady, handleAlbumSelect, 
 
         {/* Ползунок громкости */}
         <div className={s.right}>
-          <Volume handleVolumeChange={handleVolumeChange} volume={volume} />
+          {!mobileDevice && <Volume handleVolumeChange={handleVolumeChange} volume={volume} />}
           <Krest className={s.img} onClick={() => handleAlbumSelect(null)}/>
           
         </div>

@@ -1,5 +1,5 @@
 "use client"
-import { FC, useEffect, useState } from "react";
+import { FC, useState } from "react";
 
 import s from './History.module.scss'
 import CheckPoints from "./checpoints/CheckPoints";
@@ -7,6 +7,7 @@ import ScrollToArrow from "@/components/ui/scrollToArrow/ScrollToArrow";
 import Steps from "./steps/Steps";
 import { IMusicHistory } from "@/interfaces/musicHistory";
 import { scrollToElementById } from "@/scripts/scrollTo";
+
 
 const History:FC<{musicHistory: IMusicHistory[]}> = ({musicHistory}) => {
     const [step, setStep] = useState(0)

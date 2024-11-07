@@ -34,6 +34,10 @@
         transform: translate(0, -50%);
 
         border-radius: 50%;
+        
+        svg>path {
+            stroke: var(--color-text-100);
+        }
 
         &::after {
             content: "";
@@ -43,6 +47,7 @@
             width: 60px;
             height: 100vh;
             left: -30px;
+            
         }
     }
 
@@ -90,6 +95,10 @@
         width: 100%;
 
         padding: 10px 20px;
+
+        .headerTouch {
+            display: none;
+        }
 
         
         .contacts {

@@ -2,13 +2,13 @@ import { IMusicHistory } from "@/interfaces/musicHistory";
 import path from 'path';
 import fs from 'fs';
 
-import prize1 from '@/assets/_img/prizes/1.png'
-import prize2 from '@/assets/_img/prizes/1.png'
-import prize3 from '@/assets/_img/prizes/1.png'
-import prize4 from '@/assets/_img/prizes/1.png'
-import prize5 from '@/assets/_img/prizes/1.png'
-import prize6 from '@/assets/_img/prizes/1.png'
-import prize7 from '@/assets/_img/prizes/1.png'
+import prize1 from '@/assets/_img/prizes/1.jpg'
+import prize2 from '@/assets/_img/prizes/1.jpg'
+import prize3 from '@/assets/_img/prizes/1.jpg'
+import prize4 from '@/assets/_img/prizes/1.jpg'
+import prize5 from '@/assets/_img/prizes/1.jpg'
+import prize6 from '@/assets/_img/prizes/1.jpg'
+import prize7 from '@/assets/_img/prizes/1.jpg'
 
 
 const myMusicHistory:IMusicHistory[] = [
@@ -135,8 +135,7 @@ export async function GET() {
     return new Response(JSON.stringify(myMusicHistory), {
         status: 200,
         headers: {
-            'Content-Type': 'application/json',
-            'Cache-Control': 'public, max-age=31536000, immutable'
+            'Content-Type': 'application/json'
         },
     });
 }

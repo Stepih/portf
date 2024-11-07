@@ -10,7 +10,7 @@ import s from './ButtonUp.module.scss'
 const ButtonUp: FC = () => {
 
     return (
-        <motion.button onClick={()=> scrollToElementById("main")} whileHover="hover" className={s.btn}>
+        <motion.button onClick={()=> scrollToElementById("main", true)} whileHover="hover" className={s.btn}>
             <Arrow />
         </motion.button>
     )

@@ -21,6 +21,10 @@
         opacity: .5;
         cursor: pointer;
 
+        z-index: 4;
+
+        
+
         .title {
             color: var(--color-text-100);
             transition: vars.$transition;
@@ -31,11 +35,9 @@
         }
 
         .img {
-            svg {
-                path {
-                    stroke: var(--color-text-100);
-                    transition: vars.$transition;
-                }
+            path{
+                stroke: var(--color-text-100) !important;
+                transition: vars.$transition;
             }
         }
 
@@ -71,8 +73,18 @@
 
         .checkBlock {
             min-width: 100px;
-            img {
-                height: 90px;
+
+            &.noActiveMobile {
+                scale: .6;
+            }
+            .img {
+                scale: .7;
+            }
+        }
+
+        .line  {
+            &.noActiveMobile {
+                display: none;
             }
         }
     }

@@ -20,7 +20,7 @@ const Footer:FC = () => {
             animate={{ y: 0, opacity: 1 }}
             transition={{ ease: "easeInOut", duration: 0.75 }} 
             className={`${s.footer} ${allerta.className}`}>
-            {/* {currentDate && <span>&#169; Kartuzov Stepan 21.10.2024 - {currentDate} </span>} */}
+            {currentDate && <span>&#169; Portfolio by Kartuzov Stepan 21.10.2024 - {currentDate} </span>}
         </motion.footer>
     )
 }
