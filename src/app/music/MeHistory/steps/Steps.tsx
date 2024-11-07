@@ -5,7 +5,7 @@ import s from './Steps.module.scss';
 import MediaList from "./media-content/MediaContentList";
 import { bodyLock, bodyUnLock, scrollToElementById } from "@/scripts/scrollTo";
 
-const Steps: FC<{ musicHistory: IMusicHistory[], step: number, handleSetStep: (id: number) => void }> = ({ handleSetStep, musicHistory, step }) => {
+const Steps: FC<{ musicHistory: IMusicHistory[], step: number, handleSetStep: (id: number, block: boolean) => void }> = ({ handleSetStep, musicHistory, step }) => {
     const refs = useRef<(HTMLDivElement | null)[]>([]);
     const isScrolling = useRef(false);
     const isBlockScroll = useRef(false)
@@ -56,8 +56,8 @@ const handleScroll = (direction: "up" | "down") => {
     if (newStep >= 0 && newStep < musicHistory.length) {
         isScrolling.current = true;
 
-        scrollToElementById("title-history", !isBlockScroll.current);
-        handleSetStep(newStep);
+        
+        handleSetStep(newStep, !isBlockScroll.current);
         
         // Снимаем флаг скроллинга после завершения прокрутки
         setTimeout(() => {

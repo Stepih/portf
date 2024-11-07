@@ -1,13 +1,10 @@
 import { FC } from "react";
-import Image from "next/image";
-
-import learn from '@/assets/_img/icons/learn.svg'
 import { motion } from "framer-motion";
 
 import s from './CheckPoints.module.scss'
 import { checpointsData } from "@/data/checkpoints";
 
-const CheckPoints:FC<{step: number, handleSetStep: (id:number) => void}> = ({step, handleSetStep}) => {
+const CheckPoints:FC<{step: number, handleSetStep: (id:number, block: boolean) => void}> = ({step, handleSetStep}) => {
 
     return (
         <div className={s.wrapper}>
@@ -15,7 +12,7 @@ const CheckPoints:FC<{step: number, handleSetStep: (id:number) => void}> = ({ste
                 <div key={idx} style={{display: 'contents'}}>
                     <motion.div 
                         animate={{opacity: step === 0 ? (idx === step ? 1 : .5) : step === 1 ? (idx !== step + 1 ? 1 : .5) : 1}} 
-                        onClick={handleSetStep.bind(this, idx)} 
+                        onClick={handleSetStep.bind(this, idx, true)} 
                         className={`${s.checkBlock} ${idx !== step ? s.noActiveMobile : ''}`}
                     >
                         

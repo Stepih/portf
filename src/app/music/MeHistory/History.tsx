@@ -12,8 +12,9 @@ import { scrollToElementById } from "@/scripts/scrollTo";
 const History:FC<{musicHistory: IMusicHistory[]}> = ({musicHistory}) => {
     const [step, setStep] = useState(0)
 
-    const handleSetStep = (id:number) => {
+    const handleSetStep = (id:number, block: boolean) => {
         setStep(id)
+        scrollToElementById("title-history", block)
     }
     
     return (
