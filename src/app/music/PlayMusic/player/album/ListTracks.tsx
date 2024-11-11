@@ -41,7 +41,7 @@ const ListTracks:FC<IListTracks> =({handleListTracks, handleTrackSelect, album, 
                 </div>
                 <div className={s.listTracks}>
                 {album.tracks.map((track) => (
-                    <motion.div
+                    <div
                         className={s.track}
                         key={track.id}
                         onClick={() => handleTrackSelect(track.id)}
@@ -51,7 +51,7 @@ const ListTracks:FC<IListTracks> =({handleListTracks, handleTrackSelect, album, 
                             <p className={s.name}>{track.name} - <span className={s.artist}>{album.artist}</span></p>
                             <p className={`${canada.className} ${s.duration}`}>{track.duration}</p>
                         </div>
-                    </motion.div>
+                    </div>
                 ))}
                 </div>
             </div>

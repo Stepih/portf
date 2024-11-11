@@ -33,6 +33,7 @@ const Album:FC<Album> = ({statusPlay, album, handleAlbumSelect}) => {
                         alt={album.name}
                         width={180} 
                         height={180} 
+                        priority
                     />
                 </div>
                 

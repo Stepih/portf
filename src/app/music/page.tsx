@@ -50,7 +50,6 @@ const MusicPage:FC = async() => {
     } catch (error) {
         errorMessage = error instanceof Error ? error.message : 'Произошла неизвестная ошибка'; 
     }
-    console.log(errorMessage)
 
     return (
         <>

@@ -1,0 +1,41 @@
+/* components/ImageComparisonSlider.module.scss */
+
+.sliderContainer {
+    position: relative;
+    width: 100%;
+    max-width: 750px; /* Опционально, для ограничения ширины */
+    height: 450px;
+    overflow: hidden;
+    
+    border-radius: 12px;
+  }
+  
+  .imageWrapper {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+  }
+  
+  .image {
+    object-fit: cover; /* Заполняет контейнер без искажений */
+  }
+  
+  .handle {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 4px;
+    background-color: #ffffffcc; /* Полупрозрачный белый */
+    
+    cursor: ew-resize;
+    z-index: 10;
+    transform: translateX(-50%);
+    transition: background-color 0.2s ease;
+  }
+  
+  .handle:hover {
+    background-color: #ffffff; /* Изменение цвета при наведении */
+  }
+  

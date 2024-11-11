@@ -1,0 +1,22 @@
+@use '/src/styles/variables.scss' as vars;
+
+.btn {
+    padding: 16px 20px;
+
+    font-size: 1.25rem;
+
+    border: 2px solid var(--color-text-100);
+    border-radius: 13px;
+    background: unset;
+
+    color: var(--color-text-100);
+    transition: vars.$transition;
+
+    cursor: pointer;
+
+    &:hover {
+        background: var(--color-text-100);
+        color: var(--color-bg);
+    }
+    
+}

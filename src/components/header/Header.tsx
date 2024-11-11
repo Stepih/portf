@@ -25,7 +25,7 @@ const Header:FC = () => {
         <motion.header 
             onHoverStart={() => setHover(true)} 
             onHoverEnd={()=> setHover(false)}
-            animate={{left: !hover ? -100 : 0}} 
+            animate={{left: !hover ? -100 : 0, willChange: 'unset'}} 
             className={s.header}>
             
             <motion.div  animate={{opacity: !hover ? 1 : 0}}  className={s.headerTouch}>

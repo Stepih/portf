@@ -1,7 +1,6 @@
 "use client"
 
 import { FC, useEffect, useState } from "react";
-import { motion } from "framer-motion";
 
 import s from './Footer.module.scss'
 
@@ -15,13 +14,10 @@ const Footer:FC = () => {
     }, []);
 
     return (
-        <motion.footer 
-            initial={{ y: -20, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            transition={{ ease: "easeInOut", duration: 0.75 }} 
+        <footer 
             className={`${s.footer} ${allerta.className}`}>
             {currentDate && <span>&#169; Portfolio by Kartuzov Stepan 21.10.2024 - {currentDate} </span>}
-        </motion.footer>
+        </footer>
     )
 }
 

@@ -1,12 +1,19 @@
 "use client";
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation'; // Хук для получения текущего пути в Next.js 13+
 import styles from './Breadcrumbs.module.scss'; 
 
 const Breadcrumbs: React.FC = () => {
-  if (window.innerWidth >= 560) return  
+  const [windowWidth, setWindowWidth] = useState(0)
+
+  useEffect(() => {
+    setWindowWidth(window.innerWidth); 
+  }, []);
+
+  if (windowWidth >= 560) return null;
+
   const pathname = usePathname();
 
   // Разделяем текущий путь на части и создаем массив для хлебных крошек

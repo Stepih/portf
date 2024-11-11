@@ -64,7 +64,7 @@ const handleScroll = (direction: "up" | "down") => {
             requestAnimationFrame(() => {
                 isScrolling.current = false;
             });
-        }, 2500);
+        }, 1800);
     }
 };
 

@@ -8,7 +8,7 @@ import Link from "next/link";
 import s from './ButtonStandartSize.module.scss';
 import { IStandartHomeButtons } from "@/interfaces/homeButtons";
 import ArrowLink from "@/components/arrow-link/ArrowLink";
-import { isTouchDevive } from "@/scripts/typeDevice";
+import { isTouchDevice } from "@/scripts/typeDevice";
 
 
 const hoverVariants = {
@@ -27,7 +27,7 @@ const subtitleVariants = {
 const ButtonStandartSize: FC<IStandartHomeButtons> = ({ Icon, title, srcStandart }) => {
   const [clicked, setClicked] = useState(false);
 
-  const mobileDevice = isTouchDevive()
+  const mobileDevice = isTouchDevice()
 
   return (
     <motion.div

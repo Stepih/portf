@@ -21,7 +21,7 @@
     flex-direction: column;
     gap: 22px;
     align-items: center;
-    justify-content: start;
+    justify-content: flex-start;
 
     padding: 24px 38px;
     width: 100%;
@@ -75,7 +75,7 @@
 
     .subbutton {
         position: relative;
-        display: flex;
+        display: flex-start;
         align-items: center;
         
         padding: 10px 38px;
