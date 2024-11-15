@@ -1,0 +1,42 @@
+@use '/src/styles/variables.scss' as vars;
+
+.slideNotes {
+    position: absolute;
+    display: flex;
+    gap: 10px;
+
+    bottom: -40px;        
+    left: 50%;
+    transform: translateX(-50%);
+
+    .bgBtnActive {
+        position: absolute;
+        
+        background: var(--color-text-100);
+        transition: vars.$transition;
+
+        border-radius: 50%;
+        width: 25px;
+        height: 25px;
+        z-index: 2;
+        
+    }
+
+    .btn {
+        border: none;
+        border-radius: 50%;
+        width: 25px;
+        height: 25px;
+        opacity: .7;
+        background: var(--color-text-50);
+        border-radius: 50%;
+        z-index: 1;
+
+        cursor: pointer;
+
+        
+        &:hover {
+            opacity: 1;
+        }
+    }
+}

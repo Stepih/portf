@@ -1,9 +1,12 @@
+@use '/src/styles/variables.scss' as vars;
+
 .bg {
     position: fixed;
     width: 100vw;
     height: 100vh;
 
-    background: black;
+    background: var(--color-bg);
+    transition: vars.$transition;
 
     inset: 0;
     z-index: 10;

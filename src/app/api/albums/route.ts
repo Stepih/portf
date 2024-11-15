@@ -1,7 +1,7 @@
 // src/app/api/album/route.ts
 import fs from 'fs';
 import path from 'path';
-import { parseBuffer } from 'music-metadata'; // Импортируйте parseBuffer из библиотеки music-metadata
+import { parseBuffer } from 'music-metadata'; 
 import { IAlbums, ITracks } from "@/interfaces/albums";
 
 export async function GET() {
@@ -99,8 +99,7 @@ export async function GET() {
     return new Response(JSON.stringify(filteredAlbumData), {
         status: 200,
         headers: {
-            'Content-Type': 'application/json',
-            'Cache-Control': 'public, max-age=600, stale-while-revalidate=30'
+            'Content-Type': 'application/json'
         },
     });
 }

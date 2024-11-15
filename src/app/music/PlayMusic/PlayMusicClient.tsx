@@ -5,6 +5,7 @@
   import AlbumList from "./album/AlbumList";
   import Player from "./player/Player";
   import ListTracks from "./player/album/ListTracks";
+import { getWidthScroll } from "@/scripts/scrollTo";
 
   interface MusicClientProps {
     albums: IAlbums[];
@@ -73,6 +74,8 @@
       play: isPlaying,
       setPlay: setIsPlaying
     }
+
+    
     
     return (
       <>

@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 
 import "../styles/globals.scss";
 import s from './layout.module.scss'
-import { raleway } from "@/fonts/fonts";
+import { allerta, ralewayRegular, canada } from "@/fonts/fonts";
 
 import BackgroundPage from "@/components/bg-page/Background";
 import Header from "@/components/header/Header";
@@ -19,9 +19,10 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  
   return (
-    <html lang="en">
-      <body className={`${raleway.className} ${s.body}`}>
+    <html lang="ru">
+      <body className={`${ralewayRegular.className} ${s.body}`}>
         
           <BackgroundPage />
           <Header />

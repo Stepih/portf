@@ -1,13 +1,25 @@
-import { StaticImageData } from "next/image";
 
-export interface IMediaImages{
+export interface IMedia{
+    id: number,
     title: string;
     description: string;
-    images: IMediaImage[]
+    images?: IMediaImage[];
+    gifs?: IMediaGif[];
+    bits?: IMediaBit[]
 }
 
 export interface IMediaImage {
     id: number;
-    low: StaticImageData;
-    high: StaticImageData;
+    low: string;
+    high: string;
+}
+
+export interface IMediaGif {
+    id: number;
+    src: string;
+}
+
+export interface IMediaBit {
+    id: number,
+    src: string
 }

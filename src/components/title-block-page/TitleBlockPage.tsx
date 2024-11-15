@@ -9,7 +9,6 @@ import { ITitleBlockPage } from "@/interfaces/titleBlockPage";
 import { allerta } from "@/fonts/fonts";
 
 
-
 interface IProps {
     props: ITitleBlockPage
 }

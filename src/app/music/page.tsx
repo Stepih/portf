@@ -13,7 +13,7 @@ import Breadcrumbs from "@/components/breadCrumb/BreadCrumb";
 async function fetchAlbums(): Promise<IAlbums[]> {
     const res = await fetch('http://localhost:3000/api/albums', {
         next: {
-            revalidate: 100
+            revalidate: 10
         }
     });
 
@@ -26,9 +26,7 @@ async function fetchAlbums(): Promise<IAlbums[]> {
 
 async function fetchMusicHistory(): Promise<IMusicHistory[]> {
     const res = await fetch('http://localhost:3000/api/music-history', {
-        next: {
-            revalidate: 100
-        }
+        cache: 'force-cache'
     });
 
     if (!res.ok) {

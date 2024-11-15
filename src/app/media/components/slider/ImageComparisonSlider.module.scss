@@ -1,13 +1,10 @@
-/* components/ImageComparisonSlider.module.scss */
+@use '/src/styles/variables.scss' as vars;
 
 .sliderContainer {
     position: relative;
     width: 100%;
     max-width: 750px; /* Опционально, для ограничения ширины */
-    height: 450px;
-    overflow: hidden;
-    
-    border-radius: 12px;
+    height: 100%;
   }
   
   .imageWrapper {
@@ -16,6 +13,30 @@
     left: 0;
     width: 100%;
     height: 100%;
+
+    color: white;
+
+    &.imageWrapperHigh {
+      z-index: 3;
+    }
+    .titleLow {
+      position: absolute;
+      left: 0;
+
+      padding: 10px 20px;
+      border-radius: 0 0 13px 0;
+      background: vars.$black-50;
+      z-index: 2;
+    }
+    .titleHigh {
+      position: absolute;
+      right: 0;
+
+      padding: 10px 20px;
+      border-radius: 0 0 0 13px;
+      background: vars.$black-50;
+      z-index: 2;
+    }
   }
   
   .image {
@@ -29,7 +50,7 @@
     width: 4px;
     background-color: #ffffffcc; /* Полупрозрачный белый */
     
-    cursor: ew-resize;
+    
     z-index: 10;
     transform: translateX(-50%);
     transition: background-color 0.2s ease;

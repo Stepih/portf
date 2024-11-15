@@ -1,7 +1,7 @@
-// В начале файла
 "use client";
 
-import { FC, useEffect, useState } from "react";
+import { FC, useEffect, useRef, useState } from "react";
+
 import { usePathname } from "next/navigation";
 
 import s from "./Background.module.scss";
@@ -9,7 +9,6 @@ import { BgRectangle1, BgRectangle2 } from "./BgRectangle";
 
 const BackgroundPage: FC = () => {
     const [currentUrl, setCurrentUrl] = useState('');
-    
     const pathname = usePathname(); // Получение текущего пути
     useEffect(() => {
         // Разбиваем путь на сегменты
@@ -20,10 +19,26 @@ const BackgroundPage: FC = () => {
     }, [pathname]);
 
 
+    const [parallax, setParallax] = useState(0);
+    useEffect(() => {
+        
+        window.addEventListener("scroll", handleScroll);
+        
+        return () => {
+            window.removeEventListener("scroll", handleScroll);
+        };
+    }, [])
+
+    const handleScroll = () => {
+        const scrollPosition = window.scrollY;
+        setParallax(-scrollPosition / -20)
+    };
+
+
     return (
         <div className={`${s.bg} `}>
-            <BgRectangle1 currentUrl={currentUrl} />
-            <BgRectangle2 currentUrl={currentUrl} />
+            <BgRectangle1 currentUrl={currentUrl} parallax={parallax} />
+            <BgRectangle2 currentUrl={currentUrl} parallax={parallax}/>
         </div>
     );
 }
