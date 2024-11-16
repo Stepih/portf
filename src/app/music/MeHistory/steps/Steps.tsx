@@ -4,6 +4,7 @@ import { motion } from "framer-motion";
 import s from './Steps.module.scss';
 import MediaList from "./media-content/MediaContentList";
 import { bodyLock, bodyUnLock, scrollToElementById } from "@/scripts/scrollTo";
+import { isTouchDevice } from "@/scripts/typeDevice";
 
 const Steps: FC<{ musicHistory: IMusicHistory[], step: number, handleSetStep: (id: number, block: boolean) => void }> = ({ handleSetStep, musicHistory, step }) => {
     const refs = useRef<(HTMLDivElement | null)[]>([]);
@@ -23,8 +24,10 @@ const isElementVisible = (el: HTMLDivElement | null, direction: "up" | "down"): 
         isBlockScroll.current = true
     }
 
+    const bottomListener = isTouchDevice() ? 100 : 0
+
     if (direction === "down") {
-        return rect.bottom - headerHeightScrollDown <= window.innerHeight && rect.top < window.innerHeight;
+        return rect.bottom - headerHeightScrollDown + bottomListener <= window.innerHeight && rect.top < window.innerHeight;
     } else {
         return rect.top >= 200 && rect.top <= window.innerHeight;
     }

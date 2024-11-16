@@ -1,0 +1,19 @@
+.wrapper {
+    position: fixed;
+    inset: 0;
+    background: var(--color-bg);
+
+    width: 100vw;
+    height: 100vh;
+
+    z-index: 12;
+
+    box-shadow: 2px 2px 100px rgba(0, 0, 0, 0.358);
+
+    .rightBlock {
+        position: absolute;
+        top: 0;
+        
+        z-index: 13;
+    }
+}
