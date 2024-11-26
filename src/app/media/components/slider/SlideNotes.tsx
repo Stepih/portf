@@ -4,17 +4,19 @@ import { IMediaBit, IMediaGif, IMediaImage } from "@/interfaces/mediaImages";
 import s from './SlideNotes.module.scss';
 
 interface ISlideNotes {
-    images: IMediaImage[] | IMediaGif[] | IMediaBit[],
+    length: number,
     step: number,
-    action: (idx: number) => void
+    action: (idx: number) => void;
+    slideNotesPosition: 'right' | 'bottom'
 }
 
-const SlideNotes: FC<ISlideNotes> = ({ images, step, action }) => {
+const SlideNotes: FC<ISlideNotes> = ({ length, step, action, slideNotesPosition }) => {
     const buttonsRef = useRef<(HTMLButtonElement | null)[]>([]); // Реф для кнопок
     const slideWidthRef = useRef<HTMLDivElement | null>(null); // Реф для контейнера div
     const [width, setWidth] = useState<number | null>(null); // Состояние для ширины блока
     const [btnPos, setBtnPos] = useState<(number | null)[]>([]); // Состояние для позиций кнопок
     const [scale, setScale] = useState(1); // Состояние для управления scale (сжатием)
+    
 
     useEffect(() => {
         // Получаем ширину контейнера
@@ -29,6 +31,7 @@ const SlideNotes: FC<ISlideNotes> = ({ images, step, action }) => {
             const containerLeft = slideWidthRef.current.getBoundingClientRect().left;
             const positions = buttonsRef.current.map((button) => {
                 if (button) {
+                    
                     // Получаем позицию кнопки относительно левого края контейнера
                     return button.getBoundingClientRect().left - containerLeft;
                 }
@@ -39,9 +42,25 @@ const SlideNotes: FC<ISlideNotes> = ({ images, step, action }) => {
         }
     }, []); 
 
+    
+    let variants = {}
+
+    if (slideNotesPosition === 'bottom') {
+        variants = {
+            x: btnPos[step] ? `${btnPos[step]}px` : '0px',
+            width: scale
+        }
+    } else {
+        variants = {
+            y: btnPos[step] ? `${btnPos[step]}px` : '0px',
+            height: scale
+        }
+    }
+
+    console.log(length)
 
     useEffect(() => {
-        // Сжимаем кнопку при изменении шага
+        
         setScale(50); // Начинаем с уменьшения
         const timeout = setTimeout(() => {
             setScale(25); // Возвращаем в исходный размер после анимации
@@ -51,14 +70,13 @@ const SlideNotes: FC<ISlideNotes> = ({ images, step, action }) => {
         return () => clearTimeout(timeout);
     }, [step]); // Каждый раз при изменении `step` сжимаем и восстанавливаем размер
 
-
     return (
-        images.length !== 1 &&
-        <div ref={slideWidthRef} className={s.slideNotes}>
-            {images.map((btn, idx) => (
+        length !== 1 &&
+        <div ref={slideWidthRef} className={`${s.wrapper} ${btnPos.length > 0 && s[slideNotesPosition]}`}>
+            {[...Array(length)].map((_, idx) => (
                 <button
                     ref={(el) => { buttonsRef.current[idx] = el }} // Сохраняем ссылку на кнопку
-                    key={btn.id}
+                    key={idx}
                     className={`${s.btn} ${step === idx ? s.active : ''}`}
                     onClick={() => action(idx)}
                 >
@@ -66,10 +84,7 @@ const SlideNotes: FC<ISlideNotes> = ({ images, step, action }) => {
             ))}
             <motion.span 
                 className={s.bgBtnActive} 
-                animate={{ 
-                    x: btnPos[step] ? `${btnPos[step]}px` : '0px',
-                    width: scale
-                }}
+                animate={variants}
                 transition={{
                     type: "spring",  // Пружинная анимация для плавного перехода
                     stiffness: 150,  // Жёсткость пружины

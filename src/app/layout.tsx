@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 
 import "../styles/globals.scss";
 import s from './layout.module.scss'
-import { allerta, ralewayRegular, canada } from "@/fonts/fonts";
+import { ralewayRegular } from "../styles/fonts/fonts";
 
 import BackgroundPage from "@/components/bg-page/Background";
 import Header from "@/components/header/Header";
@@ -23,14 +23,12 @@ export default function RootLayout({
   return (
     <html lang="ru">
       <body className={`${ralewayRegular.className} ${s.body}`}>
-        
           <BackgroundPage />
           <Header />
           <main id="main" className={`${s.main}`}>
             {children}
           </main>
           <Footer />
-        
       </body>
     </html>
   );

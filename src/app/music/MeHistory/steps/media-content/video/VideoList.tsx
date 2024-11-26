@@ -10,31 +10,28 @@ interface IVideoList {
     handleVideoError: (id:number) => void,
     videos: IVideoMedia[],
     videoErrors: Record<string, boolean>,
-    handleOpenVideo: () => void,
+    handleOpenPopup: (content: IVideoMedia[]) => void,
     title: string,
     count: number
 }
 
-const VideoList:FC<IVideoList> = ({count, title, videos, videoErrors, handleVideoError, handleOpenVideo})=> {
+const VideoList:FC<IVideoList> = ({count, title, videos, videoErrors, handleVideoError, handleOpenPopup})=> {
 
     return (
         <div className={s.videoContent}>
             <h3 className={s.title}>{title}</h3>
             <div className={s.videoList}>
                 {videos.map((video, idx) => (
-                    video.src && !videoErrors[video.id] ? idx < count  &&
-                        <Video key={video.id} handleVideoError={handleVideoError} video={video}/>
-                     : (
-                        <div key={video.id} className={s.videoError}>
-                            Видео не найдено или не удалось загрузить
-                        </div>
-                    )
+                    idx < count && 
+                    <div key={video.id} className={s.videoWrapper}>
+                        <Video videoErrors={videoErrors}  handleVideoError={handleVideoError} video={video}/>
+                    </div>
                 ))}
                 <div className={s.btnPC}>
-                    <ButtonRight action={handleOpenVideo} />
+                    <ButtonRight param={videos} paramAction={handleOpenPopup} />
                 </div>
                 <div className={s.btnMB}>
-                    <ButtonDown action={handleOpenVideo}/>
+                    <ButtonDown param={videos} paramAction={handleOpenPopup} />
                 </div>
                 
             </div>

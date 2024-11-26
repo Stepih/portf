@@ -22,36 +22,38 @@ import { getWidthScroll } from "@/scripts/scrollTo";
     
     const audioRef = useRef<HTMLAudioElement | null>(null);
 
+    const statusPlay = {
+      play: isPlaying,
+      setPlay: setIsPlaying
+    }
     
-    // Обработчик выбора альбома
     const handleAlbumSelect = (album: IAlbums | null) => {
-      if (album) {
-        
-        if (audioRef.current) {
-          statusPlay.setPlay(false) // Останавливаем воспроизведение
-          audioRef.current.src = ""; // Сбрасываем источник
-        }
-      
-        setIsAudioReady(false); // Сбросить состояние готовности для нового аудио
-        setSelectedAlbum(album);
-        setCurrentTrackIndex(0);
-
-        statusPlay.setPlay(true)
+      if (!album) {
+        setSelectedAlbum(null);
+        return;
       }
     
-      if (!album) {
-        console.log(123)
-        setSelectedAlbum(null);
+      if (album === selectedAlbum) {
+        setIsPlaying((prev) => !prev);
+        console.log("Toggle playback:", !isPlaying);
+        return;
       }
+    
+      if (audioRef.current) {
+        statusPlay.setPlay(false) // Остановка текущего воспроизведения
+        audioRef.current.src = ""; // Сброс источника
+      }
+    
+      setIsAudioReady(false);
+      setSelectedAlbum(album);
+      setCurrentTrackIndex(0);
+      audioRef?.current?.load()
+      statusPlay.setPlay(true)
     };
+    
     
     const handleTrackSelect = (id: number) => {
       if (audioRef.current) {
-        
-        if (id === currentTrackIndex) {
-          statusPlay.setPlay(!statusPlay.play) 
-          return
-        }
         
         statusPlay.setPlay(false) // Останавливаем воспроизведение
         audioRef.current.src = ""; // Сбрасываем источник
@@ -70,10 +72,7 @@ import { getWidthScroll } from "@/scripts/scrollTo";
       // !popup ? document.body.style.overflow = 'hidden' : document.body.style.overflow = 'scroll';
       setPopup(!popup)
     }
-    const statusPlay = {
-      play: isPlaying,
-      setPlay: setIsPlaying
-    }
+    
 
     
     

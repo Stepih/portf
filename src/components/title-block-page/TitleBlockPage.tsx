@@ -6,7 +6,7 @@ import i from '@/assets/_img/rectangles/title-page/i.png'
 import s from './TitleBlockPage.module.scss'
 import AnimatedButton from "./button/AnimatedButton";
 import { ITitleBlockPage } from "@/interfaces/titleBlockPage";
-import { allerta } from "@/fonts/fonts";
+import { allerta } from "../../styles/fonts/fonts";
 
 
 interface IProps {

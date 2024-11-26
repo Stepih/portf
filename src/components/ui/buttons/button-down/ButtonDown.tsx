@@ -3,14 +3,25 @@ import { motion } from "framer-motion";
 
 import Arrow from '@/assets/_img/icons/arrow.svg'
 
-
 import s from './ButtonDown.module.scss'
 
-const ButtonDown: FC<{action: ()=>void}> = ({action}) => {
+interface IBtn {
+    action?: () => void,
+    paramAction?: (param: any) => void,
+    param: any
+}
+const ButtonDown: FC<IBtn> = ({action, paramAction, param}) => {
     const [act, setAct] = useState(false)
 
     return (
-        <motion.button onClick={() => {action(); setAct(!act)}} whileHover="hover" className={s.btn}>
+        <motion.button 
+            onClick={() => {
+                action && action(); 
+                paramAction && paramAction(param)
+            }} 
+            whileHover="hover" 
+            className={s.btn}
+        >
             <motion.div initial={{transform: 'translateY(0px)'}} variants={{hover: {transform: 'translateY(90px)'}}} className={`${s.img} ${act ? s.active : ''}`}>
                 <Arrow />
             </motion.div>

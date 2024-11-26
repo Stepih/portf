@@ -31,9 +31,6 @@
             position: relative;
             max-width: 400px;
             text-align: start;
-    
-            
-            
         }
     
         .wrapperSlider {
@@ -43,6 +40,23 @@
             position: relative;
             
             margin: auto;
+
+            .open {
+                position: absolute;
+                bottom: -40px;
+                right: 20px;
+                
+                cursor: pointer;
+                
+                path {
+                    stroke: var(--color-text-100);
+                    transition: vars.$transition;
+                }
+                &:hover>path {
+                    stroke: var(--color-text-50);
+                }
+                
+            }
         }
     }
 }

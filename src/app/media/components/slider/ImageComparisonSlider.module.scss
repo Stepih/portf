@@ -15,10 +15,8 @@
     height: 100%;
 
     color: white;
+    z-index: 0;
 
-    &.imageWrapperHigh {
-      z-index: 3;
-    }
     .titleLow {
       position: absolute;
       left: 0;
@@ -26,7 +24,7 @@
       padding: 10px 20px;
       border-radius: 0 0 13px 0;
       background: vars.$black-50;
-      z-index: 2;
+      z-index: 1;
     }
     .titleHigh {
       position: absolute;
@@ -35,7 +33,7 @@
       padding: 10px 20px;
       border-radius: 0 0 0 13px;
       background: vars.$black-50;
-      z-index: 2;
+      z-index: 1;
     }
   }
   

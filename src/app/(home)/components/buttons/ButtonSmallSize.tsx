@@ -20,6 +20,7 @@ const animationVariants = {
 const ButtonSmallSize: FC<ISmallHomeButtons> = ({ Icon, title, srcSmall }) => (
   <Link className={s.link} href={srcSmall || '/'}>
     <motion.div 
+    whileTap={{scale: .9}}
       whileHover="hover" 
       variants={animationVariants.wrapper} 
       className={s.wrapper}

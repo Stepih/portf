@@ -1,4 +1,4 @@
-import { FC, useState } from "react";
+import { Dispatch, FC, SetStateAction, useEffect, useState } from "react";
 
 import s from './MediaContentList.module.scss';
 import { IVideoMedia, IImageMedia } from "@/interfaces/musicHistory";
@@ -9,21 +9,32 @@ import Link from "next/link";
 
 
 import ButtonUp from "@/components/ui/buttons/button-up/ButtonUp";
-import { bodyUnLock } from "@/scripts/scrollTo";
+import { bodyLock, bodyUnLock } from "@/scripts/scrollTo";
+import Popup from "./Popup";
+
+interface IMediaContent {
+    updatePopupActive: (isActive: boolean) => void, 
+    videos: IVideoMedia[], 
+    images: IImageMedia[], 
+    step: number 
+}
 
 
-const MediaList: FC<{ videos: IVideoMedia[], images: IImageMedia[], step: number }> = ({step, videos, images }) => {
+const MediaList: FC<IMediaContent> = ({step, videos, images, updatePopupActive }) => {
     const [videoErrors, setVideoErrors] = useState<Record<string, boolean>>({});
+    const [popup, setPopup] = useState<IVideoMedia[] | IImageMedia[] | undefined>(undefined)
 
-    const [videoPopup, setVideoPopup] = useState(false)
-    const [imagePopup, setImagePopup] = useState(false)
-
-    const handleOpenVideo = () => {
-        setVideoPopup(!videoPopup)
-    };
-
-    const handleOpenImage = () => {
-        setImagePopup(!imagePopup)
+    useEffect(() => {
+        updatePopupActive(Boolean(popup))
+        Boolean(popup) ? bodyLock() : bodyUnLock()
+    }, [popup])
+    
+    const handleOpenPopup = (content?:IVideoMedia[] | IImageMedia[] ) => {
+        if (content === undefined) {
+            setPopup(undefined)
+            return
+        }
+        setPopup(content)
     };
 
     const handleVideoError = (id: number) => {
@@ -34,26 +45,27 @@ const MediaList: FC<{ videos: IVideoMedia[], images: IImageMedia[], step: number
     };
 
     return (
+        <>
+        {popup && <Popup videoErrors={videoErrors} handleVideoError={handleVideoError} content={popup} handleOpenPopup={handleOpenPopup} />}
         <div className={s.wrapper} id="mediaContent">
-            
-            {videos.length > 0 && !imagePopup && (
+            {videos.length > 0 && (
                 <>
                 <VideoList 
                     title="Любимые произведения:"
                     videos={videos} 
-                    handleOpenVideo={handleOpenVideo} 
+                    handleOpenPopup={handleOpenPopup} 
                     handleVideoError={handleVideoError} 
                     videoErrors={videoErrors} 
-                    count={videoPopup ? videos.length : 2}/> 
+                    count={2}/> 
                 </>
             )}
-            {images.length > 0 && !videoPopup && (
+            {images.length > 0 && (
                 <div className={s.imgContent}>
                     <ImageList 
                         title="Награды:" 
                         images={images} 
-                        count={step === 1 ? images.length : imagePopup ? images.length : 3} 
-                        handleOpenImage={step === 0 ? handleOpenImage : undefined}/>
+                        count={step === 1 ? images.length : 3} 
+                        handleOpenPopup={handleOpenPopup}/>
                 </div>
             )}
             {images.length === 0 && videos.length === 0 && (
@@ -63,6 +75,7 @@ const MediaList: FC<{ videos: IVideoMedia[], images: IImageMedia[], step: number
                 </div>
             )}
         </div>
+        </>
     );
 };
 

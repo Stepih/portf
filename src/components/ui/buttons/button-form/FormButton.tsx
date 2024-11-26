@@ -8,7 +8,7 @@ import s from './FormButton.module.scss'
 const FormButton: FC<{action?: () => void, text: string}> = ({action, text}) => {
     
     return (
-        <motion.button  onClick={action && action} className={s.btn}>
+        <motion.button whileTap={{scale: .9}} onClick={action && action} className={s.btn}>
             {text}
         </motion.button>
     )

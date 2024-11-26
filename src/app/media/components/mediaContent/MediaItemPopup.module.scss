@@ -1,5 +1,11 @@
 .wrapper {
     position: fixed;
+    display: flex;
+    align-items: center;
+    
+    contain: layout paint;
+    gap: 60px;
+
     inset: 0;
     background: var(--color-bg);
 
@@ -10,10 +16,25 @@
 
     box-shadow: 2px 2px 100px rgba(0, 0, 0, 0.358);
 
+    .slider {
+        position: relative;
+        width: 100%;
+        max-width: 1200px;
+        height: 100%;
+    }
+
     .rightBlock {
-        position: absolute;
-        top: 0;
+        max-width: 500px;
         
-        z-index: 13;
+        
+
+        .btns {
+            display: flex;
+            gap: 10px;
+
+            .textBtn {
+                color: var(--color-text-100);
+            }
+        }
     }
 }

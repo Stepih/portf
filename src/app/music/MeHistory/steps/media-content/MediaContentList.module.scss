@@ -28,7 +28,7 @@
             color: white;
             font-weight: 600;
 
-            background: vars.$black-8;
+            background: var(--color-overlay);
             box-shadow: vars.$shadow;
             border-radius: 13px;
         }

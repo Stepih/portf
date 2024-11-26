@@ -6,16 +6,17 @@ import s from './Player.module.scss';
 import Commands from "./commands/Command";
 import { ISwitchTrack } from "@/interfaces/player";
 import { IAlbums } from "@/interfaces/albums";
-import { canada } from "@/fonts/fonts";
+import { canada } from "../../../../styles/fonts/fonts";
 import Volume from "./commands/Volume";
 import LineTrack from "./commands/LineTrack";
 import AlbumInfo from "./album/AlbumInfo";
 
-import Krest from '@/assets/_img/icons/krest.svg';
 import List from '@/assets/_img/icons/list.svg';
 
 import BgFocus from "@/components/bg-page/BgFocus";
 import { isTouchDevice } from "@/scripts/typeDevice";
+import ClosePlayer from "./commands/ClosePlayer";
+
 
 interface IPlayer extends ISwitchTrack {
   album: IAlbums,
@@ -28,17 +29,17 @@ interface IPlayer extends ISwitchTrack {
 
 const Player: FC<IPlayer> = ({isAudioReady, setIsAudioReady, handleAlbumSelect, handleListTracks, audioRef, album, handleTrackSelect, trackId, statusPlay }) => {
   const [volume, setVolume] = useState<number>(1);
-  const [anim, setAnim] = useState(0)
-  const [hover, setHover] = useState(false)
+  const [firstRender, setFirstRender] = useState(true)
+  const [hover, setHover] = useState(true)
   const [loadProgress, setLoadProgress] = useState(0);
 
   const mobileDevice = isTouchDevice()
   
-
-  if (anim === 0) {
+  if (hover && firstRender) {
     setTimeout(() => {
-      setAnim(1)
-    }, 5000);
+      setHover(false)
+      setFirstRender(false)
+    }, 1000);
   }
 
   const handleAudioProgress = () => {
@@ -112,10 +113,8 @@ const Player: FC<IPlayer> = ({isAudioReady, setIsAudioReady, handleAlbumSelect, 
         {/* Ползунок громкости */}
         <div className={s.right}>
           {!mobileDevice && <Volume handleVolumeChange={handleVolumeChange} volume={volume} />}
-          <Krest className={s.img} onClick={() => handleAlbumSelect(null)}/>
-          
+          <ClosePlayer handleAlbumSelect={handleAlbumSelect} />
         </div>
-
         {/* Элемент аудио */}
         <audio 
           onCanPlay={() => {setIsAudioReady(true)}}

@@ -26,7 +26,9 @@ async function fetchAlbums(): Promise<IAlbums[]> {
 
 async function fetchMusicHistory(): Promise<IMusicHistory[]> {
     const res = await fetch('http://localhost:3000/api/music-history', {
-        cache: 'force-cache'
+        next: {
+            revalidate: 1000
+        }
     });
 
     if (!res.ok) {

@@ -3,10 +3,13 @@ import { motion } from "framer-motion";
 
 import s from './LayoutAnimateImage.module.scss'
 
-const LayoutSlider:FC<{children: React.ReactNode, step: number}> = ({children, step}) => {
+const LayoutSlider:FC<{handleNext: (e: React.MouseEvent<HTMLDivElement>) => void ,children: React.ReactNode, step: number, anim: boolean}> = ({handleNext, children, step, anim}) => {
 
     return (
+        anim ? (
         <motion.div
+            onClick={handleNext}
+            onContextMenu={handleNext}
             key={step}
             className={s.wrapper}
             initial={{y: step % 2 === 0 ? -40 : 40, opacity: 0}}
@@ -19,6 +22,13 @@ const LayoutSlider:FC<{children: React.ReactNode, step: number}> = ({children, s
             }}>
             {children}
         </motion.div>
+        ) : (
+        <div 
+            key={step}
+            className={s.wrapper}>
+            {children}
+        </div> 
+        )
     )
 }
 

@@ -37,7 +37,9 @@ export const bodyLock = () => {
   body.style.overflow = 'hidden';
 }
 export const bodyUnLock = () => {
+  if (typeof document !== 'undefined') { 
     document.body.style.paddingRight = '';
     document.body.style.overflow = '';
+}
 }
 

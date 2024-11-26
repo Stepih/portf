@@ -12,7 +12,7 @@ const CheckPoints:FC<{step: number, handleSetStep: (id:number, block: boolean) =
                 <div key={idx} style={{display: 'contents'}}>
                     <motion.div 
                         animate={{opacity: step === 0 ? (idx === step ? 1 : .5) : step === 1 ? (idx !== step + 1 ? 1 : .5) : 1}} 
-                        onClick={handleSetStep.bind(this, idx, true)} 
+                        onClick={handleSetStep.bind(null, idx, false)} 
                         className={`${s.checkBlock} ${idx !== step ? s.noActiveMobile : ''}`}
                     >
                         

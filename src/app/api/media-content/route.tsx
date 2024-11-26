@@ -26,8 +26,8 @@ export async function GET() {
         const files = fs.readdirSync(imagesDir).sort();
 
         files.forEach((file) => {
-            const matchLow = file.match(/(\d+)_low\.(png|webp)$/);
-            const matchHigh = file.match(/(\d+)_high\.(png|webp)$/);
+            const matchLow = file.match(/(\d+)_low\.(png|webp|jpg)$/);
+            const matchHigh = file.match(/(\d+)_high\.(png|webp|jpg)$/);
 
             if (matchLow) {
                 const id = parseInt(matchLow[1], 10);
@@ -49,8 +49,6 @@ export async function GET() {
             
         });
     }
-
-    console.log(beatPrev)
 
     const content: IMedia[] = [
         {

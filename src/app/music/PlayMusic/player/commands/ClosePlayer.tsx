@@ -1,0 +1,23 @@
+import Prompt from "@/components/ui/prompt/Prompt";
+import { motion } from "framer-motion";
+import { FC, useState } from "react";
+
+import Krest from '@/assets/_img/icons/krest.svg';
+
+import s from './ClosePlayer.module.scss'
+import { div } from "framer-motion/client";
+
+const ClosePlayer:FC<{handleAlbumSelect: (album: null)=> void}> = ({handleAlbumSelect}) => {
+    const [hov, setHov] = useState(false)
+
+    return (
+        <motion.div onHoverStart={()=>setHov(true)} onHoverEnd={()=>setHov(false)}>
+            <Prompt screen="auto" show={hov} type="active" title="Закрыть плеер">
+                <Krest className={s.img} onClick={() => handleAlbumSelect(null)}/>
+            </Prompt>
+        </motion.div>
+        
+    )
+}
+
+export default ClosePlayer

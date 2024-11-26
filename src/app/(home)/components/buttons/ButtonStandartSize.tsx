@@ -57,13 +57,14 @@ const ButtonStandartSize: FC<IStandartHomeButtons> = ({ Icon, title, srcStandart
 
       {/* Подменю кнопок */}
       <motion.div
+      
         className={s.wrapper_subbotun}
         initial={{ position: 'absolute', top: 0, opacity: 0, width: '100%' }}
         animate={clicked ? 'visible' : 'hide'}
         variants={hoverVariants}
       >
         {srcStandart?.map((btn) => (
-          <motion.div key={btn.key} className={s.subbutton} whileHover="hover">
+          <motion.div key={btn.key} className={s.subbutton} whileTap={{scale: .9}} whileHover="hover">
             <motion.div className={s.link}>
               <Link
                 href={btn.src}

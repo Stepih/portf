@@ -12,7 +12,7 @@
 
 
     box-shadow: vars.$shadow;
-    background-color: vars.$black-8;
+    background-color: var(--color-bg);
     z-index: 12; 
 
     &::after {

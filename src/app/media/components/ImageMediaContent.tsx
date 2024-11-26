@@ -1,30 +1,34 @@
 "use client";
 
 import { FC, useEffect, useRef, useState } from "react";
-
 import { IMedia } from "@/interfaces/mediaImages";
+import { debounce } from "lodash";
 
 import MediaItem from "./mediaContent/MediaItem";
 import MediaItemPopup from "./mediaContent/MediaItemPopup";
 import { AnimatePresence } from "framer-motion";
+import { isTouchDevice } from "@/scripts/typeDevice";
+import { bodyLock, bodyUnLock } from "@/scripts/scrollTo";
+
 
 const ImageMediaContent: FC<{ content: IMedia[] }> = ({ content }) => {
     const [scrollPosition, setScrollPosition] = useState(0);
     const [positions, setPositions] = useState<{ top: number; bottom: number }[]>([]);
-
-    const [popup, setPopup] = useState(false);
-    const [popupContent, setPopupContent] = useState<IMedia | undefined>(undefined)
-
+    
+    const [popup, setPopup] = useState<boolean>(false);
+    const [step, setStep] = useState(0)
+    
+    const nextStep = (num: number) => {
+        setStep(step + num) 
+    }
+    
     const handleSetPopup = (id: number | undefined) => {
-        setPopup(!popup);
-        if (id !== undefined) {
-            setPopupContent(content[id])
-        } 
-        
+        setPopup(true);
+        id !== undefined && id >= 0 ? setStep(id) : setPopup(false)
     };
-
+    
     const contentRefs = useRef<(HTMLDivElement | null)[]>([]);
-
+    
     useEffect(() => {
         updatePositions();
 
@@ -32,6 +36,7 @@ const ImageMediaContent: FC<{ content: IMedia[] }> = ({ content }) => {
             requestAnimationFrame(handleScroll);
         };
         window.addEventListener("scroll", onScroll, { passive: true });
+        window.addEventListener('resize', debounce(updatePositions, 500), { passive: true })
 
         return () => {
             window.removeEventListener("scroll", onScroll);
@@ -40,6 +45,11 @@ const ImageMediaContent: FC<{ content: IMedia[] }> = ({ content }) => {
     }, []);
 
     const updatePositions = () => {
+        console.log(1)
+        window.scrollTo({
+            top: 0,
+            behavior: "instant",
+        });
         const pos = contentRefs.current.map((el) => {
             if (el) {
                 const rect = el.getBoundingClientRect();
@@ -58,6 +68,7 @@ const ImageMediaContent: FC<{ content: IMedia[] }> = ({ content }) => {
     };
 
     const calculateOpacity = (id: number) => {
+        if (id === positions.length - 1) return 1
         const elemTop = positions[id]?.top ?? 0;
         const elemBottom = positions[id]?.bottom ?? 0;
         const elemHeight = elemBottom - elemTop;
@@ -79,18 +90,21 @@ const ImageMediaContent: FC<{ content: IMedia[] }> = ({ content }) => {
         return 0;
     };
 
-    
+   
+    popup ? bodyLock() : bodyUnLock()
+
 
     return (
         <>
         <AnimatePresence>
-        {popup && <MediaItemPopup content={popupContent} handlePopup={handleSetPopup} />}
+            {popup && <MediaItemPopup key={step} nextStep={nextStep} content={content} id={step} handlePopup={handleSetPopup} />}
         </AnimatePresence>
+        
         {content.map((item, id) => (
             <MediaItem
                 key={item.id}
                 popup={popup}
-                handleSetPopup={handleSetPopup}
+                handleSetPopup={!isTouchDevice() ? handleSetPopup : undefined}
                 id={id}
                 item={item}
                 opacity={calculateOpacity(id)}

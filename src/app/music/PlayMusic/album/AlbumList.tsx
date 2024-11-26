@@ -7,19 +7,32 @@ import Album from "./Album";
 import Arrow from '@/assets/_img/icons/arrow-s-right.svg'
 import { IStatusPlay } from "@/interfaces/player";
 
-
 interface AlbumListProps extends IStatusPlay {
     albums: IAlbums[],
     error?: string,
     handleAlbumSelect: (album: IAlbums) => void,
 }
 
-// Компонент для отображения списка альбомов
 const AlbumListDekstop:FC<AlbumListProps> = ({statusPlay, albums, error, handleAlbumSelect }) => {
-    const [show, setShow] = useState(4)
+    const [show, setShow] = useState(false)
+    const limitAlbums:IAlbums[] = []
+    const lastAlbums:IAlbums[] = []
+    
+    const limit = 5
 
+    const showAlbum = () => {
+        albums.forEach((album, id) => {
+            if (id < limit) {
+                limitAlbums.push(album)
+            } else {
+                lastAlbums.push(album)
+            }
+        })
+    }
+    showAlbum()
+    const itog = show ? [...lastAlbums, ...limitAlbums] : limitAlbums
     const showAllAlbums = () => {
-        show === 4 ? setShow(albums.length) : setShow(4)
+        setShow(!show)
     }
 
     return (
@@ -31,15 +44,17 @@ const AlbumListDekstop:FC<AlbumListProps> = ({statusPlay, albums, error, handleA
                         onClick={showAllAlbums}
                         className={s.popupBtn}>
                         <h3 
-                            className={s.title}> {show === 4 ? 'Показать еще' : 'Показать меньше'}
+                            className={s.title}> {!show ? 'Показать еще' : 'Показать меньше'}
                         </h3>
                         <Arrow className={s.arrow} />
                     </div>
                 </div>
                 <div className={s.albumList}>
                     {error && <h4 style={{textAlign: 'center', width: '100%'}}>Ошибка загрузки треков</h4>}
-                    {albums.map((album, index) =>  {
-                        return index <= show && <Album key={album.id} statusPlay={statusPlay} handleAlbumSelect={handleAlbumSelect} album={album}/>
+                    {itog.map((album) =>  {
+                        return (
+                            <Album key={album.id} statusPlay={statusPlay} handleAlbumSelect={handleAlbumSelect} album={album}/>
+                        )
                     })}
                 </div>  
             </div>
