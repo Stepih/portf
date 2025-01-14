@@ -1,16 +1,17 @@
 // src/app/api/album/route.ts
-import { IMedia, IMediaBit, IMediaGif, IMediaImage } from '@/interfaces/mediaImages';
+import { IMedia } from '@/interfaces/mediaImages';
+import { IMediaImage, IMediaImageComparison } from '@/interfaces/slider';
 import fs from 'fs';
-import Link from 'next/link';
+
 import path from 'path';
 
 export async function GET() {
     const pathDir = path.join(process.cwd(), 'public/media');
     const gifsDir = `${pathDir}/gifs`;
     const imagesDir = `${pathDir}/images`;
-    let gifs: IMediaGif[] | undefined = [];
-    let images: IMediaImage[] | undefined = [];
-    let beatPrev: IMediaBit[] | undefined = []
+    let gifs: IMediaImage[] | undefined = [];
+    let images: IMediaImageComparison[] | undefined = [];
+    let beatPrev: IMediaImage[] | undefined = []
 
     // Чтение GIF файлов
     if (fs.existsSync(gifsDir)) {
@@ -56,21 +57,21 @@ export async function GET() {
             title: "Улучшение ваших фотографий",
             description:
                 "Я помогу вашим фотографиям заиграть новыми красками! Профессиональная обработка, коррекция и ретушь подчеркнут красоту каждого кадра. Индивидуальный подход, высокое качество и оперативность работы.",
-            images: images,
+            imagesComparison: images,
         },
         {
             id: 1,
             title: "Видеопереходы",
             description:
                 "Лаконичный монтаж видеороликов, создания видеопереходов и видеоэффектов. Цветокоррекция, стабилизация видео. Работаю с разными форматами.",
-            gifs: gifs,
+            images: gifs,
         },
         {
             id: 2,
             title: "Создание битов",
             description:
                 "Делаю биты на заказ, с творчеством можно ознакомиться на {link}",
-            bits: beatPrev
+            images: beatPrev
         }
     ];
 

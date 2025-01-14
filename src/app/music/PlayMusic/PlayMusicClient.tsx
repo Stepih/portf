@@ -6,6 +6,7 @@
   import Player from "./player/Player";
   import ListTracks from "./player/album/ListTracks";
 import { getWidthScroll } from "@/scripts/scrollTo";
+import { AnimatePresence } from "framer-motion";
 
   interface MusicClientProps {
     albums: IAlbums[];
@@ -85,9 +86,11 @@ import { getWidthScroll } from "@/scripts/scrollTo";
       <div style={{display: popup && selectedAlbum ? 'none' :  'block', pointerEvents: popup && selectedAlbum ? 'none' : 'all'}}>
         <AlbumList statusPlay={statusPlay} handleAlbumSelect={handleAlbumSelect} albums={albums} error={error} />
       </div>
-      {selectedAlbum && (
-        <Player isAudioReady={isAudioReady} setIsAudioReady={setIsAudioReady} handleListTracks={handleListTracks} statusPlay={statusPlay} audioRef={audioRef} album={selectedAlbum} handleAlbumSelect={handleAlbumSelect} handleTrackSelect={handleTrackSelect} trackId={currentTrackIndex}/>
-      )}
+      <AnimatePresence>
+        {selectedAlbum && (
+          <Player isAudioReady={isAudioReady} setIsAudioReady={setIsAudioReady} handleListTracks={handleListTracks} statusPlay={statusPlay} audioRef={audioRef} album={selectedAlbum} handleAlbumSelect={handleAlbumSelect} handleTrackSelect={handleTrackSelect} trackId={currentTrackIndex}/>
+        )}
+      </AnimatePresence>
       </>
     );
   };

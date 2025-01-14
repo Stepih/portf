@@ -1,0 +1,23 @@
+@use '/src/styles/variables.scss' as vars;
+
+.input {
+    padding: 12px;
+    margin-bottom: 25px;
+    font-size: 1.25rem;
+
+    border: none;
+    outline: none;
+
+    background: vars.$black-8;
+
+    transition: vars.$transition;
+
+    border-radius: 13px;
+    border: 2px solid rgba(255, 255, 255, 0);
+
+    color: var(--color-text-100);
+
+    &:focus {
+        border: 2px solid var(--color-text-100);
+    }
+}

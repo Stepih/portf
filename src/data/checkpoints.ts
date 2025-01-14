@@ -4,8 +4,6 @@ import endLearn from '@/assets/_img/icons/end-learn.svg'
 import fl from '@/assets/_img/icons/fl-studio.svg'
 import { ICheckICO } from '@/interfaces/musicHistory'
 
-
-
 export const checpointsData:ICheckICO[] = [
     {
         Img: learn,

@@ -10,7 +10,6 @@ import { IAlbums } from "@/interfaces/albums";
 
 import s from './Album.module.scss'
 import { IStatusPlay } from "@/interfaces/player";
-import Prompt from "@/components/ui/prompt/Prompt";
 
 
 interface Album extends IStatusPlay {
@@ -20,8 +19,12 @@ interface Album extends IStatusPlay {
 
 const Album:FC<Album> = ({statusPlay, album, handleAlbumSelect}) => {
     const [isClient, setIsClient] = useState(false);
-    const [prompt, setPrompt] = useState(false);
-    const [firstPrompt, setFirstPrompt] = useState(true)
+
+    const variantsAnim = {
+      hover: {
+        scale: 1.05
+      }
+    }
 
   useEffect(() => {
     setIsClient(true); // Устанавливаем флаг, чтобы работать только на клиенте
@@ -29,35 +32,36 @@ const Album:FC<Album> = ({statusPlay, album, handleAlbumSelect}) => {
 
   return (
     <>
-    
-      <motion.div
-        onHoverStart={() => setPrompt(true)}
-        onHoverEnd={() => setPrompt(false)}
-        whileTap={{ scale: .9 }}
+      <motion.button
+        whileHover="hover"
         initial={{opacity: 0}}
         animate={{opacity: 1}}
         transition={{
           delay: .1
         }}
-        onClick={() => { handleAlbumSelect(album); statusPlay.setPlay(statusPlay.play);setFirstPrompt(false) }}
+        onClick={() => { handleAlbumSelect(album); statusPlay.setPlay(statusPlay.play)}}
         className={s.album}
       >
         
           {album.img ? (
             <div className={s.imgWrapper}>
-              <Image
-                className={s.img}
-                src={album.img}
-                alt={album.name}
-                width={180}
-                height={180}
-                priority
-              />
+              <motion.div variants={variantsAnim}>
+                <Image
+                  className={s.img}
+                  src={album.img}
+                  alt={album.name}
+                  width={180}
+                  height={180}
+                  priority
+                />
+              </motion.div>
             </div>
           ) : (
-            <div className={`${s.noImg} ${isClient ? canada.className : ''}`}>
-              {album.name}
-            </div>
+            <motion.div className={`${s.noImg} ${isClient ? canada.className : ''}`}>
+              <motion.div variants={variantsAnim}>
+                {album.name}
+              </motion.div>
+            </motion.div>
           )}
           <div className={s.title}>
             <h2 className={`${!album.img && isClient ? canada.className : ''} ${s.albumName}`}>{album.name}</h2>
@@ -65,7 +69,7 @@ const Album:FC<Album> = ({statusPlay, album, handleAlbumSelect}) => {
           </div>
         
         
-      </motion.div>
+      </motion.button>
     </>
   );
 }

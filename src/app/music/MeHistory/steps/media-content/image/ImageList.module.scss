@@ -3,7 +3,6 @@
 .title {
     font-size: 1.5rem;
     margin-bottom: 30px;
-
     color: var(--color-text-100);
     transition: vars.$transition;
 }
@@ -13,21 +12,101 @@
     justify-content: space-between;
     align-items: center;
     gap: 20px;
-
+    height: 130px;
+    width: 100%;
     flex-wrap: wrap;
-}
-.btnMB {
-    display: none;
-}
 
-@media screen and (max-width: 490px) {
-    .imgList {
-        justify-content: center;
+    .img {
+        position: relative;
+        width: 100%;
+        max-width: 120px;
+        height: 100%;
+        border-radius: 13px;
+        overflow: hidden;
     }
+
     .btnPC {
+        height: 100%;
+    }
+
+    .btnMB {
         display: none;
     }
-    .btnMB {
-        display: block;
+
+    // Логика скрытия элементов для класса .hide
+    &.hide {
+        .img:nth-child(n + 4):nth-child(-n + 5) {
+            display: none;
+        }
+    }
+
+    @media screen and (max-width: 1300px) {
+        &.hide {
+            .img:nth-child(n + 4):nth-child(-n + 5) {
+                display: block;
+            }
+        }
+        &.hideOne {
+            .img:nth-child(n + 1):nth-child(-n + 3) {
+                display: none;
+            }
+        }
+    }
+
+    @media screen and (max-width: 900px) {
+        &.hide {
+            .img:nth-child(4) {
+                display: none !important;
+            }
+        }
+    }
+
+    @media screen and (max-width: 665px) {
+        height: 100%;
+        justify-content: center;
+
+        .img {
+            height: 150px;
+        }
+
+        .btnPC {
+            display: none;
+        }
+
+        .btnMB {
+            display: block;
+        }
+
+        
+    }
+
+    @media screen and (max-width: 580px) {
+        height: 100%;
+        justify-content: center;
+
+        &.hide {
+            .img:nth-child(3) {
+                display: none;
+            }
+        }
+        &.hideOne {
+            .img:nth-child(4) {
+                display: none;
+            }
+        }
+    }
+
+    @media screen and (max-width: 450px) {
+        &.hide {
+            .img:nth-child(3) {
+                display: block !important;
+            }
+        }
+        &.hideOne {
+            .img:nth-child(5) {
+                display: none;
+            }
+        }
     }
 }
+

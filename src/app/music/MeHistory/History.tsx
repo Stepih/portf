@@ -7,6 +7,7 @@ import ScrollToArrow from "@/components/ui/scrollToArrow/ScrollToArrow";
 import Steps from "./steps/Steps";
 import { IMusicHistory } from "@/interfaces/musicHistory";
 import { scrollToElementById } from "@/scripts/scrollTo";
+import { ralewayBold } from "@/styles/fonts/fonts";
 
 
 const History:FC<{musicHistory: IMusicHistory[]}> = ({musicHistory}) => {
@@ -21,7 +22,7 @@ const History:FC<{musicHistory: IMusicHistory[]}> = ({musicHistory}) => {
         <>
             <ScrollToArrow forid="title-history"/>
             <div className={s.wrapper}>
-                <h3 id="title-history" className={s.title}>Чем я занимался</h3>
+                <h3 id="title-history" className={`${s.title} ${ralewayBold.className}`}>Чем я занимался</h3>
                 <CheckPoints step={step} handleSetStep={handleSetStep}/>
                 <Steps musicHistory={musicHistory} handleSetStep={handleSetStep} step={step}/>
             </div>

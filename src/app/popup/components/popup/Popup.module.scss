@@ -1,0 +1,17 @@
+@use '/src/styles/variables.scss' as vars;
+
+.popup {
+    position: relative;
+    padding: 50px;
+
+    margin: 80px auto 0 auto;
+
+    max-width: 500px;
+
+
+    border-radius: 13px;
+
+    background: vars.$black-8;
+
+    box-shadow: vars.$shadow;
+}

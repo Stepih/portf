@@ -16,3 +16,7 @@ export const musicTitleData:ITitleBlockPage = {
     title: "My musical creativity",
     description: "„Жизнь, как пианино. С чёрными и белыми полосами, но живя, нельзя забывать, что чёрные клавиши тоже создают музыку"
 }
+
+export const popupTitleData: ITitleBlockPage = {
+    title: "FeedBack", description: "Заполни и отправь форму, чтобы я смог связаться с тобой"
+}

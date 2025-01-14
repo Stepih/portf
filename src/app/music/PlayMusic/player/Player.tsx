@@ -91,6 +91,7 @@ const Player: FC<IPlayer> = ({isAudioReady, setIsAudioReady, handleAlbumSelect, 
       className={`${s.wrapper} ${canada.className}`} 
       initial={{ y: 40, opacity: 0, willChange: 'auto' }} 
       animate={{ y: !hover && !mobileDevice ? 60 : 0, opacity: 1 }}
+      exit={{y: 40, opacity: 0}}
       >
       <div className={s.content}>
         <LineTrack isAudioReady={isAudioReady} loadProgress={loadProgress} audioRef={audioRef} trackId={trackId} albumId={album.id} />

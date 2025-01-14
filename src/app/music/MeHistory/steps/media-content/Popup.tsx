@@ -1,75 +1,40 @@
-import { FC, useState } from "react";
+import { FC } from "react";
+import { motion } from "framer-motion";
+
+import { IImageMedia } from "@/interfaces/musicHistory";
+
+import { IMediaVideo } from "@/interfaces/slider";
+import ImageMediaSlider from "@/components/slider/Slider";
+import BgFocus from "@/components/bg-page/BgFocus";
+
+import Krest from '@/assets/_img/icons/krest.svg'
 
 import s from './Popup.module.scss'
-import { IImageMedia, IVideoMedia } from "@/interfaces/musicHistory";
-import Video from "./video/Video";
-import Image from "next/image";
-
-import LayoutSlider from "@/app/media/components/slider/LayoutAnimateImage";
-import SlideNotes from "@/app/media/components/slider/SlideNotes";
-import { isTouchDevice } from "@/scripts/typeDevice";
-import LoadingBlock from "@/components/ui/loading/LoadingBlock";
-
 
 interface IPopup {
     handleOpenPopup: (content: undefined) => void,
-    content: IVideoMedia[] | IImageMedia[],
-    handleVideoError: (id: number) => void,
-    videoErrors: Record<string, boolean>
+    content: IMediaVideo[] | IImageMedia[],
 }
 
-const isVideoMedia = (item: IVideoMedia | IImageMedia): item is IVideoMedia => {
-    return typeof item.src === "string";
-};
 
-const Popup: FC<IPopup> = ({handleOpenPopup, content, videoErrors, handleVideoError}) => {
-    const [step, setStep] = useState(0);
-    const [load, setLoad] = useState(true);
-
-    const handleNext = (e: React.MouseEvent<HTMLDivElement>) => {
-        if (isTouchDevice()) return;
-        e.preventDefault();
-    
-        if (e.type === "contextmenu") {
-          setStep((prev) => (prev === 0 ? content.length - 1 : prev - 1));
-        } else {
-          setStep((prev) => (prev === content.length - 1 ? 0 : prev + 1));
-        }
-        setLoad(true)
-      };
-
-    const handleSetStep = (id:number) => {
-        setStep(id);
-    }
-
-    const handleLoad = () => {
-        setLoad(false)
-    }
-        
+const Popup: FC<IPopup> = ({handleOpenPopup, content}) => {
+            
     return (
-        <div className={s.popup}>
-            <div onClick={handleOpenPopup.bind(null, undefined)} className={s.bg}></div>
-            <div className={s.content}>
-                <LayoutSlider handleNext={handleNext} anim={true} step={step}>
-                    {load && <LoadingBlock />}
-                    {isVideoMedia(content[step]) ? (
-                        <Video setLoad={handleLoad} videoErrors={videoErrors} handleVideoError={handleVideoError} video={content[step]}/>
-                    ) : (
-                        <Image onLoad={handleLoad} className={s.content} key={content[step].id} src={content[step].src} alt={`Image-${content[step].id}`}/>
-                    )}
-                </LayoutSlider>
-                <SlideNotes
-                    slideNotesPosition='bottom'
-                    action={handleSetStep}
-                    step={step}
-                    length={content.length}
-                />
+        <motion.div 
+            initial={{opacity: 0}} 
+            animate={{opacity: 1}}
+            exit={{opacity: 0}}
+            className={s.popup}>
+            <div onClick={handleOpenPopup.bind(null, undefined)} className={s.bg}>
+                <BgFocus status={true} />
             </div>
-            
-            <button onClick={handleOpenPopup.bind(null, undefined)}>
-            
-            </button>
-        </div>
+            <div onClick={handleOpenPopup.bind(null, undefined)} className={s.closePopup}>
+                <Krest  />
+            </div>
+            <div className={s.content}>
+                <ImageMediaSlider objectFit='contain' anim={true} slideNotesPosition="bottom" content={content}/>
+            </div>
+        </motion.div>
     )
 }
 

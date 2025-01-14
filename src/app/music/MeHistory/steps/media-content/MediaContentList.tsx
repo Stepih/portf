@@ -1,7 +1,7 @@
-import { Dispatch, FC, SetStateAction, useEffect, useState } from "react";
+import { FC, useEffect, useState } from "react";
 
 import s from './MediaContentList.module.scss';
-import { IVideoMedia, IImageMedia } from "@/interfaces/musicHistory";
+import { IImageMedia } from "@/interfaces/musicHistory";
 
 import VideoList from "./video/VideoList";
 import ImageList from "./image/ImageList";
@@ -11,42 +11,39 @@ import Link from "next/link";
 import ButtonUp from "@/components/ui/buttons/button-up/ButtonUp";
 import { bodyLock, bodyUnLock } from "@/scripts/scrollTo";
 import Popup from "./Popup";
+import { IMediaVideo } from "@/interfaces/slider";
+import { AnimatePresence } from "framer-motion";
 
 interface IMediaContent {
     updatePopupActive: (isActive: boolean) => void, 
-    videos: IVideoMedia[], 
+    videos: IMediaVideo[], 
     images: IImageMedia[], 
     step: number 
 }
 
-
 const MediaList: FC<IMediaContent> = ({step, videos, images, updatePopupActive }) => {
-    const [videoErrors, setVideoErrors] = useState<Record<string, boolean>>({});
-    const [popup, setPopup] = useState<IVideoMedia[] | IImageMedia[] | undefined>(undefined)
+    const [popup, setPopup] = useState<IMediaVideo[] | IImageMedia[] | undefined>(undefined)
 
     useEffect(() => {
         updatePopupActive(Boolean(popup))
         Boolean(popup) ? bodyLock() : bodyUnLock()
     }, [popup])
     
-    const handleOpenPopup = (content?:IVideoMedia[] | IImageMedia[] ) => {
+    const handleOpenPopup = (content?:IMediaVideo[] | IImageMedia[] ) => {
         if (content === undefined) {
             setPopup(undefined)
             return
         }
+            
         setPopup(content)
     };
 
-    const handleVideoError = (id: number) => {
-        setVideoErrors((prev) => ({
-            ...prev,
-            [id]: true
-        }));
-    };
 
     return (
         <>
-        {popup && <Popup videoErrors={videoErrors} handleVideoError={handleVideoError} content={popup} handleOpenPopup={handleOpenPopup} />}
+        <AnimatePresence>
+            {popup && <Popup content={popup} handleOpenPopup={handleOpenPopup} />}
+        </AnimatePresence>
         <div className={s.wrapper} id="mediaContent">
             {videos.length > 0 && (
                 <>
@@ -54,9 +51,7 @@ const MediaList: FC<IMediaContent> = ({step, videos, images, updatePopupActive }
                     title="Любимые произведения:"
                     videos={videos} 
                     handleOpenPopup={handleOpenPopup} 
-                    handleVideoError={handleVideoError} 
-                    videoErrors={videoErrors} 
-                    count={2}/> 
+                    count={3}/> 
                 </>
             )}
             {images.length > 0 && (
@@ -64,7 +59,7 @@ const MediaList: FC<IMediaContent> = ({step, videos, images, updatePopupActive }
                     <ImageList 
                         title="Награды:" 
                         images={images} 
-                        count={step === 1 ? images.length : 3} 
+                        count={step === 1 ? images.length : 5} 
                         handleOpenPopup={handleOpenPopup}/>
                 </div>
             )}

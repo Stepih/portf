@@ -1,6 +1,6 @@
 import { FC, useRef, useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { IMediaBit, IMediaGif, IMediaImage } from "@/interfaces/mediaImages";
+
 import s from './SlideNotes.module.scss';
 
 interface ISlideNotes {
@@ -57,11 +57,9 @@ const SlideNotes: FC<ISlideNotes> = ({ length, step, action, slideNotesPosition 
         }
     }
 
-    console.log(length)
-
     useEffect(() => {
         
-        setScale(50); // Начинаем с уменьшения
+        setScale(50);
         const timeout = setTimeout(() => {
             setScale(25); // Возвращаем в исходный размер после анимации
         }, 100); // 300ms — это время сжатия

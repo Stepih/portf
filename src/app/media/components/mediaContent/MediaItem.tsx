@@ -7,8 +7,8 @@ import { ralewayBold } from "../../../../styles/fonts/fonts";
 import { IMedia } from "@/interfaces/mediaImages";
 
 import s from "./MediaItem.module.scss";
-import FormButton from "@/components/ui/buttons/button-form/FormButton";
-import ImageMediaSlider from "../slider/Slider";
+import ActionButton from "@/components/ui/buttons/button-action/ActionButton";
+import ImageMediaSlider from "../../../../components/slider/Slider";
 import MediaDescription from "./MediaDescription";
 
 import Open from '@/assets/_img/icons/open.svg'
@@ -24,15 +24,10 @@ interface MediaItemProps {
 }
 
 const MediaItem: FC<MediaItemProps> = ({ item, id, opacity, contentRef, popup, handleSetPopup }) => {
-    const [isClient, setIsClient] = useState(false)
+   
     const [prompt, setPrompt] = useState(false)
     
-    useEffect(() => {
-        setIsClient(true)
-    }, [])
-    
-    const windowHeight = isClient ? window.innerHeight : 0;
-
+    const content = item.images ? item.images : item.imagesComparison
     const checkPopup = popup !== undefined && popup
     return (
         <>
@@ -63,11 +58,11 @@ const MediaItem: FC<MediaItemProps> = ({ item, id, opacity, contentRef, popup, h
                         
                         <MediaDescription title={item.title} description={item.description} />
                         <Link href="/popup">
-                            <FormButton text="Оставить заявку" />
+                            <ActionButton type='button' text="Оставить заявку" />
                         </Link>
                     </div>
                     <div className={s.wrapperSlider}>
-                        <ImageMediaSlider slideNotesPosition="bottom" anim={true} images={item.images} gifs={item.gifs} bits={item.bits} />
+                        <ImageMediaSlider objectFit='cover' slideNotesPosition="bottom" anim={true} content={content} />
                         {handleSetPopup && (
                             <motion.div 
                                 onHoverStart={()=> setPrompt(true)} 

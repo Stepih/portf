@@ -2,10 +2,10 @@
 
 .videoContent {
     width: 100%;
-    max-width: 100%;
 
     .title {
         font-size: 1.5rem;
+        font-weight: 700;
         margin-bottom: 30px;
 
         color: var(--color-text-100);
@@ -16,8 +16,21 @@
         display: flex;
         justify-content: space-between;
         align-items: center;
+        height: 130px;
 
         gap: 20px;
+
+        :nth-child(3) {
+            display: none;
+        }
+
+        .videoWrapper {
+            height: 100%;
+        }
+
+        .btnPC {
+            height: 100%;
+        }
 
         .btnMB {
             display: none;
@@ -26,18 +39,36 @@
     }
 }
 
-@media screen and (max-width: 1100px) {
+@media screen and (max-width: 1300px) {
     .videoContent {
-        width: auto;
+        .videoList {
+            :nth-child(3) {
+                display: block;
+            }
+        }
     }
+    
 }
 
-@media screen and (max-width: 620px) {
+@media screen and (max-width: 900px) {
+    .videoContent {
+        .videoList {
+            :nth-child(3) {
+                display: none;
+            }
+        }
+    }
+    
+}
+
+@media screen and (max-width: 660px) {
     .videoContent {
         width: 100%;
+
         .videoList {
             flex-wrap: wrap;
             justify-content: center;
+            height: auto;
 
             .btnPC {
                 display: none;

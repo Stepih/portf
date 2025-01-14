@@ -22,31 +22,31 @@ const myMusicHistory:IMusicHistory[] = [
         images: [
             {
                 id: 0,
-                src: prize1,
+                src: prize1.src,
             },
             {
                 id: 1,
-                src: prize2,
+                src: prize1.src,
             },
             {
                 id: 2,
-                src: prize3,
+                src: prize1.src,
             },
             {
                 id: 3,
-                src: prize4,
+                src: prize1.src,
             },
             {
                 id: 4,
-                src: prize5,
+                src: prize1.src,
             },
             {
                 id: 5,
-                src: prize6,
+                src: prize1.src,
             },
             {
                 id: 6,
-                src: prize7,
+                src: prize1.src,
             }
         ]
     },
@@ -62,31 +62,31 @@ const myMusicHistory:IMusicHistory[] = [
         images: [
             {
                 id: 0,
-                src: prize1,
+                src: prize1.src,
             },
             {
                 id: 1,
-                src: prize2,
+                src: prize1.src,
             },
             {
                 id: 2,
-                src: prize3,
+                src: prize1.src,
             },
             {
                 id: 3,
-                src: prize4,
+                src: prize1.src,
             },
             {
                 id: 4,
-                src: prize5,
+                src: prize1.src,
             },
             {
                 id: 5,
-                src: prize6,
+                src: prize1.src,
             },
             {
                 id: 6,
-                src: prize7,
+                src: prize1.src,
             }
         ]
     },
@@ -121,7 +121,7 @@ export async function GET() {
             })
             .map((file, idx) => ({
                 id: idx,
-                src: `video/${file}`
+                srcVideo: `video/${file}`
             }));
 
         // Добавляем видео в первый элемент массива myMusicHistory

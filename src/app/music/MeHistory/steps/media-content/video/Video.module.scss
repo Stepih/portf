@@ -1,7 +1,10 @@
 .video {
     border-radius: 10px;
+    max-height: 100%;
     
     width: 100%;
+
+    object-fit: cover;
 }
 
 @media screen and (max-width: 550px) {

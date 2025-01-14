@@ -15,11 +15,18 @@ const spring = {
   type Theme = "light" | "dark";
 
 const SelectThemeButton:FC = () => {
-    const [theme, setTheme] = useState<Theme>("light");
+    useEffect(()=> {
+        const localTheme = localStorage.getItem("theme")
+        if ("light" === localTheme || "dark" === localTheme){
+            setTheme(localTheme)
+        }
+    }, [])
+    const [theme, setTheme] = useState<Theme>("dark");
 
     const toggleTheme = () => {
         const newTheme = theme === "light" ? "dark" : "light";
         setTheme(newTheme);
+        localStorage.setItem("theme", newTheme)
         document.documentElement.setAttribute("data-theme", newTheme);
     };
 

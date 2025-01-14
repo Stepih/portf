@@ -16,18 +16,25 @@ const ImageList:FC<{
     return (
         <>
         <h3 className={s.title}>{title}</h3>
-        <div className={s.imgList}>
+        <div className={`${s.imgList} ${count!==images.length ? s.hide : s.hideOne}`}>
             {images.map((img, idx) => 
                 idx < count &&
-                <Image key={img.id} src={img.src} alt="Награда 1" />
+                <div key={img.id} className={s.img}>
+                    <Image 
+                        fill
+                        sizes="100%"
+                        style={{ objectFit: "cover" }} 
+                        src={img.src} 
+                        alt="Награда 1" 
+                    />
+                </div>
             )}
-                
-                <div className={s.btnPC}>
-                    <ButtonRight param={images} paramAction={handleOpenPopup} />
-                </div>
-                <div className={s.btnMB}>
-                    <ButtonDown param={images} paramAction={handleOpenPopup} />
-                </div>
+            <div className={s.btnPC}>
+                <ButtonRight param={images} paramAction={handleOpenPopup} />
+            </div>
+            <div className={s.btnMB}>
+                <ButtonDown param={images} paramAction={handleOpenPopup} />
+            </div>
         </div>
         </>
     )

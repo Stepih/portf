@@ -1,9 +1,9 @@
 "use client";
 
-import { FC, useState } from "react";
+import { FC, useRef, useState } from "react";
 import { motion } from "framer-motion";
 import ImageComparisonSlider from "./ImageComparisonSlider";
-import { IMediaBit, IMediaGif, IMediaImage } from "@/interfaces/mediaImages";
+import { IMediaImage, IMediaImageComparison, IMediaVideo } from "@/interfaces/slider";
 import SlideNotes from "./SlideNotes";
 import Image from "next/image";
 import LayoutAnimateImage from "./LayoutAnimateImage";
@@ -11,54 +11,64 @@ import { isTouchDevice } from "@/scripts/typeDevice";
 
 import LoadingBlock from "@/components/ui/loading/LoadingBlock";
 import Prompt from "@/components/ui/prompt/Prompt";
+import Video from "@/app/music/MeHistory/steps/media-content/video/Video";
+
 
 interface ImageMediaSliderProps {
-  images?: IMediaImage[];
-  gifs?: IMediaGif[];
-  bits?: IMediaBit[];
+  content?: IMediaImage[] | IMediaImageComparison[] | IMediaVideo[]
   anim: boolean;
   slideNotesPosition: "right" | "bottom";
+  objectFit: 'contain' | 'cover'
 }
 
 // Функции для проверки типов
-const isImage = (item: IMediaImage | IMediaGif | IMediaBit): item is IMediaImage =>
+const isImageComparison = (item: IMediaImageComparison | IMediaImage | IMediaVideo): item is IMediaImageComparison =>
   "low" in item && "high" in item;
 
-const isGifOrBit = (item: IMediaImage | IMediaGif | IMediaBit): item is IMediaGif | IMediaBit =>
+const isImages = (item: IMediaImageComparison | IMediaImage | IMediaVideo): item is IMediaImage =>
   "src" in item && "id" in item;
 
+const isVideos = (item: IMediaImageComparison | IMediaImage | IMediaVideo): item is IMediaVideo =>
+  "id" in item && "srcVideo" in item
+
 const ImageMediaSlider: FC<ImageMediaSliderProps> = ({
-  images,
-  gifs,
-  bits,
   anim,
   slideNotesPosition,
+  content,
+  objectFit
 }) => {
-  const content = images?.length ? images : gifs?.length ? gifs : bits || [];
+  
+  if (content === undefined) return
+
   const isTouch = isTouchDevice();
   const [step, setStep] = useState(0);
   const [load, setLoad] = useState(true);
-  const [firstPrompt, setFirstPrompt] = useState(true)
-  const [showPrompt, setShowPrompt] = useState(false)
+  const [firstPrompt, setFirstPrompt] = useState(true);
+  const [showPrompt, setShowPrompt] = useState(false);
+  const blockNexts = useRef(false)
   
   const handleStepChange = (newStep: number) => setStep(newStep);
 
   const handleNext = (e: React.MouseEvent<HTMLDivElement | HTMLImageElement>) => {
-    if (isTouch) return;
     e.preventDefault();
 
+    if (blockNexts.current || isTouch && isImageComparison(content[step])) return
+    blockNexts.current = true
+ 
     if (e.type === "contextmenu") {
       setStep((prev) => (prev === 0 ? content.length - 1 : prev - 1));
     } else {
       setStep((prev) => (prev === content.length - 1 ? 0 : prev + 1));
     }
+    setTimeout(() => {
+      blockNexts.current = false
+    }, 500);
     setLoad(true)
   };
 
   const handleLoad = () => {
     setLoad(false)
   }
-  
 
   return (
     <>
@@ -69,13 +79,13 @@ const ImageMediaSlider: FC<ImageMediaSliderProps> = ({
           onClick={() => setFirstPrompt(false)}
           style={{width: '100%', height: '100%', cursor: content.length !== 1 ? 'pointer' : ''}}>
           <Prompt 
-            screen="fill"
-            type="active" 
-            title="Меня можно переключить кликом" 
-            show={content.length !== 1 && firstPrompt && showPrompt}
-          >
+              screen="fill"
+              type="active" 
+              title="Меня можно переключить кликом" 
+              show={!isVideos(content[step]) && content.length !== 1 && firstPrompt && showPrompt}
+            >
             <LayoutAnimateImage handleNext={handleNext} anim={anim} step={step}>
-              {isImage(content[step]) && (
+              {isImageComparison(content[step]) && (
                 <>
                 {load && <LoadingBlock />}
                   <ImageComparisonSlider
@@ -86,8 +96,7 @@ const ImageMediaSlider: FC<ImageMediaSliderProps> = ({
                   />
                 </>
               )}
-
-              {isGifOrBit(content[step]) && (
+              {isImages(content[step]) && (
                 <>
                 {load && <LoadingBlock />}
                 <Image
@@ -96,9 +105,15 @@ const ImageMediaSlider: FC<ImageMediaSliderProps> = ({
                   alt={`media-${content[step].id}`}
                   fill
                   sizes="100%"
-                  style={{ objectFit: "cover" }}
+                  style={{objectFit}}
                   draggable="false"
                 />
+                </>
+              )}
+              {isVideos(content[step]) && (
+                <>
+                {load && <LoadingBlock />}
+                <Video onLoad={handleLoad} video={content[step]}  />
                 </>
               )}
             </LayoutAnimateImage>

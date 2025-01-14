@@ -9,7 +9,9 @@ import { scrollToElementById } from "@/scripts/scrollTo";
 
 const ScrollToArrow:FC<{forid: string}> = ({forid}) => {
     return (
-        <Arrow className={s.arrow} onClick={() => scrollToElementById(forid)}/>
+        <button className={s.arrow}>
+            <Arrow  onClick={() => scrollToElementById(forid, true)}/>
+        </button>
     )
 }
 export default ScrollToArrow

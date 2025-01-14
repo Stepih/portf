@@ -6,13 +6,14 @@
     flex-direction: column;
     align-items: center;
 
-    /* Устанавливаем ширину элементов, чтобы вмещалось 5 штук */
-    max-width: calc((100% / 5) - 10px); /* Ширина 20% минус отступ */
+    
+    max-width: calc((100% / 5) - 10px);
     width: 100%;
 
-    margin: 5px; /* Задаем небольшой отступ вокруг элементов */
+    margin: 5px; 
 
-    
+    background: unset;
+    border: unset;
     text-align: center;
     cursor: pointer;
 
@@ -20,8 +21,10 @@
 
     .imgWrapper {
         position: relative;
+        border-radius: 13px;
+        overflow: hidden;
         .img {
-            border-radius: 13px;
+            
         }
     }
 

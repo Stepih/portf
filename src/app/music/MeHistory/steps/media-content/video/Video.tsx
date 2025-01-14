@@ -1,36 +1,40 @@
-import { IVideoMedia } from "@/interfaces/musicHistory";
-import { FC } from "react";
+import { FC, useState } from "react";
 
 import s from './Video.module.scss'
+import { IMediaVideo } from "@/interfaces/slider";
 
 interface IVideo {
-    setLoad: () => void, 
-    video: IVideoMedia, 
-    handleVideoError: (id: number) => void, 
-    videoErrors: Record<string, boolean>
+    video: IMediaVideo,
+    onLoad?: () => void
 }
 
-const Video:FC<IVideo> = ({video, handleVideoError, videoErrors, setLoad}) => {
-
+const Video: FC<IVideo> = ({ video, onLoad }) => {
+    const [videoErrors, setVideoErrors] = useState(false);
+    
     return (
-        video.src && !videoErrors[video.id] ? (
-            <video
-                controls
-                preload="metadata"
-                className={s.video}
-                key={video.id}
-                onCanPlay={setLoad}
-                onError={() => handleVideoError(video.id)}
-            >
-                <source src={video.src} type="video/mp4" />
-                Your browser does not support the video tag.
-            </video>
-        ) : (
-            <div key={video.id} className={s.videoError}>
-                Видео не найдено или не удалось загрузить
-            </div>
-        )
-    )
-}
+        <>
+            {video.srcVideo && !videoErrors ? (
+                <video
+                    controls
+                    preload="metadata"
+                    className={s.video}
+                    key={video.id}
+                    onError={() => {
+                        setVideoErrors(true);
+                        onLoad
+                    }}
+                    onLoadedData={onLoad}
+                >
+                    <source src={video.srcVideo} type="video/mp4" />
+                    Your browser does not support the video tag.
+                </video>
+            ) : (
+                <div key={video.id} className={s.videoError}>
+                    Видео не найдено или не удалось загрузить
+                </div>
+            )}
+        </>
+    );
+};
 
-export default Video
+export default Video;

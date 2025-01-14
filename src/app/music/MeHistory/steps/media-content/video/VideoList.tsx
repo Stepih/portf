@@ -1,21 +1,20 @@
-import { IVideoMedia } from "@/interfaces/musicHistory";
+
 import { FC } from "react";
 
 import s from './VideoList.module.scss'
 import Video from "./Video";
 import ButtonRight from "@/components/ui/buttons/button-right/ButtonRight";
 import ButtonDown from "@/components/ui/buttons/button-down/ButtonDown";
+import { IMediaVideo } from "@/interfaces/slider";
 
 interface IVideoList {
-    handleVideoError: (id:number) => void,
-    videos: IVideoMedia[],
-    videoErrors: Record<string, boolean>,
-    handleOpenPopup: (content: IVideoMedia[]) => void,
+    videos: IMediaVideo[],
+    handleOpenPopup: (content: IMediaVideo[]) => void,
     title: string,
     count: number
 }
 
-const VideoList:FC<IVideoList> = ({count, title, videos, videoErrors, handleVideoError, handleOpenPopup})=> {
+const VideoList:FC<IVideoList> = ({count, title, videos, handleOpenPopup})=> {
 
     return (
         <div className={s.videoContent}>
@@ -24,7 +23,7 @@ const VideoList:FC<IVideoList> = ({count, title, videos, videoErrors, handleVide
                 {videos.map((video, idx) => (
                     idx < count && 
                     <div key={video.id} className={s.videoWrapper}>
-                        <Video videoErrors={videoErrors}  handleVideoError={handleVideoError} video={video}/>
+                        <Video video={video}/>
                     </div>
                 ))}
                 <div className={s.btnPC}>

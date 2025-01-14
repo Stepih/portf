@@ -25,7 +25,10 @@ const LayoutSlider:FC<{handleNext: (e: React.MouseEvent<HTMLDivElement>) => void
         ) : (
         <div 
             key={step}
-            className={s.wrapper}>
+            onClick={handleNext}
+            onContextMenu={handleNext}
+            className={s.wrapper}
+        >
             {children}
         </div> 
         )

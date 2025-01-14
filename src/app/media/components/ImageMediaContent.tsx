@@ -93,7 +93,6 @@ const ImageMediaContent: FC<{ content: IMedia[] }> = ({ content }) => {
    
     popup ? bodyLock() : bodyUnLock()
 
-
     return (
         <>
         <AnimatePresence>

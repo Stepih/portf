@@ -6,21 +6,23 @@ import { motion } from "framer-motion";
 
 import s from "./MediaItemPopup.module.scss";
 import { IMedia } from "@/interfaces/mediaImages";
-import ImageMediaSlider from "../slider/Slider";
+import ImageMediaSlider from "../../../../components/slider/Slider";
 import MediaDescription from "./MediaDescription";
-import FormButton from "@/components/ui/buttons/button-form/FormButton";
+import ActionButton from "@/components/ui/buttons/button-action/ActionButton";
 
 
 interface IPopup {
     handlePopup: (id?: number) => void;
     content: IMedia[];
-    id?: number;
+    id: number;
     nextStep: (num: number) => void;
 }
 
 const MediaItemPopup: FC<IPopup> = ({ handlePopup, content, nextStep, id }) => {
     const [isAnimating, setIsAnimating] = useState(false);
     const windowHeight = window.innerHeight;
+
+    const sliderContent = content[id].images || content[id].imagesComparison
 
     return (
         <>
@@ -43,15 +45,15 @@ const MediaItemPopup: FC<IPopup> = ({ handlePopup, content, nextStep, id }) => {
             {id !== undefined && id >= 0 && (
                 <>
                 <div className={s.slider}>
-                    <ImageMediaSlider slideNotesPosition='right' anim={false} images={content[id].images} gifs={content[id].gifs} bits={content[id].bits} />
+                    <ImageMediaSlider objectFit='cover' slideNotesPosition='right' anim={false} content={sliderContent} />
                 </div>
                 
                 <div className={s.rightBlock}>
                     <MediaDescription title={content[id].title} description={content[id].description}/>
                     <div className={s.btns}>
-                        <FormButton action={() => handlePopup(undefined)} text="Выйти" />
-                        {id > 0 && <FormButton action={()=> nextStep(-1)} text="Назад"/>}
-                        {id !== undefined && content.length - 1 > id && <FormButton action={() => nextStep(1)} text="Далее"/>}
+                        <ActionButton type='button' action={() => handlePopup(undefined)} text="Выйти" />
+                        {id > 0 && <ActionButton type='button' action={()=> nextStep(-1)} text="Назад"/>}
+                        {id !== undefined && content.length - 1 > id && <ActionButton type='button' action={() => nextStep(1)} text="Далее"/>}
                     </div>
                 </div>
                 </>

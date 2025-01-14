@@ -1,20 +1,17 @@
-import { StaticImageData } from "next/image";
+
+import { IMediaImage, IMediaVideo } from "./slider";
+
 
 export interface IMusicHistory {
     id: number;
     description: string;
-    videos?: IVideoMedia[];
+    videos?: IMediaVideo[];
     images?: IImageMedia[];
 } 
 
-export interface IVideoMedia {
-    id: number;
-    src: string;
-}
 
-export interface IImageMedia {
-    id: number,
-    src: StaticImageData
+export interface IImageMedia extends IMediaImage {
+    
 }
 
 export interface ICheckICO {
