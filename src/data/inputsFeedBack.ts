@@ -7,13 +7,13 @@ export const inputsListFeedback:IInputId[] = [
     {
         id: 1,
         inputKey: 'name',
-        placeholder: 'Имя',
+        placeholder: 'Имя *',
         type: 'text',
     },
     {
         id: 2,
         inputKey: 'contact',
-        placeholder: 'Телефон',
+        placeholder: 'Телефон *',
         type: 'tel',
     }
 ]

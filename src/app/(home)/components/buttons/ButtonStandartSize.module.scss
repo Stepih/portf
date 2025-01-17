@@ -12,6 +12,9 @@
 
     color: var(--color-text-100);
     transition: vars.$transition;
+
+    pointer-events: none;
+    user-select: none;
     
 }
 

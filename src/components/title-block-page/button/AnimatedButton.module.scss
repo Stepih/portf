@@ -20,6 +20,8 @@
 
     overflow: hidden;
 
+    will-change: transform;
+
     .borderAnimation path {
         stroke: var(--color-text-100);
     }

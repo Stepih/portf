@@ -6,7 +6,7 @@ import i from '@/assets/_img/rectangles/title-page/i.png'
 import s from './TitleBlockPage.module.scss'
 import AnimatedButton from "./button/AnimatedButton";
 import { ITitleBlockPage } from "@/interfaces/titleBlockPage";
-import { allerta } from "../../styles/fonts/fonts";
+import { allerta, ralewayRegular } from "../../styles/fonts/fonts";
 
 
 interface IProps {
@@ -28,7 +28,7 @@ const TitleBlockPage: FC<IProps> =({props}) => {
                     />
                 </div>
             )}
-            <div className={s.wrapper}>
+            <div className={`${ralewayRegular.className} ${s.wrapper}`} >
             {!img && <AnimatedButton />}
                 <div className={`${s.wrapperContent} ${!img && s.noHome}`}>
                     <div className={s.content}>

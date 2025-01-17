@@ -7,7 +7,7 @@ import styles from "./AnimatedButton.module.scss"; // Импорт вашего 
 
 const AnimatedButton: FC = () => {
   return (
-    <Link style={{position: 'absolute', overflow: 'hidden'}} href="/" passHref>
+    <Link style={{position: 'absolute', overflow: 'hidden', textDecoration: 'none', display: 'block'}} href="/" passHref>
       <motion.div
         className={styles.button}
         whileHover="hover"

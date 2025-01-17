@@ -8,7 +8,15 @@ import { inputsListFeedback } from "@/data/inputsFeedBack";
 import s from './ListInput.module.scss'
 
 
-const ListInput:FC<{value: IInputKeyValue, handleSetValue: (value: IInputKeyValue) => void}> = ({value, handleSetValue}) => {
+
+interface IListInput {
+    handleSetFocusInput: (inputName: keyof IInputKeyValue) => void;
+    value: IInputKeyValue;
+    handleSetValue: (value: IInputKeyValue) => void;
+}
+
+
+const ListInput:FC<IListInput> = ({value, handleSetValue, handleSetFocusInput}) => {
     
     return (
         <div className={s.inputList}>
@@ -20,6 +28,7 @@ const ListInput:FC<{value: IInputKeyValue, handleSetValue: (value: IInputKeyValu
                     type={input.type}
                     value={value}
                     handleSetValue={handleSetValue}
+                    handleSetFocusInput={handleSetFocusInput}
                 />
             ))}
         </div>

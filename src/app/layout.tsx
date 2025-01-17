@@ -22,10 +22,10 @@ export default function RootLayout({
   
   return (
     <html lang="ru">
-      <body className={`${ralewayRegular.className} ${s.body}`}>
+      <body className={`${s.body}`}>
           <BackgroundPage />
           <Header />
-          <main id="main" className={`${s.main}`}>
+          <main id="main" className={`${ralewayRegular.className} ${s.main}`}>
             {children}
           </main>
           <Footer />

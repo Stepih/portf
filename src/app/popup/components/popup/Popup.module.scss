@@ -2,6 +2,10 @@
 
 .popup {
     position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    
     padding: 50px;
 
     margin: 80px auto 0 auto;
@@ -14,4 +18,11 @@
     background: vars.$black-8;
 
     box-shadow: vars.$shadow;
+ 
+}
+
+@media screen and (max-width: 450px) {
+    .popup {
+        padding: 25px;
+    }
 }

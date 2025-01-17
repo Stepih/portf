@@ -33,7 +33,7 @@ const ButtonStandartSize: FC<IStandartHomeButtons> = ({ Icon, title, srcStandart
     <motion.div
       onClick={() => setClicked(!clicked)}
       className={s.wrapperMain}
-      whileTap={{ scale: 0.9 }}
+      whileTap={{ scale: !clicked ? 0.9 : 1 }}
     >
       {/* Заголовок, который появляется при клике */}
       <motion.h2
@@ -57,7 +57,7 @@ const ButtonStandartSize: FC<IStandartHomeButtons> = ({ Icon, title, srcStandart
 
       {/* Подменю кнопок */}
       <motion.div
-      
+        
         className={s.wrapper_subbotun}
         initial={{ position: 'absolute', top: 0, opacity: 0, width: '100%' }}
         animate={clicked ? 'visible' : 'hide'}

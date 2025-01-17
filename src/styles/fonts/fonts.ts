@@ -21,5 +21,6 @@ export const ralewayBold = localFont({
 export const canada = localFont({
   src: './RadioCanada-Regular.ttf',
   weight: '400',
-  style: 'normal'
+  style: 'normal',
+  preload: true
 });
