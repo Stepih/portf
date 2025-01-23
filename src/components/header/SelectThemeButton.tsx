@@ -21,7 +21,7 @@ const SelectThemeButton:FC = () => {
             setTheme(localTheme)
         }
     }, [])
-    const [theme, setTheme] = useState<Theme>("dark");
+    const [theme, setTheme] = useState<Theme>("light");
 
     const toggleTheme = () => {
         const newTheme = theme === "light" ? "dark" : "light";

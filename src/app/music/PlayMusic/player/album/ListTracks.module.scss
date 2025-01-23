@@ -7,6 +7,10 @@
     margin-top: 100px;
     width: 100%;
     max-width: 1180px;
+    max-height: calc(100vh - 200px);
+    min-height: calc(100vh - 200px);
+    overflow-y: scroll;
+    overflow-x: hidden;
 
     z-index: 11;
 

@@ -28,13 +28,14 @@ const Popup:FC = () => {
 
     const onSubmit: FormEventHandler<HTMLFormElement> = async (e) => {
         e.preventDefault();
+        console.log(1)
     
         if (!inputValue.contact.length || !inputValue.name.length) {
           return setError('Заполни, пожалуйста, важные поля');
         }
     
         try {
-          const response = await fetch('http://localhost:3000/api/sendMessage', {
+          const response = await fetch('https://showmyworks.ru/api/sendMessage', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ ...inputValue, message: textAreaValue }),

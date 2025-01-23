@@ -25,10 +25,20 @@ interface MediaItemProps {
 
 const MediaItem: FC<MediaItemProps> = ({ item, id, opacity, contentRef, popup, handleSetPopup }) => {
    
-    const [prompt, setPrompt] = useState(false)
+    const [prompt, setPrompt] = useState(false);
     
-    const content = item.images ? item.images : item.imagesComparison
-    const checkPopup = popup !== undefined && popup
+    const content = item.images ? item.images : item.imagesComparison;
+    const checkPopup = popup !== undefined && popup;
+
+    const [pageHeight, setPageHeight] = useState(0);
+
+    useEffect(() => {
+        if (typeof window !== "undefined") {
+            setPageHeight(window.innerHeight);
+        }
+    }, []);
+
+    console.log(pageHeight)
     return (
         <>
             <motion.div
@@ -45,6 +55,7 @@ const MediaItem: FC<MediaItemProps> = ({ item, id, opacity, contentRef, popup, h
                 style={{
                     opacity,
                     pointerEvents: opacity === 0 ? "none" : "auto",
+                    position: pageHeight && pageHeight > 800 ? 'sticky' : 'relative'
                 }}
             >
                 <h2 className={`${s.titleW} ${ralewayBold.className}`}>{item.title}</h2>

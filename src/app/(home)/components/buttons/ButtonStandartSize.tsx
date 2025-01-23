@@ -1,15 +1,11 @@
-"use client";
-
 import { FC, useState } from "react";
-import Image from "next/image";
 import { motion } from "framer-motion";
 import Link from "next/link";
 
 import s from './ButtonStandartSize.module.scss';
 import { IStandartHomeButtons } from "@/interfaces/homeButtons";
 import ArrowLink from "@/components/arrow-link/ArrowLink";
-import { isTouchDevice } from "@/scripts/typeDevice";
-
+import { useIsTouchDevice } from "@/hooks/useIstouchDevice";
 
 const hoverVariants = {
   hide: { opacity: 0 },
@@ -27,8 +23,9 @@ const subtitleVariants = {
 const ButtonStandartSize: FC<IStandartHomeButtons> = ({ Icon, title, srcStandart }) => {
   const [clicked, setClicked] = useState(false);
 
-  const mobileDevice = isTouchDevice()
-
+  // Используем хук, чтобы определить, является ли устройство сенсорным
+  const mobileDevice = useIsTouchDevice();
+  
   return (
     <motion.div
       onClick={() => setClicked(!clicked)}
@@ -57,7 +54,6 @@ const ButtonStandartSize: FC<IStandartHomeButtons> = ({ Icon, title, srcStandart
 
       {/* Подменю кнопок */}
       <motion.div
-        
         className={s.wrapper_subbotun}
         initial={{ position: 'absolute', top: 0, opacity: 0, width: '100%' }}
         animate={clicked ? 'visible' : 'hide'}
@@ -76,7 +72,7 @@ const ButtonStandartSize: FC<IStandartHomeButtons> = ({ Icon, title, srcStandart
               {!mobileDevice && <btn.Icon className={s.subimg} />}
             </motion.div>
 
-            <motion.span initial={{opacity: mobileDevice ? 1 : 0}} className={s.subtitle} variants={subtitleVariants}>
+            <motion.span animate={{opacity: mobileDevice ? 1 : 0}} className={s.subtitle} variants={subtitleVariants}>
               {btn.title}
             </motion.span>
 

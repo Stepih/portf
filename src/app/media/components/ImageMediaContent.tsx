@@ -7,68 +7,99 @@ import { debounce } from "lodash";
 import MediaItem from "./mediaContent/MediaItem";
 import MediaItemPopup from "./mediaContent/MediaItemPopup";
 import { AnimatePresence } from "framer-motion";
-import { isTouchDevice } from "@/scripts/typeDevice";
-import { bodyLock, bodyUnLock } from "@/scripts/scrollTo";
 
+import { bodyLock, bodyUnLock } from "@/scripts/scrollTo";
+import { useIsTouchDevice } from "@/hooks/useIstouchDevice";
 
 const ImageMediaContent: FC<{ content: IMedia[] }> = ({ content }) => {
+    const touchDevice = useIsTouchDevice();
     const [scrollPosition, setScrollPosition] = useState(0);
     const [positions, setPositions] = useState<{ top: number; bottom: number }[]>([]);
     
     const [popup, setPopup] = useState<boolean>(false);
-    const [step, setStep] = useState(0)
+    const [step, setStep] = useState(0);
     
     const nextStep = (num: number) => {
-        setStep(step + num) 
+        setStep(step + num);
     }
     
     const handleSetPopup = (id: number | undefined) => {
         setPopup(true);
-        id !== undefined && id >= 0 ? setStep(id) : setPopup(false)
+        id !== undefined && id >= 0 ? setStep(id) : setPopup(false);
     };
-    
+
     const contentRefs = useRef<(HTMLDivElement | null)[]>([]);
+
+    const rabota = 800 //Ограничить, при какой высоте экрана вырубать анимацию
     
+    // Инициализируем состояние windowHeight с undefined
+    const [windowHeight, setWindowHeight] = useState<number | undefined>(undefined);
+    const prevHeight = useRef<number>(windowHeight || 0); // Инициализируем с 0 (или любым значением по умолчанию)
+
     useEffect(() => {
-        updatePositions();
+        // Обновляем высоту окна только в клиентской части
+        if (typeof window !== "undefined") {
+            setWindowHeight(window.innerHeight);
+        }
+    }, []); // Этот useEffect сработает только на клиенте
 
-        const onScroll = () => {
-            requestAnimationFrame(handleScroll);
-        };
-        window.addEventListener("scroll", onScroll, { passive: true });
-        window.addEventListener('resize', debounce(updatePositions, 500), { passive: true })
+    useEffect(() => {
+        if (windowHeight !== undefined) {
+            updatePositions();
 
-        return () => {
-            window.removeEventListener("scroll", onScroll);
-            window.removeEventListener("resize", updatePositions);
-        };
-    }, []);
+            const onScroll = () => {
+                requestAnimationFrame(handleScroll);
+            };
+            
+            const onResize = debounce(() => {
+                if (typeof window !== "undefined" && Math.abs(prevHeight.current - window.innerHeight) > 100) {
+                    setWindowHeight(window.innerHeight);
+                    prevHeight.current = window.innerHeight;
+                    updatePositions();
+                }
+            }, 500);
+
+            if (typeof window !== "undefined" && rabota < windowHeight) {
+                window.addEventListener("scroll", onScroll, { passive: true });
+                window.addEventListener('resize', onResize, { passive: true });
+            }
+
+            return () => {
+                window.removeEventListener("scroll", onScroll);
+                window.removeEventListener("resize", onResize);
+            };
+        }
+    }, [windowHeight]);
 
     const updatePositions = () => {
-        console.log(1)
-        window.scrollTo({
-            top: 0,
-            behavior: "instant",
-        });
-        const pos = contentRefs.current.map((el) => {
-            if (el) {
-                const rect = el.getBoundingClientRect();
-                return {
-                    top: rect.top + window.scrollY,
-                    bottom: rect.bottom + window.scrollY,
-                };
-            }
-            return { top: 0, bottom: 0 };
-        });
-        setPositions(pos);
+        if (typeof window !== "undefined") {
+            window.scrollTo({
+                top: 0,
+                behavior: "instant",
+            });
+            const pos = contentRefs.current.map((el) => {
+                if (el) {
+                    const rect = el.getBoundingClientRect();
+                    return {
+                        top: rect.top + window.scrollY,
+                        bottom: rect.bottom + window.scrollY,
+                    };
+                }
+                return { top: 0, bottom: 0 };
+            });
+            setPositions(pos);
+        }
     };
 
     const handleScroll = () => {
-        setScrollPosition(window.scrollY);
+        if (typeof window !== "undefined") {
+            setScrollPosition(window.scrollY);
+        }
     };
 
     const calculateOpacity = (id: number) => {
-        if (id === positions.length - 1) return 1
+        if (windowHeight !== undefined && windowHeight < rabota) return 1
+        if (id === positions.length - 1) return 1;
         const elemTop = positions[id]?.top ?? 0;
         const elemBottom = positions[id]?.bottom ?? 0;
         const elemHeight = elemBottom - elemTop;
@@ -90,8 +121,7 @@ const ImageMediaContent: FC<{ content: IMedia[] }> = ({ content }) => {
         return 0;
     };
 
-   
-    popup ? bodyLock() : bodyUnLock()
+    popup ? bodyLock() : bodyUnLock();
 
     return (
         <>
@@ -103,7 +133,7 @@ const ImageMediaContent: FC<{ content: IMedia[] }> = ({ content }) => {
             <MediaItem
                 key={item.id}
                 popup={popup}
-                handleSetPopup={!isTouchDevice() ? handleSetPopup : undefined}
+                handleSetPopup={!touchDevice ? handleSetPopup : undefined}
                 id={id}
                 item={item}
                 opacity={calculateOpacity(id)}

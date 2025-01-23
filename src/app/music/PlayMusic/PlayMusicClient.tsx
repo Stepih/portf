@@ -5,7 +5,7 @@
   import AlbumList from "./album/AlbumList";
   import Player from "./player/Player";
   import ListTracks from "./player/album/ListTracks";
-import { getWidthScroll } from "@/scripts/scrollTo";
+import { bodyLock, bodyUnLock, getWidthScroll } from "@/scripts/scrollTo";
 import { AnimatePresence } from "framer-motion";
 
   interface MusicClientProps {
@@ -36,7 +36,6 @@ import { AnimatePresence } from "framer-motion";
     
       if (album === selectedAlbum) {
         setIsPlaying((prev) => !prev);
-        console.log("Toggle playback:", !isPlaying);
         return;
       }
     
@@ -55,7 +54,10 @@ import { AnimatePresence } from "framer-motion";
     
     const handleTrackSelect = (id: number) => {
       if (audioRef.current) {
-        
+        if (currentTrackIndex === id) {
+          setIsPlaying((prev) => !prev);
+          return
+        }
         statusPlay.setPlay(false) // Останавливаем воспроизведение
         audioRef.current.src = ""; // Сбрасываем источник
         
@@ -64,17 +66,23 @@ import { AnimatePresence } from "framer-motion";
         statusPlay.setPlay(true)
         
         setIsAudioReady(false); // Сбросить состояние готовности аудио
-        
       }
     };
     
 
     const handleListTracks = () => {
       // !popup ? document.body.style.overflow = 'hidden' : document.body.style.overflow = 'scroll';
+      if (!popup) {
+        window.scrollTo({
+          top: 500,
+          behavior: 'instant'
+        })
+        bodyLock()
+      } else {
+        bodyUnLock();
+      }
       setPopup(!popup)
     }
-    
-
     
     
     return (

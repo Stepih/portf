@@ -1,11 +1,22 @@
 import fetch from 'node-fetch';
 
 export async function POST(req: Request) {
+
+  const headers = new Headers();
+  headers.set('Access-Control-Allow-Origin', '*'); // Указываем ваш домен
+  headers.set('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+  headers.set('Access-Control-Allow-Headers', 'Content-Type');
+  
+  // Обработка предварительного OPTIONS запроса (перед запросом на отправку данных)
+  if (req.method === 'OPTIONS') {
+    return new Response(null, { status: 200, headers });
+  }
+
   try {
     const { name, contact, message } = await req.json();
 
     // Проверка наличия необходимых данных
-    if (!name || !contact || !message) {
+    if (!name || !contact) {
       return new Response(JSON.stringify({ error: 'Missing required fields' }), { status: 400 });
     }
 
