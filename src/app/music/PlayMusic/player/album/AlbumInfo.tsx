@@ -1,34 +1,88 @@
-import { FC } from "react";
-import { motion } from "framer-motion";
+import { FC, useEffect, useRef, useState } from "react";
+import { motion, useAnimation } from "framer-motion";
 
-import s from './AlbumInfo.module.scss'
+import s from './AlbumInfo.module.scss';
 import { IAlbums } from "@/interfaces/albums";
 import Image from "next/image";
 
 interface Info {
-  album: IAlbums,
-  trackId: number
+  album: IAlbums;
+  trackId: number;
 }
 
+const AlbumInfo: FC<Info> = ({ album, trackId }) => {
+  const [isOverflow, setIsOverflow] = useState(false); // Флаг для анимации
+  const titleRef = useRef<HTMLSpanElement | null>(null);
+  const containerRef = useRef<HTMLDivElement | null>(null);
+  const controls = useAnimation(); // Анимация текста
 
+  useEffect(() => {
+    
+      if (titleRef.current && containerRef.current) {
+        const titleWidth = titleRef.current.scrollWidth; // Полная ширина текста
+        const containerWidth = containerRef.current.offsetWidth; // Ширина контейнера
 
-const AlbumInfo:FC<Info> =({album, trackId}) => {
+        
+        if (titleWidth > containerWidth) {
+          setIsOverflow(true);
+          console.log(1)
+          controls.set({ x: 0 }); // Сбрасываем transform перед анимацией
+          controls.start({
+            x: [0, -(titleWidth - containerWidth)], // Анимация смещения
+            transition: {  
+              duration: 6, // Время анимации в одну сторону
+              repeat: Infinity, // Бесконечная анимация
+              repeatType: 'reverse', // Движение в обратном направлении
+              delay: 1, // Пауза перед началом первой анимации
+              repeatDelay: 1, // Пауза перед сменой направления
+              ease: "linear", // Равномерное движение\
+            }
+          });
+          
+        } else {
+          setIsOverflow(false);
+          controls.stop(); // Останавливаем анимацию
+          controls.set({ x: 0 }); // Сбрасываем transform
+        }
+      }
+    
+  }, [trackId, album, controls]);
+
+  console.log(isOverflow)
 
   return (
-    <motion.div initial={{opacity: 0, x: 100}} animate={{opacity: 1, x: 0}} className={s.album}>
+    <motion.div
+      initial={{ opacity: 0, x: 100 }}
+      animate={{ opacity: 1, x: 0 }}
+      className={s.album}
+    >
+      {/* Обложка альбома */}
       {album.img ? (
-        <Image className={s.img} width={50} height={50} src={album.img} alt="Обложка" />
+        <Image
+          className={s.img}
+          width={50}
+          height={50}
+          src={album.img}
+          alt="Обложка"
+        />
       ) : (
         <div className={s.noImg}>
           <p>{album.name}</p>
         </div>
       )}
-      <div>
-        <span className={s.title}>{album.tracks[trackId].name}</span>
+      {/* Контейнер с информацией */}
+      <div ref={containerRef} className={s.container}>
+        <motion.span
+          ref={titleRef}
+          className={s.title}
+          animate={controls} // Запускаем анимацию только при переполнении
+        >
+          {album.tracks[trackId].name}
+        </motion.span>
         <span className={s.artist}>{album.artist}</span>
       </div>
     </motion.div>
-  )
-}
+  );
+};
 
-export default AlbumInfo
+export default AlbumInfo;

@@ -52,12 +52,16 @@
     }
 
     .contacts {
-        border-top: 2px solid white;
+        border-top: 2px solid var(--color-text-50);
         padding: 20px 10px;
+
+        transition: vars.$transition;
 
         .contactsTitle {
             display: block;
             margin-bottom: 15px;
+            color: var(--color-text-100);
+            transition: vars.$transition;
         }
 
         .contactsLink {
@@ -71,6 +75,11 @@
                 transition: transform .1s;
                 -moz-transition: transform .1s;
                 transform: translateY(0);
+
+                >path {
+                    fill: var(--color-text-100);
+                    transition: vars.$transition;
+                }
 
                 &:hover {
                 transition: transform .1s;

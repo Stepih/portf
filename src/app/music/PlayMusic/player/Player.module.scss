@@ -13,6 +13,7 @@
 
     box-shadow: vars.$shadow;
     background-color: var(--color-bg);
+    transition: vars.$transition;
     z-index: 12; 
 
     &::after {

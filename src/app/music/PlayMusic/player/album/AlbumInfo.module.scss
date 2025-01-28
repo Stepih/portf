@@ -20,13 +20,46 @@
       background: vars.$black-100;
     }
 
-    .title, .artist {
-      display: block;
-      font-size: .875rem;
-      color: var(--color-text-100);
+    .container {
+      width: 200px; /* Ограничиваем ширину родителя */
+      overflow: hidden; /* Скрываем содержимое, если оно выходит за пределы родителя */
+      position: relative; /* Для возможного абсолютного позиционирования */
+
+      .title, .artist {
+        min-width: 200px;
+        display: inline-block;
+        font-size: 0.875rem;
+        color: var(--color-text-100);
+        white-space: nowrap; /* Запрещаем перенос текста */
+      }
+      
+      .artist {
+        margin-top: 8px;
+        color: var(--color-text-50);
+      }
     }
-    .artist {
-      margin-top: 8px;
-      color: var(--color-text-50);
+}
+
+@media screen and (max-width: 550px) {
+  .album {
+    .container {
+      width: 140px;
+
+      .title, .artist {
+        min-width: 140px;
+      }
     }
   }
+}
+
+@media screen and (max-width: 400px) {
+  .album {
+    .container {
+      width: 120px;
+
+      .title, .artist {
+        min-width: 120px;
+      }
+    }
+  }
+}

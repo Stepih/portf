@@ -5,7 +5,7 @@
   import AlbumList from "./album/AlbumList";
   import Player from "./player/Player";
   import ListTracks from "./player/album/ListTracks";
-import { bodyLock, bodyUnLock, getWidthScroll } from "@/scripts/scrollTo";
+import { bodyLock, bodyUnLock } from "@/scripts/scrollTo";
 import { AnimatePresence } from "framer-motion";
 
   interface MusicClientProps {
@@ -23,6 +23,7 @@ import { AnimatePresence } from "framer-motion";
     
     const audioRef = useRef<HTMLAudioElement | null>(null);
 
+
     const statusPlay = {
       play: isPlaying,
       setPlay: setIsPlaying
@@ -30,6 +31,7 @@ import { AnimatePresence } from "framer-motion";
     
     const handleAlbumSelect = (album: IAlbums | null) => {
       if (!album) {
+        
         setSelectedAlbum(null);
         return;
       }

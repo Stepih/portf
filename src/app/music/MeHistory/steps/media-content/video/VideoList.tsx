@@ -1,4 +1,4 @@
-
+"use client"
 import { FC } from "react";
 
 import s from './VideoList.module.scss'
@@ -6,6 +6,7 @@ import Video from "./Video";
 import ButtonRight from "@/components/ui/buttons/button-right/ButtonRight";
 import ButtonDown from "@/components/ui/buttons/button-down/ButtonDown";
 import { IMediaVideo } from "@/interfaces/slider";
+
 
 interface IVideoList {
     videos: IMediaVideo[],
@@ -23,7 +24,7 @@ const VideoList:FC<IVideoList> = ({count, title, videos, handleOpenPopup})=> {
                 {videos.map((video, idx) => (
                     idx < count && 
                     <div key={video.id} className={s.videoWrapper}>
-                        <Video video={video}/>
+                        <Video useLoad={false} video={video}/> 
                     </div>
                 ))}
                 <div className={s.btnPC}>

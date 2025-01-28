@@ -112,8 +112,7 @@ const ImageMediaSlider: FC<ImageMediaSliderProps> = ({
               )}
               {isVideos(content[step]) && (
                 <>
-                {load && <LoadingBlock />}
-                <Video onLoad={handleLoad} video={content[step]}  />
+                <Video useLoad={true} video={content[step]}  />
                 </>
               )}
             </LayoutAnimateImage>

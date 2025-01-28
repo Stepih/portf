@@ -33,7 +33,43 @@ const Player: FC<IPlayer> = ({isAudioReady, setIsAudioReady, handleAlbumSelect, 
   const [hover, setHover] = useState(true)
   const [loadProgress, setLoadProgress] = useState(0);
 
-  const mobileDevice = isTouchDevice()
+  const mobileDevice = isTouchDevice();
+
+  const [showMobilePlayer, setShowMobilePlayer] = useState(true);
+  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  useEffect(() => {
+    let isScrolling: NodeJS.Timeout | null = null;
+  
+    const handleScroll = () => {
+      // Если таймер ожидания завершения скролла уже существует, очищаем его
+      if (isScrolling) {
+        clearTimeout(isScrolling);
+      }
+  
+      // Показываем плеер, пока скролл активен
+      setShowMobilePlayer(true);
+  
+      // Устанавливаем новый таймер на 5 секунд после завершения скролла
+      isScrolling = setTimeout(() => {
+        setShowMobilePlayer(false);
+      }, 5000);
+    };
+  
+    // Добавляем обработчик скролла
+    window.addEventListener('scroll', handleScroll);
+  
+    return () => {
+      // Удаляем обработчик скролла при размонтировании
+      window.removeEventListener('scroll', handleScroll);
+  
+      // Очищаем таймер при размонтировании компонента
+      if (isScrolling) {
+        clearTimeout(isScrolling);
+      }
+    };
+  }, []);
+  
   
   if (hover && firstRender) {
     setTimeout(() => {
@@ -72,7 +108,7 @@ const Player: FC<IPlayer> = ({isAudioReady, setIsAudioReady, handleAlbumSelect, 
   useEffect(() => {
     if (audioRef.current) {
       audioRef.current.volume = volume;
-      statusPlay.play ? isAudioReady && audioRef.current.play() : audioRef.current.pause();
+      statusPlay.play && isAudioReady ? audioRef.current.play() : audioRef.current.pause();
     }
   }, [volume, statusPlay, isAudioReady]);
 
@@ -87,10 +123,10 @@ const Player: FC<IPlayer> = ({isAudioReady, setIsAudioReady, handleAlbumSelect, 
     <>
     <BgFocus status={hover}/>
     
-    <motion.div onHoverEnd={() => setHover(false)} onHoverStart={() => setHover(true)} 
+    <motion.div onClick={()=>setShowMobilePlayer(true)} onHoverEnd={() => setHover(false)} onHoverStart={() => setHover(true)} 
       className={`${s.wrapper} ${canada.className}`} 
       initial={{ y: 40, opacity: 0, willChange: 'auto' }} 
-      animate={{ y: !hover && !mobileDevice ? 60 : 0, opacity: 1 }}
+      animate={{ y: !hover && !mobileDevice ? 60 : showMobilePlayer ? 0 : 60, opacity: 1 }}
       exit={{y: 40, opacity: 0}}
       >
       <div className={s.content}>

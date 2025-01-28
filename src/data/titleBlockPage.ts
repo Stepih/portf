@@ -9,12 +9,12 @@ export const homeTitleData:ITitleBlockPage = {
 
 export const mediaTitleData:ITitleBlockPage = {
     title: "Media content",
-    description: "Создание видеороликов, улучшение качества видео и фото, склейка, цветокоррекция и другие услуги медиаконтента по доступной цене"
+    description: "Создание видеороликов, улучшение качества видео и фото, склейка, цветокоррекция и другие услуги медиаконтента"
 }
 
 export const musicTitleData:ITitleBlockPage = {
     title: "My musical creativity",
-    description: "„Жизнь, как пианино. С чёрными и белыми полосами, но живя, нельзя забывать, что чёрные клавиши тоже создают музыку"
+    description: "Жизнь, как пианино. С чёрными и белыми полосами, но живя, нельзя забывать, что чёрные клавиши тоже создают музыку"
 }
 
 export const popupTitleData: ITitleBlockPage = {
