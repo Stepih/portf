@@ -1,0 +1,9 @@
+# *
+User-agent: *
+Allow: /
+
+# Host
+Host: https://showmyworks.ru
+
+# Sitemaps
+Sitemap: https://showmyworks.ru/sitemap.xml
