@@ -1,0 +1,101 @@
+{
+  "projectId": "fb20fb42-6467-477e-8771-03e67dbce980",
+  "shape": "package",
+  "pkg": "portfolio-ui",
+  "globalName": "PortfolioUI",
+  "buildCmd": "node .design-sync/build-dist.mjs",
+  "entry": ".design-sync/.cache/dist/index.mjs",
+  "cssEntry": "index.css",
+  "docsMap": {
+    "ActionButton": "../../groups/Actions.md",
+    "ButtonDown": "../../groups/Actions.md",
+    "ButtonRight": "../../groups/Actions.md",
+    "ButtonUp": "../../groups/Actions.md",
+    "AnimatedButton": "../../groups/Actions.md",
+    "ArrowLink": "../../groups/Actions.md",
+    "ScrollToArrow": "../../groups/Actions.md",
+    "SelectThemeButton": "../../groups/Actions.md",
+    "Header": "../../groups/Layout.md",
+    "Footer": "../../groups/Layout.md",
+    "Background": "../../groups/Layout.md",
+    "BgFocus": "../../groups/Layout.md",
+    "BgRectangle1": "../../groups/Layout.md",
+    "BgRectangle2": "../../groups/Layout.md",
+    "Breadcrumbs": "../../groups/Layout.md",
+    "TitleBlockPage": "../../groups/Layout.md",
+    "Slider": "../../groups/Media.md",
+    "ImageComparisonSlider": "../../groups/Media.md",
+    "LayoutAnimateImage": "../../groups/Media.md",
+    "SlideNotes": "../../groups/Media.md",
+    "ErrorMessage": "../../groups/Feedback.md",
+    "LoadingBlock": "../../groups/Feedback.md",
+    "Prompt": "../../groups/Feedback.md",
+    "PopupParent": "../../groups/Feedback.md"
+  },
+  "overrides": {
+    "TitleBlockPage": {
+      "cardMode": "column"
+    },
+    "ErrorMessage": {
+      "cardMode": "single",
+      "viewport": "900x260"
+    },
+    "PopupParent": {
+      "cardMode": "single",
+      "viewport": "900x600"
+    },
+    "Header": {
+      "cardMode": "single",
+      "primaryStory": "TopBar"
+    },
+    "Footer": {
+      "cardMode": "column"
+    },
+    "Background": {
+      "cardMode": "single",
+      "viewport": "900x700"
+    },
+    "BgFocus": {
+      "cardMode": "single",
+      "viewport": "900x450"
+    },
+    "Breadcrumbs": {
+      "cardMode": "single",
+      "viewport": "420x160"
+    },
+    "Slider": {
+      "cardMode": "column"
+    },
+    "ImageComparisonSlider": {
+      "cardMode": "column"
+    },
+    "AnimatedButton": {
+      "cardMode": "column"
+    },
+    "ButtonDown": {
+      "cardMode": "column"
+    },
+    "ButtonUp": {
+      "cardMode": "column"
+    },
+    "ScrollToArrow": {
+      "cardMode": "column"
+    },
+    "LoadingBlock": {
+      "cardMode": "column"
+    },
+    "BgRectangle1": {
+      "cardMode": "column"
+    },
+    "BgRectangle2": {
+      "cardMode": "column"
+    },
+    "LayoutAnimateImage": {
+      "cardMode": "column"
+    },
+    "SlideNotes": {
+      "cardMode": "column"
+    }
+  },
+  "readmeHeader": ".design-sync/conventions.md"
+}

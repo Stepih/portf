@@ -1,0 +1,35 @@
+/* @font-face for the repo's local fonts (src/app/fonts) + the classNames
+   next/font/local would have generated. */
+@font-face {
+  font-family: 'Raleway';
+  src: url('../../src/app/fonts/Raleway-Regular.ttf') format('truetype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Raleway';
+  src: url('../../src/app/fonts/Raleway-Bold.ttf') format('truetype');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Allerta Stencil';
+  src: url('../../src/app/fonts/AllertaStencil-Regular.ttf') format('truetype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Radio Canada';
+  src: url('../../src/app/fonts/RadioCanada-Regular.ttf') format('truetype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+.font-raleway { font-family: 'Raleway', Arial, sans-serif; font-weight: 400; font-style: normal; }
+.font-raleway-bold { font-family: 'Raleway', Arial, sans-serif; font-weight: 700; font-style: normal; }
+.font-allerta { font-family: 'Allerta Stencil', Arial, sans-serif; font-weight: 400; font-style: normal; }
+.font-canada { font-family: 'Radio Canada', Arial, sans-serif; font-weight: 400; font-style: normal; }
