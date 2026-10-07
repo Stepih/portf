@@ -80,7 +80,7 @@
   - ответы `/api/*` совпадают с JSON из шага 0.2;
   - пройден smoke по `/music` и `/media`.
 
-### 1.4 Регистр в импорте Breadcrumbs (B2)
+### 1.4 Регистр в импорте Breadcrumbs (B2) — ✅ сделано (проверка на Linux/Docker — за владельцем)
 - **Файлы:** `src/components/breadCrumb/BreadCrumb.tsx` (импорт → `./BreadCrumbs.module.scss`).
 - **Объём:** XS. **Риск:** нет.
 - **Проверка:** сборка на Linux (`docker build` или `npx next build` в WSL) проходит.

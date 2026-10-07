@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation'; // Хук для получения текущего пути в Next.js 13+
-import styles from './Breadcrumbs.module.scss'; 
+import styles from './BreadCrumbs.module.scss'; 
 
 const Breadcrumbs: React.FC = () => {
   const [windowWidth, setWindowWidth] = useState(0)
