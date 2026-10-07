@@ -25,7 +25,7 @@ const AlbumInfo: FC<Info> = ({ album, trackId }) => {
         
         if (titleWidth > containerWidth) {
           setIsOverflow(true);
-          console.log(1)
+          
           controls.set({ x: 0 }); // Сбрасываем transform перед анимацией
           controls.start({
             x: [0, -(titleWidth - containerWidth)], // Анимация смещения
@@ -48,7 +48,6 @@ const AlbumInfo: FC<Info> = ({ album, trackId }) => {
     
   }, [trackId, album, controls]);
 
-  console.log(isOverflow)
 
   return (
     <motion.div

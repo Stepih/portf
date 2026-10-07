@@ -18,7 +18,7 @@ export const ralewayBold = localFont({
   src: './Raleway-Bold.ttf',
   weight: '700',
   style: 'normal',
-  display: 'swap'
+  display: 'swap',
 });
 
 export const canada = localFont({

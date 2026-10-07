@@ -4,7 +4,7 @@ import { FC, useEffect, useRef, useState } from "react";
 import { motion } from "framer-motion";
 import debounce from 'lodash/debounce'
 import s from './LoadingBlock.module.scss';
-import { ralewayBold } from "@/styles/fonts/fonts";
+import { ralewayBold } from "@/app/fonts/fonts";
 
 const LoadingBlock: FC = () => {
   const divRef = useRef<HTMLDivElement | null>(null);

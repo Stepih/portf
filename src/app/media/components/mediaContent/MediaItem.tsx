@@ -3,7 +3,7 @@
 import { FC, useEffect,  useState } from "react";
 import {  motion } from "framer-motion";
 import Link from "next/link";
-import { ralewayBold } from "../../../../styles/fonts/fonts";
+import { ralewayBold } from "../../../fonts/fonts";
 import { IMedia } from "@/interfaces/mediaImages";
 
 import s from "./MediaItem.module.scss";

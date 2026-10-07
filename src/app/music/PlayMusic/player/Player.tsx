@@ -6,7 +6,7 @@ import s from './Player.module.scss';
 import Commands from "./commands/Command";
 import { ISwitchTrack } from "@/interfaces/player";
 import { IAlbums } from "@/interfaces/albums";
-import { canada } from "../../../../styles/fonts/fonts";
+import { canada } from "../../../fonts/fonts";
 import Volume from "./commands/Volume";
 import LineTrack from "./commands/LineTrack";
 import AlbumInfo from "./album/AlbumInfo";
@@ -39,9 +39,13 @@ const Player: FC<IPlayer> = ({isAudioReady, setIsAudioReady, handleAlbumSelect, 
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
+    
     let isScrolling: NodeJS.Timeout | null = null;
   
     const handleScroll = () => {
+      if (!mobileDevice) {
+        return
+      }
       // Если таймер ожидания завершения скролла уже существует, очищаем его
       if (isScrolling) {
         clearTimeout(isScrolling);

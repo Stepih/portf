@@ -35,9 +35,9 @@ const Header:FC = () => {
             <div className={s.contacts}>
                 <span className={s.contactsTitle}>Контакты</span>
                 <div className={s.contactsLink}>
-                    <Link href={myInst}>
+                    {/* <Link href={myInst}>
                         <Inst className={s.contactImg}/>
-                    </Link>
+                    </Link> */}
                     <Link href={myTg}>
                         <Tg className={s.contactImg}/>
                     </Link>

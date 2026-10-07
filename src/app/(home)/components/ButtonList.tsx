@@ -7,7 +7,7 @@ import s from './ButtonList.module.scss'
 import ButtonStandartSize from "./buttons/ButtonStandartSize";
 import ButtonSmallSize from "./buttons/ButtonSmallSize";
 import { smallHomebuttons, standartHomeButtons } from "@/data/homeButtons";
-import { ralewayRegular } from "@/styles/fonts/fonts";
+import { ralewayRegular } from "@/app/fonts/fonts";
 
 
 const ButtonList:FC = () => {

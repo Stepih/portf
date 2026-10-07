@@ -1,8 +1,7 @@
 import { ITitleBlockPage } from "@/interfaces/titleBlockPage"
 
-
 export const homeTitleData:ITitleBlockPage = {
-    title: "Frontend developer",
+    title: "Fullstack developer",
     description: "Привет! Я Картузов Степан, программист, дизайнер, музыкант, студент РЭУ им. Г.В. Плеханова",
     img: true
 }
@@ -17,6 +16,7 @@ export const musicTitleData:ITitleBlockPage = {
     description: "Жизнь, как пианино. С чёрными и белыми полосами, но живя, нельзя забывать, что чёрные клавиши тоже создают музыку"
 }
 
-export const popupTitleData: ITitleBlockPage = {
-    title: "FeedBack", description: "Заполни и отправь форму, чтобы я смог связаться с тобой"
+export const popupTitleData:ITitleBlockPage = {
+    title: "FeedBack",
+    description: "Заполни и отправь форму, чтобы я смог связаться с тобой"
 }

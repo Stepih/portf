@@ -4,7 +4,7 @@ import { FC, useEffect, useState } from "react";
 
 import s from './Footer.module.scss'
 
-import { allerta } from "../../styles/fonts/fonts";
+import { allerta } from "../../app/fonts/fonts";
 
 const Footer:FC = () => {
     const [currentDate, setCurrentDate] = useState('');

@@ -7,7 +7,7 @@ import ScrollToArrow from "@/components/ui/scrollToArrow/ScrollToArrow";
 import Steps from "./steps/Steps";
 import { IMusicHistory } from "@/interfaces/musicHistory";
 import { scrollToElementById } from "@/scripts/scrollTo";
-import { ralewayBold } from "@/styles/fonts/fonts";
+import { ralewayBold } from "@/app/fonts/fonts";
 
 
 const History:FC<{musicHistory: IMusicHistory[]}> = ({musicHistory}) => {

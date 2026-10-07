@@ -52,7 +52,7 @@ const ImageMediaSlider: FC<ImageMediaSliderProps> = ({
   const handleNext = (e: React.MouseEvent<HTMLDivElement | HTMLImageElement>) => {
     e.preventDefault();
 
-    if (blockNexts.current || isTouch && isImageComparison(content[step])) return
+    if (blockNexts.current || isTouch && (isImageComparison(content[step]) || isVideos(content[step]))) return
     blockNexts.current = true
  
     if (e.type === "contextmenu") {

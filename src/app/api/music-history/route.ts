@@ -3,12 +3,9 @@ import path from 'path';
 import fs from 'fs';
 
 import prize1 from '@/assets/_img/prizes/1.jpg'
-import prize2 from '@/assets/_img/prizes/1.jpg'
-import prize3 from '@/assets/_img/prizes/1.jpg'
-import prize4 from '@/assets/_img/prizes/1.jpg'
-import prize5 from '@/assets/_img/prizes/1.jpg'
-import prize6 from '@/assets/_img/prizes/1.jpg'
-import prize7 from '@/assets/_img/prizes/1.jpg'
+import prize2 from '@/assets/_img/prizes/2.jpg'
+import prize3 from '@/assets/_img/prizes/3.jpg'
+import escho from '@/assets/_img/prizes/escho.png'
 
 
 const myMusicHistory:IMusicHistory[] = [
@@ -26,27 +23,27 @@ const myMusicHistory:IMusicHistory[] = [
             },
             {
                 id: 1,
-                src: prize1.src,
+                src: prize2.src,
             },
             {
                 id: 2,
-                src: prize1.src,
+                src: prize3.src,
             },
             {
                 id: 3,
-                src: prize1.src,
+                src: escho.src
             },
             {
                 id: 4,
-                src: prize1.src,
+                src: escho.src
             },
             {
                 id: 5,
-                src: prize1.src,
+                src: escho.src
             },
             {
                 id: 6,
-                src: prize1.src,
+                src: escho.src
             }
         ]
     },
@@ -60,34 +57,7 @@ const myMusicHistory:IMusicHistory[] = [
         новогодних концертах ее класса, помогаю с созданием видеороликов, 
         применяя навыки видеомонтажа и фотошопа.`,
         images: [
-            {
-                id: 0,
-                src: prize1.src,
-            },
-            {
-                id: 1,
-                src: prize1.src,
-            },
-            {
-                id: 2,
-                src: prize1.src,
-            },
-            {
-                id: 3,
-                src: prize1.src,
-            },
-            {
-                id: 4,
-                src: prize1.src,
-            },
-            {
-                id: 5,
-                src: prize1.src,
-            },
-            {
-                id: 6,
-                src: prize1.src,
-            }
+            
         ]
     },
     {
@@ -126,7 +96,6 @@ export async function GET() {
 
         // Добавляем видео в первый элемент массива myMusicHistory
         myMusicHistory[0].videos = videoFiles;
-        console.log(videoFiles)
 
     } catch (err) {
         console.error('Error reading directory:', err);

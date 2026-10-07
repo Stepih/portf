@@ -36,7 +36,10 @@ const Video: FC<IVideo> = ({ video, useLoad }) => {
                         handleOnLoad(); 
                     }}
                     onLoadedMetadata={handleOnLoad}
-                    style={{ visibility: useLoad && load ? 'hidden' : 'visible' }}
+                    style={{ 
+                        visibility: useLoad && load ? 'hidden' : 'visible',
+                        position: useLoad && load ? 'absolute' : 'relative'
+                    }}
                 >
                     <source src={video.srcVideo} type="video/mp4" />
                     Your browser does not support the video tag.

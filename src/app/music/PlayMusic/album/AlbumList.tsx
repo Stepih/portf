@@ -19,11 +19,13 @@ const AlbumListDekstop:FC<AlbumListProps> = ({statusPlay, albums, error, handleA
     const lastAlbums:IAlbums[] = []
     
     const limit = 5
+    let countLimit = 0
 
     const showAlbum = () => {
-        albums.forEach((album, id) => {
-            if (id < limit) {
+        albums.forEach((album) => {
+            if (album.img && countLimit < limit) {
                 limitAlbums.push(album)
+                countLimit += 1
             } else {
                 lastAlbums.push(album)
             }

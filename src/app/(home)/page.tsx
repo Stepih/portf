@@ -1,6 +1,3 @@
-
-
-
 import TitleBlockPage from "@/components/title-block-page/TitleBlockPage";
 import ButtonList from "./components/ButtonList";
 import { homeTitleData } from "@/data/titleBlockPage";

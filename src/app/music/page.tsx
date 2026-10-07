@@ -1,5 +1,4 @@
 import { FC } from "react";
-import Head from 'next/head';
 
 import { IAlbums } from "@/interfaces/albums";
 import TitleBlockPage from "@/components/title-block-page/TitleBlockPage";
@@ -11,11 +10,10 @@ import Breadcrumbs from "@/components/breadCrumb/BreadCrumb";
 import { Metadata } from "next";
 
 
-// Функция для получения данных с сервера
 async function fetchAlbums(): Promise<IAlbums[]> {
     const res = await fetch('http://localhost:3000/api/albums', {
         next: {
-            revalidate: 10
+            revalidate: 100
         }
     });
 
@@ -29,7 +27,7 @@ async function fetchAlbums(): Promise<IAlbums[]> {
 async function fetchMusicHistory(): Promise<IMusicHistory[]> {
     const res = await fetch('http://localhost:3000/api/music-history', {
         next: {
-            revalidate: 1000
+            revalidate: 100
         }
     });
 
@@ -74,14 +72,7 @@ const MusicPage:FC = async() => {
 
     return (
         <>
-        <Head>
-        <title>{'2'}</title>
-        <meta name="description" content={'description'} />
-        <meta property="og:title" content={'title'} />
-        <meta property="og:description" content={'description'} />
-        <meta property="og:image" content="/images/portfolio-thumbnail.jpg" />
-      </Head>
-            <Breadcrumbs />
+        <Breadcrumbs />
           <TitleBlockPage props={musicTitleData}/>
           <MusicClient albums={albums} error={errorMessage} />
           
