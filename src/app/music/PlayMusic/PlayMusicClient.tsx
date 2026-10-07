@@ -5,7 +5,7 @@
   import AlbumList from "./album/AlbumList";
   import Player from "./player/Player";
   import ListTracks from "./player/album/ListTracks";
-import { bodyLock, bodyUnLock } from "@/scripts/scrollTo";
+import { useBodyScrollLock } from "@/hooks/useBodyScrollLock";
 import { AnimatePresence } from "framer-motion";
 
   interface MusicClientProps {
@@ -22,6 +22,9 @@ import { AnimatePresence } from "framer-motion";
     const [isAudioReady, setIsAudioReady] = useState(true); // для отслеживания что браузер может воспроизвести
     
     const audioRef = useRef<HTMLAudioElement | null>(null);
+
+    // Список треков виден только при выбранном альбоме
+    useBodyScrollLock(popup && selectedAlbum !== null);
 
 
     const statusPlay = {
@@ -73,15 +76,11 @@ import { AnimatePresence } from "framer-motion";
     
 
     const handleListTracks = () => {
-      // !popup ? document.body.style.overflow = 'hidden' : document.body.style.overflow = 'scroll';
       if (!popup) {
         window.scrollTo({
           top: 500,
           behavior: 'instant'
         })
-        bodyLock()
-      } else {
-        bodyUnLock();
       }
       setPopup(!popup)
     }

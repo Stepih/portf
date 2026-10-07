@@ -8,7 +8,7 @@ import MediaItem from "./mediaContent/MediaItem";
 import MediaItemPopup from "./mediaContent/MediaItemPopup";
 import { AnimatePresence } from "framer-motion";
 
-import { bodyLock, bodyUnLock } from "@/scripts/scrollTo";
+import { useBodyScrollLock } from "@/hooks/useBodyScrollLock";
 import { useIsTouchDevice } from "@/hooks/useIstouchDevice";
 
 const ImageMediaContent: FC<{ content: IMedia[] }> = ({ content }) => {
@@ -17,6 +17,7 @@ const ImageMediaContent: FC<{ content: IMedia[] }> = ({ content }) => {
     const [positions, setPositions] = useState<{ top: number; bottom: number }[]>([]);
     
     const [popup, setPopup] = useState<boolean>(false);
+    useBodyScrollLock(popup);
     const [step, setStep] = useState(0);
     
     const nextStep = (num: number) => {
@@ -120,8 +121,6 @@ const ImageMediaContent: FC<{ content: IMedia[] }> = ({ content }) => {
 
         return 0;
     };
-
-    popup ? bodyLock() : bodyUnLock();
 
     return (
         <>

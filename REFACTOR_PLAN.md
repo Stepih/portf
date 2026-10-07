@@ -126,7 +126,7 @@
 
 ## Этап 2. Исправления поведения
 
-### 2.1 Хук `useBodyScrollLock` (B4)
+### 2.1 Хук `useBodyScrollLock` (B4) — ✅ сделано (счётчик в `lockBodyScroll`, `bodyLock`/`bodyUnLock` удалены)
 - **Файлы:**
   - новый `src/hooks/useBodyScrollLock.ts`: счётчик блокировок, снятие в cleanup;
   - правятся: `PlayMusicClient.tsx`, `MediaContentList.tsx`, `Steps.tsx`, `ImageMediaContent.tsx` (убрать вызов из рендера), `src/scripts/scrollTo.ts`;

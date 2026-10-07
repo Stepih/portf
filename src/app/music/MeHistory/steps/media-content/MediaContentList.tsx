@@ -9,7 +9,7 @@ import Link from "next/link";
 
 
 import ButtonUp from "@/components/ui/buttons/button-up/ButtonUp";
-import { bodyLock, bodyUnLock } from "@/scripts/scrollTo";
+import { useBodyScrollLock } from "@/hooks/useBodyScrollLock";
 import Popup from "./Popup";
 import { IMediaVideo } from "@/interfaces/slider";
 import { AnimatePresence } from "framer-motion";
@@ -24,9 +24,10 @@ interface IMediaContent {
 const MediaList: FC<IMediaContent> = ({step, videos, images, updatePopupActive }) => {
     const [popup, setPopup] = useState<IMediaVideo[] | IImageMedia[] | undefined>(undefined)
 
+    useBodyScrollLock(Boolean(popup))
+
     useEffect(() => {
         updatePopupActive(Boolean(popup))
-        Boolean(popup) ? bodyLock() : bodyUnLock()
     }, [popup])
     
     const handleOpenPopup = (content?:IMediaVideo[] | IImageMedia[] ) => {
@@ -65,7 +66,7 @@ const MediaList: FC<IMediaContent> = ({step, videos, images, updatePopupActive }
             )}
             {images.length === 0 && videos.length === 0 && (
                 <div className={s.btns}>
-                    <Link onClick={()=> bodyUnLock()} className={s.mainBtn} href="/">На главную</Link>
+                    <Link className={s.mainBtn} href="/">На главную</Link>
                     <ButtonUp />
                 </div>
             )}

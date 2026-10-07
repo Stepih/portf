@@ -1,9 +1,9 @@
 import { IMusicHistory } from "@/interfaces/musicHistory";
-import { FC, useEffect, useRef } from "react";
+import { FC, useEffect, useRef, useState } from "react";
 import { motion } from "framer-motion";
 import s from './Steps.module.scss';
 import MediaList from "./media-content/MediaContentList";
-import { bodyLock, bodyUnLock } from "@/scripts/scrollTo";
+import { useBodyScrollLock } from "@/hooks/useBodyScrollLock";
 import { isTouchDevice } from "@/scripts/typeDevice";
 
 const Steps: FC<{ 
@@ -15,6 +15,9 @@ const Steps: FC<{
     const isScrolling = useRef(false);
     const isBlockScroll = useRef(false);
     const popupActiveRef = useRef(false);
+    // Пошаговый режим: пока листаем шаги, обычная прокрутка заблокирована
+    const [stepLock, setStepLock] = useState(false);
+    useBodyScrollLock(stepLock);
 
     const updatePopupActive = (isActive: boolean) => {
         popupActiveRef.current = isActive; // Синхронное обновление рефа
@@ -50,13 +53,9 @@ const Steps: FC<{
         }
 
         if (isBlockScroll.current) {
-            bodyLock();
-            if (direction === 'up' && step === 0) {
-                bodyUnLock();
-            }
-            if (direction === 'down' && step === 2) {
-                bodyUnLock();
-            }
+            // На крайних шагах отпускаем прокрутку, чтобы уйти из истории
+            const isEdge = (direction === 'up' && step === 0) || (direction === 'down' && step === 2);
+            setStepLock(!isEdge);
         }
 
         const newStep = direction === "down" ? step + 1 : step - 1;

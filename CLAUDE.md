@@ -47,8 +47,8 @@ src/data/                статичный контент и конфиг (за
 src/lib/content/         серверные функции данных: getAlbums (public/music), getMusicHistory (+ видео из public/video), getMediaContent (public/media)
 src/interfaces/          TS-типы, префикс I (IAlbums, IMedia, …)
 src/constants/urls.ts    внешние и внутренние ссылки
-src/scripts/             DOM-хелперы: bodyLock/bodyUnLock/scrollToElementById, isTouchDevice
-src/hooks/               useIsTouchDevice
+src/scripts/             DOM-хелперы: lockBodyScroll/scrollToElementById, isTouchDevice
+src/hooks/               useIsTouchDevice, useBodyScrollLock
 src/styles/              globals.scss, theme.scss (CSS-переменные тем), variables.scss (SCSS-переменные)
 src/assets/_img/         иконки (svg) и картинки
 public/                  музыка, видео, медиа и sitemap
@@ -83,7 +83,7 @@ public/                  музыка, видео, медиа и sitemap
 - **Путь шрифтов.** Шим design-sync подменяет модуль по регулярке `app/fonts/fonts`. Не переноси `fonts.ts` и не реэкспортируй шрифты из другого места.
 - **Turbopack не настроен:** SVG обрабатываются только webpack-правилом. Если включить `next dev --turbopack` без отдельных turbopack-rules для svgr, импорты `.svg` сломаются.
 - **`template.tsx` перемонтируется на каждой навигации,** вместе со всем, что в нём лежит: Метрикой и анимацией.
-- **Блокировка скролла глобальная.** `bodyLock()`/`bodyUnLock()` пишут прямо в `document.body.style`, вызовы разбросаны по music и media, автоматического снятия нет.
+- **Блокировка скролла — только через `useBodyScrollLock(active)`** (`src/hooks`). Он держит счётчик в `lockBodyScroll()` (`src/scripts/scrollTo.ts`) и снимает блокировку при размонтировании. Не пиши в `document.body.style.overflow` напрямую.
 - **История на `/music` жёстко рассчитана на 3 шага.** Условия `step === 2` и `idx < 2` стоят в `Steps.tsx` и `CheckPoints.tsx`, а `src/data/checkpoints.ts` должен совпадать по длине с `src/data/musicHistory.ts`.
 - **ID Метрики `99704852`** захардкожен в `template.tsx`, `ButtonStandartSize.tsx` (2 раза) и `ButtonSmallSize.tsx`.
 - **Токен Telegram-бота** сейчас лежит в коде `api/sendMessage/route.ts`. Это критичная проблема, см. AUDIT.md, S1. Новые секреты кладём только в env.

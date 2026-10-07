@@ -4,7 +4,6 @@ import { FC } from "react";
 import Link from "next/link";
 import s from "./MediaDescription.module.scss";
 import { ralewayBold } from "../../../fonts/fonts";
-import { bodyUnLock } from "@/scripts/scrollTo";
 
 interface MediaDescriptionProps {
     description: string;
@@ -21,7 +20,7 @@ const MediaDescription: FC<MediaDescriptionProps> = ({ description, title }) => 
             {parts.length > 1 ? (
                 <>
                     {parts[0]}
-                    <Link onClick={bodyUnLock} className={s.link} href="/music">этой странице</Link>
+                    <Link className={s.link} href="/music">этой странице</Link>
                     {parts[1]}
                 </>
             ) : (
