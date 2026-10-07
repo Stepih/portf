@@ -18,5 +18,11 @@
         background: var(--color-text-100);
         color: var(--color-bg);
     }
-    
+
+    &:disabled {
+        opacity: .5;
+        cursor: default;
+        pointer-events: none;
+    }
+
 }

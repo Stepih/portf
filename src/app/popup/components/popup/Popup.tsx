@@ -8,15 +8,16 @@ import { IInputKeyValue } from "@/interfaces/input";
 import s from './Popup.module.scss'
 import TextAreaInput from "./input/TextAreaInput";
 import ErrorMesage from "@/components/ui/errorMessage/ErrorMessage";
+import { HONEYPOT_FIELD } from "@/lib/validation/feedback";
 
 const checkNameReg = (text: string) => /^[A-Za-zА-Яа-яё]{0,25}$/.test(text.replace(/\s+/g, ''));
 
-const checkPhoneReg = (text: string) => {
-    const re = /^[0-9]{0,25}$/;
-    const test = re.test(text);
-    console.log(test);
-    return test;
-}
+const checkPhoneReg = (text: string) => /^[0-9]{0,25}$/.test(text);
+
+const errorByStatus: Record<number, string> = {
+    400: 'Проверь, пожалуйста, заполненные поля',
+    429: 'Слишком много заявок, попробуй позже',
+};
 
 const Popup:FC = () => {
     const [inputValue, setInputValue] = useState<IInputKeyValue>({name: '', contact: ''});
@@ -25,42 +26,43 @@ const Popup:FC = () => {
     const [error, setError] = useState('');
 
     const [success, setSuccess] = useState('');
+    const [isSending, setIsSending] = useState(false);
 
     const onSubmit: FormEventHandler<HTMLFormElement> = async (e) => {
         e.preventDefault();
-        console.log(1)
-    
-        if (!inputValue.contact.length || !inputValue.name.length) {
-          return setError('Заполни, пожалуйста, важные поля');
+        if (isSending) return;
+
+        if (!inputValue.contact.trim() || !inputValue.name.trim()) {
+            return setError('Заполни, пожалуйста, важные поля');
         }
-    
+
+        const honeypot = new FormData(e.currentTarget).get(HONEYPOT_FIELD);
+
+        setIsSending(true);
         try {
-          const response = await fetch('https://showmyworks.ru/api/sendMessage', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ ...inputValue, message: textAreaValue }),
-          });
-    
-          if (!response.ok) {
-            throw new Error('Не удалось отправить данные');
-          }
-    
-          const data = await response.json();
-          
-          if (data?.error) {
-            throw new Error(data.error);
-          }
-    
-          // Успех
-          setSuccess('Сообщение успешно отправлено');
-          setError(''); // Сброс ошибки
-          setInputValue({ name: '', contact: '' }); // Очистка полей
-          setTextAreaValue(''); // Очистка textarea
-        } catch (err: any) {
-          setError(err.message || 'Что-то пошло не так');
-          setSuccess('');
+            const response = await fetch('/api/sendMessage', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ ...inputValue, message: textAreaValue, [HONEYPOT_FIELD]: honeypot }),
+            });
+
+            if (!response.ok) {
+                throw new Error(errorByStatus[response.status] ?? 'Не удалось отправить заявку, попробуй позже');
+            }
+
+            // Успех
+            setSuccess('Сообщение успешно отправлено');
+            setError(''); // Сброс ошибки
+            setInputValue({ name: '', contact: '' }); // Очистка полей
+            setTextAreaValue(''); // Очистка textarea
+        } catch (err) {
+            // fetch падает с TypeError, если нет сети
+            setError(err instanceof Error && !(err instanceof TypeError) ? err.message : 'Не удалось отправить заявку, проверь соединение');
+            setSuccess('');
+        } finally {
+            setIsSending(false);
         }
-      };
+    };
 
     const handleSetInputValue = (value:IInputKeyValue) => {
         if (focusInput === 'contact' && !checkPhoneReg(value.contact)) return setError('Формат: только цифры, не больше 25 символов')
@@ -83,7 +85,7 @@ const Popup:FC = () => {
             {!success && <ErrorMesage error={error} />}
             <ListInput handleSetFocusInput={handleSetFocusInput} value={inputValue} handleSetValue={handleSetInputValue} />
             <TextAreaInput setValue={handleSetTextAreaValue} value={textAreaValue} />
-            <ActionButton type='submit' text={!success ? "Отправить" : "Отправлено!"}/>
+            <ActionButton type='submit' disabled={isSending} text={isSending ? "Отправляется..." : !success ? "Отправить" : "Отправлено!"}/>
         </form>
     )
 }

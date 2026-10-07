@@ -3,10 +3,11 @@ import { ActionButton } from 'portfolio-ui';
 // Primary call to action on a media item card.
 export const Primary = () => <ActionButton type="button" text="Оставить заявку" />;
 
-// Feedback form submit + its sent state.
+// Feedback form submit + its sending and sent states.
 export const Submit = () => (
   <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap' }}>
     <ActionButton type="submit" text="Отправить" />
+    <ActionButton type="submit" text="Отправляется..." disabled />
     <ActionButton type="submit" text="Отправлено!" />
   </div>
 );

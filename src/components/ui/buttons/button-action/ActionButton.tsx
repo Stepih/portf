@@ -1,14 +1,14 @@
 "use client"
 
-import { FC, FormEventHandler } from "react";
+import { FC } from "react";
 import { motion } from "framer-motion";
 
 import s from './ActionButton.module.scss'
 
-const ActionButton: FC<{action?: () => void, text: string, type: 'submit' | 'button'}> = ({action, text, type}) => {
+const ActionButton: FC<{action?: () => void, text: string, type: 'submit' | 'button', disabled?: boolean}> = ({action, text, type, disabled}) => {
     
     return (
-        <motion.button whileTap={{scale: .9}} type={type} onClick={action && action} className={s.btn}>
+        <motion.button whileTap={disabled ? undefined : {scale: .9}} type={type} disabled={disabled} onClick={action && action} className={s.btn}>
             {text}
         </motion.button>
     )

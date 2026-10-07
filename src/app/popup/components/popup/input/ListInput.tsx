@@ -4,6 +4,7 @@ import { IInputKeyValue } from "@/interfaces/input";
 import { FC } from "react";
 import Input from "./Input";
 import { inputsListFeedback } from "@/data/inputsFeedBack";
+import { HONEYPOT_FIELD } from "@/lib/validation/feedback";
 
 import s from './ListInput.module.scss'
 
@@ -31,6 +32,15 @@ const ListInput:FC<IListInput> = ({value, handleSetValue, handleSetFocusInput}) 
                     handleSetFocusInput={handleSetFocusInput}
                 />
             ))}
+            {/* Ловушка для ботов: скрыта от людей и скринридеров, читается из FormData при отправке */}
+            <input
+                className={s.honeypot}
+                name={HONEYPOT_FIELD}
+                type="text"
+                tabIndex={-1}
+                autoComplete="off"
+                aria-hidden="true"
+            />
         </div>
     )
 }
