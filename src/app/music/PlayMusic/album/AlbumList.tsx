@@ -5,15 +5,14 @@ import s from './AlbumList.module.scss'
 import Album from "./Album";
 
 import Arrow from '@/assets/_img/icons/arrow-s-right.svg'
-import { IStatusPlay } from "@/interfaces/player";
 
-interface AlbumListProps extends IStatusPlay {
+interface AlbumListProps {
     albums: IAlbums[],
     error?: string,
     handleAlbumSelect: (album: IAlbums) => void,
 }
 
-const AlbumListDekstop:FC<AlbumListProps> = ({statusPlay, albums, error, handleAlbumSelect }) => {
+const AlbumListDekstop:FC<AlbumListProps> = ({ albums, error, handleAlbumSelect }) => {
     const [show, setShow] = useState(false)
     const limitAlbums:IAlbums[] = []
     const lastAlbums:IAlbums[] = []
@@ -55,7 +54,7 @@ const AlbumListDekstop:FC<AlbumListProps> = ({statusPlay, albums, error, handleA
                     {error && <h4 style={{textAlign: 'center', width: '100%'}}>Ошибка загрузки треков</h4>}
                     {itog.map((album) =>  {
                         return (
-                            <Album key={album.id} statusPlay={statusPlay} handleAlbumSelect={handleAlbumSelect} album={album}/>
+                            <Album key={album.id} handleAlbumSelect={handleAlbumSelect} album={album}/>
                         )
                     })}
                 </div>  

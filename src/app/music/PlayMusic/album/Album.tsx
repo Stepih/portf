@@ -9,14 +9,13 @@ import { canada } from "../../../fonts/fonts"; // Убедитесь, что ш�
 import { IAlbums } from "@/interfaces/albums";
 
 import s from './Album.module.scss';
-import { IStatusPlay } from "@/interfaces/player";
 
-interface Album extends IStatusPlay {
+interface Album {
     album: IAlbums,
     handleAlbumSelect: (album: IAlbums) => void
 }
 
-const Album: FC<Album> = ({ statusPlay, album, handleAlbumSelect }) => {
+const Album: FC<Album> = ({ album, handleAlbumSelect }) => {
 
     const variantsAnim = {
         hover: {
@@ -32,7 +31,7 @@ const Album: FC<Album> = ({ statusPlay, album, handleAlbumSelect }) => {
             transition={{
                 delay: .1
             }}
-            onClick={() => { handleAlbumSelect(album); statusPlay.setPlay(statusPlay.play) }}
+            onClick={() => handleAlbumSelect(album)}
             className={`${s.album} ${canada.className}`}
         >
             {album.img ? (

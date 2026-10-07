@@ -85,7 +85,7 @@
 - **Объём:** XS. **Риск:** нет.
 - **Проверка:** сборка на Linux (`docker build` или `npx next build` в WSL) проходит.
 
-### 1.5 Лишний `setPlay` в Album (B3)
+### 1.5 Лишний `setPlay` в Album (B3) — ✅ сделано (заодно убран ненужный проп `statusPlay` у `Album`/`AlbumList`)
 - **Файлы:** `src/app/music/PlayMusic/album/Album.tsx:35`.
 - **Объём:** XS. **Риск:** низкий.
 - **Проверка:** пункты 1–2 чек-листа в `src/app/music/CLAUDE.md`; повторный клик по текущему альбому ставит паузу и снимает её.

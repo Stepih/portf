@@ -94,7 +94,7 @@ import { AnimatePresence } from "framer-motion";
       )}
       
       <div style={{display: popup && selectedAlbum ? 'none' :  'block', pointerEvents: popup && selectedAlbum ? 'none' : 'all'}}>
-        <AlbumList statusPlay={statusPlay} handleAlbumSelect={handleAlbumSelect} albums={albums} error={error} />
+        <AlbumList handleAlbumSelect={handleAlbumSelect} albums={albums} error={error} />
       </div>
       <AnimatePresence>
         {selectedAlbum && (
