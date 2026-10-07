@@ -1,4 +1,3 @@
-import fetch from 'node-fetch';
 import { HONEYPOT_FIELD, validateFeedback } from '@/lib/validation/feedback';
 
 // Rate-limit в памяти: прод работает в одном контейнере, этого достаточно
