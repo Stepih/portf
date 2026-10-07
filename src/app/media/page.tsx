@@ -7,20 +7,10 @@ import { mediaTitleData } from "@/data/titleBlockPage";
 
 import ImageMediaContent from "./components/ImageMediaContent";
 import { Metadata } from "next";
+import { getMediaContent } from "@/lib/content/mediaContent";
 
-async function fetchContent(): Promise<IMedia[]> {
-    const res = await fetch('http://localhost:3000/api/media-content', {
-        next: {
-            revalidate: 1
-        }
-    });
-
-    if (!res.ok) {
-        throw new Error('Не удалось получить контент-медиа'); 
-    }
-
-    return res.json();
-}
+// Страница пререндерится при сборке и обновляется раз в час
+export const revalidate = 3600;
 
 export const metadata: Metadata = {
     title: "Дизайн",
@@ -48,9 +38,10 @@ const MediaPage: FC = async () => {
     let errorMessage: string | undefined;
 
     try {
-        content = await fetchContent()
+        content = await getMediaContent()
     } catch (error) {
-        errorMessage = error instanceof Error ? error.message : 'Произошла неизвестная ошибка'; 
+        console.error('Ошибка загрузки данных /media:', error);
+        errorMessage = 'Не удалось получить контент-медиа';
     }
     
     return (

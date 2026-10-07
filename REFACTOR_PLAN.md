@@ -64,7 +64,7 @@
   - `npx next build` проходит;
   - smoke-чек-лист целиком.
 
-### 1.3 Убрать `fetch` на localhost: слой данных `src/lib/content` (B1, A1, частично B14, P7)
+### 1.3 Убрать `fetch` на localhost: слой данных `src/lib/content` (B1, A1, частично B14, P7) — ✅ сделано (обе страницы `revalidate = 3600`; API-роуты оставлены обёртками)
 - **Файлы:**
   - новые: `src/lib/content/albums.ts` (`getAlbums`), `src/lib/content/musicHistory.ts` (`getMusicHistory`), `src/lib/content/mediaContent.ts` (`getMediaContent`);
   - тексты переносятся в новые `src/data/musicHistory.ts` и `src/data/mediaContent.ts`;

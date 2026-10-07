@@ -8,35 +8,11 @@ import History from "./MeHistory/History";
 import { IMusicHistory } from "@/interfaces/musicHistory";
 import Breadcrumbs from "@/components/breadCrumb/BreadCrumb";
 import { Metadata } from "next";
+import { getAlbums } from "@/lib/content/albums";
+import { getMusicHistory } from "@/lib/content/musicHistory";
 
-
-async function fetchAlbums(): Promise<IAlbums[]> {
-    const res = await fetch('http://localhost:3000/api/albums', {
-        next: {
-            revalidate: 100
-        }
-    });
-
-    if (!res.ok) {
-        throw new Error('Не удалось получить альбомы'); // Генерация ошибки
-    }
-
-    return res.json();
-}
-
-async function fetchMusicHistory(): Promise<IMusicHistory[]> {
-    const res = await fetch('http://localhost:3000/api/music-history', {
-        next: {
-            revalidate: 100
-        }
-    });
-
-    if (!res.ok) {
-        throw new Error('Не удалось получить альбомы'); // Генерация ошибки
-    }
-
-    return res.json();
-}
+// Страница пререндерится при сборке и обновляется раз в час: так подхватываются новые альбомы
+export const revalidate = 3600;
 
 export const metadata: Metadata = {
     title: "Моя музыка",
@@ -64,10 +40,10 @@ const MusicPage:FC = async() => {
     let errorMessage: string | undefined;
 
     try {
-        albums = await fetchAlbums();
-        musicHistory = await fetchMusicHistory();
+        [albums, musicHistory] = await Promise.all([getAlbums(), getMusicHistory()]);
     } catch (error) {
-        errorMessage = error instanceof Error ? error.message : 'Произошла неизвестная ошибка'; 
+        console.error('Ошибка загрузки данных /music:', error);
+        errorMessage = 'Не удалось получить альбомы';
     }
 
     return (
