@@ -18,8 +18,8 @@
     "next-sitemap": "^4.2.3",
     "next-yandex-metrica": "^1.1.2",
     "node-fetch": "^3.3.2",
-    "react": "^19.0.0",
-    "react-dom": "^19.0.0",
+    "react": "^19.3.0",
+    "react-dom": "^19.3.0",
     "saas": "^1.0.0",
     "sass": "^1.79.3"
   },
