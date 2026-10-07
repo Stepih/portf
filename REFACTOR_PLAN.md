@@ -117,7 +117,7 @@
 - **Объём:** XS. **Риск:** низкий.
 - **Проверка:** `npm ls saas node-fetch` пусто; сборка проходит; заявка отправляется.
 
-### 1.8 Убрать `/popup` из sitemap (B15)
+### 1.8 Убрать `/popup` из sitemap (B15) — ✅ сделано
 - **Файлы:** `next-sitemap.config.js` (`exclude: ['/popup']`).
 - **Объём:** XS. **Риск:** нет.
 - **Проверка:** после `npm run build` в `public/sitemap-0.xml` нет `/popup`.

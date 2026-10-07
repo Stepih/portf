@@ -3,6 +3,6 @@ module.exports = {
     generateRobotsTxt: true,           // Опционально: генерировать файл robots.txt
     changefreq: 'daily',               // Частота обновления страницы
     priority: 0.7,                     // Приоритет для страницы
-    // exclude: ['/admin/**', '/private/**'], // Исключить страницы, которые не должны быть в карте сайта
+    exclude: ['/popup'],               // Форма заявки — служебная страница, в поиске не нужна
     sitemapSize: 5000,                 // Максимальное количество URL в одном файле sitemap
   };
