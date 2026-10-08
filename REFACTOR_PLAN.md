@@ -320,7 +320,7 @@
 - **Объём:** M. **Риск:** низкий.
 - **Проверка:** `npm test` и `npx playwright test` проходят локально. По желанию — GitHub Actions: `tsc`, `lint`, `test`, `build` на Linux. Это заодно ловит проблемы вроде B2.
 
-### 5.4 (опционально) Переименования (A6)
+### 5.4 (опционально) Переименования (A6) — ✅ сделано (`516b881`; `dekstop.svg` уже удалён в 4.3, файл `ErrorMessage.tsx` был назван верно — исправлено имя компонента; заодно `AlbumListDekstop` → `AlbumList`, `caheVolume` → `cachedVolume`; `rabota` → `minAnimatedHeight`. Проверка на Linux — за владельцем вместе с B2)
 - **Суть:**
   - `checpoints` → `checkpoints`;
   - `Standart` → `Standard`;
