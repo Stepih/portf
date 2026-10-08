@@ -26,7 +26,7 @@ const Video: FC<IVideo> = ({ video, useLoad }) => {
             {video.srcVideo && !videoErrors ? (
                 <video
                     controls
-                    preload="auto"
+                    preload="metadata"
                     className={s.video}
                     key={video.id}
                     onError={() => {
