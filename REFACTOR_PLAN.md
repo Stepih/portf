@@ -242,7 +242,7 @@
   - `no-unused-expressions` (`a && a()` вместо `a?.()` или `if`): `ImageMediaContent.tsx:31`, `Popup.tsx:70–71`, `ButtonDown`/`ButtonRight` в `onClick`.
   - `@next/next/no-img-element`: `YandexMetrika.tsx:45` — пиксель `<noscript>`, так и задумано; можно подавить комментарием.
 
-### 4.2 Типы React 19 (A7)
+### 4.2 Типы React 19 (A7) — ✅ сделано (`@types/react@^19.3`, `@types/react-dom@^19.3`; `MutableRefObject` → `RefObject` в `player.ts` и `LineTrack.tsx`; в `Volume.tsx` `onInput` → `onChange`: типы React 19 дают в `onInput` `InputEvent` без `target.value`, а `onChange` у range срабатывает на каждое движение так же, как `input`)
 - **Файлы:** `package.json` (`@types/react@^19`, `@types/react-dom@^19`), `src/interfaces/player.ts` (`MutableRefObject` → `RefObject`) и то, что найдёт `tsc`.
 - **Объём:** S. **Риск:** низкий.
 - **Проверка:** `npx tsc --noEmit` без ошибок.

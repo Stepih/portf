@@ -1,7 +1,7 @@
-import { Dispatch, MutableRefObject, SetStateAction } from "react"
+import { Dispatch, RefObject, SetStateAction } from "react"
 
 export interface ISwitchTrack extends IStatusPlay {
-    audioRef: MutableRefObject<HTMLAudioElement | null>,
+    audioRef: RefObject<HTMLAudioElement | null>,
     handleTrackSelect: (id: number) => void
     trackId: number,
 }

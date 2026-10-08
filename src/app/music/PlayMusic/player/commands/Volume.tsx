@@ -44,7 +44,7 @@ const Volume: FC<IVolume> = ({ volume, handleVolumeChange }) => {
           max="1"
           step="0.01"
           value={volume}
-          onInput={(event:ChangeEvent<HTMLInputElement>) => handleVolumeChange(event.target.value)}
+          onChange={(event: ChangeEvent<HTMLInputElement>) => handleVolumeChange(event.target.value)}
           
         />
         <div style={{ width: `${volume * 74}%` }} className={s.line}></div>

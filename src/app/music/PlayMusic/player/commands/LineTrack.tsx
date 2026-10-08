@@ -1,10 +1,10 @@
-import { FC, useEffect, useState, PointerEvent, MutableRefObject } from "react";
+import { FC, useEffect, useState, PointerEvent, RefObject } from "react";
 import { motion } from "framer-motion";
 import s from './LineTrack.module.scss';
 
 interface ILineTrack {
   isAudioReady: boolean,
-  audioRef: MutableRefObject<HTMLAudioElement | null>,
+  audioRef: RefObject<HTMLAudioElement | null>,
   trackId: number,
   albumId: number,
   loadProgress: number,
