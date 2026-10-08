@@ -1,19 +1,20 @@
 "use client"
 
-import { FC, useState } from "react";
+import { useState } from "react";
 import { motion } from "framer-motion";
 
 import Arrow from '@/assets/_img/icons/arrow.svg'
 
 import s from './ButtonRight.module.scss'
 
-interface IBtn {
+interface IBtn<T> {
     action?: () => void,
-    paramAction?: (param: any) => void,
-    param: any
+    paramAction?: (param: T) => void,
+    param: T
 }
 
-const ButtonRight: FC<IBtn> = ({action, paramAction, param}) => {
+// generic по типу param, поэтому не FC: FC не умеет параметры типа
+const ButtonRight = <T,>({action, paramAction, param}: IBtn<T>) => {
     const [act, setAct] = useState(false)
 
     return (

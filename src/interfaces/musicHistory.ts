@@ -10,9 +10,7 @@ export interface IMusicHistory {
 } 
 
 
-export interface IImageMedia extends IMediaImage {
-    
-}
+export type IImageMedia = IMediaImage
 
 export interface ICheckICO {
     title: string,

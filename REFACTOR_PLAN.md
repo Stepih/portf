@@ -230,11 +230,17 @@
 
 ## Этап 4. Качество кода и инструменты
 
-### 4.1 ESLint (A7)
+### 4.1 ESLint (A7) — ✅ сделано (`eslint@9` + `eslint-config-next@15.5.27` через `FlatCompat`, `next/core-web-vitals` + `next/typescript`; исправлены 6 ошибок, 24 предупреждения ниже)
 - **Файлы:** `package.json` (`eslint`, `eslint-config-next`, скрипт `"lint": "eslint ."`), новый `eslint.config.mjs` (flat config с `next/core-web-vitals`, `react-hooks`).
 - **Суть:** исправить только ошибки, предупреждения записать в отдельный список.
 - **Объём:** S–M. **Риск:** низкий.
 - **Проверка:** `npm run lint` проходит; сборка проходит.
+- **Исправленные ошибки:** `any` в `ButtonDown`/`ButtonRight` (кнопки стали generic по типу `param`, пропсы прежние), пустой интерфейс `IImageMedia` (стал алиасом `IMediaImage`), `any` в `src/scripts/idArray.ts` (файл не использовался и удалён, это пункт из 4.3).
+- **Оставшиеся предупреждения** (на 2026-10-08, разбирать в 4.3–5.1):
+  - `react-hooks/exhaustive-deps`: `Steps.tsx:120`, `MediaContentList.tsx:31`, `Player.tsx:75`, `Player.tsx:108`, `ImageComparisonSlider.tsx:41`. Не чинить механически: добавление зависимостей меняет, когда срабатывают эффекты. Плеер — в 5.1, «история» — в 5.2.
+  - `no-unused-vars` (мёртвый код, 4.3): `Player.tsx:39` `timeoutRef`, `AlbumInfo.tsx:14` `isOverflow`, `ClosePlayer.tsx:8` `div`, `Header.tsx:9,14` `Inst`/`myInst`, `SlideNotes.tsx:16` `width`, `setAct` в `ButtonDown`/`ButtonRight`, `ErrorMessage.tsx:8` `active`/`setActive`, `inputsListPopup.ts:1` `IInput`.
+  - `no-unused-expressions` (`a && a()` вместо `a?.()` или `if`): `ImageMediaContent.tsx:31`, `Popup.tsx:70–71`, `ButtonDown`/`ButtonRight` в `onClick`.
+  - `@next/next/no-img-element`: `YandexMetrika.tsx:45` — пиксель `<noscript>`, так и задумано; можно подавить комментарием.
 
 ### 4.2 Типы React 19 (A7)
 - **Файлы:** `package.json` (`@types/react@^19`, `@types/react-dom@^19`), `src/interfaces/player.ts` (`MutableRefObject` → `RefObject`) и то, что найдёт `tsc`.

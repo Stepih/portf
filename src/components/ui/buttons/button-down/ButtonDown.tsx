@@ -1,16 +1,17 @@
-import { FC, useState } from "react";
+import { useState } from "react";
 import { motion } from "framer-motion";
 
 import Arrow from '@/assets/_img/icons/arrow.svg'
 
 import s from './ButtonDown.module.scss'
 
-interface IBtn {
+interface IBtn<T> {
     action?: () => void,
-    paramAction?: (param: any) => void,
-    param: any
+    paramAction?: (param: T) => void,
+    param: T
 }
-const ButtonDown: FC<IBtn> = ({action, paramAction, param}) => {
+// generic по типу param, поэтому не FC: FC не умеет параметры типа
+const ButtonDown = <T,>({action, paramAction, param}: IBtn<T>) => {
     const [act, setAct] = useState(false)
 
     return (

@@ -19,10 +19,12 @@
 | Сборка без sitemap | `npx next build` |
 | Запуск сборки | `npm start` |
 | Проверка типов | `npx tsc --noEmit --incremental false` |
+| Линтер | `npm run lint` |
+| Тесты (Vitest) | `npm test` |
 | Сборка design-sync | `node .design-sync/build-dist.mjs` (см. `.design-sync/CLAUDE.md`) |
 
-- **Линтера нет.** ESLint не установлен, а `npm run lint` (`next lint`) вместо проверки предлагает его настроить.
-- **Тестов нет.** Проверка — сборка, `tsc` и ручной прогон страниц.
+- **Линтер:** `npm run lint` (ESLint 9, `eslint.config.mjs`: `next/core-web-vitals` + `next/typescript`). Ошибок быть не должно; известные предупреждения перечислены в REFACTOR_PLAN.md, шаг 4.1. `next build` тоже прогоняет ESLint.
+- **Тестов почти нет.** Vitest (`npm test`) покрывает только чистые функции. Основная проверка — сборка, `tsc`, линтер и ручной прогон страниц.
 - Если запущен `next dev`, не запускай `next build`. Оба пишут в `.next`, и сборка ломает работающий dev-сервер.
 
 ## Деплой
