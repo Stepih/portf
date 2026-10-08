@@ -3,13 +3,11 @@
 import { motion } from "framer-motion";
 
 import s from './template.module.scss';
-import { YandexMetricaProvider } from "next-yandex-metrica";
 
 export default function Template({ children }: { children: React.ReactNode }) {
 
 
   return (
-    <YandexMetricaProvider tagID={99704852} initParameters={{ clickmap: true, trackLinks: true, accurateTrackBounce: true }}>
     <motion.div
       className={s.content} // Класс для остального стиля
       initial={{ y: 20, opacity: 0 }}
@@ -21,6 +19,5 @@ export default function Template({ children }: { children: React.ReactNode }) {
     >
       {children}
     </motion.div>
-    </YandexMetricaProvider>
   );
 }

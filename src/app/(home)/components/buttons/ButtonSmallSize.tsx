@@ -4,7 +4,7 @@ import { FC } from "react";
 
 import Link from "next/link";
 import { motion } from "framer-motion";
-import { ym } from "next-yandex-metrica";
+import { reachGoal } from "@/scripts/metrika";
 
 import s from './ButtonSmallSize.module.scss';
 import { ISmallHomeButtons } from "@/interfaces/homeButtons";
@@ -20,7 +20,7 @@ const animationVariants = {
 
 const ButtonSmallSize: FC<ISmallHomeButtons> = ({ Icon, title, srcSmall }) => (
   <Link
-    onClick={() => ym(99704852, 'reachGoal', title)}
+    onClick={() => reachGoal(title)}
     className={s.link} href={srcSmall || '/'}>
     <motion.div 
     whileTap={{scale: .9}}

@@ -1,7 +1,7 @@
 import { FC, useState } from "react";
 import { motion } from "framer-motion";
 import Link from "next/link";
-import { ym } from 'next-yandex-metrica';
+import { reachGoal } from '@/scripts/metrika';
 
 import s from './ButtonStandartSize.module.scss';
 import { IStandartHomeButtons } from "@/interfaces/homeButtons";
@@ -29,7 +29,7 @@ const ButtonStandartSize: FC<IStandartHomeButtons> = ({ Icon, title, srcStandart
   
   return (
     <motion.div
-      onClick={() => {setClicked(!clicked); ym(99704852, 'reachGoal', title)}}
+      onClick={() => {setClicked(!clicked); reachGoal(title)}}
       className={s.wrapperMain}
       whileTap={{ scale: !clicked ? 0.9 : 1 }}
     >
@@ -64,7 +64,7 @@ const ButtonStandartSize: FC<IStandartHomeButtons> = ({ Icon, title, srcStandart
           <motion.div key={btn.key} className={s.subbutton} whileTap={{scale: .9}} whileHover="hover">
             <motion.div className={s.link}>
               <Link
-                onClick={() => ym(99704852, 'reachGoal', btn.title)}
+                onClick={() => reachGoal(btn.title)}
                 href={btn.src}
                 style={{ pointerEvents: clicked ? "all" : "none" }}
               />

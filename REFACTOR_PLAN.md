@@ -145,7 +145,7 @@
   - слайдеры работают;
   - `node .design-sync/build-dist.mjs` собирается: оба компонента экспортируются в design-sync.
 
-### 2.3 Метрика с учётом переходов внутри SPA (B6)
+### 2.3 Метрика с учётом переходов внутри SPA (B6) — ✅ сделано (`next-yandex-metrica` удалён, свой компонент в `layout.tsx`)
 - **Файлы:**
   - новый `src/components/analytics/YandexMetrika.tsx` (`"use client"`, `next/script` + `useEffect` по `usePathname`/`useSearchParams` → `ym(id,'hit',url)`, обёрнут в `Suspense`);
   - `src/app/layout.tsx`;

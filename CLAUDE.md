@@ -9,7 +9,7 @@
 - Стили: SCSS Modules (`sass`). Анимации: `framer-motion`.
 - SVG подключаются как React-компоненты через `@svgr/webpack` (`next.config.mjs`).
 - Шрифты: `next/font/local`, файлы `.ttf` лежат в `src/app/fonts/`.
-- `music-metadata` считает длительность треков; `next-sitemap` генерирует sitemap; `next-yandex-metrica` подключает Метрику.
+- `music-metadata` считает длительность треков; `next-sitemap` генерирует sitemap. Метрика подключена своим компонентом `src/components/analytics/YandexMetrika.tsx` (без библиотек).
 
 ## Команды
 | Что | Команда |
@@ -40,8 +40,8 @@ src/app/                 маршруты (App Router)
   api/media-content
   api/sendMessage        пересылает заявку в Telegram-бот
   fonts/fonts.ts         экспорт шрифтов: allerta, ralewayRegular, ralewayBold, canada
-  layout.tsx             Background + Header + <main> + Footer
-  template.tsx           анимация появления страницы + провайдер Метрики
+  layout.tsx             Background + Header + <main> + Footer + YandexMetrika
+  template.tsx           анимация появления страницы
 src/components/          общие UI-компоненты; они же публичный набор design-sync (.design-sync/entry.ts)
 src/data/                статичный контент и конфиг (заголовки страниц, кнопки, чекпоинты, поля формы, тексты «истории» и /media)
 src/lib/content/         серверные функции данных: getAlbums (public/music), getMusicHistory (+ видео из public/video), getMediaContent (public/media)
@@ -82,8 +82,8 @@ public/                  музыка, видео, медиа и sitemap
 - **`src/components` экспортируется в Claude Design** через `.design-sync/entry.ts`. Переименование, перенос файла или изменение пропсов требует правки `entry.ts`, `config.json` и `previews/`. `PopupParent` в приложении не используется, но нужен для design-sync.
 - **Путь шрифтов.** Шим design-sync подменяет модуль по регулярке `app/fonts/fonts`. Не переноси `fonts.ts` и не реэкспортируй шрифты из другого места.
 - **Turbopack не настроен:** SVG обрабатываются только webpack-правилом. Если включить `next dev --turbopack` без отдельных turbopack-rules для svgr, импорты `.svg` сломаются.
-- **`template.tsx` перемонтируется на каждой навигации,** вместе со всем, что в нём лежит: Метрикой и анимацией.
+- **`template.tsx` перемонтируется на каждой навигации,** вместе со всем, что в нём лежит. Поэтому Метрика живёт в `layout.tsx`, а не здесь.
 - **Блокировка скролла — только через `useBodyScrollLock(active)`** (`src/hooks`). Он держит счётчик в `lockBodyScroll()` (`src/scripts/scrollTo.ts`) и снимает блокировку при размонтировании. Не пиши в `document.body.style.overflow` напрямую.
 - **История на `/music` жёстко рассчитана на 3 шага.** Условия `step === 2` и `idx < 2` стоят в `Steps.tsx` и `CheckPoints.tsx`, а `src/data/checkpoints.ts` должен совпадать по длине с `src/data/musicHistory.ts`.
-- **ID Метрики `99704852`** захардкожен в `template.tsx`, `ButtonStandartSize.tsx` (2 раза) и `ButtonSmallSize.tsx`.
+- **Метрика:** ID только в `YM_ID` (`src/constants/analytics.ts`), вызовы — через `ym`/`reachGoal` из `src/scripts/metrika.ts`. Переходы внутри SPA шлёт `hit` компонент `YandexMetrika`; первый hit отправляет сам `init`.
 - **Токен Telegram-бота** сейчас лежит в коде `api/sendMessage/route.ts`. Это критичная проблема, см. AUDIT.md, S1. Новые секреты кладём только в env.

@@ -7,6 +7,7 @@ import { ralewayRegular } from "./fonts/fonts";
 import BackgroundPage from "@/components/bg-page/Background";
 import Header from "@/components/header/Header";
 import Footer from "@/components/footer/Footer";
+import YandexMetrika from "@/components/analytics/YandexMetrika";
 
 
 export const metadata: Metadata = {
@@ -43,6 +44,7 @@ export default function RootLayout({
             {children}
           </main>
           <Footer />
+          <YandexMetrika />
       </body>
     </html>
   );
