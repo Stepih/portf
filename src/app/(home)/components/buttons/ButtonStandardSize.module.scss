@@ -10,6 +10,10 @@
     
     padding: 30px 0 15px 0;
 
+    // Раньше это был h2: сохраняем его размер и жирность
+    font-size: 1.5em;
+    font-weight: 700;
+
     color: var(--color-text-100);
     transition: vars.$transition;
 
@@ -46,13 +50,22 @@
 
 .wrapperMain {
     position: relative;
-    cursor: pointer;
+}
+
+.toggle {
+    @include vars.button-reset;
+    position: relative;
+    display: block;
+    width: 100%;
+    border-radius: 13px;
 }
 
 .wrapper {
     height: 180px;
 
     .titleBtn {
+        // Раньше это был p
+        font-size: 1.25rem;
         color: var(--color-text-100);
         transition: vars.$transition;
     }
@@ -74,9 +87,14 @@
 
     height: 100%;
 
-    
+    // Клик между ссылками проходит к кнопке под меню и закрывает его
+    pointer-events: none;
 
     .subbutton {
+        pointer-events: auto;
+        color: inherit;
+        text-decoration: none;
+
         position: relative;
         display: flex-start;
         align-items: center;
@@ -90,20 +108,10 @@
        
         
 
-        .link {
-            position: absolute;
-            width: 100%;
-            height: 100%;
-            top: 0;
-            left: 0;
-
-            z-index: 3;
-
-            >a {
-                display: block;
-                width: 100%;
-                height: 100%;
-            }
+        &:focus-visible {
+            // overflow: hidden обрезает внешнюю обводку
+            outline: 2px solid var(--color-text-100);
+            outline-offset: -4px;
         }
 
         .subimg {
