@@ -1,36 +1,63 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# showmyworks.ru
 
-## Getting Started
+Личный сайт-портфолио Картузова Степана: музыка, медиаконтент и форма заявки. Прод: https://showmyworks.ru.
 
-First, run the development server:
+Стек: Next.js 15 (App Router), React 19, TypeScript, SCSS Modules, framer-motion.
+
+Подробности об устройстве проекта, соглашения и ловушки описаны в [CLAUDE.md](CLAUDE.md). Известные проблемы перечислены в [AUDIT.md](AUDIT.md), план их исправления — в [REFACTOR_PLAN.md](REFACTOR_PLAN.md).
+
+## Запуск
+
+Нужен Node.js 20 или новее.
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+npm ci
+npm run dev      # dev-сервер на http://localhost:3000
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+| Что | Команда |
+|---|---|
+| Прод-сборка | `npm run build` (после неё `next-sitemap` перезаписывает `public/sitemap*.xml` и `public/robots.txt`) |
+| Запуск собранного | `npm start` |
+| Проверка типов | `npx tsc --noEmit --incremental false` |
+| Линтер | `npm run lint` |
+| Тесты | `npm test` |
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+Не запускайте `npm run build`, пока работает `npm run dev`: оба пишут в `.next`, и сборка ломает dev-сервер.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Прод работает в Docker. Dockerfile и конфиг деплоя лежат вне репозитория.
 
-## Learn More
+## Переменные окружения
 
-To learn more about Next.js, take a look at the following resources:
+Шаблон лежит в [.env.example](.env.example). Для локальной разработки скопируйте его в `.env.local`: этот файл в git не попадает.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+| Переменная | Зачем |
+|---|---|
+| `TELEGRAM_BOT_TOKEN` | токен бота, через которого `/api/sendMessage` пересылает заявки |
+| `TELEGRAM_CHAT_ID` | чат, куда приходят заявки |
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+Сейчас код эти переменные ещё не читает: токен и ID чата записаны в `src/app/api/sendMessage/route.ts`. Перенос в env — шаг 1.1 в REFACTOR_PLAN.md. После него переменные нужно задать и в `.env.local`, и в env Docker-контейнера, иначе форма перестанет отправлять заявки.
 
-## Deploy on Vercel
+## Как добавить контент
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+Код менять не нужно, достаточно положить файлы в `public/`. Страницы `/music` и `/media` обновляются раз в час, поэтому новый контент на проде появится в течение часа (или сразу после пересборки).
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+### Альбом
+
+Создайте папку `public/music/<Название альбома>/` и положите в неё:
+
+- треки в `.mp3`, `.wav`, `.ogg` или `.flac`. Порядок задаёт имя файла, числа сравниваются как числа: `2.mp3` идёт раньше `10.mp3`;
+- обложку `prev.png` (необязательно);
+- `artist.txt` с именем исполнителя (необязательно, по умолчанию «SyrinxBS»).
+
+Альбом без обложки попадает в скрытую часть списка, под кнопку «Показать еще». Папка без треков пропускается.
+
+### Медиа на `/media`
+
+- **Слайдер до/после:** пара файлов `public/media/images/<N>_low.<ext>` и `<N>_high.<ext>` с одинаковым расширением (`png`, `webp` или `jpg`).
+- **Создание битов:** остальные картинки из `public/media/images/`.
+- **Видеопереходы:** любые файлы в `public/media/gifs/`.
+
+### Видео в истории на `/music`
+
+Файлы `public/video/*.mp4` показываются на первом шаге истории.
