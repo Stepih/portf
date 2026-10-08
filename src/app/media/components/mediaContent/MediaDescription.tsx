@@ -3,7 +3,7 @@
 import { FC } from "react";
 import Link from "next/link";
 import s from "./MediaDescription.module.scss";
-import { ralewayBold } from "../../../fonts/fonts";
+import { ralewayBold } from "@/app/fonts/fonts";
 
 interface MediaDescriptionProps {
     description: string;

@@ -4,7 +4,7 @@ import { AnimatePresence, motion } from "framer-motion";
 
 import s from './ErrorMessage.module.scss'
 
-const ErrorMesage:FC<{error: string}> = ({error}) => {
+const ErrorMessage:FC<{error: string}> = ({error}) => {
     return (
         
         <AnimatePresence>
@@ -23,4 +23,4 @@ const ErrorMesage:FC<{error: string}> = ({error}) => {
     )
 }
 
-export default ErrorMesage
+export default ErrorMessage

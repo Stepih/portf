@@ -5,7 +5,7 @@ import { motion } from "framer-motion";
 import s from './Player.module.scss';
 import Commands from "./commands/Command";
 import { IAlbums } from "@/interfaces/albums";
-import { canada } from "../../../fonts/fonts";
+import { canada } from "@/app/fonts/fonts";
 import Volume from "./commands/Volume";
 import LineTrack from "./commands/LineTrack";
 import AlbumInfo from "./album/AlbumInfo";

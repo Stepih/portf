@@ -33,7 +33,8 @@ const ImageMediaContent: FC<{ content: IMedia[] }> = ({ content }) => {
 
     const contentRefs = useRef<(HTMLDivElement | null)[]>([]);
 
-    const rabota = 800 //Ограничить, при какой высоте экрана вырубать анимацию
+    // Ниже этой высоты экрана анимация выключена
+    const minAnimatedHeight = 800
     
     // Инициализируем состояние windowHeight с undefined
     const [windowHeight, setWindowHeight] = useState<number | undefined>(undefined);
@@ -58,7 +59,7 @@ const ImageMediaContent: FC<{ content: IMedia[] }> = ({ content }) => {
                 }
             }, 500);
 
-            if (typeof window !== "undefined" && rabota < windowHeight) {
+            if (typeof window !== "undefined" && minAnimatedHeight < windowHeight) {
                 window.addEventListener('resize', onResize, { passive: true });
             }
 
@@ -96,7 +97,7 @@ const ImageMediaContent: FC<{ content: IMedia[] }> = ({ content }) => {
 
     // На низком экране анимация выключена, последний блок не гаснет никогда
     const fadeEnabled = (id: number) =>
-        windowHeight !== undefined && rabota < windowHeight && id !== positions.length - 1;
+        windowHeight !== undefined && minAnimatedHeight < windowHeight && id !== positions.length - 1;
 
     return (
         <>

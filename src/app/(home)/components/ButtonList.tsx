@@ -4,9 +4,9 @@ import { FC } from "react";
 
 import s from './ButtonList.module.scss'
 
-import ButtonStandartSize from "./buttons/ButtonStandartSize";
+import ButtonStandardSize from "./buttons/ButtonStandardSize";
 import ButtonSmallSize from "./buttons/ButtonSmallSize";
-import { smallHomebuttons, standartHomeButtons } from "@/data/homeButtons";
+import { smallHomebuttons, standardHomeButtons } from "@/data/homeButtons";
 import { ralewayRegular } from "@/app/fonts/fonts";
 
 
@@ -14,9 +14,9 @@ const ButtonList:FC = () => {
     
     return (
         <div className={`${s.wrapper} ${ralewayRegular.className}`}>
-            {standartHomeButtons && standartHomeButtons.map((btn) => (
+            {standardHomeButtons && standardHomeButtons.map((btn) => (
                 <div key={btn.key} className={`${s[btn.key]}`}>
-                    <ButtonStandartSize Icon={btn.Icon} title={btn.title} srcStandart={btn.srcStandart}/>
+                    <ButtonStandardSize Icon={btn.Icon} title={btn.title} srcStandard={btn.srcStandard}/>
                 </div>
             ))}
             {smallHomebuttons && smallHomebuttons.map((btn) => (

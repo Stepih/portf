@@ -1,6 +1,6 @@
 @use '/src/styles/variables.scss' as vars;
 
-.comands {
+.commands {
     display: flex;
     align-items: center;
     justify-content: center;
@@ -22,7 +22,7 @@
 }
 
 @media screen and (max-width: 480px) {
-  .comands {
+  .commands {
     gap: 10px;
 
     .back {

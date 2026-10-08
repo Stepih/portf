@@ -2,7 +2,7 @@
 import { FC, useEffect, useRef, useState } from "react";
 
 import s from './History.module.scss'
-import CheckPoints from "./checpoints/CheckPoints";
+import CheckPoints from "./checkpoints/CheckPoints";
 import ScrollToArrow from "@/components/ui/scrollToArrow/ScrollToArrow";
 import Steps from "./steps/Steps";
 import { IMusicHistory } from "@/interfaces/musicHistory";

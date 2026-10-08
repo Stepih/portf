@@ -7,22 +7,22 @@ import message from '@/assets/_img/icons/message.svg'
 
 
 import { mediaPageURL, musicPageURL, myTg, popupPageURL, portfolioTg, siteBox  } from '@/constants/urls'
-import { ISmallHomeButtons, IStandartHomeButtons } from '@/interfaces/homeButtons'
+import { ISmallHomeButtons, IStandardHomeButtons } from '@/interfaces/homeButtons'
 
 
-interface IStandartBtns extends IStandartHomeButtons {
+interface IStandardBtns extends IStandardHomeButtons {
     key: string
 }
 interface ISmallButtons extends ISmallHomeButtons {
     key: string
 }
 
-export const standartHomeButtons:IStandartBtns[] = [
+export const standardHomeButtons:IStandardBtns[] = [
     {
         key: "one",
         Icon: Site,
         title: 'Заказать сайт',
-        srcStandart: [
+        srcStandard: [
             {
                 key: "one",
                 src: myTg,
@@ -41,7 +41,7 @@ export const standartHomeButtons:IStandartBtns[] = [
         key: "two",
         Icon: webSolid,
         title: 'Портфолио',
-        srcStandart: [
+        srcStandard: [
             {
                 key: "one",
                 src: siteBox,

@@ -18,13 +18,13 @@ const Volume: FC<IVolume> = ({ volume, handleVolumeChange }) => {
   const isOpen = isHover || isFocus;
 
   const mute = () => {
-    const caheVolume = localStorage.getItem("playerVolume") || '1';
+    const cachedVolume = localStorage.getItem("playerVolume") || '1';
     if (volume !== 0) {
       handleVolumeChange('0') 
-      localStorage.setItem("playerVolume", caheVolume);
+      localStorage.setItem("playerVolume", cachedVolume);
       return
     }
-    handleVolumeChange(caheVolume)
+    handleVolumeChange(cachedVolume)
   }
 
   return (

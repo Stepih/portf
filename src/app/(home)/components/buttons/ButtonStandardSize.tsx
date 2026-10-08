@@ -3,8 +3,8 @@ import { motion } from "framer-motion";
 import Link from "next/link";
 import { reachGoal } from '@/scripts/metrika';
 
-import s from './ButtonStandartSize.module.scss';
-import { IStandartHomeButtons } from "@/interfaces/homeButtons";
+import s from './ButtonStandardSize.module.scss';
+import { IStandardHomeButtons } from "@/interfaces/homeButtons";
 import ArrowLink from "@/components/arrow-link/ArrowLink";
 import { useIsTouchDevice } from "@/hooks/useIstouchDevice";
 
@@ -21,7 +21,7 @@ const subtitleVariants = {
   hover: { opacity: 1 },
 };
 
-const ButtonStandartSize: FC<IStandartHomeButtons> = ({ Icon, title, srcStandart }) => {
+const ButtonStandardSize: FC<IStandardHomeButtons> = ({ Icon, title, srcStandard }) => {
   const [clicked, setClicked] = useState(false);
 
   // Используем хук, чтобы определить, является ли устройство сенсорным
@@ -60,7 +60,7 @@ const ButtonStandartSize: FC<IStandartHomeButtons> = ({ Icon, title, srcStandart
         animate={clicked ? 'visible' : 'hide'}
         variants={hoverVariants}
       >
-        {srcStandart?.map((btn) => (
+        {srcStandard?.map((btn) => (
           <motion.div key={btn.key} className={s.subbutton} whileTap={{scale: .9}} whileHover="hover">
             <motion.div className={s.link}>
               <Link
@@ -86,4 +86,4 @@ const ButtonStandartSize: FC<IStandartHomeButtons> = ({ Icon, title, srcStandart
   );
 };
 
-export default ButtonStandartSize;
+export default ButtonStandardSize;

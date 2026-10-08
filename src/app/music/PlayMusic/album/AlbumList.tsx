@@ -12,7 +12,7 @@ interface AlbumListProps {
     handleAlbumSelect: (album: IAlbums) => void,
 }
 
-const AlbumListDekstop:FC<AlbumListProps> = ({ albums, error, handleAlbumSelect }) => {
+const AlbumList:FC<AlbumListProps> = ({ albums, error, handleAlbumSelect }) => {
     const [show, setShow] = useState(false)
 
     // Первые 5 альбомов с обложкой видны сразу, остальные — по «Показать еще»
@@ -68,4 +68,4 @@ const AlbumListDekstop:FC<AlbumListProps> = ({ albums, error, handleAlbumSelect 
     );
 };
 
-export default AlbumListDekstop;
+export default AlbumList;

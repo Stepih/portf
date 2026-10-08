@@ -1,8 +1,8 @@
 
-export interface IStandartHomeButtons {
+export interface IStandardHomeButtons {
     Icon: React.ElementType,
     title: string,
-    srcStandart: {
+    srcStandard: {
         key: string,
         src: string,
         Icon: React.ElementType,

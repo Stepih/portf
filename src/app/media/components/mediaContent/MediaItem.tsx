@@ -2,7 +2,7 @@
 
 import { FC, useEffect,  useState } from "react";
 import { motion, MotionValue, useTransform } from "framer-motion";
-import { ralewayBold } from "../../../fonts/fonts";
+import { ralewayBold } from "@/app/fonts/fonts";
 import { IMedia } from "@/interfaces/mediaImages";
 import { fadeOpacity, IBlockBounds } from "../fadeOpacity";
 

@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 
 import "../styles/globals.scss";
 import s from './layout.module.scss'
-import { ralewayRegular } from "./fonts/fonts";
+import { ralewayRegular } from "@/app/fonts/fonts";
 
 import BackgroundPage from "@/components/bg-page/Background";
 import Header from "@/components/header/Header";

@@ -7,7 +7,7 @@ import { IInputKeyValue } from "@/interfaces/input";
 
 import s from './Popup.module.scss'
 import TextAreaInput from "./input/TextAreaInput";
-import ErrorMesage from "@/components/ui/errorMessage/ErrorMessage";
+import ErrorMessage from "@/components/ui/errorMessage/ErrorMessage";
 import { HONEYPOT_FIELD } from "@/lib/validation/feedback";
 
 const checkNameReg = (text: string) => /^[A-Za-zА-Яа-яё]{0,25}$/.test(text.replace(/\s+/g, ''));
@@ -82,7 +82,7 @@ const Popup:FC = () => {
 
     return (
         <form className={s.popup} onSubmit={onSubmit}>
-            {!success && <ErrorMesage error={error} />}
+            {!success && <ErrorMessage error={error} />}
             <ListInput handleSetFocusInput={handleSetFocusInput} value={inputValue} handleSetValue={handleSetInputValue} />
             <TextAreaInput setValue={handleSetTextAreaValue} value={textAreaValue} />
             <ActionButton type='submit' disabled={isSending} text={isSending ? "Отправляется..." : !success ? "Отправить" : "Отправлено!"}/>

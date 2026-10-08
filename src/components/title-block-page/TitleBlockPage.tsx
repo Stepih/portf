@@ -6,7 +6,7 @@ import i from '@/assets/_img/rectangles/title-page/i.png'
 import s from './TitleBlockPage.module.scss'
 import AnimatedButton from "./button/AnimatedButton";
 import { ITitleBlockPage } from "@/interfaces/titleBlockPage";
-import { allerta, ralewayRegular } from "../../app/fonts/fonts";
+import { allerta, ralewayRegular } from "@/app/fonts/fonts";
 
 
 interface IProps {

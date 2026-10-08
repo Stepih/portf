@@ -19,7 +19,7 @@ interface IComand {
 const Commands:FC<IComand> = ({ isPlaying, hasPrev, hasNext, onTogglePlay, onPrev, onNext }) => {
 
     return (
-        <div className={s.comands}>
+        <div className={s.commands}>
             <button
                 type="button"
                 className={`${s.btn} ${s.back}`}

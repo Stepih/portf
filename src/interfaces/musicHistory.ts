@@ -1,7 +1,7 @@
 import { IMediaImage, IMediaVideo } from "./slider";
 
 
-// Ключ иконки шага; сами svg сопоставлены ключам в MeHistory/checpoints/icons.ts
+// Ключ иконки шага; сами svg сопоставлены ключам в MeHistory/checkpoints/icons.ts
 export type HistoryIcon = 'learn' | 'endLearn' | 'flStudio'
 
 export interface IMusicHistory {

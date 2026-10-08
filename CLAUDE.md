@@ -88,6 +88,6 @@ public/                  музыка, видео, медиа и sitemap
 - **Turbopack не настроен:** SVG обрабатываются только webpack-правилом. Если включить `next dev --turbopack` без отдельных turbopack-rules для svgr, импорты `.svg` сломаются.
 - **`template.tsx` перемонтируется на каждой навигации,** вместе со всем, что в нём лежит. Поэтому Метрика живёт в `layout.tsx`, а не здесь.
 - **Блокировка скролла — только через `useBodyScrollLock(active)`** (`src/hooks`). Он держит счётчик в `lockBodyScroll()` (`src/scripts/scrollTo.ts`) и снимает блокировку при размонтировании. Не пиши в `document.body.style.overflow` напрямую.
-- **Шаги истории на `/music` описаны только в `src/data/musicHistory.ts`** (подпись, ключ иконки, текст, медиа). Код считает шаги от длины массива. Новую иконку добавь в тип `HistoryIcon` и в `MeHistory/checpoints/icons.ts`.
+- **Шаги истории на `/music` описаны только в `src/data/musicHistory.ts`** (подпись, ключ иконки, текст, медиа). Код считает шаги от длины массива. Новую иконку добавь в тип `HistoryIcon` и в `MeHistory/checkpoints/icons.ts`.
 - **Метрика:** ID только в `YM_ID` (`src/constants/analytics.ts`), вызовы — через `ym`/`reachGoal` из `src/scripts/metrika.ts`. Переходы внутри SPA шлёт `hit` компонент `YandexMetrika`; первый hit отправляет сам `init`.
 - **Токен Telegram-бота** сейчас лежит в коде `api/sendMessage/route.ts`. Это критичная проблема, см. AUDIT.md, S1. Новые секреты кладём только в env.

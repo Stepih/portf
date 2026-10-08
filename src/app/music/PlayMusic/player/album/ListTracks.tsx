@@ -7,7 +7,7 @@ import Play from '@/assets/_img/icons/play-sm.svg'
 
 import BgFocus from "@/components/bg-page/BgFocus";
 
-import { canada } from "../../../../fonts/fonts"; 
+import { canada } from "@/app/fonts/fonts"; 
 import s from './ListTracks.module.scss'
 import { IAlbums } from "@/interfaces/albums";
 

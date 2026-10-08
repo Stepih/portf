@@ -5,7 +5,7 @@ import { motion } from "framer-motion";
 
 import Image from "next/image";
 
-import { canada } from "../../../fonts/fonts"; // Убедитесь, что шрифт импортируется
+import { canada } from "@/app/fonts/fonts";
 import { IAlbums } from "@/interfaces/albums";
 
 import s from './Album.module.scss';
