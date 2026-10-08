@@ -56,7 +56,7 @@ const Steps: FC<{
 
         if (isBlockScroll.current) {
             // На крайних шагах отпускаем прокрутку, чтобы уйти из истории
-            const isEdge = (direction === 'up' && step === 0) || (direction === 'down' && step === 2);
+            const isEdge = (direction === 'up' && step === 0) || (direction === 'down' && step === musicHistory.length - 1);
             setStepLock(!isEdge);
         }
 
@@ -134,7 +134,6 @@ const Steps: FC<{
                     <p className={s.description}>{history.description}</p>
                     <MediaList 
                         updatePopupActive={updatePopupActive} // Передаём функцию с обновлением рефа
-                        step={step} 
                         videos={history.videos || []} 
                         images={history.images || []} 
                     />

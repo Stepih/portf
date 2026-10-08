@@ -25,7 +25,7 @@ const History:FC<{musicHistory: IMusicHistory[]}> = ({musicHistory}) => {
             <ScrollToArrow forid="title-history"/>
             <div ref={wrapperRef} tabIndex={-1} className={s.wrapper}>
                 <h3 id="title-history" className={`${s.title} ${ralewayBold.className}`}>Чем я занимался</h3>
-                <CheckPoints step={step} handleSetStep={handleSetStep}/>
+                <CheckPoints steps={musicHistory} step={step} handleSetStep={handleSetStep}/>
                 <Steps musicHistory={musicHistory} handleSetStep={handleSetStep} step={step} keyScopeRef={wrapperRef}/>
             </div>
         </>

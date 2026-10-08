@@ -2,35 +2,47 @@ import { FC } from "react";
 import { motion } from "framer-motion";
 
 import s from './CheckPoints.module.scss'
-import { checpointsData } from "@/data/checkpoints";
+import { IMusicHistory } from "@/interfaces/musicHistory";
+import { historyIcons } from "./icons";
 
-const CheckPoints:FC<{step: number, handleSetStep: (id:number, block: boolean) => void}> = ({step, handleSetStep}) => {
+interface ICheckPoints {
+    steps: Pick<IMusicHistory, 'id' | 'title' | 'icon'>[],
+    step: number,
+    handleSetStep: (id: number, block: boolean) => void
+}
+
+const CheckPoints:FC<ICheckPoints> = ({steps, step, handleSetStep}) => {
 
     return (
         <div className={s.wrapper}>
-            {checpointsData.map((block, idx) => (
-                <div key={idx} style={{display: 'contents'}}>
+            {steps.map((block, idx) => {
+                const Icon = historyIcons[block.icon]
+                return (
+                <div key={block.id} style={{display: 'contents'}}>
                     <motion.button
                         type="button"
                         aria-current={idx === step ? 'step' : undefined}
-                        animate={{opacity: step === 0 ? (idx === step ? 1 : .5) : step === 1 ? (idx !== step + 1 ? 1 : .5) : 1}} 
-                        onClick={handleSetStep.bind(null, idx, false)} 
+                        // Пройденные и текущий шаг яркие, следующие приглушены
+                        animate={{opacity: idx <= step ? 1 : .5}}
+                        onClick={handleSetStep.bind(null, idx, false)}
                         className={`${s.checkBlock} ${idx !== step ? s.noActiveMobile : ''}`}
                     >
-                        
-                        <block.Img id={`check-${idx}`} className={s.img} />
+
+                        <Icon id={`check-${idx}`} className={s.img} />
                         <motion.span className={`${s.title} ${idx === step ? s.active : ''}`}>{block.title}</motion.span>
                     </motion.button>
-                    {idx < 2 && (
+                    {idx < steps.length - 1 && (
                         <div className={`${s.line} ${s.noActiveMobile}`}>
-                            <motion.div 
-                                animate={{width: step === 1 ? (idx + 1 === step ? '100%' : 0) : step === 0 ? 0 : "100%"}} 
+                            {/* Линия до текущего шага заполнена */}
+                            <motion.div
+                                animate={{width: idx < step ? '100%' : 0}}
                                 className={`${s.subline} `}
                             >
                         </motion.div>
                     </div>)}
                 </div>
-            ))}
+                )
+            })}
         </div>
     )
 }

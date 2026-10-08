@@ -18,10 +18,9 @@ interface IMediaContent {
     updatePopupActive: (isActive: boolean) => void, 
     videos: IMediaVideo[], 
     images: IImageMedia[], 
-    step: number 
 }
 
-const MediaList: FC<IMediaContent> = ({step, videos, images, updatePopupActive }) => {
+const MediaList: FC<IMediaContent> = ({ videos, images, updatePopupActive }) => {
     const [popup, setPopup] = useState<IMediaVideo[] | IImageMedia[] | undefined>(undefined)
 
     useBodyScrollLock(Boolean(popup))
@@ -45,7 +44,7 @@ const MediaList: FC<IMediaContent> = ({step, videos, images, updatePopupActive }
         <AnimatePresence>
             {popup && <Popup content={popup} handleOpenPopup={handleOpenPopup} />}
         </AnimatePresence>
-        <div className={s.wrapper} id="mediaContent">
+        <div className={s.wrapper}>
             {videos.length > 0 && (
                 <>
                 <VideoList 
@@ -60,7 +59,7 @@ const MediaList: FC<IMediaContent> = ({step, videos, images, updatePopupActive }
                     <ImageList 
                         title="Награды:" 
                         images={images} 
-                        count={step === 1 ? images.length : 5} 
+                        count={5} 
                         handleOpenPopup={handleOpenPopup}/>
                 </div>
             )}
