@@ -221,7 +221,7 @@
 - **Объём:** XS. **Риск:** нет.
 - **Проверка:** First Load JS `/media` в `next build` меньше baseline.
 
-### 3.6 (опционально) LazyMotion (P8)
+### 3.6 (опционально) LazyMotion (P8) — ⏭ пропущено владельцем (framer-motion ≈44 kB gzip на каждой странице через `template.tsx`; LazyMotion дал бы −12…15 kB ценой правки 31 файла и обёртки для design-sync)
 - **Когда:** только если по итогам 3.5 framer-motion заметно весит в бандле.
 - **Объём:** M. **Риск:** средний.
 - **Проверка:** First Load JS и визуальный smoke.
