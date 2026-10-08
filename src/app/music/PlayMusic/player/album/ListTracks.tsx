@@ -10,18 +10,18 @@ import BgFocus from "@/components/bg-page/BgFocus";
 import { canada } from "../../../../fonts/fonts"; 
 import s from './ListTracks.module.scss'
 import { IAlbums } from "@/interfaces/albums";
-import { IStatusPlay } from "@/interfaces/player";
 
 
-interface IListTracks extends IStatusPlay {
+interface IListTracks {
     album: IAlbums,
-    trackId: number,
-    handleTrackSelect: (id:number) => void,
-    handleListTracks: () => void
+    trackIndex: number,
+    isPlaying: boolean,
+    onSelectTrack: (index: number) => void,
+    onClose: () => void
 }
 
 
-const ListTracks:FC<IListTracks> =({handleListTracks, handleTrackSelect, album, statusPlay, trackId}) => {
+const ListTracks:FC<IListTracks> =({ album, trackIndex, isPlaying, onSelectTrack, onClose }) => {
     
     return (
         <>
@@ -37,7 +37,7 @@ const ListTracks:FC<IListTracks> =({handleListTracks, handleTrackSelect, album, 
                         </motion.span>
                     </h3>
 
-                    <button type="button" className={s.btn} onClick={handleListTracks}>Свернуть</button>
+                    <button type="button" className={s.btn} onClick={onClose}>Свернуть</button>
                 </div>
                 <div className={s.listTracks}>
                 {album.tracks.map((track) => (
@@ -45,10 +45,10 @@ const ListTracks:FC<IListTracks> =({handleListTracks, handleTrackSelect, album, 
                         type="button"
                         className={s.track}
                         key={track.id}
-                        onClick={() => handleTrackSelect(track.id)}
-                        aria-current={trackId === track.id ? 'true' : undefined}
+                        onClick={() => onSelectTrack(track.id)}
+                        aria-current={trackIndex === track.id ? 'true' : undefined}
                         >
-                        {trackId === track.id && statusPlay.play ? <Pause />  : <Play />}
+                        {trackIndex === track.id && isPlaying ? <Pause />  : <Play />}
                         <span className={s.info}>
                             <span className={s.name}>{track.name} - <span className={s.artist}>{album.artist}</span></span>
                             <span className={`${canada.className} ${s.duration}`}>{track.duration}</span>

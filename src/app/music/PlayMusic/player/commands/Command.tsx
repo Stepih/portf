@@ -5,62 +5,46 @@ import Pause from '@/assets/_img/icons/pause-sm.svg'
 import Play from '@/assets/_img/icons/play-sm.svg'
 
 import s from './Command.module.scss'
-import { ISwitchTrack } from "@/interfaces/player";
-import { playAudio } from "../playAudio";
 
-interface IComand extends ISwitchTrack {
-    countTracks: number
+interface IComand {
+    isPlaying: boolean,
+    hasPrev: boolean,
+    hasNext: boolean,
+    onTogglePlay: () => void,
+    onPrev: () => void,
+    onNext: () => void,
 }
 
-const Commands:FC<IComand> = ({ handleTrackSelect, trackId, audioRef, statusPlay, countTracks}) => {
-    
-    // На краях альбома кнопки неактивны и ничего не делают
-    const cmd = {
-        nextTrack: () => {
-            if (trackId < countTracks - 1) handleTrackSelect(trackId + 1);
-        },
-        backTrack: () => {
-            if (trackId > 0) handleTrackSelect(trackId - 1);
-        },
-        togglePlay: () => {
-            if (audioRef.current) {
-                if (statusPlay.play) {
-                    audioRef.current.pause();
-                } else {
-                    playAudio(audioRef.current, () => statusPlay.setPlay(false));
-                }
-                statusPlay.setPlay(!statusPlay.play);
-            }
-        }
-    }
+// На краях альбома кнопки неактивны
+const Commands:FC<IComand> = ({ isPlaying, hasPrev, hasNext, onTogglePlay, onPrev, onNext }) => {
 
     return (
         <div className={s.comands}>
             <button
                 type="button"
                 className={`${s.btn} ${s.back}`}
-                onClick={cmd.backTrack}
-                disabled={trackId === 0}
+                onClick={onPrev}
+                disabled={!hasPrev}
                 aria-label="Предыдущий трек"
             >
-                <Back className={trackId === 0 ? s.unsetActive : ''}/>
+                <Back className={!hasPrev ? s.unsetActive : ''}/>
             </button>
             <button
                 type="button"
                 className={s.btn}
-                onClick={cmd.togglePlay}
-                aria-label={statusPlay.play ? 'Пауза' : 'Воспроизвести'}
+                onClick={onTogglePlay}
+                aria-label={isPlaying ? 'Пауза' : 'Воспроизвести'}
             >
-                {statusPlay.play ? <Pause /> : <Play />}
+                {isPlaying ? <Pause /> : <Play />}
             </button>
             <button
                 type="button"
                 className={s.btn}
-                onClick={cmd.nextTrack}
-                disabled={trackId + 1 === countTracks}
+                onClick={onNext}
+                disabled={!hasNext}
                 aria-label="Следующий трек"
             >
-                <Back className={trackId + 1 === countTracks ? s.unsetActive : ''} style={{transform: 'rotate(180deg)'}}/>
+                <Back className={!hasNext ? s.unsetActive : ''} style={{transform: 'rotate(180deg)'}}/>
             </button>
         </div>
     )

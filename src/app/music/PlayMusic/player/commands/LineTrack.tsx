@@ -4,14 +4,11 @@ import { formatTime } from "@/scripts/formatTime";
 import s from './LineTrack.module.scss';
 
 interface ILineTrack {
-  isAudioReady: boolean,
   audioRef: RefObject<HTMLAudioElement | null>,
-  trackId: number,
-  albumId: number,
   loadProgress: number,
 }
 
-const LineTrack: FC<ILineTrack> = ({isAudioReady, audioRef, trackId, albumId, loadProgress }) => {
+const LineTrack: FC<ILineTrack> = ({ audioRef, loadProgress }) => {
   const [time, setTime] = useState(0); // Текущее время трека
   const [duration, setDuration] = useState(0); // Длительность трека
   const [isSeeking, setIsSeeking] = useState(false); // Перематывает ли сейчас пользователь
@@ -25,9 +22,14 @@ const LineTrack: FC<ILineTrack> = ({isAudioReady, audioRef, trackId, albumId, lo
     const audio = audioRef.current;
 
     if (audio) {
+      // Новый трек: элемент тот же, сменился src
+      const handleLoadStart = () => {
+        setDuration(0);
+        setTime(0);
+      };
+
       const handleLoadedMetadata = () => {
         setDuration(audio.duration || 0);
-        setTime(0);
       };
 
       // Обновление текущего времени при проигрывании
@@ -43,20 +45,23 @@ const LineTrack: FC<ILineTrack> = ({isAudioReady, audioRef, trackId, albumId, lo
       }
 
       // Добавляем слушателей
+      audio.addEventListener('loadstart', handleLoadStart);
       audio.addEventListener('loadedmetadata', handleLoadedMetadata);
       audio.addEventListener('timeupdate', handleTimeUpdate);
 
       // Очищаем слушателей при размонтировании
       return () => {
+        audio.removeEventListener('loadstart', handleLoadStart);
         audio.removeEventListener('loadedmetadata', handleLoadedMetadata);
         audio.removeEventListener('timeupdate', handleTimeUpdate);
       };
     }
-  }, [audioRef, trackId, albumId, isSeeking]);
+  }, [audioRef, isSeeking]);
 
-  // Обработка начала перемотки. Захват указателя оставляет перемотку за линией, даже если палец или курсор ушёл с неё
+  // Обработка начала перемотки, когда длительность трека уже известна.
+  // Захват указателя оставляет перемотку за линией, даже если палец или курсор ушёл с неё
   const handlePointerDown = (e: PointerEvent<HTMLDivElement>) => {
-    if (isAudioReady) {
+    if (duration > 0) {
       e.currentTarget.setPointerCapture(e.pointerId);
       setIsSeeking(true);
       updateTimeByClick(e);

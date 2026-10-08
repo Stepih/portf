@@ -7,10 +7,10 @@ import Image from "next/image";
 
 interface Info {
   album: IAlbums;
-  trackId: number;
+  trackIndex: number;
 }
 
-const AlbumInfo: FC<Info> = ({ album, trackId }) => {
+const AlbumInfo: FC<Info> = ({ album, trackIndex }) => {
   const titleRef = useRef<HTMLSpanElement | null>(null);
   const containerRef = useRef<HTMLDivElement | null>(null);
   const controls = useAnimation(); // Анимация текста
@@ -43,7 +43,7 @@ const AlbumInfo: FC<Info> = ({ album, trackId }) => {
         }
       }
     
-  }, [trackId, album, controls]);
+  }, [trackIndex, album, controls]);
 
 
   return (
@@ -73,7 +73,7 @@ const AlbumInfo: FC<Info> = ({ album, trackId }) => {
           className={s.title}
           animate={controls} // Запускаем анимацию только при переполнении
         >
-          {album.tracks[trackId].name}
+          {album.tracks[trackIndex].name}
         </motion.span>
         <span className={s.artist}>{album.artist}</span>
       </div>

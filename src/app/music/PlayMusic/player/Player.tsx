@@ -1,10 +1,9 @@
-import { Dispatch, FC, SetStateAction, useEffect, useState } from "react";
+import { FC, RefObject, useEffect, useState } from "react";
 
 import { motion } from "framer-motion";
 
 import s from './Player.module.scss';
 import Commands from "./commands/Command";
-import { ISwitchTrack } from "@/interfaces/player";
 import { IAlbums } from "@/interfaces/albums";
 import { canada } from "../../../fonts/fonts";
 import Volume from "./commands/Volume";
@@ -16,20 +15,26 @@ import List from '@/assets/_img/icons/list.svg';
 import BgFocus from "@/components/bg-page/BgFocus";
 import { isTouchDevice } from "@/scripts/typeDevice";
 import ClosePlayer from "./commands/ClosePlayer";
-import { playAudio } from "./playAudio";
 
 
-interface IPlayer extends ISwitchTrack {
+interface IPlayer {
   album: IAlbums,
-  handleAlbumSelect: (album: IAlbums | null) => void,
-  handleListTracks: () => void,
-  isAudioReady: boolean,
-  setIsAudioReady: Dispatch<SetStateAction<boolean>>,
-  
+  trackIndex: number,
+  src: string,
+  isPlaying: boolean,
+  volume: number,
+  audioRef: RefObject<HTMLAudioElement | null>,
+  onTogglePlay: () => void,
+  onNext: () => void,
+  onPrev: () => void,
+  onEnded: () => void,
+  onVolumeChange: (value: string) => void,
+  onClose: () => void,
+  onOpenTracks: () => void,
 }
 
-const Player: FC<IPlayer> = ({isAudioReady, setIsAudioReady, handleAlbumSelect, handleListTracks, audioRef, album, handleTrackSelect, trackId, statusPlay }) => {
-  const [volume, setVolume] = useState<number>(1);
+// Состояние и воспроизведение живут в useAudioPlayer; здесь только вид плеера и элемент <audio>
+const Player: FC<IPlayer> = ({ album, trackIndex, src, isPlaying, volume, audioRef, onTogglePlay, onNext, onPrev, onEnded, onVolumeChange, onClose, onOpenTracks }) => {
   const [hover, setHover] = useState(true)
   const [loadProgress, setLoadProgress] = useState(0);
 
@@ -98,34 +103,6 @@ const Player: FC<IPlayer> = ({isAudioReady, setIsAudioReady, handleAlbumSelect, 
   };
   
 
-  // Загружаем громкость из localStorage при первом рендере и инициализируем аудио
-  useEffect(() => {
-    if (mobileDevice) return setVolume(1)
-    const savedVolume = parseFloat(localStorage.getItem("playerVolume") || "1");
-    setVolume(savedVolume);
-    
-  }, []);
-
-  // Обновляем громкость и управляем воспроизведением
-  const { play, setPlay } = statusPlay;
-  useEffect(() => {
-    const audio = audioRef.current;
-    if (!audio) return;
-    audio.volume = volume;
-    if (play && isAudioReady) {
-      playAudio(audio, () => setPlay(false));
-    } else {
-      audio.pause();
-    }
-  }, [volume, play, isAudioReady, audioRef, setPlay]);
-
-  // Обработчик изменения громкости
-  const handleVolumeChange = (num: string) => {
-    setVolume(parseFloat(num));
-    localStorage.setItem("playerVolume", num);
-  };
-
-
   return (
     <>
     <BgFocus status={hover}/>
@@ -140,41 +117,39 @@ const Player: FC<IPlayer> = ({isAudioReady, setIsAudioReady, handleAlbumSelect, 
       exit={{y: 40, opacity: 0}}
       >
       <div className={s.content}>
-        <LineTrack isAudioReady={isAudioReady} loadProgress={loadProgress} audioRef={audioRef} trackId={trackId} albumId={album.id} />
+        <LineTrack loadProgress={loadProgress} audioRef={audioRef} />
 
         <div className={s.panel}>
           <Commands
-            statusPlay={statusPlay}
-            audioRef={audioRef}
-            countTracks={album.tracks.length}
-            handleTrackSelect={handleTrackSelect}
-            trackId={trackId}
+            isPlaying={isPlaying}
+            hasPrev={trackIndex > 0}
+            hasNext={trackIndex < album.tracks.length - 1}
+            onTogglePlay={onTogglePlay}
+            onPrev={onPrev}
+            onNext={onNext}
           />
-          <motion.button type="button" className={s.img} whileTap={{ scale: 0.9 }} onClick={handleListTracks} aria-label="Список треков">
+          <motion.button type="button" className={s.img} whileTap={{ scale: 0.9 }} onClick={onOpenTracks} aria-label="Список треков">
             <List />
           </motion.button>
           
-          <AlbumInfo key={trackId} trackId={trackId} album={album} />
+          <AlbumInfo key={trackIndex} trackIndex={trackIndex} album={album} />
         </div>
 
         {/* Ползунок громкости */}
         <div className={s.right}>
-          {!mobileDevice && <Volume handleVolumeChange={handleVolumeChange} volume={volume} />}
-          <ClosePlayer handleAlbumSelect={handleAlbumSelect} />
+          {!mobileDevice && <Volume handleVolumeChange={onVolumeChange} volume={volume} />}
+          <ClosePlayer onClose={onClose} />
         </div>
-        {/* Элемент аудио */}
-        <audio 
-          onCanPlay={() => {setIsAudioReady(true)}}
-          src={album.tracks[trackId].path}
-          className={s.audio} 
-          ref={audioRef} 
-          controls 
-          key={album.tracks[trackId].path}
+        {/* Элемент аудио один на всё время работы плеера: при смене трека меняется только src */}
+        <audio
+          src={src}
+          className={s.audio}
+          ref={audioRef}
+          controls
+          onLoadStart={() => setLoadProgress(0)}
           onProgress={handleAudioProgress}
-          onEnded={() => statusPlay.setPlay(false)}
-          >
-          
-        </audio>
+          onEnded={onEnded}
+        />
       </div>
     </motion.div>
     </>
