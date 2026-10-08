@@ -1,34 +1,32 @@
 import { FC, useEffect, useState } from "react";
+import { createPortal } from "react-dom";
 
 import s from './MediaContentList.module.scss';
 import { IImageMedia } from "@/interfaces/musicHistory";
 
 import VideoList from "./video/VideoList";
 import ImageList from "./image/ImageList";
-import Link from "next/link";
 
-
-import ButtonUp from "@/components/ui/buttons/button-up/ButtonUp";
 import { useBodyScrollLock } from "@/hooks/useBodyScrollLock";
 import Popup from "./Popup";
 import { IMediaVideo } from "@/interfaces/slider";
 import { AnimatePresence } from "framer-motion";
 
 interface IMediaContent {
-    updatePopupActive: (isActive: boolean) => void, 
     videos: IMediaVideo[], 
     images: IImageMedia[], 
 }
 
-const MediaList: FC<IMediaContent> = ({ videos, images, updatePopupActive }) => {
+const MediaList: FC<IMediaContent> = ({ videos, images }) => {
     const [popup, setPopup] = useState<IMediaVideo[] | IImageMedia[] | undefined>(undefined)
+
+    // Портал нужен только в браузере: на сервере document нет
+    const [mounted, setMounted] = useState(false)
 
     useBodyScrollLock(Boolean(popup))
 
-    useEffect(() => {
-        updatePopupActive(Boolean(popup))
-    }, [popup])
-    
+    useEffect(() => setMounted(true), [])
+
     const handleOpenPopup = (content?:IMediaVideo[] | IImageMedia[] ) => {
         if (content === undefined) {
             setPopup(undefined)
@@ -39,11 +37,17 @@ const MediaList: FC<IMediaContent> = ({ videos, images, updatePopupActive }) => 
     };
 
 
+    if (videos.length === 0 && images.length === 0) return null
+
     return (
         <>
-        <AnimatePresence>
-            {popup && <Popup content={popup} handleOpenPopup={handleOpenPopup} />}
-        </AnimatePresence>
+        {/* Попап выносится в body: секции шагов — отдельные контексты наложения, и соседние шаги и полоса чекпоинтов перекрыли бы его */}
+        {mounted && createPortal(
+            <AnimatePresence>
+                {popup && <Popup content={popup} handleOpenPopup={handleOpenPopup} />}
+            </AnimatePresence>,
+            document.body
+        )}
         <div className={s.wrapper}>
             {videos.length > 0 && (
                 <>
@@ -61,12 +65,6 @@ const MediaList: FC<IMediaContent> = ({ videos, images, updatePopupActive }) => 
                         images={images} 
                         count={5} 
                         handleOpenPopup={handleOpenPopup}/>
-                </div>
-            )}
-            {images.length === 0 && videos.length === 0 && (
-                <div className={s.btns}>
-                    <Link className={s.mainBtn} href="/">На главную</Link>
-                    <ButtonUp />
                 </div>
             )}
         </div>

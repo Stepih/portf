@@ -8,10 +8,10 @@ import { historyIcons } from "./icons";
 interface ICheckPoints {
     steps: Pick<IMusicHistory, 'id' | 'title' | 'icon'>[],
     step: number,
-    handleSetStep: (id: number, block: boolean) => void
+    onSelect: (idx: number) => void
 }
 
-const CheckPoints:FC<ICheckPoints> = ({steps, step, handleSetStep}) => {
+const CheckPoints:FC<ICheckPoints> = ({steps, step, onSelect}) => {
 
     return (
         <div className={s.wrapper}>
@@ -24,7 +24,7 @@ const CheckPoints:FC<ICheckPoints> = ({steps, step, handleSetStep}) => {
                         aria-current={idx === step ? 'step' : undefined}
                         // Пройденные и текущий шаг яркие, следующие приглушены
                         animate={{opacity: idx <= step ? 1 : .5}}
-                        onClick={handleSetStep.bind(null, idx, false)}
+                        onClick={() => onSelect(idx)}
                         className={`${s.checkBlock} ${idx !== step ? s.noActiveMobile : ''}`}
                     >
 

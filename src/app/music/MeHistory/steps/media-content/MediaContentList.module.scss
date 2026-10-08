@@ -14,25 +14,6 @@
         max-width: 100%;
     }
 
-    .btns {
-        display: flex;
-        align-self: center;
-        gap: 30px;
-
-        margin: auto;
-
-        .mainBtn {
-            padding: 25px 18px;
-
-            text-decoration: none;
-            color: white;
-            font-weight: 600;
-
-            background: var(--color-overlay);
-            box-shadow: vars.$shadow;
-            border-radius: 13px;
-        }
-    }
 }
 
 
