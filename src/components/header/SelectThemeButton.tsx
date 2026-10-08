@@ -15,24 +15,20 @@ const spring = {
   type Theme = "light" | "dark";
 
 const SelectThemeButton:FC = () => {
-    useEffect(()=> {
-        const localTheme = localStorage.getItem("theme")
-        if ("light" === localTheme || "dark" === localTheme){
-            setTheme(localTheme)
-        }
-    }, [])
     const [theme, setTheme] = useState<Theme>("light");
+
+    // Тему на <html> уже поставил inline-скрипт из layout.tsx, кнопка только подхватывает её.
+    // Сам атрибут здесь не пишем, иначе до чтения сохранённой темы мелькнёт светлая.
+    useEffect(() => {
+        if (document.documentElement.dataset.theme === "dark") setTheme("dark")
+    }, [])
 
     const toggleTheme = () => {
         const newTheme = theme === "light" ? "dark" : "light";
         setTheme(newTheme);
-        localStorage.setItem("theme", newTheme)
+        try { localStorage.setItem("theme", newTheme) } catch {}
         document.documentElement.setAttribute("data-theme", newTheme);
     };
-
-    useEffect(() => {
-        document.documentElement.setAttribute("data-theme", theme);
-    }, [theme]);
 
 
     const toggleSwitch = () => {

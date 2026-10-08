@@ -29,6 +29,9 @@ export const metadata: Metadata = {
   }
 };
 
+// Ставит сохранённую тему до первой отрисовки, иначе у тёмной темы мелькает светлая (AUDIT.md, B7)
+const themeScript = `try{var t=localStorage.getItem("theme");if(t==="light"||t==="dark")document.documentElement.setAttribute("data-theme",t)}catch(e){}`;
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -36,7 +39,10 @@ export default function RootLayout({
 }>) {
   
   return (
-    <html lang="ru">
+    <html lang="ru" suppressHydrationWarning>
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: themeScript }} />
+      </head>
       <body className={`${s.body}`}>
           <BackgroundPage />
           <Header />
