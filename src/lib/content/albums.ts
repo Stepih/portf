@@ -40,19 +40,11 @@ const exists = (filePath: string) => fs.access(filePath).then(() => true, () => 
 // Натуральный порядок: «2» раньше «10»
 const byName = (a: string, b: string) => a.localeCompare(b, 'ru', { numeric: true });
 
-// Убирает расширение из имени трека
-const sliceFormat = (name: string): string => {
-    for (let i = 0; i < audioFormats.length; i++) {
-        if (name.indexOf(audioFormats[i]) >= 0) {
-            return name.slice(0, name.indexOf(audioFormats[i]));
-        }
-    }
-    return 'NF';
-};
-
-// Сканирует public/music: каждая папка — альбом. Альбомы без треков пропускаются
-export async function getAlbums(): Promise<IAlbums[]> {
-    const musicDirectory = path.join(process.cwd(), 'public/music');
+// Сканирует public/music: каждая папка — альбом. Альбомы без треков пропускаются.
+// Папку можно передать явно (тесты); пути в ответе всё равно /music/..., как их отдаёт public
+export async function getAlbums(
+    musicDirectory = path.join(process.cwd(), 'public/music')
+): Promise<IAlbums[]> {
 
     const albums = (await fs.readdir(musicDirectory, { withFileTypes: true }))
         .filter(dirent => dirent.isDirectory())
@@ -69,7 +61,8 @@ export async function getAlbums(): Promise<IAlbums[]> {
                     .sort(byName)
                     .map(async (track, trackIndex) => ({
                         id: trackIndex,
-                        name: sliceFormat(track),
+                        // Имя файла без расширения
+                        name: path.parse(track).name,
                         path: `/music/${album}/${track}`,
                         duration: await getTrackDuration(path.join(albumPath, track)),
                     }))

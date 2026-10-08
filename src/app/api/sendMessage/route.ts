@@ -1,24 +1,8 @@
+import { createRateLimiter } from '@/lib/rateLimit';
 import { HONEYPOT_FIELD, validateFeedback } from '@/lib/validation/feedback';
 
-// Rate-limit в памяти: прод работает в одном контейнере, этого достаточно
-const RATE_LIMIT = 5;
-const RATE_WINDOW_MS = 10 * 60 * 1000;
-const requestsByIp = new Map<string, number[]>();
-
-const isRateLimited = (ip: string) => {
-    const now = Date.now();
-
-    // Чистим устаревшие записи, чтобы Map не рос бесконечно
-    for (const [key, times] of requestsByIp) {
-        if (times[times.length - 1] <= now - RATE_WINDOW_MS) requestsByIp.delete(key);
-    }
-
-    const recent = (requestsByIp.get(ip) ?? []).filter(time => time > now - RATE_WINDOW_MS);
-    recent.push(now);
-    requestsByIp.set(ip, recent);
-
-    return recent.length > RATE_LIMIT;
-};
+// Rate-limit в памяти: прод работает в одном контейнере, этого достаточно. 5 заявок за 10 минут с одного IP
+const isRateLimited = createRateLimiter({ limit: 5, windowMs: 10 * 60 * 1000 });
 
 const getClientIp = (req: Request) =>
     req.headers.get('x-forwarded-for')?.split(',')[0].trim() ||
@@ -28,7 +12,7 @@ const getClientIp = (req: Request) =>
 const json = (body: object, status: number) => Response.json(body, { status });
 
 export async function POST(req: Request) {
-    if (isRateLimited(getClientIp(req))) {
+    if (isRateLimited(getClientIp(req), Date.now())) {
         return json({ error: 'Too many requests' }, 429);
     }
 
