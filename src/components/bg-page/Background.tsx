@@ -2,6 +2,7 @@
 
 import { FC, useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
+import { animate, useMotionValue, useMotionValueEvent, useScroll } from "framer-motion";
 
 import s from "./Background.module.scss";
 import { BgRectangle1, BgRectangle2 } from "./BgRectangle";
@@ -11,7 +12,8 @@ const BackgroundPage: FC = () => {
   const touchDevice = useIsTouchDevice(); // Определение сенсорного устройства
   
   const [currentUrl, setCurrentUrl] = useState('');
-  const [parallax, setParallax] = useState(0);
+  const { scrollY } = useScroll();
+  const parallax = useMotionValue(0);
   const [showRectangles, setShowRectangles] = useState(false); // Состояние для отображения ректанглов
   const pathname = usePathname(); // Получение текущего пути
 
@@ -22,19 +24,11 @@ const BackgroundPage: FC = () => {
     setCurrentUrl(lastSegment);
   }, [pathname]);
 
-  useEffect(() => {
-    if (touchDevice) return; // Если сенсорное устройство, не добавляем обработчик прокрутки
-
-    const handleScroll = () => {
-      const scrollPosition = window.scrollY;
-      setParallax(-scrollPosition / -20); // Вычисление параллакса
-    };
-
-    window.addEventListener("scroll", handleScroll);
-    return () => {
-      window.removeEventListener("scroll", handleScroll);
-    };
-  }, [touchDevice]); // Добавляем зависимость от touchDevice
+  // Параллакс без ре-рендеров: догоняем 1/20 прокрутки твином 0.3 с, как раньше делал animate
+  useMotionValueEvent(scrollY, "change", (y) => {
+    if (touchDevice) return; // На сенсорных устройствах фигур нет
+    animate(parallax, y / 20, { duration: 0.3, ease: "easeInOut" });
+  });
 
   useEffect(() => {
     setShowRectangles(true); // Показываем ректанглы сразу при загрузке

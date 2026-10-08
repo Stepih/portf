@@ -6,15 +6,17 @@ import { debounce } from "lodash";
 
 import MediaItem from "./mediaContent/MediaItem";
 import MediaItemPopup from "./mediaContent/MediaItemPopup";
-import { AnimatePresence } from "framer-motion";
+import { AnimatePresence, useScroll } from "framer-motion";
+import { IBlockBounds } from "./fadeOpacity";
 
 import { useBodyScrollLock } from "@/hooks/useBodyScrollLock";
 import { useIsTouchDevice } from "@/hooks/useIstouchDevice";
 
 const ImageMediaContent: FC<{ content: IMedia[] }> = ({ content }) => {
     const touchDevice = useIsTouchDevice();
-    const [scrollPosition, setScrollPosition] = useState(0);
-    const [positions, setPositions] = useState<{ top: number; bottom: number }[]>([]);
+    // Прокрутка живёт в MotionValue: блоки гаснут без ре-рендеров
+    const { scrollY } = useScroll();
+    const [positions, setPositions] = useState<IBlockBounds[]>([]);
     
     const [popup, setPopup] = useState<boolean>(false);
     useBodyScrollLock(popup);
@@ -48,10 +50,6 @@ const ImageMediaContent: FC<{ content: IMedia[] }> = ({ content }) => {
         if (windowHeight !== undefined) {
             updatePositions();
 
-            const onScroll = () => {
-                requestAnimationFrame(handleScroll);
-            };
-            
             const onResize = debounce(() => {
                 if (typeof window !== "undefined" && Math.abs(prevHeight.current - window.innerHeight) > 100) {
                     setWindowHeight(window.innerHeight);
@@ -61,12 +59,10 @@ const ImageMediaContent: FC<{ content: IMedia[] }> = ({ content }) => {
             }, 500);
 
             if (typeof window !== "undefined" && rabota < windowHeight) {
-                window.addEventListener("scroll", onScroll, { passive: true });
                 window.addEventListener('resize', onResize, { passive: true });
             }
 
             return () => {
-                window.removeEventListener("scroll", onScroll);
                 window.removeEventListener("resize", onResize);
             };
         }
@@ -98,35 +94,9 @@ const ImageMediaContent: FC<{ content: IMedia[] }> = ({ content }) => {
         }
     };
 
-    const handleScroll = () => {
-        if (typeof window !== "undefined") {
-            setScrollPosition(window.scrollY);
-        }
-    };
-
-    const calculateOpacity = (id: number) => {
-        if (windowHeight !== undefined && windowHeight < rabota) return 1
-        if (id === positions.length - 1) return 1;
-        const elemTop = positions[id]?.top ?? 0;
-        const elemBottom = positions[id]?.bottom ?? 0;
-        const elemHeight = elemBottom - elemTop;
-
-        if (elemHeight === 0) return 1;
-
-        if (scrollPosition < elemTop) {
-            return 1;
-        }
-
-        if (scrollPosition >= elemTop && scrollPosition <= elemBottom) {
-            const scrollRelativeToElem = scrollPosition - elemTop;
-            const speed = 3;
-            const opacity = 1 - (scrollRelativeToElem / elemHeight) * speed;
-
-            return Math.max(opacity, 0);
-        }
-
-        return 0;
-    };
+    // На низком экране анимация выключена, последний блок не гаснет никогда
+    const fadeEnabled = (id: number) =>
+        windowHeight !== undefined && rabota < windowHeight && id !== positions.length - 1;
 
     return (
         <>
@@ -141,7 +111,8 @@ const ImageMediaContent: FC<{ content: IMedia[] }> = ({ content }) => {
                 handleSetPopup={!touchDevice ? handleSetPopup : undefined}
                 id={id}
                 item={item}
-                opacity={calculateOpacity(id)}
+                scrollY={scrollY}
+                bounds={fadeEnabled(id) ? positions[id] : undefined}
                 contentRef={(el) => {
                     contentRefs.current[id] = el;
                 }}

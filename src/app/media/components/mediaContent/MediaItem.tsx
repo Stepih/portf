@@ -1,10 +1,11 @@
 "use client";
 
 import { FC, useEffect,  useState } from "react";
-import {  motion } from "framer-motion";
+import { motion, MotionValue, useTransform } from "framer-motion";
 import Link from "next/link";
 import { ralewayBold } from "../../../fonts/fonts";
 import { IMedia } from "@/interfaces/mediaImages";
+import { fadeOpacity, IBlockBounds } from "../fadeOpacity";
 
 import s from "./MediaItem.module.scss";
 import ActionButton from "@/components/ui/buttons/button-action/ActionButton";
@@ -17,18 +18,23 @@ import Prompt from "@/components/ui/prompt/Prompt";
 interface MediaItemProps {
     item: IMedia;
     id: number;
-    opacity: number;
+    scrollY: MotionValue<number>;
+    // Границы блока в потоке страницы; без них блок не гаснет
+    bounds?: IBlockBounds;
     contentRef: (el: HTMLDivElement | null) => void;
     popup: boolean,
     handleSetPopup?: (id: number | undefined) => void
 }
 
-const MediaItem: FC<MediaItemProps> = ({ item, id, opacity, contentRef, popup, handleSetPopup }) => {
+const MediaItem: FC<MediaItemProps> = ({ item, id, scrollY, bounds, contentRef, popup, handleSetPopup }) => {
    
     const [prompt, setPrompt] = useState(false);
     
     const content = item.images ? item.images : item.imagesComparison;
     const checkPopup = popup !== undefined && popup;
+
+    const opacity = useTransform(scrollY, (y) => (bounds ? fadeOpacity(y, bounds) : 1));
+    const pointerEvents = useTransform(opacity, (o) => (o === 0 ? "none" : "auto"));
 
     const [pageHeight, setPageHeight] = useState(0);
 
@@ -53,7 +59,7 @@ const MediaItem: FC<MediaItemProps> = ({ item, id, opacity, contentRef, popup, h
                 ref={contentRef}
                 style={{
                     opacity,
-                    pointerEvents: opacity === 0 ? "none" : "auto",
+                    pointerEvents,
                     position: pageHeight && pageHeight > 800 ? 'sticky' : 'relative'
                 }}
             >

@@ -2,15 +2,21 @@
 
 import { FC } from 'react'
 import s from './BgRectangle.module.scss'
-import { motion } from "framer-motion";
+import { motion, MotionValue } from "framer-motion";
 
 import Nota from '@/assets/_img/icons/nota.svg'
 
-export const BgRectangle1:FC<{currentUrl: string, parallax: number}> = ({currentUrl, parallax}) => {
+interface BgRectangleProps {
+    currentUrl: string;
+    // Сдвиг по вертикали: MotionValue двигает фигуру без ре-рендеров
+    parallax: number | MotionValue<number>;
+}
+
+export const BgRectangle1:FC<BgRectangleProps> = ({currentUrl, parallax}) => {
     
 
     return (
-        <motion.div animate={{y: parallax}} transition={{damping: 1}} className={s.BgRectangle1}>
+        <motion.div style={{y: parallax}} className={s.BgRectangle1}>
             <div className={s.circle}>
                 
             </div>
@@ -20,9 +26,9 @@ export const BgRectangle1:FC<{currentUrl: string, parallax: number}> = ({current
     )
 }
 
-export const BgRectangle2:FC<{currentUrl: string, parallax: number}> = ({currentUrl, parallax}) => {
+export const BgRectangle2:FC<BgRectangleProps> = ({currentUrl, parallax}) => {
     return (
-        <motion.div animate={{y: parallax}} transition={{damping: 1}} className={s.BgRectangle2}>
+        <motion.div style={{y: parallax}} className={s.BgRectangle2}>
             <div className={s.circle}>
                 
             </div>
