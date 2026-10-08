@@ -4,8 +4,7 @@
 import '@/styles/globals.scss';
 
 export { default as ActionButton } from '@/components/ui/buttons/button-action/ActionButton';
-export { default as ButtonDown } from '@/components/ui/buttons/button-down/ButtonDown';
-export { default as ButtonRight } from '@/components/ui/buttons/button-right/ButtonRight';
+export { default as ButtonMore } from '@/components/ui/buttons/button-more/ButtonMore';
 export { default as ButtonUp } from '@/components/ui/buttons/button-up/ButtonUp';
 export { default as ErrorMessage } from '@/components/ui/errorMessage/ErrorMessage';
 export { default as LoadingBlock } from '@/components/ui/loading/LoadingBlock';

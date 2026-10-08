@@ -49,7 +49,7 @@ src/data/                статичный контент и конфиг (за
 src/lib/content/         серверные функции данных: getAlbums (public/music), getMusicHistory (+ видео из public/video), getMediaContent (public/media)
 src/interfaces/          TS-типы, префикс I (IAlbums, IMedia, …)
 src/constants/urls.ts    внешние и внутренние ссылки
-src/scripts/             DOM-хелперы: lockBodyScroll/scrollToElementById, isTouchDevice
+src/scripts/             хелперы: lockBodyScroll/scrollToElementById, isTouchDevice (единственный детектор тача), formatTime
 src/hooks/               useIsTouchDevice, useBodyScrollLock
 src/styles/              globals.scss, theme.scss (CSS-переменные тем), variables.scss (SCSS-переменные)
 src/assets/_img/         иконки (svg) и картинки

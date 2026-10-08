@@ -4,15 +4,16 @@ import { FC } from "react";
 import Popup from "./components/popup/Popup";
 import { popupTitleData } from "@/data/titleBlockPage";
 import { Metadata } from "next";
+import { baseOpenGraph } from "@/data/metadata";
 
 export const metadata: Metadata = {
     title: "Оставить заявку",
     description: popupTitleData.description,
     
     openGraph: {
+        ...baseOpenGraph,
         title: 'Оставить заявку',
         description: popupTitleData.description,
-        locale: 'ru_RU'
     },
     robots: {
         index: false,

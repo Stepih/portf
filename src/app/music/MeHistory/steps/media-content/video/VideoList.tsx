@@ -3,8 +3,7 @@ import { FC } from "react";
 
 import s from './VideoList.module.scss'
 import Video from "./Video";
-import ButtonRight from "@/components/ui/buttons/button-right/ButtonRight";
-import ButtonDown from "@/components/ui/buttons/button-down/ButtonDown";
+import ButtonMore from "@/components/ui/buttons/button-more/ButtonMore";
 import { IMediaVideo } from "@/interfaces/slider";
 
 
@@ -28,10 +27,10 @@ const VideoList:FC<IVideoList> = ({count, title, videos, handleOpenPopup})=> {
                     </div>
                 ))}
                 <div className={s.btnPC}>
-                    <ButtonRight param={videos} paramAction={handleOpenPopup} />
+                    <ButtonMore direction="right" param={videos} paramAction={handleOpenPopup} />
                 </div>
                 <div className={s.btnMB}>
-                    <ButtonDown param={videos} paramAction={handleOpenPopup} />
+                    <ButtonMore direction="down" param={videos} paramAction={handleOpenPopup} />
                 </div>
                 
             </div>

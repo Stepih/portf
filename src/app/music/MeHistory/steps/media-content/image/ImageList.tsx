@@ -3,8 +3,7 @@ import Image from "next/image";
 
 import s from './ImageList.module.scss'
 import { IImageMedia } from "@/interfaces/musicHistory";
-import ButtonRight from "@/components/ui/buttons/button-right/ButtonRight";
-import ButtonDown from "@/components/ui/buttons/button-down/ButtonDown";
+import ButtonMore from "@/components/ui/buttons/button-more/ButtonMore";
 
 const ImageList:FC<{
     title: string, 
@@ -30,10 +29,10 @@ const ImageList:FC<{
                 </div>
             )}
             <div className={s.btnPC}>
-                <ButtonRight param={images} paramAction={handleOpenPopup} />
+                <ButtonMore direction="right" param={images} paramAction={handleOpenPopup} />
             </div>
             <div className={s.btnMB}>
-                <ButtonDown param={images} paramAction={handleOpenPopup} />
+                <ButtonMore direction="down" param={images} paramAction={handleOpenPopup} />
             </div>
         </div>
         </>

@@ -8,16 +8,21 @@ import BackgroundPage from "@/components/bg-page/Background";
 import Header from "@/components/header/Header";
 import Footer from "@/components/footer/Footer";
 import YandexMetrika from "@/components/analytics/YandexMetrika";
+import { baseOpenGraph } from "@/data/metadata";
 
 
 export const metadata: Metadata = {
-  title: "Work Portfolio By Kartuzov Stepan",
+  // Страницы задают title целиком, шаблон его не меняет. default — заголовок главной
+  title: {
+    default: "Work Portfolio By Kartuzov Stepan",
+    template: "%s",
+  },
   description: "Это мой личный сайт, некое портфолио, которое ознакомит Вас с разными отраслями моего творчества",
   keywords: "Портфолио музыканта и программиста, создание музыки, веб-разработка, разработка приложений, программирование, фриланс, графический дизайн, музыкальные треки, разработка сайтов, проектирование интерфейсов, продюсирование музыки, разработка ПО, UI/UX дизайн, музыкальные проекты, программирование на Python, создание альбомов, веб-дизайн, звуковое оформление, React, Node.js, фронтенд и бэкенд разработки",
   openGraph: {
+    ...baseOpenGraph,
     title: 'Work Portfolio By Kartuzov Stepan',
     description: 'Это мой личный сайт, некое портфолио, которое ознакомит Вас с разными отраслями моего творчества',
-    locale: 'ru_RU'
   },
   robots: {
     index: true,

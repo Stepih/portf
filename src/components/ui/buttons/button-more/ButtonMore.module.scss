@@ -7,8 +7,6 @@
     align-items: center;
     flex-direction: column;
 
-    padding: 5px 33px;
-
     background: var(--color-overlay);
     box-shadow: vars.$shadow;
     outline: none;
@@ -22,5 +20,18 @@
         position: absolute;
         color: white;
         font-weight: 600;
+    }
+}
+
+.down {
+    padding: 5px 33px;
+}
+
+.right {
+    height: 100%;
+    transition: vars.$transition;
+
+    .img {
+        rotate: -90deg;
     }
 }

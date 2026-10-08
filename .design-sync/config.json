@@ -8,8 +8,7 @@
   "cssEntry": "index.css",
   "docsMap": {
     "ActionButton": "../../groups/Actions.md",
-    "ButtonDown": "../../groups/Actions.md",
-    "ButtonRight": "../../groups/Actions.md",
+    "ButtonMore": "../../groups/Actions.md",
     "ButtonUp": "../../groups/Actions.md",
     "AnimatedButton": "../../groups/Actions.md",
     "ArrowLink": "../../groups/Actions.md",
@@ -72,7 +71,7 @@
     "AnimatedButton": {
       "cardMode": "column"
     },
-    "ButtonDown": {
+    "ButtonMore": {
       "cardMode": "column"
     },
     "ButtonUp": {

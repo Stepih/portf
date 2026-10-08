@@ -1,5 +1,6 @@
 import { FC, useEffect, useState, PointerEvent, RefObject } from "react";
 import { motion } from "framer-motion";
+import { formatTime } from "@/scripts/formatTime";
 import s from './LineTrack.module.scss';
 
 interface ILineTrack {
@@ -52,13 +53,6 @@ const LineTrack: FC<ILineTrack> = ({isAudioReady, audioRef, trackId, albumId, lo
       };
     }
   }, [audioRef, trackId, albumId, isSeeking]);
-
-  // Форматирование времени в "минуты:секунды"
-  const formatTime = (time: number) => {
-    const minutes = Math.floor(time / 60);
-    const seconds = Math.floor(time % 60).toString().padStart(2, '0');
-    return `${minutes}:${seconds}`;
-  };
 
   // Обработка начала перемотки. Захват указателя оставляет перемотку за линией, даже если палец или курсор ушёл с неё
   const handlePointerDown = (e: PointerEvent<HTMLDivElement>) => {

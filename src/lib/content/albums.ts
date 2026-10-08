@@ -2,15 +2,10 @@ import fs from 'fs/promises';
 import path from 'path';
 import { parseFile } from 'music-metadata';
 import { IAlbums, ITracks } from "@/interfaces/albums";
+import { formatTime } from "@/scripts/formatTime";
 
 // Допустимые аудиоформаты
 const audioFormats = ['.mp3', '.wav', '.ogg', '.flac'];
-
-const formatTime = (time: number) => {
-    const minutes = Math.floor(time / 60);
-    const seconds = Math.floor(time % 60).toString().padStart(2, '0');
-    return `${minutes}:${seconds}`;
-};
 
 // Длительность трека в формате m:ss. parseFile читает файл потоком, а не целиком
 const readTrackDuration = async (trackPath: string): Promise<string> => {

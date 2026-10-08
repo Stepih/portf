@@ -238,8 +238,8 @@
 - **Исправленные ошибки:** `any` в `ButtonDown`/`ButtonRight` (кнопки стали generic по типу `param`, пропсы прежние), пустой интерфейс `IImageMedia` (стал алиасом `IMediaImage`), `any` в `src/scripts/idArray.ts` (файл не использовался и удалён, это пункт из 4.3).
 - **Оставшиеся предупреждения** (на 2026-10-08, разбирать в 4.3–5.1):
   - `react-hooks/exhaustive-deps`: `Steps.tsx:120`, `MediaContentList.tsx:31`, `Player.tsx:75`, `Player.tsx:108`, `ImageComparisonSlider.tsx:41`. Не чинить механически: добавление зависимостей меняет, когда срабатывают эффекты. Плеер — в 5.1, «история» — в 5.2.
-  - ~~`no-unused-vars`~~: убраны в 4.3, после неё 13 предупреждений.
-  - `no-unused-expressions` (`a && a()` вместо `a?.()` или `if`): `ImageMediaContent.tsx:31`, `Popup.tsx:70–71`, `ButtonDown`/`ButtonRight` в `onClick`.
+  - ~~`no-unused-vars`~~: убраны в 4.3, после неё 13 предупреждений; после 4.4 — 11.
+  - `no-unused-expressions` (`a && a()` вместо `a?.()` или `if`): `ImageMediaContent.tsx:31`, `Popup.tsx:70–71`, `ButtonMore` в `onClick` (до 4.4 — `ButtonDown`/`ButtonRight`).
   - `@next/next/no-img-element`: `YandexMetrika.tsx:45` — пиксель `<noscript>`, так и задумано; можно подавить комментарием.
 
 ### 4.2 Типы React 19 (A7) — ✅ сделано (`@types/react@^19.3`, `@types/react-dom@^19.3`; `MutableRefObject` → `RefObject` в `player.ts` и `LineTrack.tsx`; в `Volume.tsx` `onInput` → `onChange`: типы React 19 дают в `onInput` `InputEvent` без `target.value`, а `onChange` у range срабатывает на каждое движение так же, как `input`)
@@ -252,7 +252,7 @@
 - **Объём:** S. **Риск:** низкий.
 - **Проверка:** `tsc`, `next build`, `node .design-sync/build-dist.mjs`.
 
-### 4.4 Убрать дублирование (A4)
+### 4.4 Убрать дублирование (A4) — ✅ сделано (`ButtonMore` с `direction: 'down' | 'right'` в `button-more/`, design-sync: `entry.ts`, `config.json`, одно превью `previews/ButtonMore.tsx`; `formatTime` в `src/scripts/formatTime.ts` с тестом; `title: { default, template: '%s' }` в layout — видимые заголовки по решению пользователя не меняются, страницы больше не повторяют `robots`/`authors`, `locale` берут из `baseOpenGraph` в `src/data/metadata.ts`, потому что Next заменяет `openGraph` целиком; детектор тача один — `isTouchDevice()` с константой `TOUCH_MAX_WIDTH`, хук `useIsTouchDevice` вызывает его в эффекте)
 - **Суть и файлы:**
   - `ButtonRight` + `ButtonDown` → один компонент с `direction`. Править `.design-sync/entry.ts`, `config.json`, `previews/`.
   - `formatTime` → `src/scripts/formatTime.ts`.

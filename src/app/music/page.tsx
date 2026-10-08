@@ -8,6 +8,7 @@ import History from "./MeHistory/History";
 import { IMusicHistory } from "@/interfaces/musicHistory";
 import Breadcrumbs from "@/components/breadCrumb/BreadCrumb";
 import { Metadata } from "next";
+import { baseOpenGraph } from "@/data/metadata";
 import { getAlbums } from "@/lib/content/albums";
 import { getMusicHistory } from "@/lib/content/musicHistory";
 
@@ -20,18 +21,10 @@ export const metadata: Metadata = {
     keywords: 'музыка, альбомы, треки, история музыки, музыкальное портфолио',
     
     openGraph: {
+        ...baseOpenGraph,
         title: 'Моя музыка',
         description: 'На странице показаны альбомы моих треков, а так же небольшая история, как я пришел к музыки.',
-        locale: 'ru_RU'
     },
-    robots: {
-        index: true,
-        follow: true
-    },
-    authors: {
-        url: 'https://t.me/polo_ymniy',
-        name: 'Kartuzov Stepan'
-    }
 };
 
 const MusicPage:FC = async() => {
