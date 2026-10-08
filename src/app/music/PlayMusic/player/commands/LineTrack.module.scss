@@ -19,6 +19,8 @@
     
 
     cursor: pointer;
+    // Перемотка пальцем не должна прокручивать страницу
+    touch-action: none;
 
     .progressBar {
         position: relative;

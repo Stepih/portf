@@ -16,6 +16,7 @@ import List from '@/assets/_img/icons/list.svg';
 import BgFocus from "@/components/bg-page/BgFocus";
 import { isTouchDevice } from "@/scripts/typeDevice";
 import ClosePlayer from "./commands/ClosePlayer";
+import { playAudio } from "./playAudio";
 
 
 interface IPlayer extends ISwitchTrack {
@@ -29,7 +30,6 @@ interface IPlayer extends ISwitchTrack {
 
 const Player: FC<IPlayer> = ({isAudioReady, setIsAudioReady, handleAlbumSelect, handleListTracks, audioRef, album, handleTrackSelect, trackId, statusPlay }) => {
   const [volume, setVolume] = useState<number>(1);
-  const [firstRender, setFirstRender] = useState(true)
   const [hover, setHover] = useState(true)
   const [loadProgress, setLoadProgress] = useState(0);
 
@@ -75,12 +75,11 @@ const Player: FC<IPlayer> = ({isAudioReady, setIsAudioReady, handleAlbumSelect, 
   }, []);
   
   
-  if (hover && firstRender) {
-    setTimeout(() => {
-      setHover(false)
-      setFirstRender(false)
-    }, 1000);
-  }
+  // Плеер подсвечен первую секунду после появления
+  useEffect(() => {
+    const timer = setTimeout(() => setHover(false), 1000);
+    return () => clearTimeout(timer);
+  }, []);
 
   const handleAudioProgress = () => {
     if (audioRef.current) {
@@ -109,12 +108,17 @@ const Player: FC<IPlayer> = ({isAudioReady, setIsAudioReady, handleAlbumSelect, 
   }, []);
 
   // Обновляем громкость и управляем воспроизведением
+  const { play, setPlay } = statusPlay;
   useEffect(() => {
-    if (audioRef.current) {
-      audioRef.current.volume = volume;
-      statusPlay.play && isAudioReady ? audioRef.current.play() : audioRef.current.pause();
+    const audio = audioRef.current;
+    if (!audio) return;
+    audio.volume = volume;
+    if (play && isAudioReady) {
+      playAudio(audio, () => setPlay(false));
+    } else {
+      audio.pause();
     }
-  }, [volume, statusPlay, isAudioReady]);
+  }, [volume, play, isAudioReady, audioRef, setPlay]);
 
   // Обработчик изменения громкости
   const handleVolumeChange = (num: string) => {

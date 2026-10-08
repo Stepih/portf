@@ -20,9 +20,12 @@ const getTrackDuration = async (trackPath: string): Promise<string> => {
         return formatTime(metadata.format.duration || 0);
     } catch (error) {
         console.error(`Ошибка при чтении метаданных для файла ${trackPath}:`, error);
-        return '0';
+        return '0:00';
     }
 };
+
+// Натуральный порядок: «2» раньше «10»
+const byName = (a: string, b: string) => a.localeCompare(b, 'ru', { numeric: true });
 
 // Убирает расширение из имени трека
 const sliceFormat = (name: string): string => {
@@ -40,7 +43,8 @@ export async function getAlbums(): Promise<IAlbums[]> {
 
     const albums = fs.readdirSync(musicDirectory, { withFileTypes: true })
         .filter(dirent => dirent.isDirectory())
-        .map(dirent => dirent.name);
+        .map(dirent => dirent.name)
+        .sort(byName);
 
     const albumData = await Promise.all(
         albums.map(async (album, albumIndex): Promise<IAlbums | null> => {
@@ -49,6 +53,7 @@ export async function getAlbums(): Promise<IAlbums[]> {
             const tracks: ITracks[] = await Promise.all(
                 fs.readdirSync(albumPath)
                     .filter(track => audioFormats.includes(path.extname(track).toLowerCase()))
+                    .sort(byName)
                     .map(async (track, trackIndex) => ({
                         id: trackIndex,
                         name: sliceFormat(track),

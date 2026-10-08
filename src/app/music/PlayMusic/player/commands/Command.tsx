@@ -6,6 +6,7 @@ import Play from '@/assets/_img/icons/play-sm.svg'
 
 import s from './Command.module.scss'
 import { ISwitchTrack } from "@/interfaces/player";
+import { playAudio } from "../playAudio";
 
 interface IComand extends ISwitchTrack {
     countTracks: number
@@ -13,15 +14,20 @@ interface IComand extends ISwitchTrack {
 
 const Commands:FC<IComand> = ({ handleTrackSelect, trackId, audioRef, statusPlay, countTracks}) => {
     
+    // На краях альбома кнопки неактивны и ничего не делают
     const cmd = {
-        nextTrack: () => {trackId < countTracks - 1 ? handleTrackSelect(trackId + 1) : statusPlay.setPlay(!statusPlay.play)},
-        backTrack: () => trackId > 0 ? handleTrackSelect(trackId - 1) : statusPlay.setPlay(!statusPlay.play),
+        nextTrack: () => {
+            if (trackId < countTracks - 1) handleTrackSelect(trackId + 1);
+        },
+        backTrack: () => {
+            if (trackId > 0) handleTrackSelect(trackId - 1);
+        },
         togglePlay: () => {
             if (audioRef.current) {
                 if (statusPlay.play) {
                     audioRef.current.pause();
                 } else {
-                    audioRef.current.play();
+                    playAudio(audioRef.current, () => statusPlay.setPlay(false));
                 }
                 statusPlay.setPlay(!statusPlay.play);
             }

@@ -1,8 +1,16 @@
-import { FC, useEffect, useState, MouseEvent } from "react";
+import { FC, useEffect, useState, PointerEvent, MutableRefObject } from "react";
 import { motion } from "framer-motion";
 import s from './LineTrack.module.scss';
 
-const LineTrack: FC<any> = ({isAudioReady, audioRef, trackId, albumId, loadProgress }) => {
+interface ILineTrack {
+  isAudioReady: boolean,
+  audioRef: MutableRefObject<HTMLAudioElement | null>,
+  trackId: number,
+  albumId: number,
+  loadProgress: number,
+}
+
+const LineTrack: FC<ILineTrack> = ({isAudioReady, audioRef, trackId, albumId, loadProgress }) => {
   const [time, setTime] = useState(0); // Текущее время трека
   const [duration, setDuration] = useState(0); // Длительность трека
   const [isSeeking, setIsSeeking] = useState(false); // Перематывает ли сейчас пользователь
@@ -28,6 +36,11 @@ const LineTrack: FC<any> = ({isAudioReady, audioRef, trackId, albumId, loadProgr
         }
       };
 
+      // Метаданные могли загрузиться до подписки
+      if (audio.readyState >= HTMLMediaElement.HAVE_METADATA) {
+        setDuration(audio.duration || 0);
+      }
+
       // Добавляем слушателей
       audio.addEventListener('loadedmetadata', handleLoadedMetadata);
       audio.addEventListener('timeupdate', handleTimeUpdate);
@@ -47,17 +60,17 @@ const LineTrack: FC<any> = ({isAudioReady, audioRef, trackId, albumId, loadProgr
     return `${minutes}:${seconds}`;
   };
 
-  // Обработка начала перемотки
-  const handleMouseDown = (e: MouseEvent<HTMLDivElement>) => {
+  // Обработка начала перемотки. Захват указателя оставляет перемотку за линией, даже если палец или курсор ушёл с неё
+  const handlePointerDown = (e: PointerEvent<HTMLDivElement>) => {
     if (isAudioReady) {
+      e.currentTarget.setPointerCapture(e.pointerId);
       setIsSeeking(true);
       updateTimeByClick(e);
     }
-    
   };
 
-  // Обновление времени при перемещении мыши
-  const handleMouseMove = (e: MouseEvent<HTMLDivElement>) => {
+  // Обновление времени при перемещении указателя
+  const handlePointerMove = (e: PointerEvent<HTMLDivElement>) => {
     if (isSeeking) {
       updateTimeByClick(e);
     }
@@ -67,29 +80,35 @@ const LineTrack: FC<any> = ({isAudioReady, audioRef, trackId, albumId, loadProgr
   };
 
   // Завершение перемотки
-  const handleMouseUp = () => {
+  const handlePointerUp = () => {
     setIsSeeking(false);
   };
 
-  // Обновление текущего времени по позиции клика или движения мыши
-  const updateTimeByClick = (e: MouseEvent<HTMLDivElement>) => {
+  // Положение указателя на линии, ограниченное её краями
+  const getPointerX = (e: PointerEvent<HTMLDivElement>) => {
     const rect = e.currentTarget.getBoundingClientRect();
-    const clickX = e.clientX - rect.left;
-    const newTime = (clickX / rect.width) * duration;
+    return { x: Math.min(Math.max(e.clientX - rect.left, 0), rect.width), width: rect.width };
+  };
+
+  // Обновление текущего времени по позиции клика или движения указателя
+  const updateTimeByClick = (e: PointerEvent<HTMLDivElement>) => {
+    const { x, width } = getPointerX(e);
+    if (!audioRef.current || !duration || !width) return;
+    const newTime = (x / width) * duration;
     audioRef.current.currentTime = newTime;
     setTime(newTime);
   };
 
   // Обновление позиции элемента showTime по диагонали
-  const updateShowTimePosition = (e: MouseEvent<HTMLDivElement>) => {
-    const rect = e.currentTarget.getBoundingClientRect();
-    const relativeX = e.clientX - rect.left; // Положение по X
+  const updateShowTimePosition = (e: PointerEvent<HTMLDivElement>) => {
+    const { x: relativeX, width } = getPointerX(e); // Положение по X
+    if (!width) return;
 
     // Обновляем позицию showTime только по диагонали
     setShowTimePosition(relativeX);
 
     // Обновляем время, соответствующее позиции на линии
-    const hoverTime = (relativeX / rect.width) * duration;
+    const hoverTime = (relativeX / width) * duration;
     setHoverTime(hoverTime);
   };
 
@@ -103,17 +122,17 @@ const LineTrack: FC<any> = ({isAudioReady, audioRef, trackId, albumId, loadProgr
     <motion.div
       whileHover="hover"
       className={s.line}
-      onMouseDown={handleMouseDown}  // Начало перемотки
-      onMouseMove={handleMouseMove}  // Перемещение мыши для обновления
-      onMouseUp={handleMouseUp}      // Завершение перемотки
-      onMouseLeave={handleMouseUp}   // Если мышь покинула область, завершить перемотку
+      onPointerDown={handlePointerDown}     // Начало перемотки
+      onPointerMove={handlePointerMove}     // Перемещение указателя для обновления
+      onPointerUp={handlePointerUp}         // Завершение перемотки
+      onPointerCancel={handlePointerUp}     // Жест прерван браузером
     >
       {/* Текущее время */}
       <motion.span variants={vars} className={s.currentTime}>{formatTime(time)}</motion.span>
       
       {/* Прогресс-бар */}
       <motion.div
-        animate={{ width: `${(time / duration) * 100}%` }}
+        animate={{ width: `${duration > 0 ? Math.min(time / duration, 1) * 100 : 0}%` }}
         transition={{ duration: 0.1 }}
         className={s.progressBar}
       >
