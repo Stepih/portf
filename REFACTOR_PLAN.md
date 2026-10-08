@@ -216,7 +216,7 @@
   - в React DevTools Profiler при прокрутке нет коммитов;
   - превью `Background`/`BgRectangle` в design-sync собираются.
 
-### 3.5 lodash точечно (P6) — ✅ сделано
+### 3.5 lodash точечно (P6) — ✅ сделано (размер не изменился: Next 15 и так переписывает `import { x } from "lodash"` в `lodash/x` через встроенный `modularizeImports`; `/media` 164 kB до и после, полного lodash в чанках не было)
 - **Файлы:** `ImageMediaContent.tsx` (`import debounce from 'lodash/debounce'`).
 - **Объём:** XS. **Риск:** нет.
 - **Проверка:** First Load JS `/media` в `next build` меньше baseline.
