@@ -22,7 +22,9 @@ const ButtonSmallSize: FC<ISmallHomeButtons> = ({ Icon, title, srcSmall }) => (
   <Link
     onClick={() => reachGoal(title)}
     className={s.link} href={srcSmall || '/'}>
+    {/* tabIndex=-1: иначе framer-motion из-за whileTap ставит div в Tab-порядок второй остановкой после ссылки */}
     <motion.div 
+    tabIndex={-1}
     whileTap={{scale: .9}}
       whileHover="hover" 
       variants={animationVariants.wrapper} 

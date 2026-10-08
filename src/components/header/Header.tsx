@@ -24,6 +24,9 @@ const Header:FC = () => {
         <motion.header 
             onHoverStart={() => setHover(true)} 
             onHoverEnd={()=> setHover(false)}
+            // С клавиатуры шапка выезжает, пока фокус внутри неё
+            onFocus={() => setHover(true)}
+            onBlur={(e) => { if (!e.currentTarget.contains(e.relatedTarget)) setHover(false) }}
             animate={{left: !hover ? -100 : 0, willChange: 'unset'}} 
             className={s.header}>
             
@@ -34,7 +37,7 @@ const Header:FC = () => {
             <div className={s.contacts}>
                 <span className={s.contactsTitle}>Контакты</span>
                 <div className={s.contactsLink}>
-                    <Link href={myTg}>
+                    <Link href={myTg} aria-label="Telegram">
                         <Tg className={s.contactImg}/>
                     </Link>
                 </div>

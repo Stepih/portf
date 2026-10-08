@@ -8,7 +8,9 @@ import styles from "./AnimatedButton.module.scss"; // Импорт вашего 
 const AnimatedButton: FC = () => {
   return (
     <Link style={{position: 'absolute', overflow: 'hidden', textDecoration: 'none', display: 'block'}} href="/" passHref>
+      {/* tabIndex=-1: иначе framer-motion из-за whileTap ставит div в Tab-порядок второй остановкой после ссылки */}
       <motion.div
+        tabIndex={-1}
         className={styles.button}
         whileHover="hover"
         whileTap={{ scale: 0.9 }}
