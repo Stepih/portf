@@ -8,7 +8,7 @@ Components from Stepan Kartuzov's portfolio site (Next.js). All are on `window.P
 - **Page-level pieces (render once at the root):** `Background` (fixed backdrop with glows), `Header`, `Footer`. `Header` is a fixed left sidebar at 1200px and wider, and a horizontal bar below that.
 - **Overlays are `position: fixed`:** `PopupParent` (dims the screen and centres its children while `active`), `ErrorMessage` (top-centre toast, hidden when `error=""`), `BgFocus` (veil, `status` toggles it).
 - **Fill-the-parent components:** `Slider`, `ImageComparisonSlider`, `LayoutAnimateImage` and `LoadingBlock` stretch to their parent. Give that parent an explicit width and height plus `position: relative`. `SlideNotes` (the slider's dots) and `ArrowLink` / `AnimatedButton` (corner markers) position themselves absolutely against that parent.
-- `Breadcrumbs` renders only when the window is narrower than 560px. It builds the trail from `location.pathname`.
+- `Breadcrumbs` is visible only when the viewport is narrower than 560px (a CSS media query hides it on wider screens). It builds the trail from `location.pathname`.
 
 ### Styling idiom
 The components use CSS modules with hashed class names, so there are **no public utility classes** for component internals. Style your own layout with these tokens and values:

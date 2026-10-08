@@ -1,5 +1,12 @@
 @use '/src/styles/variables.scss' as vars;
 
+// Крошки нужны только на узких экранах
+.nav {
+  @media (min-width: 560px) {
+    display: none;
+  }
+}
+
 .breadcrumbs {
   display: flex;
   align-items: center;

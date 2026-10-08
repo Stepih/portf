@@ -37,16 +37,17 @@ const ImageMediaSlider: FC<ImageMediaSliderProps> = ({
   content,
   objectFit
 }) => {
-  
-  if (content === undefined) return
-
-  const isTouch = isTouchDevice();
   const [step, setStep] = useState(0);
   const [load, setLoad] = useState(true);
   const [firstPrompt, setFirstPrompt] = useState(true);
   const [showPrompt, setShowPrompt] = useState(false);
   const blockNexts = useRef(false)
-  
+
+  // Ранний выход только после всех хуков, иначе порядок хуков меняется вместе с content
+  if (content === undefined) return null
+
+  const isTouch = isTouchDevice();
+
   const handleStepChange = (newStep: number) => setStep(newStep);
 
   const handleNext = (e: React.MouseEvent<HTMLDivElement | HTMLImageElement>) => {

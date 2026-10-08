@@ -1,26 +1,19 @@
 "use client";
 
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation'; // Хук для получения текущего пути в Next.js 13+
 import styles from './BreadCrumbs.module.scss'; 
 
 const Breadcrumbs: React.FC = () => {
-  const [windowWidth, setWindowWidth] = useState(0)
-
-  useEffect(() => {
-    setWindowWidth(window.innerWidth); 
-  }, []);
-
-  if (windowWidth >= 560) return null;
-
   const pathname = usePathname();
 
   // Разделяем текущий путь на части и создаем массив для хлебных крошек
   const pathSegments = pathname.split('/').filter((segment) => segment);
 
   return (
-    <nav aria-label="Breadcrumb">
+    // На десктопе крошки скрыты медиазапросом в .nav
+    <nav aria-label="Breadcrumb" className={styles.nav}>
       <ul className={styles.breadcrumbs}>
         {/* Первая крошка - Главная */}
         <li className={styles.breadcrumbItem}>

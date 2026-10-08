@@ -137,7 +137,7 @@
   - с каждым открытым оверлеем перейти на другую страницу: там скролл работает;
   - пошаговая прокрутка истории работает как раньше.
 
-### 2.2 Rules of Hooks (B5)
+### 2.2 Rules of Hooks (B5) — ✅ сделано (хуки выше раннего `return`, крошки скрываются `@media`)
 - **Файлы:** `src/components/slider/Slider.tsx` (хуки выше `return`), `src/components/breadCrumb/BreadCrumb.tsx` и `BreadCrumbs.module.scss` (видимость через `@media`, без `window.innerWidth`).
 - **Объём:** S. **Риск:** низкий.
 - **Проверка:**

@@ -39,9 +39,10 @@
 - Buttons render in the browser default font (globals don't set `button { font: inherit }`) - faithful to the site.
 - `.design-sync/settled-shots.mjs` writes into `ds-bundle/`, which every package-build wipes - re-run it
   after the last rebuild before grading from it.
-- Breadcrumbs renders nothing at window width >= 560px and package-validate always renders at 1200px
-  (ignores the card's declared viewport), so its preview stubs `window.innerWidth` to 390 and
-  `history.replaceState`s a site route (/music, /media/…) before mounting.
+- Breadcrumbs is hidden by `@media (min-width: 560px)` on `.nav` and package-validate always renders
+  at 1200px (ignores the card's declared viewport), so its preview overrides
+  `.BreadCrumbs_module_nav { display: block !important }` and `history.replaceState`s a site route
+  (/music, /media/…) before mounting.
 - Fixed-position overlays (PopupParent, BgFocus, Background) render in single-mode cards whose root is
   transformed (containing block for fixed) and 0px tall - previews wrap them in an explicit-height stage.
 - Fill-parent components (Slider, ImageComparisonSlider, LayoutAnimateImage, LoadingBlock) and the
@@ -56,10 +57,8 @@
 - none at the end of the first sync (validate exit 0, 24/24 clean, no GRID_OVERFLOW after overrides).
 
 ## Source findings (not fixed - app code, reported to the user)
-- `src/components/breadCrumb/BreadCrumb.tsx` imports `./Breadcrumbs.module.scss` but the file is
-  `BreadCrumbs.module.scss` (breaks on case-sensitive file systems), and it returns early before calling
-  `usePathname()`, a hook-order violation under real Next.js once the width effect runs.
-  Breadcrumbs isn't used anywhere in src/app today.
+- Fixed since: the `BreadCrumbs.module.scss` import case (refactor step 1.4) and the Breadcrumbs /
+  Slider hook-order violations (step 2.2). Breadcrumbs is now used on /music, /media and /popup.
 
 ## Re-sync risks
 - `.design-sync/shims/*` re-implement next/link, next/image, next/navigation, next/font/local. If the
