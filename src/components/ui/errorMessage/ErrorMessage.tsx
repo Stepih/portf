@@ -1,18 +1,10 @@
-import { FC, useEffect, useState } from "react";
+import { FC } from "react";
 
 import { AnimatePresence, motion } from "framer-motion";
 
 import s from './ErrorMessage.module.scss'
 
 const ErrorMesage:FC<{error: string}> = ({error}) => {
-    const [active, setActive] = useState(true)
-
-    useEffect(() => {
-        // setTimeout(() => {
-        //     setActive(false)
-        // }, 3000);
-    }, [])
-
     return (
         
         <AnimatePresence>

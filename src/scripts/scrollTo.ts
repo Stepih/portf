@@ -30,10 +30,6 @@ export const scrollToElementById = (id: string, isBlock:boolean): void => {
   }
 };
 
-export const getWidthScroll = () => {
-  return window.innerWidth - document.body.offsetWidth + 'px'
-}
-
 // Число активных блокировок. Стили body снимаются, только когда отпущены все.
 let lockCount = 0;
 

@@ -18,13 +18,6 @@
     overflow: hidden;
     cursor: pointer;
 
-    .img {
-        
-
-        &.active {
-            rotate: 180deg;
-        }
-    }
     .title {
         position: absolute;
         color: white;

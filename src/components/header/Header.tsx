@@ -6,12 +6,11 @@ import { motion } from "framer-motion";
 import Link from "next/link";
 
 import Arrow from '@/assets/_img/icons/arrow-s-right.svg'
-import Inst from '@/assets/_img/icons/inst.svg'
 import Tg from '@/assets/_img/icons/tg-white.svg'
 
 import s from './Header.module.scss'
 
-import { myInst, myTg } from "@/constants/urls";
+import { myTg } from "@/constants/urls";
 import SelectThemeButton from "./SelectThemeButton";
 import BgFocus from "../bg-page/BgFocus";
 
@@ -35,9 +34,6 @@ const Header:FC = () => {
             <div className={s.contacts}>
                 <span className={s.contactsTitle}>Контакты</span>
                 <div className={s.contactsLink}>
-                    {/* <Link href={myInst}>
-                        <Inst className={s.contactImg}/>
-                    </Link> */}
                     <Link href={myTg}>
                         <Tg className={s.contactImg}/>
                     </Link>

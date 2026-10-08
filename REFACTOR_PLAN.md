@@ -238,7 +238,7 @@
 - **Исправленные ошибки:** `any` в `ButtonDown`/`ButtonRight` (кнопки стали generic по типу `param`, пропсы прежние), пустой интерфейс `IImageMedia` (стал алиасом `IMediaImage`), `any` в `src/scripts/idArray.ts` (файл не использовался и удалён, это пункт из 4.3).
 - **Оставшиеся предупреждения** (на 2026-10-08, разбирать в 4.3–5.1):
   - `react-hooks/exhaustive-deps`: `Steps.tsx:120`, `MediaContentList.tsx:31`, `Player.tsx:75`, `Player.tsx:108`, `ImageComparisonSlider.tsx:41`. Не чинить механически: добавление зависимостей меняет, когда срабатывают эффекты. Плеер — в 5.1, «история» — в 5.2.
-  - `no-unused-vars` (мёртвый код, 4.3): `Player.tsx:39` `timeoutRef`, `AlbumInfo.tsx:14` `isOverflow`, `ClosePlayer.tsx:8` `div`, `Header.tsx:9,14` `Inst`/`myInst`, `SlideNotes.tsx:16` `width`, `setAct` в `ButtonDown`/`ButtonRight`, `ErrorMessage.tsx:8` `active`/`setActive`, `inputsListPopup.ts:1` `IInput`.
+  - ~~`no-unused-vars`~~: убраны в 4.3, после неё 13 предупреждений.
   - `no-unused-expressions` (`a && a()` вместо `a?.()` или `if`): `ImageMediaContent.tsx:31`, `Popup.tsx:70–71`, `ButtonDown`/`ButtonRight` в `onClick`.
   - `@next/next/no-img-element`: `YandexMetrika.tsx:45` — пиксель `<noscript>`, так и задумано; можно подавить комментарием.
 
@@ -247,7 +247,7 @@
 - **Объём:** S. **Риск:** низкий.
 - **Проверка:** `npx tsc --noEmit` без ошибок.
 
-### 4.3 Удалить мёртвый код (A3)
+### 4.3 Удалить мёртвый код (A3) — ✅ сделано (удалены файлы и иконки из A3, `getWidthScroll`, неиспользуемые импорты и состояния; `act` в `ButtonDown`/`ButtonRight` вместе с классом `.active` и текстом «Скрыть»; закомментированная ссылка на Instagram в `Header` (константа `myInst` и `inst.svg` оставлены). `idArray.ts` и `PlayMusicClient.module.scss` к этому моменту уже были удалены)
 - **Файлы:** список из AUDIT A3. **`PopupParent` не трогать**: он экспортируется в design-sync.
 - **Объём:** S. **Риск:** низкий.
 - **Проверка:** `tsc`, `next build`, `node .design-sync/build-dist.mjs`.

@@ -5,7 +5,6 @@ import { FC, useState } from "react";
 import Krest from '@/assets/_img/icons/krest.svg';
 
 import s from './ClosePlayer.module.scss'
-import { div } from "framer-motion/client";
 
 const ClosePlayer:FC<{handleAlbumSelect: (album: null)=> void}> = ({handleAlbumSelect}) => {
     const [hov, setHov] = useState(false)

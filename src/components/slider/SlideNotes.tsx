@@ -13,18 +13,11 @@ interface ISlideNotes {
 const SlideNotes: FC<ISlideNotes> = ({ length, step, action, slideNotesPosition }) => {
     const buttonsRef = useRef<(HTMLButtonElement | null)[]>([]); // Реф для кнопок
     const slideWidthRef = useRef<HTMLDivElement | null>(null); // Реф для контейнера div
-    const [width, setWidth] = useState<number | null>(null); // Состояние для ширины блока
     const [btnPos, setBtnPos] = useState<(number | null)[]>([]); // Состояние для позиций кнопок
     const [scale, setScale] = useState(1); // Состояние для управления scale (сжатием)
     
 
     useEffect(() => {
-        // Получаем ширину контейнера
-        if (slideWidthRef.current) {
-            const currentWidth = slideWidthRef.current.getBoundingClientRect().width;
-            setWidth(currentWidth); // Устанавливаем ширину в состоянии
-        }
-
         // Если контейнер и кнопки загружены, вычисляем расстояния
         if (slideWidthRef.current && buttonsRef.current.length > 0) {
             // Получаем координаты левого края контейнера

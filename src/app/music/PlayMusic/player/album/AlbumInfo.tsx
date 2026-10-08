@@ -1,4 +1,4 @@
-import { FC, useEffect, useRef, useState } from "react";
+import { FC, useEffect, useRef } from "react";
 import { motion, useAnimation } from "framer-motion";
 
 import s from './AlbumInfo.module.scss';
@@ -11,7 +11,6 @@ interface Info {
 }
 
 const AlbumInfo: FC<Info> = ({ album, trackId }) => {
-  const [isOverflow, setIsOverflow] = useState(false); // Флаг для анимации
   const titleRef = useRef<HTMLSpanElement | null>(null);
   const containerRef = useRef<HTMLDivElement | null>(null);
   const controls = useAnimation(); // Анимация текста
@@ -24,7 +23,6 @@ const AlbumInfo: FC<Info> = ({ album, trackId }) => {
 
         
         if (titleWidth > containerWidth) {
-          setIsOverflow(true);
           
           controls.set({ x: 0 }); // Сбрасываем transform перед анимацией
           controls.start({
@@ -40,7 +38,6 @@ const AlbumInfo: FC<Info> = ({ album, trackId }) => {
           });
           
         } else {
-          setIsOverflow(false);
           controls.stop(); // Останавливаем анимацию
           controls.set({ x: 0 }); // Сбрасываем transform
         }
