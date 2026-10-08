@@ -130,7 +130,10 @@ const Player: FC<IPlayer> = ({isAudioReady, setIsAudioReady, handleAlbumSelect, 
     <>
     <BgFocus status={hover}/>
     
-    <motion.div onClick={()=>setShowMobilePlayer(true)} onHoverEnd={() => setHover(false)} onHoverStart={() => setHover(true)} 
+    <motion.div onClick={()=>setShowMobilePlayer(true)} onHoverEnd={() => setHover(false)} onHoverStart={() => setHover(true)}
+      // С клавиатуры плеер выезжает, пока фокус внутри него
+      onFocus={() => setHover(true)}
+      onBlur={(e) => { if (!e.currentTarget.contains(e.relatedTarget)) setHover(false) }}
       className={`${s.wrapper} ${canada.className}`} 
       initial={{ y: 40, opacity: 0, willChange: 'auto' }} 
       animate={{ y: !hover && !mobileDevice ? 60 : showMobilePlayer ? 0 : 60, opacity: 1 }}
@@ -147,9 +150,9 @@ const Player: FC<IPlayer> = ({isAudioReady, setIsAudioReady, handleAlbumSelect, 
             handleTrackSelect={handleTrackSelect}
             trackId={trackId}
           />
-          <motion.div className={s.img} whileTap={{ scale: 0.9 }} onClick={handleListTracks}>
+          <motion.button type="button" className={s.img} whileTap={{ scale: 0.9 }} onClick={handleListTracks} aria-label="Список треков">
             <List />
-          </motion.div>
+          </motion.button>
           
           <AlbumInfo key={trackId} trackId={trackId} album={album} />
         </div>

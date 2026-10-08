@@ -46,9 +46,8 @@
         gap: 30px;
 
         .img {
-          
-
-          cursor: pointer;
+          @include vars.button-reset;
+          display: flex;
         }
       }
 

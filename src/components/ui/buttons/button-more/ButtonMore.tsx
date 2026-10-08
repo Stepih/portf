@@ -18,6 +18,7 @@ interface IBtn<T> {
 const ButtonMore = <T,>({direction = 'down', action, paramAction, param}: IBtn<T>) => {
     return (
         <motion.button 
+            type="button"
             onClick={() => {
                 action && action(); 
                 paramAction && paramAction(param)

@@ -35,11 +35,18 @@ const SelectThemeButton:FC = () => {
         toggleTheme()
     }
     return (
-        <div className={s.theme} data-ison={theme} onClick={toggleSwitch}>
+        <button
+            type="button"
+            className={s.theme}
+            data-ison={theme}
+            onClick={toggleSwitch}
+            aria-label="Тёмная тема"
+            aria-pressed={theme === "dark"}
+        >
             <motion.div layout transition={spring} className={s.touch}>
                 {theme === "light" ? <WhiteTh className={s.touchImg}/> : <BlackTh className={s.touchImg}/>}
             </motion.div>
-        </div>
+        </button>
     )
 }
 

@@ -68,6 +68,9 @@ const SlideNotes: FC<ISlideNotes> = ({ length, step, action, slideNotesPosition 
                 <button
                     ref={(el) => { buttonsRef.current[idx] = el }} // Сохраняем ссылку на кнопку
                     key={idx}
+                    type="button"
+                    aria-label={`Слайд ${idx + 1}`}
+                    aria-current={step === idx ? 'true' : undefined}
                     className={`${s.btn} ${step === idx ? s.active : ''}`}
                     onClick={() => action(idx)}
                 >

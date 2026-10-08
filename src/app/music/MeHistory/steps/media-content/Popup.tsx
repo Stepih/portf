@@ -28,9 +28,9 @@ const Popup: FC<IPopup> = ({handleOpenPopup, content}) => {
             <div onClick={handleOpenPopup.bind(null, undefined)} className={s.bg}>
                 <BgFocus status={true} />
             </div>
-            <div onClick={handleOpenPopup.bind(null, undefined)} className={s.closePopup}>
+            <button type="button" onClick={handleOpenPopup.bind(null, undefined)} className={s.closePopup} aria-label="Закрыть">
                 <Krest  />
-            </div>
+            </button>
             <div className={s.content}>
                 <ImageMediaSlider objectFit='contain' anim={true} slideNotesPosition="bottom" content={content} sizes="(max-width: 900px) 100vw, 900px"/>
             </div>

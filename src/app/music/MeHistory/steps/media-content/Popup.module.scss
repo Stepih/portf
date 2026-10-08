@@ -1,3 +1,5 @@
+@use '/src/styles/variables.scss' as vars;
+
 .popup {
     position: fixed;
     display: flex;
@@ -13,6 +15,7 @@
     z-index: 12;
 
     .closePopup {
+        @include vars.button-reset;
         position: absolute;
         display: flex;
         align-items: center;
@@ -62,7 +65,9 @@
 }
 
 @media screen and (max-width: 600px) {
-    .popup {
+    @use '/src/styles/variables.scss' as vars;
+
+.popup {
         .content {
             max-height: 80%;
         }
