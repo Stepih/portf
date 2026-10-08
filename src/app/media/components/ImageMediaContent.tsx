@@ -2,7 +2,7 @@
 
 import { FC, useEffect, useRef, useState } from "react";
 import { IMedia } from "@/interfaces/mediaImages";
-import { debounce } from "lodash";
+import debounce from "lodash/debounce";
 
 import MediaItem from "./mediaContent/MediaItem";
 import MediaItemPopup from "./mediaContent/MediaItemPopup";

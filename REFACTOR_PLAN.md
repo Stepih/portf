@@ -208,7 +208,7 @@
   - визуально чётко на retina;
   - Lighthouse Performance не хуже baseline.
 
-### 3.4 Прокрутка без ре-рендеров (P2)
+### 3.4 Прокрутка без ре-рендеров (P2) — ✅ сделано (`opacity` через `useScroll`/`useTransform` и чистую `fadeOpacity()`, параллакс через `MotionValue`; добавлен Vitest)
 - **Файлы:** `ImageMediaContent.tsx`, `MediaItem.tsx` (`opacity` через `useScroll`/`useTransform`), `src/components/bg-page/Background.tsx` и `BgRectangle.tsx` (параллакс через `MotionValue`).
 - **Объём:** M. **Риск:** средний: визуальное поведение должно совпасть.
 - **Проверка:**
@@ -216,7 +216,7 @@
   - в React DevTools Profiler при прокрутке нет коммитов;
   - превью `Background`/`BgRectangle` в design-sync собираются.
 
-### 3.5 lodash точечно (P6)
+### 3.5 lodash точечно (P6) — ✅ сделано
 - **Файлы:** `ImageMediaContent.tsx` (`import debounce from 'lodash/debounce'`).
 - **Объём:** XS. **Риск:** нет.
 - **Проверка:** First Load JS `/media` в `next build` меньше baseline.
