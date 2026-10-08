@@ -1,6 +1,6 @@
-import fs from 'fs';
+import fs from 'fs/promises';
 import path from 'path';
-import { parseBuffer } from 'music-metadata';
+import { parseFile } from 'music-metadata';
 import { IAlbums, ITracks } from "@/interfaces/albums";
 
 // Допустимые аудиоформаты
@@ -12,17 +12,35 @@ const formatTime = (time: number) => {
     return `${minutes}:${seconds}`;
 };
 
-// Длительность трека в формате m:ss
-const getTrackDuration = async (trackPath: string): Promise<string> => {
+// Длительность трека в формате m:ss. parseFile читает файл потоком, а не целиком
+const readTrackDuration = async (trackPath: string): Promise<string> => {
     try {
-        const fileBuffer = fs.readFileSync(trackPath);
-        const metadata = await parseBuffer(fileBuffer);
+        const metadata = await parseFile(trackPath, { duration: true });
         return formatTime(metadata.format.duration || 0);
     } catch (error) {
         console.error(`Ошибка при чтении метаданных для файла ${trackPath}:`, error);
         return '0:00';
     }
 };
+
+// Кэш длительностей на время жизни процесса. Ключ — путь, размер и mtime файла:
+// заменённый или дописанный трек получит новый ключ и будет разобран заново.
+// Храним промисы, чтобы параллельные запросы не разбирали один файл дважды
+const durationCache = new Map<string, Promise<string>>();
+
+const getTrackDuration = async (trackPath: string): Promise<string> => {
+    const { size, mtimeMs } = await fs.stat(trackPath);
+    const key = `${trackPath}|${size}|${mtimeMs}`;
+
+    let duration = durationCache.get(key);
+    if (!duration) {
+        duration = readTrackDuration(trackPath);
+        durationCache.set(key, duration);
+    }
+    return duration;
+};
+
+const exists = (filePath: string) => fs.access(filePath).then(() => true, () => false);
 
 // Натуральный порядок: «2» раньше «10»
 const byName = (a: string, b: string) => a.localeCompare(b, 'ru', { numeric: true });
@@ -41,7 +59,7 @@ const sliceFormat = (name: string): string => {
 export async function getAlbums(): Promise<IAlbums[]> {
     const musicDirectory = path.join(process.cwd(), 'public/music');
 
-    const albums = fs.readdirSync(musicDirectory, { withFileTypes: true })
+    const albums = (await fs.readdir(musicDirectory, { withFileTypes: true }))
         .filter(dirent => dirent.isDirectory())
         .map(dirent => dirent.name)
         .sort(byName);
@@ -51,7 +69,7 @@ export async function getAlbums(): Promise<IAlbums[]> {
             const albumPath = path.join(musicDirectory, album);
 
             const tracks: ITracks[] = await Promise.all(
-                fs.readdirSync(albumPath)
+                (await fs.readdir(albumPath))
                     .filter(track => audioFormats.includes(path.extname(track).toLowerCase()))
                     .sort(byName)
                     .map(async (track, trackIndex) => ({
@@ -67,12 +85,12 @@ export async function getAlbums(): Promise<IAlbums[]> {
             }
 
             // Необязательная обложка
-            const img = fs.existsSync(path.join(albumPath, 'prev.png')) ? `/music/${album}/prev.png` : '';
+            const img = await exists(path.join(albumPath, 'prev.png')) ? `/music/${album}/prev.png` : '';
 
             // Необязательный файл с исполнителем
             const artistFilePath = path.join(albumPath, 'artist.txt');
-            const artist = fs.existsSync(artistFilePath)
-                ? fs.readFileSync(artistFilePath, 'utf-8').trim()
+            const artist = await exists(artistFilePath)
+                ? (await fs.readFile(artistFilePath, 'utf-8')).trim()
                 : 'SyrinxBS';
 
             return {
