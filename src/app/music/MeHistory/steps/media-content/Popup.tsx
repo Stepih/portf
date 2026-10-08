@@ -32,7 +32,7 @@ const Popup: FC<IPopup> = ({handleOpenPopup, content}) => {
                 <Krest  />
             </div>
             <div className={s.content}>
-                <ImageMediaSlider objectFit='contain' anim={true} slideNotesPosition="bottom" content={content}/>
+                <ImageMediaSlider objectFit='contain' anim={true} slideNotesPosition="bottom" content={content} sizes="(max-width: 900px) 100vw, 900px"/>
             </div>
         </motion.div>
     )

@@ -9,13 +9,16 @@ interface ImageComparisonSliderProps {
   highQualitySrc: string;
   step: number;
   handleLoad: () => void;
+  // Ширина картинки на экране для next/image: от неё зависит, какой вариант скачает браузер
+  sizes?: string;
 }
 
 const ImageComparisonSlider: FC<ImageComparisonSliderProps> = ({
   lowQualitySrc,
   highQualitySrc,
   step,
-  handleLoad
+  handleLoad,
+  sizes = "100vw"
 }) => {
   const [sliderPosition, setSliderPosition] = useState(50); // Начальная позиция ползунка в центре
   const [loadCheck, setLoadCheck] = useState({ low: false, high: false });
@@ -54,7 +57,7 @@ const ImageComparisonSlider: FC<ImageComparisonSliderProps> = ({
           priority={step === 0} // Priority только для первого изображения
           alt="Low Quality"
           fill
-          sizes="100%"
+          sizes={sizes}
           draggable="false"
           className={styles.image}
         />
@@ -74,7 +77,7 @@ const ImageComparisonSlider: FC<ImageComparisonSliderProps> = ({
           priority={step === 0} // Priority только для первого изображения
           alt="High Quality"
           fill
-          sizes="100%"
+          sizes={sizes}
           draggable="false"
           className={styles.image}
         />

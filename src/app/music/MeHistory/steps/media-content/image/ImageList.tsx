@@ -22,7 +22,7 @@ const ImageList:FC<{
                 <div key={img.id} className={s.img}>
                     <Image 
                         fill
-                        sizes="100%"
+                        sizes="120px"
                         style={{ objectFit: "cover" }} 
                         src={img.src} 
                         alt="Награда 1" 

@@ -72,7 +72,8 @@ const MediaItem: FC<MediaItemProps> = ({ item, id, opacity, contentRef, popup, h
                         </Link>
                     </div>
                     <div className={s.wrapperSlider}>
-                        <ImageMediaSlider objectFit='cover' slideNotesPosition="bottom" anim={true} content={content} />
+                        {/* Слайдер до 750×400 с cover: на узком экране картинка 16:9 растягивается по высоте до ~711px, поэтому ширина почти постоянная */}
+                        <ImageMediaSlider objectFit='cover' slideNotesPosition="bottom" anim={true} content={content} sizes="750px" />
                         {handleSetPopup && (
                             <motion.div 
                                 onHoverStart={()=> setPrompt(true)} 

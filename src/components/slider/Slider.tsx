@@ -19,6 +19,8 @@ interface ImageMediaSliderProps {
   anim: boolean;
   slideNotesPosition: "right" | "bottom";
   objectFit: 'contain' | 'cover'
+  // Ширина картинки на экране для next/image, по умолчанию во весь экран
+  sizes?: string
 }
 
 // Функции для проверки типов
@@ -35,7 +37,8 @@ const ImageMediaSlider: FC<ImageMediaSliderProps> = ({
   anim,
   slideNotesPosition,
   content,
-  objectFit
+  objectFit,
+  sizes = "100vw"
 }) => {
   const [step, setStep] = useState(0);
   const [load, setLoad] = useState(true);
@@ -94,6 +97,7 @@ const ImageMediaSlider: FC<ImageMediaSliderProps> = ({
                     step={step}
                     lowQualitySrc={content[step].low}
                     highQualitySrc={content[step].high}
+                    sizes={sizes}
                   />
                 </>
               )}
@@ -105,7 +109,7 @@ const ImageMediaSlider: FC<ImageMediaSliderProps> = ({
                   src={content[step].src}
                   alt={`media-${content[step].id}`}
                   fill
-                  sizes="100%"
+                  sizes={sizes}
                   style={{objectFit}}
                   draggable="false"
                 />
