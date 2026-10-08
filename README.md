@@ -21,7 +21,8 @@ npm run dev      # dev-сервер на http://localhost:3000
 | Запуск собранного | `npm start` |
 | Проверка типов | `npx tsc --noEmit --incremental false` |
 | Линтер | `npm run lint` |
-| Тесты | `npm test` |
+| Тесты (Vitest) | `npm test` |
+| Smoke-тесты в браузере (Playwright) | `npm run test:e2e`: нужен установленный Microsoft Edge; сам собирает проект и поднимает его на :3003. При запущенном `npm run dev` сначала останови его: обе команды пишут в `.next` |
 
 Не запускайте `npm run build`, пока работает `npm run dev`: оба пишут в `.next`, и сборка ломает dev-сервер.
 

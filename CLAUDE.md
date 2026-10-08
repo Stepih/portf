@@ -21,10 +21,12 @@
 | Проверка типов | `npx tsc --noEmit --incremental false` |
 | Линтер | `npm run lint` |
 | Тесты (Vitest) | `npm test` |
+| Smoke-тесты (Playwright, Edge) | `npm run test:e2e`: собирает проект и поднимает на :3003; уже запущенный там сервер переиспользуется |
 | Сборка design-sync | `node .design-sync/build-dist.mjs` (см. `.design-sync/CLAUDE.md`) |
 
 - **Линтер:** `npm run lint` (ESLint 9, `eslint.config.mjs`: `next/core-web-vitals` + `next/typescript`). Ошибок быть не должно; известные предупреждения перечислены в REFACTOR_PLAN.md, шаг 4.1. `next build` тоже прогоняет ESLint.
-- **Тестов почти нет.** Vitest (`npm test`) покрывает только чистые функции. Основная проверка — сборка, `tsc`, линтер и ручной прогон страниц.
+- **Тесты.** Vitest (`npm test`, файлы `*.test.ts` рядом с кодом): чистые функции, сканирование альбомов на временной папке, валидация формы, rate-limit. Playwright (`npm run test:e2e`, папка `tests/`): страницы без ошибок в консоли, форма заявки с моком `/api/sendMessage`, переключение трека. Браузер — установленный Edge (`channel: "msedge"`), браузеры Playwright не скачиваются. Покрытие узкое: ручной прогон страниц по-прежнему нужен.
+- `npm run test:e2e` запускает `next build`; при работающем `next dev` не запускай (см. ниже) — подними сборку на :3003 из отдельной копии, config её переиспользует.
 - Если запущен `next dev`, не запускай `next build`. Оба пишут в `.next`, и сборка ломает работающий dev-сервер.
 
 ## Деплой
