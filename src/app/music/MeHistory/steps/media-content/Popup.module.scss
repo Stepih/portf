@@ -65,9 +65,7 @@
 }
 
 @media screen and (max-width: 600px) {
-    @use '/src/styles/variables.scss' as vars;
-
-.popup {
+    .popup {
         .content {
             max-height: 80%;
         }
