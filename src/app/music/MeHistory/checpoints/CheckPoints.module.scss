@@ -10,6 +10,7 @@
     margin: auto;
 
     .checkBlock {
+        @include vars.button-reset;
         display: flex;
         align-items: center;
         justify-content: center;
@@ -19,13 +20,13 @@
         min-width: 147px;
 
         opacity: .5;
-        cursor: pointer;
 
         z-index: 4;
 
         
 
         .title {
+            font-size: 1.25rem;
             color: var(--color-text-100);
             transition: vars.$transition;
 

@@ -13,6 +13,9 @@ interface IVolume {
 
 const Volume: FC<IVolume> = ({ volume, handleVolumeChange }) => {
   const [isHover, setIsHover] = useState(false);
+  // Ползунок виден при наведении и при фокусе с клавиатуры
+  const [isFocus, setIsFocus] = useState(false);
+  const isOpen = isHover || isFocus;
 
   const mute = () => {
     const caheVolume = localStorage.getItem("playerVolume") || '1';
@@ -30,11 +33,13 @@ const Volume: FC<IVolume> = ({ volume, handleVolumeChange }) => {
       className={s.wrapper}
       onHoverStart={() => setIsHover(true)}
       onHoverEnd={() => setIsHover(false)}
+      onFocus={() => setIsFocus(true)}
+      onBlur={() => setIsFocus(false)}
     >
       <motion.div
         
         className={s.volumeControl}
-        animate={{ opacity: isHover ? 1 : 0, pointerEvents: isHover ? 'all' : 'none' }}
+        animate={{ opacity: isOpen ? 1 : 0, pointerEvents: isOpen ? 'all' : 'none' }}
       >
         <input
           className={s.customRangeInput}
@@ -45,15 +50,21 @@ const Volume: FC<IVolume> = ({ volume, handleVolumeChange }) => {
           step="0.01"
           value={volume}
           onChange={(event: ChangeEvent<HTMLInputElement>) => handleVolumeChange(event.target.value)}
-          
+          aria-label="Громкость"
         />
         <div style={{ width: `${volume * 74}%` }} className={s.line}></div>
       </motion.div>
 
-      <motion.div onClick={mute} className={s.hz} animate={{ pointerEvents: isHover ? 'all' : 'none' }} />
+      <motion.button
+        type="button"
+        onClick={mute}
+        className={s.hz}
+        animate={{ pointerEvents: isHover ? 'all' : 'none' }}
+        aria-label={volume > 0 ? 'Выключить звук' : 'Включить звук'}
+      />
 
       <motion.div>
-      <motion.div  animate={{opacity: isHover ? .5 : 1}}>
+      <motion.div  animate={{opacity: isOpen ? .5 : 1}}>
         {volume > 0 ? <VolumeICO /> : <NoVolumeICO />}
       </motion.div>
       </motion.div>

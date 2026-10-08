@@ -1,5 +1,5 @@
 import { IMusicHistory } from "@/interfaces/musicHistory";
-import { FC, useEffect, useRef, useState } from "react";
+import { FC, RefObject, useEffect, useRef, useState } from "react";
 import { motion } from "framer-motion";
 import s from './Steps.module.scss';
 import MediaList from "./media-content/MediaContentList";
@@ -9,8 +9,10 @@ import { isTouchDevice } from "@/scripts/typeDevice";
 const Steps: FC<{ 
     musicHistory: IMusicHistory[], 
     step: number, 
-    handleSetStep: (id: number, block: boolean) => void 
-}> = ({ handleSetStep, musicHistory, step }) => {
+    handleSetStep: (id: number, block: boolean) => void,
+    // Стрелки перехватываются, только когда фокус внутри этого элемента
+    keyScopeRef: RefObject<HTMLElement | null>
+}> = ({ handleSetStep, musicHistory, step, keyScopeRef }) => {
     const refs = useRef<(HTMLDivElement | null)[]>([]);
     const isScrolling = useRef(false);
     const isBlockScroll = useRef(false);
@@ -93,6 +95,7 @@ const Steps: FC<{
     };
 
     const handleKeyScroll = (event: KeyboardEvent) => {
+        if (!keyScopeRef.current?.contains(document.activeElement)) return;
         switch (event.key) {
             case 'ArrowDown':
                 handleScroll('down');

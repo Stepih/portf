@@ -36,19 +36,32 @@ const Commands:FC<IComand> = ({ handleTrackSelect, trackId, audioRef, statusPlay
 
     return (
         <div className={s.comands}>
-            <div onClick={cmd.backTrack}>
-                <Back className={`${s.back} ${trackId === 0 ? s.unsetActive : ''}`}/>
-            </div>
-            <div onClick={cmd.togglePlay}>
-                {statusPlay.play ? (
-                    <Pause />
-                ) :
-                    <Play />
-                }
-            </div>
-            <div onClick={cmd.nextTrack}>
-                <Back className={trackId + 1 === countTracks ? s.unsetActive : ''} style={{transform: 'rotate(180deg'}}/>
-            </div>
+            <button
+                type="button"
+                className={`${s.btn} ${s.back}`}
+                onClick={cmd.backTrack}
+                disabled={trackId === 0}
+                aria-label="Предыдущий трек"
+            >
+                <Back className={trackId === 0 ? s.unsetActive : ''}/>
+            </button>
+            <button
+                type="button"
+                className={s.btn}
+                onClick={cmd.togglePlay}
+                aria-label={statusPlay.play ? 'Пауза' : 'Воспроизвести'}
+            >
+                {statusPlay.play ? <Pause /> : <Play />}
+            </button>
+            <button
+                type="button"
+                className={s.btn}
+                onClick={cmd.nextTrack}
+                disabled={trackId + 1 === countTracks}
+                aria-label="Следующий трек"
+            >
+                <Back className={trackId + 1 === countTracks ? s.unsetActive : ''} style={{transform: 'rotate(180deg)'}}/>
+            </button>
         </div>
     )
 }

@@ -1,7 +1,8 @@
 import { ActionButton } from 'portfolio-ui';
 
 // Primary call to action on a media item card.
-export const Primary = () => <ActionButton type="button" text="Оставить заявку" />;
+// With href it renders a link styled as the button (MediaItem uses it to open /popup).
+export const Primary = () => <ActionButton href="/popup" text="Оставить заявку" />;
 
 // Feedback form submit + its sending and sent states.
 export const Submit = () => (

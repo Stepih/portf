@@ -2,7 +2,6 @@
 
 import { FC, useEffect,  useState } from "react";
 import { motion, MotionValue, useTransform } from "framer-motion";
-import Link from "next/link";
 import { ralewayBold } from "../../../fonts/fonts";
 import { IMedia } from "@/interfaces/mediaImages";
 import { fadeOpacity, IBlockBounds } from "../fadeOpacity";
@@ -73,9 +72,7 @@ const MediaItem: FC<MediaItemProps> = ({ item, id, scrollY, bounds, contentRef, 
                     <div className={s.text} style={{ textAlign: id % 2 !== 0 ? "end" : "start" }}>
                         
                         <MediaDescription title={item.title} description={item.description} />
-                        <Link href="/popup">
-                            <ActionButton type='button' text="Оставить заявку" />
-                        </Link>
+                        <ActionButton href="/popup" text="Оставить заявку" />
                     </div>
                     <div className={s.wrapperSlider}>
                         {/* Слайдер до 750×400 с cover: на узком экране картинка 16:9 растягивается по высоте до ~711px, поэтому ширина почти постоянная */}
@@ -87,7 +84,9 @@ const MediaItem: FC<MediaItemProps> = ({ item, id, scrollY, bounds, contentRef, 
                                 className={s.open}
                             >
                                 <Prompt screen="auto" title="Полноэкранный режим" show={prompt} type="active">
-                                    <Open onClick={() => handleSetPopup(id)} />
+                                    <button type="button" className={s.openBtn} onClick={() => handleSetPopup(id)} aria-label="Полноэкранный режим">
+                                        <Open />
+                                    </button>
                                 </Prompt>
                             </motion.div>
                         )}

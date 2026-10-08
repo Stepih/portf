@@ -28,7 +28,7 @@ Font classes: `font-raleway` (body), `font-raleway-bold`, `font-allerta` (Allert
 
 ### Where the truth lives
 - `styles.css` → `_ds_bundle.css`: tokens are at the top, followed by global element styles and component CSS. `fonts/fonts.css` holds the `@font-face` rules.
-- `components/<group>/<Name>/<Name>.d.ts` is each component's props contract. `<Name>.prompt.md` has usage examples. Props are exact: for example, `ActionButton` requires `type` and `text`, and `TitleBlockPage` takes a single `props={{ title, description, img? }}` object.
+- `components/<group>/<Name>/<Name>.d.ts` is each component's props contract. `<Name>.prompt.md` has usage examples. Props are exact: for example, `ActionButton` requires `text` plus either `type` (a `<button>`) or `href` (a link styled as the button), and `TitleBlockPage` takes a single `props={{ title, description, img? }}` object.
 
 ### Example
 ```jsx

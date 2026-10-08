@@ -9,8 +9,13 @@ import { scrollToElementById } from "@/scripts/scrollTo";
 
 const ScrollToArrow:FC<{forid: string}> = ({forid}) => {
     return (
-        <button className={s.arrow}>
-            <Arrow  onClick={() => scrollToElementById(forid, true)}/>
+        <button
+            type="button"
+            className={s.arrow}
+            onClick={() => scrollToElementById(forid, true)}
+            aria-label="Прокрутить вниз"
+        >
+            <Arrow />
         </button>
     )
 }

@@ -44,14 +44,14 @@ const AlbumListDekstop:FC<AlbumListProps> = ({ albums, error, handleAlbumSelect 
                 <div className={s.albumHeader}>
                     <h3 className={s.title}>Мои плейлисты</h3>
                     {lastAlbums.length > 0 && (
-                        <div 
+                        <button
+                            type="button"
                             onClick={showAllAlbums}
-                            className={s.popupBtn}>
-                            <h3 
-                                className={s.title}> {!show ? 'Показать еще' : 'Показать меньше'}
-                            </h3>
+                            className={s.popupBtn}
+                            aria-expanded={show}>
+                            <span className={s.title}>{!show ? 'Показать еще' : 'Показать меньше'}</span>
                             <Arrow className={s.arrow} />
-                        </div>
+                        </button>
                     )}
                 </div>
                 <div className={s.albumList}>

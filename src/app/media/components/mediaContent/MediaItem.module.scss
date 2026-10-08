@@ -46,8 +46,11 @@
                 bottom: -40px;
                 right: 20px;
                 
-                cursor: pointer;
-                
+                .openBtn {
+                    @include vars.button-reset;
+                    display: flex;
+                }
+
                 path {
                     stroke: var(--color-text-100);
                     transition: vars.$transition;

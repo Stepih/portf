@@ -12,7 +12,9 @@ const ClosePlayer:FC<{handleAlbumSelect: (album: null)=> void}> = ({handleAlbumS
     return (
         <motion.div onHoverStart={()=>setHov(true)} onHoverEnd={()=>setHov(false)}>
             <Prompt screen="auto" show={hov} type="active" title="Закрыть плеер">
-                <Krest className={s.img} onClick={() => handleAlbumSelect(null)}/>
+                <button type="button" className={s.btn} onClick={() => handleAlbumSelect(null)} aria-label="Закрыть плеер">
+                    <Krest />
+                </button>
             </Prompt>
         </motion.div>
         

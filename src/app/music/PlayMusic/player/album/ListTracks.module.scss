@@ -20,7 +20,7 @@
         justify-content: space-between;
 
         .btn {
-            cursor: pointer;
+            @include vars.button-reset;
             color: var(--color-text-100);
             transition: vars.$transition;
         }
@@ -46,6 +46,7 @@
         
     
         .track {
+            @include vars.button-reset;
             position: relative;
             display: flex;
             align-items: center;

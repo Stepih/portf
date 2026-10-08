@@ -24,7 +24,7 @@ const ImageList:FC<{
                         sizes="120px"
                         style={{ objectFit: "cover" }} 
                         src={img.src} 
-                        alt="Награда 1" 
+                        alt={`Награда ${idx + 1}`} 
                     />
                 </div>
             )}

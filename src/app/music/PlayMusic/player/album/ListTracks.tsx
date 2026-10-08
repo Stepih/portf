@@ -37,21 +37,23 @@ const ListTracks:FC<IListTracks> =({handleListTracks, handleTrackSelect, album, 
                         </motion.span>
                     </h3>
 
-                    <span className={s.btn} onClick={handleListTracks}>Свернуть</span>
+                    <button type="button" className={s.btn} onClick={handleListTracks}>Свернуть</button>
                 </div>
                 <div className={s.listTracks}>
                 {album.tracks.map((track) => (
-                    <div
+                    <button
+                        type="button"
                         className={s.track}
                         key={track.id}
                         onClick={() => handleTrackSelect(track.id)}
+                        aria-current={trackId === track.id ? 'true' : undefined}
                         >
                         {trackId === track.id && statusPlay.play ? <Pause />  : <Play />}
-                        <div className={s.info}>
-                            <p className={s.name}>{track.name} - <span className={s.artist}>{album.artist}</span></p>
-                            <p className={`${canada.className} ${s.duration}`}>{track.duration}</p>
-                        </div>
-                    </div>
+                        <span className={s.info}>
+                            <span className={s.name}>{track.name} - <span className={s.artist}>{album.artist}</span></span>
+                            <span className={`${canada.className} ${s.duration}`}>{track.duration}</span>
+                        </span>
+                    </button>
                 ))}
                 </div>
             </div>

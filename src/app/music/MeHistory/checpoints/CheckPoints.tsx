@@ -10,15 +10,17 @@ const CheckPoints:FC<{step: number, handleSetStep: (id:number, block: boolean) =
         <div className={s.wrapper}>
             {checpointsData.map((block, idx) => (
                 <div key={idx} style={{display: 'contents'}}>
-                    <motion.div 
+                    <motion.button
+                        type="button"
+                        aria-current={idx === step ? 'step' : undefined}
                         animate={{opacity: step === 0 ? (idx === step ? 1 : .5) : step === 1 ? (idx !== step + 1 ? 1 : .5) : 1}} 
                         onClick={handleSetStep.bind(null, idx, false)} 
                         className={`${s.checkBlock} ${idx !== step ? s.noActiveMobile : ''}`}
                     >
                         
                         <block.Img id={`check-${idx}`} className={s.img} />
-                        <motion.p className={`${s.title} ${idx === step ? s.active : ''}`}>{block.title}</motion.p>
-                    </motion.div>
+                        <motion.span className={`${s.title} ${idx === step ? s.active : ''}`}>{block.title}</motion.span>
+                    </motion.button>
                     {idx < 2 && (
                         <div className={`${s.line} ${s.noActiveMobile}`}>
                             <motion.div 

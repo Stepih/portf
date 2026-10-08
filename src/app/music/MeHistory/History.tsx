@@ -1,5 +1,5 @@
 "use client"
-import { FC, useState } from "react";
+import { FC, useRef, useState } from "react";
 
 import s from './History.module.scss'
 import CheckPoints from "./checpoints/CheckPoints";
@@ -12,6 +12,8 @@ import { ralewayBold } from "@/app/fonts/fonts";
 
 const History:FC<{musicHistory: IMusicHistory[]}> = ({musicHistory}) => {
     const [step, setStep] = useState(0)
+    // Блок истории: стрелки ↑/↓ листают шаги, только когда фокус внутри него
+    const wrapperRef = useRef<HTMLDivElement>(null)
 
     const handleSetStep = (id:number, block: boolean) => {
         setStep(id)
@@ -21,10 +23,10 @@ const History:FC<{musicHistory: IMusicHistory[]}> = ({musicHistory}) => {
     return (
         <>
             <ScrollToArrow forid="title-history"/>
-            <div className={s.wrapper}>
+            <div ref={wrapperRef} tabIndex={-1} className={s.wrapper}>
                 <h3 id="title-history" className={`${s.title} ${ralewayBold.className}`}>Чем я занимался</h3>
                 <CheckPoints step={step} handleSetStep={handleSetStep}/>
-                <Steps musicHistory={musicHistory} handleSetStep={handleSetStep} step={step}/>
+                <Steps musicHistory={musicHistory} handleSetStep={handleSetStep} step={step} keyScopeRef={wrapperRef}/>
             </div>
         </>
         

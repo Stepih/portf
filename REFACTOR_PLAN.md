@@ -266,7 +266,7 @@
 - **Объём:** XS. **Риск:** низкий.
 - **Проверка:** сборка без deprecation-предупреждений Sass; темы работают.
 
-### 4.6 Доступность (A8)
+### 4.6 Доступность (A8) — ✅ сделано (миксин `vars.button-reset` в `variables.scss`; кнопки с `aria-label` в плеере, списке треков, «Показать еще» (`aria-expanded`), чекпоинтах (`aria-current="step"`), полноэкранном режиме /media; `ScrollToArrow` — обработчик на `<button>`, фокус больше не скрыт; у `ActionButton` вариант-ссылка `href` вместо `<Link><button>`, design-sync: превью и `conventions.md`; `alt` наград «Награда N»; ползунок громкости показывается и при фокусе; стрелки ↑/↓ листают историю, только когда фокус внутри её блока — блок получил `tabIndex={-1}`, чтобы клик мышью внутри тоже давал фокус)
 - **Файлы:** `Command.tsx`, `ListTracks.tsx`, `Volume.tsx`, `ClosePlayer.tsx`, `AlbumList.tsx`, `CheckPoints.tsx`, `ScrollToArrow.tsx`, `MediaItem.tsx`, `ImageList.tsx`, `Steps.tsx`.
 - **Суть:**
   - `<button type="button">` с `aria-label` вместо кликабельных `div` и `svg`;
