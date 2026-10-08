@@ -90,4 +90,4 @@ public/                  музыка, видео, медиа и sitemap
 - **Блокировка скролла — только через `useBodyScrollLock(active)`** (`src/hooks`). Он держит счётчик в `lockBodyScroll()` (`src/scripts/scrollTo.ts`) и снимает блокировку при размонтировании. Не пиши в `document.body.style.overflow` напрямую.
 - **Шаги истории на `/music` описаны только в `src/data/musicHistory.ts`** (подпись, ключ иконки, текст, медиа). Код считает шаги от длины массива. Новую иконку добавь в тип `HistoryIcon` и в `MeHistory/checkpoints/icons.ts`.
 - **Метрика:** ID только в `YM_ID` (`src/constants/analytics.ts`), вызовы — через `ym`/`reachGoal` из `src/scripts/metrika.ts`. Переходы внутри SPA шлёт `hit` компонент `YandexMetrika`; первый hit отправляет сам `init`.
-- **Токен Telegram-бота** сейчас лежит в коде `api/sendMessage/route.ts`. Это критичная проблема, см. AUDIT.md, S1. Новые секреты кладём только в env.
+- **Токен Telegram-бота** и ID чата читаются из env (`TELEGRAM_BOT_TOKEN`, `TELEGRAM_CHAT_ID`; локально `.env.local`, шаблон `.env.example`). В прод-контейнере их нужно задать отдельно, иначе форма отвечает 500. Секреты в код не пишем.

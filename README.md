@@ -37,7 +37,7 @@ npm run dev      # dev-сервер на http://localhost:3000
 | `TELEGRAM_BOT_TOKEN` | токен бота, через которого `/api/sendMessage` пересылает заявки |
 | `TELEGRAM_CHAT_ID` | чат, куда приходят заявки |
 
-Сейчас код эти переменные ещё не читает: токен и ID чата записаны в `src/app/api/sendMessage/route.ts`. Перенос в env — шаг 1.1 в REFACTOR_PLAN.md. После него переменные нужно задать и в `.env.local`, и в env Docker-контейнера, иначе форма перестанет отправлять заявки.
+Переменные нужно задать и в `.env.local`, и в env Docker-контейнера. Без них форма не отправляет заявки: `/api/sendMessage` отвечает 500 и пишет в лог `TELEGRAM_BOT_TOKEN or TELEGRAM_CHAT_ID is not set`.
 
 ## Как добавить контент
 

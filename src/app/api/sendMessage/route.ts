@@ -12,6 +12,14 @@ const getClientIp = (req: Request) =>
 const json = (body: object, status: number) => Response.json(body, { status });
 
 export async function POST(req: Request) {
+    // Токен и чат берутся из env: локально .env.local, на проде env Docker-контейнера
+    const telegramBotToken = process.env.TELEGRAM_BOT_TOKEN;
+    const chatId = process.env.TELEGRAM_CHAT_ID;
+    if (!telegramBotToken || !chatId) {
+        console.error('sendMessage: TELEGRAM_BOT_TOKEN or TELEGRAM_CHAT_ID is not set');
+        return json({ error: 'Failed to send message' }, 500);
+    }
+
     if (isRateLimited(getClientIp(req), Date.now())) {
         return json({ error: 'Too many requests' }, 429);
     }
@@ -34,10 +42,6 @@ export async function POST(req: Request) {
     }
 
     const { name, contact, message } = result.data;
-
-    // Телеграм токен и чат ID
-    const telegramBotToken = '7960195979:AAEYvMAlQ-zPa_ik_2i4-rHtSs6-_ktOq7U';
-    const chatId = '556440318';
 
     // Сообщение для отправки
     const text = `Name: ${name}\nContact: ${contact}\nMessage: ${message}`;
