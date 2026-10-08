@@ -74,11 +74,14 @@ const ImageMediaContent: FC<{ content: IMedia[] }> = ({ content }) => {
 
     const updatePositions = () => {
         if (typeof window !== "undefined") {
-            window.scrollTo({
-                top: 0,
-                behavior: "instant",
+            // Блоки липкие (sticky): прилипший блок вернёт позицию на экране, а не в потоке.
+            // На время замера снимаем sticky, чтобы не прокручивать страницу наверх.
+            const els = contentRefs.current;
+            const prevPositions = els.map((el) => el?.style.position ?? "");
+            els.forEach((el) => {
+                if (el) el.style.position = "static";
             });
-            const pos = contentRefs.current.map((el) => {
+            const pos = els.map((el) => {
                 if (el) {
                     const rect = el.getBoundingClientRect();
                     return {
@@ -87,6 +90,9 @@ const ImageMediaContent: FC<{ content: IMedia[] }> = ({ content }) => {
                     };
                 }
                 return { top: 0, bottom: 0 };
+            });
+            els.forEach((el, i) => {
+                if (el) el.style.position = prevPositions[i];
             });
             setPositions(pos);
         }

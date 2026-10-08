@@ -38,7 +38,6 @@ const MediaItem: FC<MediaItemProps> = ({ item, id, opacity, contentRef, popup, h
         }
     }, []);
 
-    console.log(pageHeight)
     return (
         <>
             <motion.div

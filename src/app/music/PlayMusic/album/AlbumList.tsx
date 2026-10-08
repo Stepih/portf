@@ -1,4 +1,4 @@
-import { FC, useState } from "react";
+import { FC, useMemo, useState } from "react";
 import { IAlbums } from "@/interfaces/albums";
 
 import s from './AlbumList.module.scss'
@@ -14,24 +14,26 @@ interface AlbumListProps {
 
 const AlbumListDekstop:FC<AlbumListProps> = ({ albums, error, handleAlbumSelect }) => {
     const [show, setShow] = useState(false)
-    const limitAlbums:IAlbums[] = []
-    const lastAlbums:IAlbums[] = []
-    
-    const limit = 5
-    let countLimit = 0
 
-    const showAlbum = () => {
+    // Первые 5 альбомов с обложкой видны сразу, остальные — по «Показать еще»
+    const { limitAlbums, lastAlbums } = useMemo(() => {
+        const limit = 5
+        const limitAlbums: IAlbums[] = []
+        const lastAlbums: IAlbums[] = []
         albums.forEach((album) => {
-            if (album.img && countLimit < limit) {
+            if (album.img && limitAlbums.length < limit) {
                 limitAlbums.push(album)
-                countLimit += 1
             } else {
                 lastAlbums.push(album)
             }
         })
-    }
-    showAlbum()
-    const itog = show ? [...lastAlbums, ...limitAlbums] : limitAlbums
+        return { limitAlbums, lastAlbums }
+    }, [albums])
+
+    const itog = useMemo(
+        () => show ? [...limitAlbums, ...lastAlbums] : limitAlbums,
+        [show, limitAlbums, lastAlbums]
+    )
     const showAllAlbums = () => {
         setShow(!show)
     }
@@ -41,14 +43,16 @@ const AlbumListDekstop:FC<AlbumListProps> = ({ albums, error, handleAlbumSelect 
             <div className={s.wrapper}>
                 <div className={s.albumHeader}>
                     <h3 className={s.title}>Мои плейлисты</h3>
-                    <div 
-                        onClick={showAllAlbums}
-                        className={s.popupBtn}>
-                        <h3 
-                            className={s.title}> {!show ? 'Показать еще' : 'Показать меньше'}
-                        </h3>
-                        <Arrow className={s.arrow} />
-                    </div>
+                    {lastAlbums.length > 0 && (
+                        <div 
+                            onClick={showAllAlbums}
+                            className={s.popupBtn}>
+                            <h3 
+                                className={s.title}> {!show ? 'Показать еще' : 'Показать меньше'}
+                            </h3>
+                            <Arrow className={s.arrow} />
+                        </div>
+                    )}
                 </div>
                 <div className={s.albumList}>
                     {error && <h4 style={{textAlign: 'center', width: '100%'}}>Ошибка загрузки треков</h4>}
