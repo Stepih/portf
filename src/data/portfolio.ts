@@ -42,6 +42,17 @@ export const portfolioWorks: IPortfolioWork[] = [
         featured: { type: 'video', src: img('keystone.mp4'), poster: img('keystone-poster.jpg') }
     },
     {
+        id: 'icc',
+        name: 'ИКЦ «Презентация»',
+        year: 2026,
+        kind: 'Корпоративный',
+        description: 'Сайт кировской компании: сопровождение 1С, сайты, ИТ-поддержка 24/7, бухгалтерия и юристы на одной странице',
+        tags: ['Web', 'Mobile', 'B2B-услуги'],
+        tint: 'rgba(102, 221, 34, 0.2)',
+        cover: img('icc-desktop.jpg'),
+        coverHeight: 380
+    },
+    {
         id: 'hubech',
         name: 'Hubech',
         year: 2024,
