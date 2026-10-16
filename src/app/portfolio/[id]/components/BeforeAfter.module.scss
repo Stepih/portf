@@ -1,0 +1,241 @@
+@use '/src/styles/variables.scss' as vars;
+
+.section {
+    display: flex;
+    flex-direction: column;
+    gap: 28px;
+
+    .head {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: baseline;
+        justify-content: space-between;
+        gap: 12px;
+    }
+
+    .title {
+        margin: 0;
+        font-size: 1.6rem;
+        color: var(--color-text-100);
+        transition: vars.$transition;
+    }
+
+    .hint {
+        font-size: 1rem;
+        color: var(--color-text-50);
+        transition: vars.$transition;
+    }
+}
+
+.box {
+    position: relative;
+
+    width: 100%;
+    min-height: 280px;
+    overflow: hidden;
+
+    border-radius: 13px;
+    background: rgba(57, 57, 57, 0.35);
+    box-shadow: vars.$shadow;
+
+    user-select: none;
+    touch-action: pan-y;
+
+    img {
+        position: absolute;
+        left: 0;
+        top: 0;
+
+        display: block;
+        width: 100%;
+        height: auto;
+    }
+}
+
+.after {
+    position: absolute;
+    inset: 0;
+}
+
+.before {
+    position: absolute;
+    inset: 0;
+    background: #1b1b1b;
+}
+
+.panel {
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+
+    width: 50%;
+    padding: 56px clamp(20px, 4vw, 48px) 32px;
+
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: clamp(10px, 2vw, 16px);
+
+    color: #fff;
+
+    .panelTitle {
+        font-size: clamp(1.4rem, 3vw, 2.4rem);
+        line-height: 1.1;
+    }
+
+    .panelText {
+        font-size: clamp(0.9rem, 1.4vw, 1.05rem);
+        line-height: 1.5;
+        color: rgba(255, 255, 255, 0.8);
+        text-wrap: pretty;
+    }
+
+    .panelNote {
+        font-size: 0.85rem;
+        color: rgba(255, 255, 255, 0.55);
+    }
+
+    .channels {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        list-style: none;
+    }
+
+    .channel {
+        padding: 4px 12px;
+
+        font-size: 0.85rem;
+        color: rgba(255, 255, 255, 0.85);
+
+        border: 1.5px dashed rgba(255, 255, 255, 0.45);
+        border-radius: 13px;
+    }
+}
+
+.label {
+    position: absolute;
+    top: 16px;
+    z-index: 2;
+
+    padding: 6px 14px;
+
+    font-size: 0.9rem;
+    color: #fff;
+
+    border-radius: 13px;
+    background: rgba(0, 0, 0, 0.6);
+    pointer-events: none;
+}
+
+.labelBefore {
+    left: 16px;
+}
+
+.labelAfter {
+    right: 16px;
+}
+
+.handle {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    z-index: 3;
+
+    width: 44px;
+    margin-left: -22px;
+
+    display: flex;
+    justify-content: center;
+
+    cursor: ew-resize;
+    touch-action: none;
+    outline: none;
+
+    .line {
+        width: 2px;
+        height: 100%;
+        background: #fff;
+        box-shadow: 0 0 12px rgba(0, 0, 0, 0.4);
+    }
+
+    .knob {
+        position: absolute;
+        top: 50%;
+        left: 0;
+
+        width: 44px;
+        height: 44px;
+        margin-top: -22px;
+
+        display: flex;
+        align-items: center;
+        justify-content: center;
+
+        font-size: 1rem;
+        color: #111;
+
+        border-radius: 50%;
+        background: #fff;
+        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.35);
+    }
+
+    &:focus-visible .knob {
+        outline: 2px solid vars.$blue-100;
+        outline-offset: 3px;
+    }
+}
+
+// Вертикальное сравнение на узком экране
+.vertical {
+    touch-action: pan-x;
+
+    .panel {
+        right: 0;
+        bottom: auto;
+
+        width: auto;
+        padding: 50px 18px 18px;
+
+        justify-content: flex-start;
+        gap: 8px;
+    }
+
+    .labelAfter {
+        top: auto;
+        bottom: 16px;
+        left: 16px;
+        right: auto;
+    }
+
+    .handle {
+        top: 50%;
+        bottom: auto;
+        left: 0;
+        right: 0;
+
+        width: auto;
+        height: 44px;
+        margin: -22px 0 0 0;
+
+        flex-direction: column;
+        align-items: center;
+        justify-content: stretch;
+
+        cursor: ns-resize;
+
+        .line {
+            width: 100%;
+            height: 2px;
+            margin-top: 21px;
+        }
+
+        .knob {
+            top: 0;
+            left: 50%;
+            margin-top: 0;
+            margin-left: -22px;
+        }
+    }
+}

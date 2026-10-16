@@ -1,0 +1,51 @@
+@use '/src/styles/variables.scss' as vars;
+
+.section {
+    display: flex;
+    flex-direction: column;
+    gap: 28px;
+
+    .title {
+        margin: 0;
+        font-size: 1.6rem;
+        color: var(--color-text-100);
+        transition: vars.$transition;
+    }
+
+    .grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr));
+        gap: 24px;
+    }
+
+    .card {
+        display: flex;
+        flex-direction: column;
+        gap: 14px;
+
+        padding: 28px;
+
+        border-radius: 13px;
+        background: vars.$black-8;
+        box-shadow: vars.$shadow;
+    }
+
+    .num {
+        font-size: 1rem;
+        color: var(--color-text-50);
+        transition: vars.$transition;
+    }
+
+    .cardTitle {
+        margin: 0;
+        font-size: 1.4rem;
+    }
+
+    .text {
+        font-size: 1.05rem;
+        line-height: 1.55;
+        color: var(--color-text-50);
+        text-wrap: pretty;
+        transition: vars.$transition;
+    }
+}

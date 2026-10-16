@@ -1,0 +1,274 @@
+@use '/src/styles/variables.scss' as vars;
+
+$camera: transform 1.1s cubic-bezier(.65, 0, .25, 1);
+
+.section {
+    display: flex;
+    flex-direction: column;
+    gap: 28px;
+
+    .title {
+        margin: 0;
+        font-size: 1.6rem;
+        color: var(--color-text-100);
+        transition: vars.$transition;
+    }
+}
+
+// Окно справа, шаги слева; на узком экране окно сверху, шаги под ним
+.story {
+    display: flex;
+    flex-wrap: wrap;
+    flex-direction: row-reverse;
+    align-items: flex-start;
+    gap: 24px 56px;
+}
+
+.frame {
+    position: sticky;
+    top: 12vh;
+    z-index: 3;
+
+    flex: 1.3 1 440px;
+    min-width: 0;
+    height: min(76vh, 680px);
+
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+
+    border-radius: 13px;
+    background: var(--color-bg);
+    box-shadow: vars.$shadow;
+    transition: background .5s;
+}
+
+.frameVideo {
+    flex: 2.4 1 520px;
+}
+
+.bar {
+    flex: none;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+
+    height: 42px;
+    padding: 0 14px;
+    border-bottom: 1px solid rgba(128, 128, 128, 0.2);
+
+    > span:not(.count) {
+        width: 9px;
+        height: 9px;
+        border-radius: 50%;
+        background: rgba(128, 128, 128, 0.4);
+
+        &:first-child {
+            background: vars.$redPink-100;
+        }
+    }
+
+    .count {
+        flex: 1;
+        text-align: right;
+        font-size: 0.85rem;
+        line-height: 1;
+        color: var(--color-text-50);
+        transition: vars.$transition;
+    }
+}
+
+.view {
+    position: relative;
+    flex: 1;
+    overflow: hidden;
+    background: rgba(57, 57, 57, 0.35);
+}
+
+.layer {
+    position: absolute;
+    inset: 0;
+    z-index: 5;
+    overflow: hidden;
+
+    background: #fff8f5;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity .8s ease;
+
+    img {
+        display: block;
+    }
+}
+
+.layerOn {
+    z-index: 6;
+    opacity: 1;
+}
+
+.cam {
+    position: absolute;
+    left: 0;
+    top: 0;
+
+    transform-origin: 0 0;
+    transition: $camera;
+    will-change: transform;
+}
+
+.badge {
+    position: absolute;
+
+    width: 34px;
+    height: 34px;
+    margin: -17px 0 0 -17px;
+
+    align-items: center;
+    justify-content: center;
+
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: #fff;
+
+    border-radius: 50%;
+    transition: transform 1.1s cubic-bezier(.65, 0, .25, 1);
+}
+
+.videoLayer {
+    position: absolute;
+    inset: 0;
+    z-index: 7;
+    overflow: hidden;
+    background: #0d0d0d;
+
+    video {
+        display: block;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+}
+
+.steps {
+    flex: 1 1 300px;
+    min-width: 0;
+
+    display: flex;
+    flex-direction: column;
+}
+
+.step {
+    position: relative;
+    padding: 24px 0;
+    transition: opacity .5s ease;
+}
+
+.stepInner {
+    position: sticky;
+    top: 22vh;
+
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+
+    .stepHead {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 10px 14px;
+    }
+
+    .num {
+        font-size: 1rem;
+        color: var(--color-text-50);
+        transition: vars.$transition;
+    }
+
+    .goal {
+        padding: 4px 12px;
+
+        font-size: 0.85rem;
+        color: var(--color-text-50);
+
+        border: 1.5px solid rgba(128, 128, 128, 0.45);
+        border-radius: 13px;
+        transition: vars.$transition;
+    }
+
+    .stepTitle {
+        margin: 0;
+        font-size: clamp(1.5rem, 2.6vw, 2rem);
+    }
+
+    .text {
+        max-width: 40ch;
+
+        font-size: 1.1rem;
+        line-height: 1.55;
+        color: var(--color-text-50);
+        text-wrap: pretty;
+        transition: vars.$transition;
+    }
+}
+
+.points {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+
+    max-width: 44ch;
+    margin-top: 4px;
+    list-style: none;
+
+    .point {
+        display: flex;
+        align-items: flex-start;
+        gap: 12px;
+
+        font-size: 1rem;
+        line-height: 1.5;
+        color: var(--color-text-100);
+
+        cursor: default;
+        transition: opacity .3s, color .5s;
+    }
+
+    .pointNum {
+        flex: none;
+
+        width: 26px;
+        height: 26px;
+
+        display: flex;
+        align-items: center;
+        justify-content: center;
+
+        font-size: 0.8rem;
+
+        border: 1.5px solid var(--color-text-50);
+        border-radius: 50%;
+        transition: background .3s, border-color .3s, color .3s;
+    }
+
+    .pointText {
+        padding-top: 2px;
+        text-wrap: pretty;
+    }
+}
+
+@media screen and (max-width: 899px) {
+    // Тень вверх закрывает текст, который уезжает под прилипшее окно
+    .frame {
+        top: 12px;
+        height: 46vh;
+        box-shadow: 0 -14px 0 0 var(--color-bg), vars.$shadow;
+    }
+
+    .frameVideo {
+        flex: 1 1 100%;
+    }
+
+    .stepInner {
+        top: calc(46vh + 28px);
+    }
+}

@@ -1,0 +1,13 @@
+.page {
+    color: var(--color-text-100);
+}
+
+.body {
+    display: flex;
+    flex-direction: column;
+    gap: 96px;
+
+    max-width: 1160px;
+    margin: 0 auto;
+    padding: 64px 0 120px;
+}

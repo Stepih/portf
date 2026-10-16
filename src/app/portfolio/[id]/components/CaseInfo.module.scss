@@ -1,0 +1,60 @@
+@use '/src/styles/variables.scss' as vars;
+
+.info {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 320px), 1fr));
+    gap: 36px 56px;
+
+    padding: clamp(24px, 4vw, 40px);
+
+    border-radius: 13px;
+    background: vars.$black-8;
+    box-shadow: vars.$shadow;
+
+    .item {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .label {
+        font-size: 0.8rem;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: var(--color-text-50);
+        transition: vars.$transition;
+    }
+
+    .text {
+        font-size: 1.1rem;
+        line-height: 1.55;
+        color: var(--color-text-100);
+        text-wrap: pretty;
+        transition: vars.$transition;
+    }
+
+    .big {
+        font-size: 1.6rem;
+        line-height: 1.2;
+        color: var(--color-text-100);
+        transition: vars.$transition;
+    }
+
+    .chips {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        list-style: none;
+    }
+
+    .chip {
+        padding: 5px 12px;
+
+        font-size: 0.95rem;
+        color: var(--color-text-100);
+
+        border: 1.5px solid var(--color-text-50);
+        border-radius: 13px;
+        transition: vars.$transition;
+    }
+}

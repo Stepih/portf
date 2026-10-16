@@ -1,0 +1,31 @@
+@use '/src/styles/variables.scss' as vars;
+
+.metrics {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr));
+    gap: 32px;
+
+    .item {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+
+        padding-top: 28px;
+        border-top: 1.5px solid rgba(128, 128, 128, 0.35);
+    }
+
+    .value {
+        font-size: clamp(2.6rem, 6vw, 4.6rem);
+        line-height: 1;
+        font-variant-numeric: tabular-nums;
+        color: var(--color-text-100);
+        transition: vars.$transition;
+    }
+
+    .label {
+        font-size: 1.05rem;
+        color: var(--color-text-50);
+        text-wrap: pretty;
+        transition: vars.$transition;
+    }
+}

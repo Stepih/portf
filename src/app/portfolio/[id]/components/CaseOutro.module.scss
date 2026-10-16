@@ -1,0 +1,165 @@
+@use '/src/styles/variables.scss' as vars;
+
+.card {
+    border-radius: 13px;
+    background: vars.$black-8;
+    box-shadow: vars.$shadow;
+    color: var(--color-text-100);
+    transition: vars.$transition;
+}
+
+.quote {
+    display: flex;
+    flex-direction: column;
+    gap: 28px;
+
+    margin: 0;
+    padding: clamp(28px, 5vw, 56px);
+
+    .mark {
+        height: 2.6rem;
+        font-size: 5.5rem;
+        line-height: 1;
+    }
+
+    .text {
+        max-width: 46ch;
+        margin: 0;
+
+        font-size: clamp(1.3rem, 2.4vw, 1.9rem);
+        line-height: 1.45;
+        text-wrap: pretty;
+    }
+
+    .author {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+    }
+
+    .avatar {
+        flex: none;
+
+        width: 56px;
+        height: 56px;
+
+        display: flex;
+        align-items: center;
+        justify-content: center;
+
+        font-size: 1.1rem;
+        color: var(--color-text-50);
+
+        border-radius: 50%;
+        background: rgba(128, 128, 128, 0.2);
+        transition: vars.$transition;
+    }
+
+    .who {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+        font-size: 1.05rem;
+    }
+
+    .role {
+        font-size: 0.95rem;
+        color: var(--color-text-50);
+        transition: vars.$transition;
+    }
+}
+
+.cta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 28px;
+
+    padding: clamp(28px, 5vw, 56px);
+
+    .ctaText {
+        flex: 1 1 360px;
+
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+    }
+
+    .ctaTitle {
+        margin: 0;
+        font-size: clamp(1.8rem, 4vw, 3rem);
+        line-height: 1.1;
+        color: var(--color-text-100);
+    }
+
+    .ctaNote {
+        max-width: 44ch;
+
+        font-size: 1.1rem;
+        line-height: 1.5;
+        color: var(--color-text-50);
+        text-wrap: pretty;
+        transition: vars.$transition;
+    }
+
+    .ctaActions {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 16px 28px;
+    }
+
+    .site {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        min-height: 44px;
+
+        font-size: 1.05rem;
+        color: var(--color-text-100);
+        text-decoration: none;
+        transition: vars.$transition;
+
+        &:hover {
+            color: vars.$blue-100;
+        }
+    }
+}
+
+.next {
+    position: relative;
+
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+
+    padding: clamp(28px, 4vw, 44px);
+    text-decoration: none;
+
+    .nextLabel {
+        font-size: 1.05rem;
+        color: var(--color-text-50);
+        transition: vars.$transition;
+
+        &:first-of-type {
+            font-size: 1rem;
+        }
+    }
+
+    .nextName {
+        font-size: clamp(2rem, 5vw, 3.6rem);
+        line-height: 1.05;
+        text-transform: uppercase;
+    }
+
+    &:hover .nextName {
+        color: vars.$blue-100;
+    }
+
+    // Иконка белая, на светлой теме её не видно
+    svg path {
+        stroke: var(--color-text-100);
+        transition: vars.$transition;
+    }
+}
