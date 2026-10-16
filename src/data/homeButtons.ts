@@ -6,7 +6,7 @@ import tg from '@/assets/_img/icons/tg.svg'
 import message from '@/assets/_img/icons/message.svg'
 
 
-import { mediaPageURL, musicPageURL, myTg, popupPageURL, portfolioTg, siteBox  } from '@/constants/urls'
+import { mediaPageURL, musicPageURL, myTg, popupPageURL, portfolioPageURL, portfolioTg } from '@/constants/urls'
 import { ISmallHomeButtons, IStandardHomeButtons } from '@/interfaces/homeButtons'
 
 
@@ -44,7 +44,7 @@ export const standardHomeButtons:IStandardBtns[] = [
         srcStandard: [
             {
                 key: "one",
-                src: siteBox,
+                src: portfolioPageURL,
                 title: 'Сайт портфолио',
                 Icon: webSolid
             },

@@ -1,0 +1,21 @@
+@use '/src/styles/variables.scss' as vars;
+
+.tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+
+    margin-top: 4px;
+    list-style: none;
+
+    .tag {
+        padding: 5px 12px;
+
+        font-size: 0.9rem;
+        color: var(--color-text-100);
+
+        border: 1.5px solid var(--color-text-50);
+        border-radius: 13px;
+        transition: vars.$transition;
+    }
+}

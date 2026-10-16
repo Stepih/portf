@@ -1,0 +1,42 @@
+@use '/src/styles/variables.scss' as vars;
+
+.frame {
+    display: flex;
+    flex-direction: column;
+
+    overflow: hidden;
+
+    border-radius: 12px;
+    background: var(--color-bg);
+    box-shadow: 0 30px 60px rgba(0, 0, 0, 0.3);
+
+    .bar {
+        flex: none;
+        display: flex;
+        gap: 6px;
+
+        padding: 11px 14px;
+        border-bottom: 1px solid rgba(128, 128, 128, 0.2);
+
+        span {
+            width: 9px;
+            height: 9px;
+            border-radius: 50%;
+            background: rgba(128, 128, 128, 0.4);
+
+            &:first-child {
+                background: vars.$redPink-100;
+            }
+        }
+    }
+
+    .screen {
+        position: relative;
+        flex: 1;
+        overflow: hidden;
+
+        &.dark {
+            background: #0d0d0d;
+        }
+    }
+}

@@ -1,0 +1,97 @@
+@use '/src/styles/variables.scss' as vars;
+
+.card {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+
+    padding: 14px 14px 24px;
+
+    border-radius: 13px;
+    background: vars.$black-8;
+    box-shadow: vars.$shadow;
+    transform-origin: 50% 0;
+    will-change: transform, opacity;
+
+    .cover {
+        position: relative;
+        overflow: hidden;
+        border-radius: 10px;
+    }
+
+    // Выходит за рамку на 12% сверху и снизу: запас под параллакс
+    .inner {
+        position: absolute;
+        left: 0;
+        right: 0;
+        top: -12%;
+        bottom: -12%;
+
+        display: flex;
+        padding: 16% 8%;
+        will-change: transform;
+
+        .frame {
+            flex: 1;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.18);
+        }
+
+        // Статичный кадр: верх скриншота
+        .shot {
+            object-fit: cover;
+            object-position: 50% 0;
+        }
+    }
+
+    .body {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        padding: 0 6px;
+    }
+
+    .meta {
+        display: flex;
+        justify-content: space-between;
+        align-items: baseline;
+        gap: 12px;
+
+        font-size: 0.95rem;
+        color: var(--color-text-50);
+        transition: vars.$transition;
+    }
+
+    .title {
+        margin: 0;
+    }
+
+    .link {
+        color: inherit;
+        text-decoration: none;
+        transition: vars.$transition;
+
+        &::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            z-index: 1;
+        }
+
+        &:hover, &:focus-visible {
+            color: vars.$blue-100;
+        }
+    }
+
+    &:has(.link:focus-visible) {
+        outline: 2px solid vars.$blue-100;
+        outline-offset: 4px;
+    }
+
+    .description {
+        font-size: 1.05rem;
+        color: var(--color-text-50);
+        text-wrap: pretty;
+        transition: vars.$transition;
+    }
+}
