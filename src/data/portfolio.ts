@@ -91,6 +91,18 @@ export const portfolioWorks: IPortfolioWork[] = [
         tint: 'rgba(183, 53, 34, 0.18)',
         cover: img('ptmix-desktop.jpg'),
         coverHeight: 380
+    },
+    {
+        id: 'legiscan',
+        name: 'Legiscan',
+        year: 2026,
+        kind: 'Веб-сервис',
+        industries: ['outsourcing'],
+        description: 'ИИ-сервис проверки договоров: риски с цитатой пункта и готовой правкой, сравнение редакций, сроки и чат по документу. Плюс Telegram-бот, API и интеграция с Pyrus',
+        tags: ['Web', 'Mobile', 'SaaS', 'ИИ'],
+        tint: 'rgba(59, 130, 246, 0.18)',
+        cover: img('legiscan-desktop.jpg'),
+        coverHeight: 420
     }
 ]
 
