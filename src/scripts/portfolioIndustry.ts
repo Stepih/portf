@@ -8,6 +8,10 @@ export const INDUSTRY_PARAM = 'for';
 export const findIndustry = (value: string | string[] | null | undefined): IPortfolioIndustry | null =>
     typeof value === 'string' ? portfolioIndustries.find((industry) => industry.id === value) ?? null : null;
 
+// Заголовок страницы портфолио: общий или подборки
+export const portfolioTitle = (industry: IPortfolioIndustry | null): string =>
+    industry ? `Портфолио: ${industry.label}` : 'Портфолио';
+
 // Работы, подходящие отрасли; без отрасли — все
 export const worksFor = <T extends { industries: PortfolioIndustry[] }>(works: T[], industry: PortfolioIndustry | null): T[] =>
     industry ? works.filter((work) => work.industries.includes(industry)) : works;

@@ -1,4 +1,4 @@
-import { FC } from "react";
+import { FC, useEffect, useRef } from "react";
 
 import s from './IndustryFilter.module.scss'
 import { IPortfolioIndustry, IPortfolioWork } from "@/interfaces/portfolio";
@@ -20,10 +20,20 @@ const IndustryFilter: FC<IProps> = ({ works, industries, active, onPick }) => {
             .filter((f) => f.count > 0)
     ];
 
+    // На телефоне ряд кнопок прокручивается: выбранная кнопка из ссылки может оказаться за краем экрана
+    const rowRef = useRef<HTMLDivElement>(null);
+    useEffect(() => {
+        const row = rowRef.current;
+        const button = row?.querySelector<HTMLElement>('[aria-pressed="true"]');
+        if (!row || !button || row.scrollWidth <= row.clientWidth) return;
+        const shift = button.getBoundingClientRect().left - row.getBoundingClientRect().left;
+        row.scrollLeft += shift - (row.clientWidth - button.offsetWidth) / 2;
+    }, [active]);
+
     return (
         <div className={s.bar}>
             <span id="industry-title" className={s.caption}>Сфера бизнеса</span>
-            <div className={s.filters} role="group" aria-labelledby="industry-title">
+            <div ref={rowRef} className={s.filters} role="group" aria-labelledby="industry-title">
                 {filters.map(({ industry, label, count }) => {
                     const pressed = (industry?.id ?? null) === (active?.id ?? null);
                     return (

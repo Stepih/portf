@@ -1,13 +1,13 @@
 "use client";
 
-import { FC } from "react";
+import { FC, useEffect } from "react";
 
 import s from './PortfolioCatalog.module.scss'
 import { IPortfolioIndustry, IPortfolioWork } from "@/interfaces/portfolio";
 import { ralewayBold } from "@/app/fonts/fonts";
 import { portfolioPageURL } from "@/constants/urls";
 import { usePortfolioIndustry } from "@/hooks/usePortfolioIndustry";
-import { withIndustry, worksFor } from "@/scripts/portfolioIndustry";
+import { portfolioTitle, withIndustry, worksFor } from "@/scripts/portfolioIndustry";
 
 import PortfolioHead from "./PortfolioHead";
 import IndustryFilter from "./IndustryFilter";
@@ -22,6 +22,11 @@ interface IProps {
 // Содержимое /portfolio. Отрасль хранится в адресе (?for=): такую ссылку можно сразу отправить клиенту
 const PortfolioCatalog: FC<IProps> = ({ works, industries }) => {
     const industry = usePortfolioIndustry();
+
+    // Next ставит title только при загрузке и навигации, смену фильтра через replaceState он не видит
+    useEffect(() => {
+        document.title = portfolioTitle(industry);
+    }, [industry]);
 
     // replaceState Next синхронизирует с useSearchParams; новой записи в истории и запроса к серверу нет
     const pick = (next: IPortfolioIndustry | null) => {

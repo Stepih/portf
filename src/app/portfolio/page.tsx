@@ -4,7 +4,7 @@ import { Metadata } from "next";
 import s from './page.module.scss'
 import { baseOpenGraph } from "@/data/metadata";
 import { portfolioIndustries, portfolioWorks } from "@/data/portfolio";
-import { findIndustry, INDUSTRY_PARAM } from "@/scripts/portfolioIndustry";
+import { findIndustry, INDUSTRY_PARAM, portfolioTitle } from "@/scripts/portfolioIndustry";
 
 import PortfolioCatalog from "./components/PortfolioCatalog";
 
@@ -21,7 +21,7 @@ export const dynamic = 'force-dynamic';
 
 export const generateMetadata = async ({ searchParams }: IProps): Promise<Metadata> => {
     const industry = findIndustry((await searchParams)[INDUSTRY_PARAM]);
-    const title = industry ? `Портфолио: ${industry.label}` : 'Портфолио';
+    const title = portfolioTitle(industry);
     const text = industry
         ? `Сайты для ${industry.audience}: дизайн и разработка. Кейсы с макетами, задачами и результатами`
         : description;
