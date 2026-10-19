@@ -115,6 +115,18 @@ export const portfolioWorks: IPortfolioWork[] = [
         tint: 'rgba(246, 0, 94, 0.18)',
         cover: img('cocos-desktop.jpg'),
         coverHeight: 400
+    },
+    {
+        id: 'endigo',
+        name: 'ENDIGO',
+        year: 2023,
+        kind: 'Корпоративный',
+        industries: ['b2b'],
+        description: 'Сайт марки профессиональной автохимии для СТО: подбор средства по схеме автомобиля, 45 типовых поломок с готовым решением и поиск дилера по региону',
+        tags: ['Web', 'Mobile', 'Автохимия', 'B2B'],
+        tint: 'rgba(105, 83, 218, 0.2)',
+        cover: img('endigo-desktop.jpg'),
+        coverHeight: 420
     }
 ]
 
