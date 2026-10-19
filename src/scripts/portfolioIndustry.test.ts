@@ -4,10 +4,15 @@ import { portfolioIndustries, portfolioWorks } from "@/data/portfolio";
 
 describe("portfolioIndustry", () => {
     it("findIndustry находит отрасль по id и не принимает чужие значения", () => {
-        expect(findIndustry('medicine')?.label).toBe('Медицина');
+        expect(findIndustry('travel')?.label).toBe('Туризм');
         expect(findIndustry('cars')).toBeNull();
         expect(findIndustry(null)).toBeNull();
-        expect(findIndustry(['medicine', 'b2b'])).toBeNull();
+        expect(findIndustry(['travel', 'ecommerce'])).toBeNull();
+    });
+
+    it("findIndustry не открывает пустую подборку", () => {
+        const empty = portfolioIndustries.filter((i) => !portfolioWorks.some((w) => w.industries.includes(i.id)));
+        for (const industry of empty) expect(findIndustry(industry.id)).toBeNull();
     });
 
     it("worksFor без отрасли возвращает всё, с отраслью — только подходящее", () => {
@@ -34,10 +39,9 @@ describe("portfolioIndustry", () => {
         expect(nextAfter([{ id: 'a' }], 'a')).toBeNull();
     });
 
-    it("у каждой работы есть отрасль, и все отрасли из списка", () => {
+    it("отрасли работ есть в списке отраслей", () => {
         const ids = portfolioIndustries.map((i) => i.id);
         for (const work of portfolioWorks) {
-            expect(work.industries.length).toBeGreaterThan(0);
             for (const industry of work.industries) expect(ids).toContain(industry);
         }
     });

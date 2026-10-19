@@ -1,12 +1,15 @@
 import { IPortfolioIndustry, PortfolioIndustry } from "@/interfaces/portfolio";
-import { portfolioIndustries } from "@/data/portfolio";
+import { portfolioIndustries, portfolioWorks } from "@/data/portfolio";
 
 // Параметр ссылки с отраслью: /portfolio?for=medicine
 export const INDUSTRY_PARAM = 'for';
 
-// Отрасль из параметра ссылки; неизвестное значение — то же, что без фильтра
-export const findIndustry = (value: string | string[] | null | undefined): IPortfolioIndustry | null =>
-    typeof value === 'string' ? portfolioIndustries.find((industry) => industry.id === value) ?? null : null;
+// Отрасль из параметра ссылки. Неизвестное значение и отрасль без работ — то же, что без фильтра:
+// клиент видит все работы, а не пустую подборку
+export const findIndustry = (value: string | string[] | null | undefined): IPortfolioIndustry | null => {
+    const industry = portfolioIndustries.find((i) => i.id === value);
+    return industry && portfolioWorks.some((work) => work.industries.includes(industry.id)) ? industry : null;
+}
 
 // Заголовок страницы портфолио: общий или подборки
 export const portfolioTitle = (industry: IPortfolioIndustry | null): string =>

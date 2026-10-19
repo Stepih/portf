@@ -20,7 +20,8 @@ const description = 'Сайты, мобильные приложения и ин
 export const dynamic = 'force-dynamic';
 
 export const generateMetadata = async ({ searchParams }: IProps): Promise<Metadata> => {
-    const industry = findIndustry((await searchParams)[INDUSTRY_PARAM]);
+    const param = (await searchParams)[INDUSTRY_PARAM];
+    const industry = findIndustry(param);
     const title = portfolioTitle(industry);
     const text = industry
         ? `Сайты для ${industry.audience}: дизайн и разработка. Кейсы с макетами, задачами и результатами`
@@ -35,8 +36,8 @@ export const generateMetadata = async ({ searchParams }: IProps): Promise<Metada
             title,
             description: text,
         },
-        // Подборки для клиентов дублируют общую страницу, в поиск идёт только она
-        ...(industry && { robots: { index: false, follow: true } }),
+        // Ссылки с ?for= дублируют общую страницу, в поиск идёт только она
+        ...(param !== undefined && { robots: { index: false, follow: true } }),
     };
 }
 

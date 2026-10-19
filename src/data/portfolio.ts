@@ -10,7 +10,7 @@ export const portfolioWorks: IPortfolioWork[] = [
         name: 'Союз вокалистов',
         year: 2026,
         kind: 'Корпоративный',
-        industries: ['education', 'medicine'],
+        industries: [],
         description: 'Сайт Российского союза вокалистов: вступление в союз, конкурсы и премии, события и новости',
         tags: ['Web', 'Mobile', 'Корпоративный'],
         tint: 'rgba(234, 119, 119, 0.2)',
@@ -23,7 +23,7 @@ export const portfolioWorks: IPortfolioWork[] = [
         name: 'ONKEL.MOSCOW',
         year: 2026,
         kind: 'Интернет-магазин',
-        industries: ['ecommerce', 'beauty'],
+        industries: ['ecommerce'],
         description: 'Интернет-магазин московского бренда уличной одежды: дропы, каталог, коллаборации и лукбук',
         tags: ['E-commerce', 'Web', 'Mobile'],
         tint: 'rgba(57, 57, 57, 0.35)',
@@ -36,7 +36,7 @@ export const portfolioWorks: IPortfolioWork[] = [
         name: 'KEYSTONE',
         year: 2026,
         kind: 'Корпоративный',
-        industries: ['construction', 'realty', 'b2b', 'beauty'],
+        industries: ['construction'],
         description: 'Сайт компании, которая строит дома и делает ремонт под ключ: тур по интерьеру на скролле, этапы работ и галерея объектов',
         tags: ['Web', 'Motion', 'Строительство'],
         tint: 'rgba(201, 162, 114, 0.2)',
@@ -49,7 +49,7 @@ export const portfolioWorks: IPortfolioWork[] = [
         name: 'ИКЦ «Презентация»',
         year: 2026,
         kind: 'Корпоративный',
-        industries: ['outsourcing', 'b2b', 'medicine'],
+        industries: ['outsourcing'],
         description: 'Сайт кировской компании: сопровождение 1С, сайты, ИТ-поддержка 24/7, бухгалтерия и юристы на одной странице',
         tags: ['Web', 'Mobile', 'B2B-услуги'],
         tint: 'rgba(102, 221, 34, 0.2)',
@@ -67,34 +67,10 @@ export const portfolioWorks: IPortfolioWork[] = [
         tint: 'rgba(23, 48, 80, 0.22)',
         cover: img('keytravel-desktop.jpg'),
         coverHeight: 400
-    },
-    {
-        id: 'hubech',
-        name: 'Hubech',
-        year: 2024,
-        kind: 'Лендинг',
-        industries: ['education', 'outsourcing'],
-        description: 'Сервис поиска работы в IT с подбором вакансий по навыкам',
-        tags: ['Web', 'Лендинг'],
-        tint: 'rgba(119, 199, 234, 0.22)',
-        cover: img('hubech.jpg'),
-        coverHeight: 340
-    },
-    {
-        id: 'jobs',
-        name: 'Jobs',
-        year: 2024,
-        kind: 'Веб-сервис',
-        industries: ['outsourcing', 'realty'],
-        description: 'Каталог вакансий с фильтрами по навыкам, локации и зарплате',
-        tags: ['Web-app', 'HR-tech'],
-        tint: 'rgba(119, 199, 234, 0.22)',
-        cover: img('jobs.jpg'),
-        coverHeight: 380
     }
 ]
 
-// Порядок кнопок фильтра; отрасль без работ не показывается
+// Порядок кнопок фильтра. Отрасль без работ не показывается, а ссылка на неё открывает все работы
 export const portfolioIndustries: IPortfolioIndustry[] = [
     { id: 'medicine', label: 'Медицина', audience: 'клиник, стоматологий и лабораторий' },
     { id: 'construction', label: 'Строительство и ремонт', audience: 'строительных и ремонтных компаний' },

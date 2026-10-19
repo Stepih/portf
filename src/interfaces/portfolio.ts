@@ -22,7 +22,7 @@ export interface IPortfolioWork {
     name: string,
     year: number,
     kind: PortfolioKind,
-    // Отрасли, клиентам из которых эта работа подходит как пример
+    // Отрасли, к которым работа относится напрямую; пусто — работа видна только среди всех
     industries: PortfolioIndustry[],
     description: string,
     tags: string[],
