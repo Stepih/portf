@@ -10,7 +10,7 @@ const CaseInfo: FC<{ info: ICaseInfo[] }> = ({ info }) => {
     return (
         <section className={s.info} aria-label="Задача и результат">
             {info.map((item) => (
-                <Rise key={item.label} className={s.item}>
+                <Rise key={item.label} className={'text' in item && item.big ? `${s.item} ${s.short}` : s.item}>
                     <span className={`${ralewayBold.className} ${s.label}`}>{item.label}</span>
                     {'chips' in item ? (
                         <ul className={s.chips}>

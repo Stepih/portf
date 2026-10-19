@@ -1,8 +1,9 @@
 @use '/src/styles/variables.scss' as vars;
 
+// Тексты делят ширину поровну, короткий пункт («Сроки») берёт по содержимому
 .info {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(min(100%, 320px), 1fr));
+    display: flex;
+    flex-wrap: wrap;
     gap: 36px 56px;
 
     padding: clamp(24px, 4vw, 40px);
@@ -13,8 +14,13 @@
 
     .item {
         display: flex;
+        flex: 1 1 min(100%, 320px);
         flex-direction: column;
         gap: 10px;
+    }
+
+    .short {
+        flex: 0 0 auto;
     }
 
     .label {

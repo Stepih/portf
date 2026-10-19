@@ -1,6 +1,6 @@
 "use client";
 
-import { FC, useEffect, useRef } from "react";
+import { CSSProperties, FC, useEffect, useRef } from "react";
 import { useInView, useReducedMotion } from "framer-motion";
 
 import s from './CaseMetrics.module.scss'
@@ -41,8 +41,9 @@ const Counter: FC<{ value: string }> = ({ value }) => {
 
 // «Цифры»: крупные значения с подписью над тонкой линией
 const CaseMetrics: FC<{ metrics: [string, string][] }> = ({ metrics }) => {
+    // --len — длина самого длинного значения: по нему считается один размер шрифта для всех цифр
     return (
-        <section className={s.metrics} aria-label="Цифры">
+        <section className={s.metrics} aria-label="Цифры" style={{ '--len': Math.max(...metrics.map(([value]) => value.length)) } as CSSProperties}>
             {metrics.map(([value, label]) => (
                 <Rise key={label} className={s.item}>
                     <Counter value={value} />

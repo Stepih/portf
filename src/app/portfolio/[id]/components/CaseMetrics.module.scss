@@ -12,10 +12,14 @@
 
         padding-top: 28px;
         border-top: 1.5px solid rgba(128, 128, 128, 0.35);
+        container-type: inline-size;
     }
 
+    // Значения всегда в одну строку и одного размера: если самое длинное («1 страница») не влезает
+    // в колонку, уменьшаются все. --len задаётся на секции, 0.9em — ширина символа Allerta с запасом
     .value {
-        font-size: clamp(2.6rem, 6vw, 4.6rem);
+        font-size: min(clamp(2.6rem, 6vw, 4.6rem), calc(100cqi / (var(--len, 6) * 0.9)));
+        white-space: nowrap;
         line-height: 1;
         font-variant-numeric: tabular-nums;
         color: var(--color-text-100);
