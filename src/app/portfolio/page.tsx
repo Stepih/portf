@@ -14,7 +14,11 @@ interface IProps {
 
 const description = 'Сайты, мобильные приложения и интерфейсы сервисов: дизайн и разработка. Кейсы с макетами, задачами и результатами';
 
-// Заголовок зависит от ?for=, поэтому страница рендерится на запрос: превью ссылки в мессенджере сразу называет отрасль
+// Заголовок и список зависят от ?for=, поэтому страница рендерится на запрос: превью ссылки в мессенджере
+// сразу называет отрасль, а клиент видит свою подборку без мелькания всех работ.
+// searchParams в одной generateMetadata пререндер не отключают, отсюда явный dynamic
+export const dynamic = 'force-dynamic';
+
 export const generateMetadata = async ({ searchParams }: IProps): Promise<Metadata> => {
     const industry = findIndustry((await searchParams)[INDUSTRY_PARAM]);
     const title = industry ? `Портфолио: ${industry.label}` : 'Портфолио';
