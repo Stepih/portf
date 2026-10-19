@@ -67,6 +67,18 @@ export const portfolioWorks: IPortfolioWork[] = [
         tint: 'rgba(23, 48, 80, 0.22)',
         cover: img('keytravel-desktop.jpg'),
         coverHeight: 400
+    },
+    {
+        id: 'loti',
+        name: 'LOTi',
+        year: 2025,
+        kind: 'Корпоративный',
+        industries: ['travel'],
+        description: 'Сайт премиального туроператора: главная как фильм при прокрутке, 9 направлений, каталог на 1138 отелей и карта агентств-партнёров',
+        tags: ['Web', 'Motion', 'Туризм'],
+        tint: 'rgba(62, 142, 138, 0.2)',
+        cover: img('loti-desktop.jpg'),
+        coverHeight: 420
     }
 ]
 
