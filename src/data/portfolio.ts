@@ -53,6 +53,17 @@ export const portfolioWorks: IPortfolioWork[] = [
         coverHeight: 380
     },
     {
+        id: 'keytravel',
+        name: 'KeyTravel UAE',
+        year: 2024,
+        kind: 'Интернет-магазин',
+        description: 'Магазин экскурсий и билетов в Дубае и ОАЭ: бронирование в два шага, цены в рублях, долларах и дирхамах, оплата российской картой',
+        tags: ['Web', 'Mobile', 'Туризм'],
+        tint: 'rgba(23, 48, 80, 0.22)',
+        cover: img('keytravel-desktop.jpg'),
+        coverHeight: 400
+    },
+    {
         id: 'hubech',
         name: 'Hubech',
         year: 2024,
