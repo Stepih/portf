@@ -329,7 +329,7 @@ export const portfolioCases: Record<string, IPortfolioCase> = {
         kind: 'Сайт туроператора',
         role: 'UX/UI-дизайн, разработка, motion',
         accent: '#3E8E8A',
-        headline: 'LOTi: сайт премиального туроператора, где путешествие начинается с прокрутки',
+        headline: 'LOTi: сайт премиального туроператора, который показывает отдых как кино, а не как список туров',
         tags: ['Web', 'Motion', 'Туризм', 'Scroll-анимация'],
         url: 'https://www.loti.ru/ru',
         slides: [
