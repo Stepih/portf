@@ -11,6 +11,7 @@ import { allerta } from "@/app/fonts/fonts";
 import { portfolioPageURL } from "@/constants/urls";
 import { easeInOutQuad } from "../../components/easing";
 import { slideTint } from "./caseTint";
+import PortfolioLink from "../../components/PortfolioLink";
 
 interface IProps {
     name: string,
@@ -346,13 +347,13 @@ const CaseHero: FC<IProps> = ({ name, year, kind, role, headline, tags, accent, 
                     style={reduceMotion ? undefined : { y: uiY, opacity: uiOpacity }}
                 >
                     <div className={s.top}>
-                        <Link href={portfolioPageURL} className={s.back}>
+                        <PortfolioLink href={portfolioPageURL} className={s.back}>
                             <span className={s.backArrow} aria-hidden="true">←</span>Портфолио
-                        </Link>
+                        </PortfolioLink>
                         <nav aria-label="Breadcrumb" className={s.crumbs}>
                             <Link href="/">Главная</Link>
                             <span aria-hidden="true">/</span>
-                            <Link href={portfolioPageURL}>Портфолио</Link>
+                            <PortfolioLink href={portfolioPageURL}>Портфолио</PortfolioLink>
                             <span aria-hidden="true">/</span>
                             <span className={s.current} aria-current="page">{name}</span>
                         </nav>

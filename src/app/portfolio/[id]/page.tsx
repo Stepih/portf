@@ -6,7 +6,8 @@ import s from './page.module.scss'
 import { baseOpenGraph } from "@/data/metadata";
 import { portfolioWorks } from "@/data/portfolio";
 import { portfolioCases } from "@/data/portfolioCases";
-import { portfolioPageURL } from "@/constants/urls";
+import { IPortfolioWork, PortfolioIndustry } from "@/interfaces/portfolio";
+import { nextAfter, worksFor } from "@/scripts/portfolioIndustry";
 
 import CaseHero from "./components/CaseHero";
 import CaseInfo from "./components/CaseInfo";
@@ -14,7 +15,8 @@ import CaseFeatures from "./components/CaseFeatures";
 import CaseMetrics from "./components/CaseMetrics";
 import KeyScreens from "./components/KeyScreens";
 import BeforeAfter from "./components/BeforeAfter";
-import { CaseCta, CaseQuote, NextCase } from "./components/CaseOutro";
+import { CaseCta, CaseQuote } from "./components/CaseOutro";
+import { INextCase, NextCase } from "./components/NextCase";
 
 interface IProps {
     params: Promise<{ id: string }>
@@ -56,9 +58,15 @@ const CasePage: FC<IProps> = async ({ params }) => {
     if (!found) notFound();
     const { work, data } = found;
 
-    // Следующий кейс по кругу в порядке списка
+    // Следующий кейс по кругу в порядке списка: общий и для каждой отрасли этой работы
     const withCase = portfolioWorks.filter((w) => portfolioCases[w.id]);
-    const next = withCase[(withCase.findIndex((w) => w.id === id) + 1) % withCase.length];
+    const toNext = (w: IPortfolioWork): INextCase => ({ id: w.id, name: w.name, kind: portfolioCases[w.id].kind });
+    const next = toNext(nextAfter(withCase, id) ?? work);
+    const byIndustry: Partial<Record<PortfolioIndustry, INextCase>> = {};
+    for (const industry of work.industries) {
+        const found = nextAfter(worksFor(withCase, industry), id);
+        if (found) byIndustry[industry] = toNext(found);
+    }
 
     const after = data.after ?? data.slides.find((slide) => slide.type === 'desktop')?.src;
 
@@ -84,7 +92,7 @@ const CasePage: FC<IProps> = async ({ params }) => {
                 {data.before && after && <BeforeAfter name={work.name} before={data.before} after={after} />}
                 {data.quote && <CaseQuote {...data.quote} accent={data.accent} />}
                 <CaseCta url={data.url} />
-                <NextCase href={`${portfolioPageURL}/${next.id}`} name={next.name} kind={portfolioCases[next.id].kind} />
+                <NextCase next={next} byIndustry={byIndustry} />
             </div>
         </div>
     )

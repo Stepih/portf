@@ -1,7 +1,6 @@
 "use client";
 
 import { FC, useEffect, useRef } from "react";
-import Link from "next/link";
 import { motion, useInView, useMotionTemplate, useReducedMotion, useScroll, useTransform } from "framer-motion";
 
 import s from './FeaturedCard.module.scss'
@@ -13,6 +12,7 @@ import { easeOutCubic, passToCenter } from "./easing";
 import BrowserFrame from "./BrowserFrame";
 import ScrollShot from "./ScrollShot";
 import Tags from "./Tags";
+import PortfolioLink from "./PortfolioLink";
 
 interface IProps {
     work: IPortfolioWork,
@@ -132,10 +132,10 @@ const FeaturedCard: FC<IProps> = ({ work, num }) => {
                     <Tags tags={work.tags} />
                 </div>
                 {/* Ссылка растянута на всю карточку через ::after */}
-                <Link href={href} className={s.more} aria-label={`Смотреть кейс ${work.name}`}>
+                <PortfolioLink href={href} className={s.more} aria-label={`Смотреть кейс ${work.name}`}>
                     <span className={ralewayBold.className}>Смотреть кейс</span>
                     <span className={s.arrow} aria-hidden="true">→</span>
-                </Link>
+                </PortfolioLink>
             </div>
         </motion.article>
     )

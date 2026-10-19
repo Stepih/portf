@@ -2,44 +2,44 @@ import { FC } from "react";
 import { Metadata } from "next";
 
 import s from './page.module.scss'
-import { ralewayBold } from "@/app/fonts/fonts";
 import { baseOpenGraph } from "@/data/metadata";
-import { portfolioKinds, portfolioWorks } from "@/data/portfolio";
+import { portfolioIndustries, portfolioWorks } from "@/data/portfolio";
+import { findIndustry, INDUSTRY_PARAM } from "@/scripts/portfolioIndustry";
 
-import PortfolioHead from "./components/PortfolioHead";
-import FeaturedCard from "./components/FeaturedCard";
-import WorksGrid from "./components/WorksGrid";
+import PortfolioCatalog from "./components/PortfolioCatalog";
+
+interface IProps {
+    searchParams: Promise<{ [INDUSTRY_PARAM]?: string | string[] }>
+}
 
 const description = 'Сайты, мобильные приложения и интерфейсы сервисов: дизайн и разработка. Кейсы с макетами, задачами и результатами';
 
-export const metadata: Metadata = {
-    title: "Портфолио",
-    description,
-    keywords: 'портфолио веб-разработчика, разработка сайтов, UX/UI дизайн, дизайн интерфейсов, интернет-магазин, корпоративный сайт, лендинг, веб-сервис, адаптивная вёрстка, Next.js, React',
-    openGraph: {
-        ...baseOpenGraph,
-        title: 'Портфолио',
-        description,
-    },
-};
+// Заголовок зависит от ?for=, поэтому страница рендерится на запрос: превью ссылки в мессенджере сразу называет отрасль
+export const generateMetadata = async ({ searchParams }: IProps): Promise<Metadata> => {
+    const industry = findIndustry((await searchParams)[INDUSTRY_PARAM]);
+    const title = industry ? `Портфолио: ${industry.label}` : 'Портфолио';
+    const text = industry
+        ? `Сайты для ${industry.audience}: дизайн и разработка. Кейсы с макетами, задачами и результатами`
+        : description;
+
+    return {
+        title,
+        description: text,
+        keywords: 'портфолио веб-разработчика, разработка сайтов, UX/UI дизайн, дизайн интерфейсов, интернет-магазин, корпоративный сайт, лендинг, веб-сервис, адаптивная вёрстка, Next.js, React',
+        openGraph: {
+            ...baseOpenGraph,
+            title,
+            description: text,
+        },
+        // Подборки для клиентов дублируют общую страницу, в поиск идёт только она
+        ...(industry && { robots: { index: false, follow: true } }),
+    };
+}
 
 const PortfolioPage: FC = () => {
-    const featured = portfolioWorks.filter((work) => work.featured);
-
     return (
         <div className={s.page}>
-            <PortfolioHead featuredCount={featured.length} allCount={portfolioWorks.length} />
-
-            <section id="featured" className={s.featured} aria-labelledby="featured-title">
-                <h2 id="featured-title" className={`${ralewayBold.className} ${s.sectionTitle}`}>Избранное</h2>
-                <div className={s.featuredGrid}>
-                    {featured.map((work, i) => (
-                        <FeaturedCard key={work.id} work={work} num={String(i + 1).padStart(2, '0')} />
-                    ))}
-                </div>
-            </section>
-
-            <WorksGrid works={portfolioWorks} kinds={portfolioKinds} />
+            <PortfolioCatalog works={portfolioWorks} industries={portfolioIndustries} />
         </div>
     )
 }

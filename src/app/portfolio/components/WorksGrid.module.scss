@@ -6,69 +6,11 @@
     gap: 48px;
     scroll-margin-top: 24px;
 
-    .toolbar {
-        display: flex;
-        flex-wrap: wrap;
-        align-items: center;
-        justify-content: space-between;
-        gap: 12px 20px;
-
-        margin-bottom: -20px;
-    }
-
     .title {
-        margin: 0;
+        margin: 0 0 -20px;
         font-size: 1.6rem;
         color: var(--color-text-100);
         transition: vars.$transition;
-    }
-
-    .filters {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 10px;
-    }
-
-    .filter {
-        @include vars.button-reset;
-
-        display: flex;
-        align-items: center;
-        gap: 8px;
-
-        padding: 8px 16px;
-
-        font-size: 0.95rem;
-        color: var(--color-text-100);
-
-        border: 1.5px solid rgba(128, 128, 128, 0.45);
-        border-radius: 20px;
-        transition: vars.$transition;
-
-        .count {
-            font-size: 0.8rem;
-            color: var(--color-text-50);
-        }
-
-        &:hover {
-            border-color: var(--color-text-100);
-        }
-
-        &:focus-visible {
-            outline: 2px solid vars.$blue-100;
-            outline-offset: 2px;
-        }
-
-        &.active {
-            color: var(--color-bg);
-            background: var(--color-text-100);
-            border-color: var(--color-text-100);
-
-            .count {
-                color: inherit;
-                opacity: 0.6;
-            }
-        }
     }
 
     .grid {
@@ -86,23 +28,5 @@
         flex-direction: column;
         gap: 28px;
         will-change: transform;
-    }
-}
-
-// На телефоне фильтры в одну строку с горизонтальной прокруткой, иначе они занимают три строки
-@media screen and (max-width: 560px) {
-    .section .filters {
-        flex-wrap: nowrap;
-        overflow-x: auto;
-        scrollbar-width: none;
-
-        width: calc(100% + 40px);
-        margin: 0 -20px;
-        padding: 0 20px 2px;
-
-        .filter {
-            flex: none;
-            white-space: nowrap;
-        }
     }
 }

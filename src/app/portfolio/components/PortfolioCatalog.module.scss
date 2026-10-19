@@ -1,0 +1,21 @@
+@use '/src/styles/variables.scss' as vars;
+
+.featured {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    scroll-margin-top: 24px;
+
+    .sectionTitle {
+        margin: 0;
+        font-size: 1.6rem;
+        color: var(--color-text-100);
+        transition: vars.$transition;
+    }
+
+    .featuredGrid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(min(100%, 440px), 1fr));
+        gap: 28px;
+    }
+}

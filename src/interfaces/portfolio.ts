@@ -1,5 +1,16 @@
-// Тип работы: по нему фильтруется сетка «Все работы»
+// Тип работы: подпись в карточке
 export type PortfolioKind = 'Лендинг' | 'Интернет-магазин' | 'Корпоративный' | 'Веб-сервис'
+
+// Отрасль клиента: по ней фильтруется страница портфолио, id идёт в ссылку /portfolio?for=<id>
+export type PortfolioIndustry = 'medicine' | 'construction' | 'beauty' | 'outsourcing' | 'b2b' | 'realty' | 'education' | 'ecommerce' | 'travel'
+
+export interface IPortfolioIndustry {
+    id: PortfolioIndustry,
+    // Подпись кнопки фильтра
+    label: string,
+    // Продолжение фразы «Работы для …»
+    audience: string
+}
 
 // Медиа карточки в «Избранном»: макеты десктопа и телефона или запись сайта
 export type IFeaturedMedia =
@@ -11,6 +22,8 @@ export interface IPortfolioWork {
     name: string,
     year: number,
     kind: PortfolioKind,
+    // Отрасли, клиентам из которых эта работа подходит как пример
+    industries: PortfolioIndustry[],
     description: string,
     tags: string[],
     // Фон под макетом

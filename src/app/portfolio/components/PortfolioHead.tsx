@@ -3,14 +3,18 @@ import Link from "next/link";
 
 import s from './PortfolioHead.module.scss'
 import { allerta } from "@/app/fonts/fonts";
+import { IPortfolioIndustry } from "@/interfaces/portfolio";
 
 interface IProps {
     featuredCount: number,
-    allCount: number
+    allCount: number,
+    // Выбранная отрасль; null — все работы
+    industry: IPortfolioIndustry | null,
+    allTitle: string
 }
 
 // Шапка страницы: крошки, заголовок и якоря к разделам
-const PortfolioHead: FC<IProps> = ({ featuredCount, allCount }) => {
+const PortfolioHead: FC<IProps> = ({ featuredCount, allCount, industry, allTitle }) => {
     return (
         <header className={s.head}>
             <div className={s.intro}>
@@ -20,15 +24,19 @@ const PortfolioHead: FC<IProps> = ({ featuredCount, allCount }) => {
                     <span className={s.current} aria-current="page">Портфолио</span>
                 </nav>
                 <h1 className={`${allerta.className} ${s.title}`}>Портфолио</h1>
-                <p className={s.description}>Сайты, мобильные приложения и интерфейсы сервисов, 2023–2026</p>
+                <p className={s.description}>
+                    {industry ? `Работы для ${industry.audience}` : 'Сайты, мобильные приложения и интерфейсы сервисов, 2023–2026'}
+                </p>
             </div>
 
             <nav aria-label="Разделы" className={s.anchors}>
-                <a href="#featured" className={s.anchor}>
-                    Избранное<span className={s.count}>{featuredCount}</span>
-                </a>
+                {featuredCount > 0 && (
+                    <a href="#featured" className={s.anchor}>
+                        Избранное<span className={s.count}>{featuredCount}</span>
+                    </a>
+                )}
                 <a href="#all" className={s.anchor}>
-                    Все работы<span className={s.count}>{allCount}</span><span aria-hidden="true">↓</span>
+                    {allTitle}<span className={s.count}>{allCount}</span><span aria-hidden="true">↓</span>
                 </a>
             </nav>
         </header>

@@ -1,7 +1,6 @@
 "use client";
 
 import { FC, useRef } from "react";
-import Link from "next/link";
 import Image from "next/image";
 import { motion, useReducedMotion, useScroll, useTransform } from "framer-motion";
 
@@ -12,6 +11,7 @@ import { portfolioPageURL } from "@/constants/urls";
 import { easeOutCubic, passToCenter } from "./easing";
 import BrowserFrame from "./BrowserFrame";
 import Tags from "./Tags";
+import PortfolioLink from "./PortfolioLink";
 
 interface IProps {
     work: IPortfolioWork,
@@ -67,7 +67,7 @@ const WorkCard: FC<IProps> = ({ work, num, mobile }) => {
                 </div>
                 <h3 className={`${ralewayBold.className} ${s.title}`}>
                     {/* Ссылка растянута на всю карточку через ::after */}
-                    <Link href={href} className={s.link}>{work.name}</Link>
+                    <PortfolioLink href={href} className={s.link}>{work.name}</PortfolioLink>
                 </h3>
                 <p className={s.description}>{work.description}</p>
                 <Tags tags={work.tags} />

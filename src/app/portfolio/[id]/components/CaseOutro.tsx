@@ -1,11 +1,9 @@
 import { FC } from "react";
-import Link from "next/link";
 
 import s from './CaseOutro.module.scss'
 import { allerta, ralewayBold } from "@/app/fonts/fonts";
 import { popupPageURL } from "@/constants/urls";
 import ActionButton from "@/components/ui/buttons/button-action/ActionButton";
-import ArrowLink from "@/components/arrow-link/ArrowLink";
 import Rise from "./Rise";
 
 interface IQuoteProps {
@@ -51,26 +49,6 @@ export const CaseCta: FC<{ url?: string }> = ({ url }) => {
                     </a>
                 )}
             </div>
-        </Rise>
-    )
-}
-
-interface INextProps {
-    href: string,
-    name: string,
-    kind: string
-}
-
-// Карточка-ссылка на следующий кейс по кругу
-export const NextCase: FC<INextProps> = ({ href, name, kind }) => {
-    return (
-        <Rise>
-            <Link href={href} className={`${s.card} ${s.next}`}>
-                <ArrowLink />
-                <span className={s.nextLabel}>Следующий кейс</span>
-                <span className={`${allerta.className} ${s.nextName}`}>{name}</span>
-                <span className={s.nextLabel}>{kind}</span>
-            </Link>
         </Rise>
     )
 }
