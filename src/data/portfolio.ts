@@ -103,6 +103,18 @@ export const portfolioWorks: IPortfolioWork[] = [
         tint: 'rgba(59, 130, 246, 0.18)',
         cover: img('legiscan-desktop.jpg'),
         coverHeight: 420
+    },
+    {
+        id: 'cocos',
+        name: 'COCOSBEAUTY',
+        year: 2023,
+        kind: 'Интернет-магазин',
+        industries: ['beauty', 'ecommerce'],
+        description: 'Магазин натуральной косметики собственного производства: весь каталог на одной странице, состав каждого продукта с фото ингредиентов, видео, история основательницы и подарочный бокс',
+        tags: ['Web', 'Mobile', 'Косметика', 'E-commerce'],
+        tint: 'rgba(246, 0, 94, 0.18)',
+        cover: img('cocos-desktop.jpg'),
+        coverHeight: 400
     }
 ]
 
