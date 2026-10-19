@@ -98,8 +98,8 @@ export interface IPortfolioCase {
     // [значение, подпись]; число в значении считается от нуля при появлении
     metrics: [string, string][],
     screens: ICaseScreen[],
-    // Видео для шагов с seg
-    screensVideo?: { src: string, poster: string },
+    // Видео для шагов с seg. ratio — высота к ширине записи, по умолчанию 672 / 1440
+    screensVideo?: { src: string, poster: string, ratio?: number },
     // Нет before — блока «До и после» нет. after по умолчанию — первый десктопный слайд
     before?: ICaseBefore,
     after?: string,

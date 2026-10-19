@@ -15,7 +15,7 @@ interface IProps {
     name: string,
     accent: string,
     screens: ICaseScreen[],
-    video?: { src: string, poster: string }
+    video?: { src: string, poster: string, ratio?: number }
 }
 
 // Активный шаг: step -1 — окно ещё не прилипло, показываем общий вид; point — номер пункта в шаге с нуля;
@@ -33,7 +33,7 @@ interface ILayer {
     steps: number[]
 }
 
-// Пропорции видео кейса: под них подстраивается высота окна
+// Пропорции видео кейса по умолчанию: под них подстраивается высота окна
 const VIDEO_RATIO = 672 / 1440;
 const BAR_H = 42;
 
@@ -74,7 +74,7 @@ const KeyScreens: FC<IProps> = ({ name, accent, screens, video }) => {
     });
 
     // Окно с видео подстраивается по высоте под запись и встаёт по центру экрана
-    const videoFrameH = video && frameW ? Math.round(frameW * VIDEO_RATIO + BAR_H) : 0;
+    const videoFrameH = video && frameW ? Math.round(frameW * (video.ratio ?? VIDEO_RATIO) + BAR_H) : 0;
     const frameTop = video && videoFrameH
         ? (mobile ? 12 : Math.max(Math.round(vh * 0.12), Math.round((vh - videoFrameH) / 2)))
         : null;

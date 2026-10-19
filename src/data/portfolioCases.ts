@@ -351,7 +351,7 @@ export const portfolioCases: Record<string, IPortfolioCase> = {
             { title: 'Где купить', text: 'На карте — 31 агентство-партнёр, рядом список с раскрывающимися контактами. Клиент находит офис рядом с домом, а агентства получают продажи с сайта туроператора.' }
         ],
         metrics: [['1138', 'отелей в каталоге с фильтром'], ['9', 'направлений: от Мальдив до Африки'], ['5', 'сцен на главной, которыми управляет прокрутка']],
-        screensVideo: { src: img('loti.mp4'), poster: img('loti-poster.jpg') },
+        screensVideo: { src: img('loti.mp4'), poster: img('loti-poster.jpg'), ratio: 900 / 1440 },
         screens: [
             {
                 title: 'Загрузка и подборка предложений',
