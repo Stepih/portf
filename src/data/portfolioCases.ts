@@ -554,7 +554,7 @@ export const portfolioCases: Record<string, IPortfolioCase> = {
         kind: 'Интернет-магазин косметики собственного производства',
         role: 'UX/UI-дизайн, разработка',
         accent: '#F6005E',
-        headline: 'COCOSBEAUTY: магазин натуральной косметики, где до покупки видно, что внутри баночки, как средство выглядит в руках и кто его делает',
+        headline: 'COCOSBEAUTY: магазин натуральной косметики, который показывает состав, текстуру и человека за брендом',
         tags: ['Web', 'Mobile', 'Косметика', 'E-commerce'],
         url: 'https://cocosbeauty.shop/',
         slides: [
