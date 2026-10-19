@@ -79,6 +79,18 @@ export const portfolioWorks: IPortfolioWork[] = [
         tint: 'rgba(62, 142, 138, 0.2)',
         cover: img('loti-desktop.jpg'),
         coverHeight: 420
+    },
+    {
+        id: 'ptmix',
+        name: 'ПТМ',
+        year: 2024,
+        kind: 'Корпоративный',
+        industries: ['b2b'],
+        description: 'Сайт-каталог ёмкостного оборудования из нержавеющей стали: 52 позиции для химических, молочных, винных и пищевых заводов, объекты с адресами и заявка с любой карточки',
+        tags: ['Web', 'Mobile', 'Производство'],
+        tint: 'rgba(183, 53, 34, 0.18)',
+        cover: img('ptmix-desktop.jpg'),
+        coverHeight: 380
     }
 ]
 
