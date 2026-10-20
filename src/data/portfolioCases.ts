@@ -1,6 +1,6 @@
 import { ICaseMark, IPortfolioCase } from "@/interfaces/portfolio"
 
-// Тексты кейсов из макета Claude Design. Цифры в onkel пока временные: заменить на настоящие перед публикацией
+// Тексты кейсов из макета Claude Design
 
 const img = (file: string) => `/portfolio/${file}`
 
@@ -79,7 +79,7 @@ export const portfolioCases: Record<string, IPortfolioCase> = {
             { label: 'Сроки', text: '4 недели', big: true },
             { label: 'Результат', text: 'Дизайн главной, каталога и карточки товара для компьютера и телефона, готовый к передаче разработчикам.' }
         ],
-        metrics: [['×2', 'рост заказов с мобильных'], ['3 клика', 'от главной до оплаты'], ['1,8 с', 'загрузка каталога']],
+        metrics: [['3 экрана', 'главная, каталог и карточка товара'], ['2 версии', 'для компьютера и телефона'], ['4 блока', 'на главной: дроп, линейки, коллаборации, лукбук']],
         screens: [
             {
                 title: 'Первый экран',
@@ -125,7 +125,7 @@ export const portfolioCases: Record<string, IPortfolioCase> = {
             }
         ],
         before: {
-            text: 'Продавали через Instagram и Telegram: фото в ленте, заказы в директ, оплата переводом. На каждый дроп уходила сотня сообщений.',
+            text: 'Продавали через Instagram и Telegram: фото в ленте, заказы в директ, оплата переводом. Каждый заказ обсуждали в переписке.',
             channels: ['Instagram', 'Telegram', 'Перевод на карту']
         }
     },
