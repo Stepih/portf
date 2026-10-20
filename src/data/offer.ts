@@ -4,7 +4,7 @@
 
 import { IFaqItem, IHeroSlide, IOfferButton, IOfferReason, IOfferStep, IService } from "@/interfaces/offer"
 import { PortfolioIndustry } from "@/interfaces/portfolio"
-import { myTg, popupPageURL } from "@/constants/urls"
+import { myTg } from "@/constants/urls"
 import { plural, portfolioStats, yearsRange } from "@/scripts/portfolioStats"
 
 // h1 главной. «⁠» после дефиса не даёт строке разорваться на «ИИ-» (на телефоне)
@@ -24,16 +24,15 @@ export const heroTitleSlide = 1
 // Сколько показывается слайд, мс
 export const heroInterval = 4000
 
-// С первого экрана убран (3.1), пригодится в финальном блоке (3.9)
-export const offerDescription = 'Один исполнитель от макета до запуска. Предоплата – только когда макет вам понравится'
+// Финальный блок главной с формой (3.9). Тексты – скилл marketing:draft-content, тон теплее блоков выше,
+// выбор владельца – вариант A. «Бесплатный созвон» в подписи не повторяется: он есть в строке под кнопкой
+export const contactTitle = 'Давайте обсудим ваш проект'
+export const contactDescription = 'Расскажите о задаче – через форму или в Telegram, как вам удобнее. Платить вы начнёте, только когда понравится макет'
 
-// Форма и Telegram на равных: две кнопки рядом. С первого экрана убраны (3.1), место – финальный блок (3.9)
-export const offerButtons: { form: IOfferButton, tg: IOfferButton } = {
-    form: { title: 'Оставить заявку', href: popupPageURL },
-    tg: { title: 'Написать в Telegram', href: myTg }
-}
+// Форма и Telegram на равных: форма прямо в блоке, кнопка Telegram рядом
+export const offerTgButton: IOfferButton = { title: 'Написать в Telegram', href: myTg }
 
-// Строка под кнопками (вопросы 6, 7)
+// Строка под кнопкой (вопросы 6, 7)
 export const offerButtonsNote = 'Отвечу в течение часа · Первый созвон бесплатный'
 
 // Короткие названия отраслей для строки доверия
@@ -49,7 +48,7 @@ const industryShort: Record<PortfolioIndustry, string> = {
     travel: 'туризм'
 }
 
-// Сколько отраслей влезает в строку доверия на первом экране, остальные – «и др.» (выбор владельца, 3.1)
+// Сколько отраслей влезает в строку доверия (финальный блок, 3.9), остальные – «и др.» (выбор владельца, 3.1)
 const trustIndustries = 3
 
 // «10 проектов · 2023–2026 · стройка, бьюти, юристы и бухгалтеры и др.» – считается из портфолио

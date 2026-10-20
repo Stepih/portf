@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test';
-import { offerFaq, offerTitle } from '../src/data/offer';
+import { contactTitle, offerFaq, offerTgButton, offerTitle } from '../src/data/offer';
 
 // Слайды первого экрана сменяются, а h1 с оффером в HTML один и есть всегда (SALES_PLAN 3.1.1)
 test('на главной один h1 с оффером, черта переключает слайд', async ({ page }) => {
@@ -88,4 +88,24 @@ test('FAQ на главной', async ({ page }) => {
     await items.nth(1).locator('summary').click();
     await expect(items.nth(1)).toHaveAttribute('open', '');
     await expect(items.nth(1).getByText(offerFaq[1].answer)).toBeVisible();
+});
+
+// Финальный блок: форма прямо на главной и Telegram рядом (SALES_PLAN 3.9)
+test('форма заявки и Telegram на главной', async ({ page }) => {
+    const requests: unknown[] = [];
+    await page.route('**/api/sendMessage', route => {
+        requests.push(route.request().postDataJSON());
+        return route.fulfill({ status: 200, json: { message: 'ok' } });
+    });
+    await page.goto('/');
+
+    const section = page.getByRole('region', { name: contactTitle });
+    await expect(section.getByRole('link', { name: offerTgButton.title })).toHaveAttribute('href', offerTgButton.href);
+
+    await section.getByPlaceholder('Имя *').fill('Иван');
+    await section.getByPlaceholder('Телефон *').fill('79990001122');
+    await section.getByRole('button', { name: 'Отправить' }).click();
+
+    await expect(section.getByRole('button', { name: 'Отправлено!' })).toBeVisible();
+    expect(requests).toHaveLength(1);
 });

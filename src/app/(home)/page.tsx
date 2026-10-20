@@ -5,6 +5,7 @@ import Services from "./components/services/Services";
 import Steps from "./components/steps/Steps";
 import Reasons from "./components/reasons/Reasons";
 import Faq from "./components/faq/Faq";
+import Contact from "./components/contact/Contact";
 import ButtonList from "./components/ButtonList";
 
 export default function Home() {
@@ -17,6 +18,7 @@ export default function Home() {
       <Steps />
       <Reasons />
       <Faq />
+      <Contact />
       <ButtonList />
     </>
   );
