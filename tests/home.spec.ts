@@ -40,3 +40,17 @@ test('избранные кейсы на главной', async ({ page }) => {
     await section.getByRole('link', { name: 'Все работы' }).click();
     await expect(page).toHaveURL(/\/portfolio$/);
 });
+
+// Карточки услуг с ценой, кнопка ведёт в форму с услугой (SALES_PLAN 3.4)
+test('услуги и цены на главной', async ({ page }) => {
+    await page.goto('/');
+
+    const section = page.getByRole('region', { name: 'Услуги и цены' });
+    await expect(section.getByRole('heading', { level: 3 })).toHaveCount(4);
+    await expect(section.getByText('от 8 000 ₽')).toBeVisible();
+
+    const discuss = section.getByRole('link', { name: 'Обсудить: Лендинг' });
+    await expect(discuss).toHaveAttribute('href', '/popup?service=landing');
+    await discuss.click();
+    await expect(page).toHaveURL(/\/popup\?service=landing$/);
+});

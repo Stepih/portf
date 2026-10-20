@@ -63,6 +63,12 @@ export const offerTrustLine = (stats = portfolioStats(), maxIndustries = trustIn
     ].filter(Boolean).join(' · ')
 }
 
+// Блок «Услуги и цены» на главной (3.4) – утвердить
+export const servicesTitle = 'Услуги и цены'
+export const servicesDescription = 'Точную цену называю после созвона – он бесплатный'
+export const servicesCasesLabel = 'Пример:'
+export const servicesButton = 'Обсудить'
+
 export const services: IService[] = [
     {
         id: 'landing',

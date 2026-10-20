@@ -1,0 +1,183 @@
+@use '/src/styles/variables.scss' as vars;
+
+// Карточки – как карточка первого экрана, кнопка – как «Все работы» в избранных кейсах
+.services {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+
+    max-width: 1160px;
+    margin: 100px auto 0;
+
+    .title {
+        margin: 0;
+
+        font-size: clamp(1.6rem, 4vw, 2.2rem);
+        text-align: center;
+        color: var(--color-text-100);
+        transition: vars.$transition;
+    }
+
+    .description {
+        margin: 0;
+
+        font-size: 1.05rem;
+        text-align: center;
+        color: var(--color-text-50);
+        transition: vars.$transition;
+    }
+
+    .list {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 24px;
+
+        width: 100%;
+        margin: 20px 0 0;
+        padding: 0;
+
+        list-style: none;
+    }
+
+    .card {
+        display: flex;
+        flex-direction: column;
+        gap: 14px;
+
+        padding: 28px 24px;
+
+        color: var(--color-text-100);
+
+        background: vars.$black-8;
+        border-radius: 13px;
+        box-shadow: vars.$shadow;
+        transition: vars.$transition;
+    }
+
+    .name {
+        margin: 0;
+        font-size: 1.3rem;
+    }
+
+    .summary {
+        margin: 0;
+        color: var(--color-text-50);
+        transition: vars.$transition;
+    }
+
+    .includes {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+
+        margin: 0;
+        padding: 0;
+
+        list-style: none;
+
+        li {
+            position: relative;
+            padding-left: 22px;
+
+            &::before {
+                content: '✓';
+                position: absolute;
+                left: 0;
+                color: vars.$green-100;
+            }
+        }
+    }
+
+    // Цена и кнопка прижаты к низу: в ряду карточки разной длины
+    .bottom {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 4px;
+
+        margin-top: auto;
+        padding-top: 14px;
+
+        border-top: 1px solid rgba(128, 128, 128, 0.3);
+    }
+
+    .price {
+        margin: 0;
+        font-size: 1.6rem;
+    }
+
+    .term,
+    .note,
+    .cases {
+        margin: 0;
+        font-size: 0.95rem;
+    }
+
+    .note,
+    .cases {
+        color: var(--color-text-50);
+        transition: vars.$transition;
+    }
+
+    .caseLink {
+        color: var(--color-text-100);
+        text-underline-offset: 3px;
+        transition: vars.$transition;
+
+        &:hover {
+            text-decoration-thickness: 2px;
+        }
+
+        &:focus-visible {
+            outline: 2px solid vars.$blue-100;
+            outline-offset: 2px;
+        }
+    }
+
+    .button {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        align-self: stretch;
+
+        min-height: 48px;
+        margin-top: 12px;
+        padding: 10px 26px;
+
+        font-size: 1.05rem;
+        color: var(--color-text-100);
+        text-decoration: none;
+
+        border: 1.5px solid rgba(128, 128, 128, 0.45);
+        border-radius: 24px;
+        transition: vars.$transition;
+
+        &:hover {
+            color: var(--color-bg);
+            background: var(--color-text-100);
+            border-color: var(--color-text-100);
+        }
+
+        &:focus-visible {
+            outline: 2px solid vars.$blue-100;
+            outline-offset: 2px;
+        }
+    }
+}
+
+@media screen and (max-width: 1100px) {
+    .services .list {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media screen and (max-width: 600px) {
+    .services {
+        margin-top: 70px;
+
+        .list {
+            grid-template-columns: minmax(0, 1fr);
+        }
+    }
+}
