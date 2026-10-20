@@ -1,0 +1,139 @@
+@use '/src/styles/variables.scss' as vars;
+
+$ease: cubic-bezier(.7, 0, .2, 1);
+
+.slides {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 30px;
+
+    width: 100%;
+}
+
+// Все слайды в одной ячейке: высота блока – по самому длинному
+.stack {
+    display: grid;
+    width: 100%;
+
+    .item {
+        grid-area: 1 / 1;
+        align-self: center;
+    }
+}
+
+// Маска: надпись въезжает снизу и уходит вверх за край
+.headlines,
+.captions {
+    overflow: hidden;
+}
+
+.item {
+    opacity: 0;
+    transform: translateY(110%);
+    transition: none;
+
+    &.active {
+        opacity: 1;
+        transform: none;
+        transition: transform .8s $ease, opacity .8s, vars.$transition;
+    }
+
+    &.leaving {
+        opacity: 0;
+        transform: translateY(-110%);
+        transition: transform .8s $ease, opacity .6s;
+    }
+}
+
+// Подпись идёт следом за надписью
+.captions .item {
+    &.active,
+    &.leaving {
+        transition-delay: .1s;
+    }
+}
+
+.headline {
+    font-size: 4rem;
+    line-height: 1.15;
+    text-transform: uppercase;
+    text-wrap: balance;
+    color: var(--color-text-100);
+}
+
+.caption {
+    margin: 0;
+
+    font-size: 1.25rem;
+    font-weight: 400;
+    line-height: 1.4;
+    text-wrap: balance;
+    color: var(--color-text-50);
+}
+
+// Черты: в активной заполняется полоска времени до смены слайда
+.dots {
+    display: flex;
+    gap: 8px;
+    margin-top: -6px;
+}
+
+.dot {
+    @include vars.button-reset;
+
+    position: relative;
+    width: 40px;
+    height: 19px;
+
+    &::before,
+    .fill {
+        content: '';
+        position: absolute;
+        top: 8px;
+        left: 0;
+        right: 0;
+        height: 3px;
+        border-radius: 2px;
+    }
+
+    &::before {
+        background: var(--color-text-50);
+        opacity: .3;
+    }
+
+    .fill {
+        background: var(--color-text-100);
+        transform: scaleX(0);
+        transform-origin: left;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .item.active,
+    .item.leaving {
+        transition: none;
+    }
+}
+
+@media screen and (max-width: 1150px) {
+    .headline {
+        font-size: 3rem;
+    }
+}
+
+@media screen and (max-width: 700px) {
+    .headline {
+        font-size: 2.5rem;
+    }
+}
+
+@media screen and (max-width: 560px) {
+    .slides {
+        gap: 20px;
+    }
+
+    .headline {
+        font-size: 2rem;
+    }
+}
