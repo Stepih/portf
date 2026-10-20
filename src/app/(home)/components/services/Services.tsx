@@ -4,30 +4,28 @@ import Link from "next/link";
 import s from './Services.module.scss'
 import { ralewayBold, ralewayRegular } from "@/app/fonts/fonts";
 import { popupPageURL, portfolioPageURL } from "@/constants/urls";
-import { services, servicesButton, servicesCasesLabel, servicesDescription, servicesTitle } from "@/data/offer";
+import { services, servicesButton, servicesCasesLabel, servicesCommon, servicesDescription, servicesTitle } from "@/data/offer";
 import { portfolioWorks } from "@/data/portfolio";
 import { portfolioCases } from "@/data/portfolioCases";
 import { serviceCases, withService } from "@/scripts/services";
 
-// «Услуги и цены» (SALES_PLAN 3.4): карточки из offer.ts, кейс-пример и кнопка в форму с услугой.
+// «Услуги и цены» (SALES_PLAN 3.4): три вида сайтов в ряд, ИИ – широкой карточкой под ними.
+// Карточки из offer.ts, кейс-пример и кнопка в форму с услугой.
 // Серверный: тексты кейсов в клиентский бандл не попадают
 const Services: FC = () => {
     return (
         <section className={`${ralewayRegular.className} ${s.services}`} aria-labelledby="services-title">
             <h2 id="services-title" className={`${ralewayBold.className} ${s.title}`}>{servicesTitle}</h2>
             <p className={s.description}>{servicesDescription}</p>
+            <p className={s.common}>{servicesCommon}</p>
 
             <ul className={s.list}>
                 {services.map((service) => {
                     const cases = serviceCases(service.caseIds, portfolioWorks, portfolioCases);
                     return (
-                        <li key={service.id} className={s.card}>
+                        <li key={service.id} className={`${s.card} ${service.wide ? s.wide : ''}`}>
                             <h3 className={`${ralewayBold.className} ${s.name}`}>{service.title}</h3>
                             <p className={s.summary}>{service.summary}</p>
-
-                            <ul className={s.includes}>
-                                {service.includes.map((item) => <li key={item}>{item}</li>)}
-                            </ul>
 
                             <div className={s.bottom}>
                                 <p className={`${ralewayBold.className} ${s.price}`}>{service.price}</p>

@@ -17,15 +17,15 @@ export interface IService {
     title: string,
     // Одна строка: что это за сайт
     summary: string,
-    // Что входит
-    includes: string[],
     // «от 8 000 ₽»
     price: string,
     term: string,
     // Уточнение к цене или сроку
     note?: string,
     // Кейсы-примеры из portfolioWorks; пусто — примера нет
-    caseIds: string[]
+    caseIds: string[],
+    // Карточка на всю ширину под остальными: ИИ – отдельное направление, не четвёртый вид сайта
+    wide?: boolean
 }
 
 export interface IOfferStep {

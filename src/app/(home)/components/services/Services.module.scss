@@ -19,7 +19,8 @@
         transition: vars.$transition;
     }
 
-    .description {
+    .description,
+    .common {
         margin: 0;
 
         font-size: 1.05rem;
@@ -28,9 +29,13 @@
         transition: vars.$transition;
     }
 
+    .common {
+        font-size: 0.95rem;
+    }
+
     .list {
         display: grid;
-        grid-template-columns: repeat(4, minmax(0, 1fr));
+        grid-template-columns: repeat(3, minmax(0, 1fr));
         gap: 24px;
 
         width: 100%;
@@ -40,10 +45,10 @@
         list-style: none;
     }
 
-    // subgrid: название, описание, список, цена и кнопка в соседних карточках стоят на одной высоте
+    // subgrid: название, описание, цена и кнопка в соседних карточках стоят на одной высоте
     .card {
         display: grid;
-        grid-row: span 5;
+        grid-row: span 4;
         grid-template-rows: subgrid;
         row-gap: 14px;
 
@@ -69,27 +74,26 @@
         transition: vars.$transition;
     }
 
-    .includes {
-        display: flex;
-        flex-direction: column;
-        gap: 6px;
+    // ИИ на всю ширину: слева название и описание, справа цена и кнопка
+    .wide {
+        grid-column: 1 / -1;
+        grid-row: auto;
+        // Лишняя высота правой колонки уходит во 2-ю строку, описание остаётся под названием
+        grid-template-rows: auto 1fr auto;
+        grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
+        column-gap: 40px;
 
-        margin: 0;
-        padding: 0;
-
-        font-size: 1rem;
-        list-style: none;
-
-        li {
-            position: relative;
-            padding-left: 22px;
-
-            &::before {
-                content: '✓';
-                position: absolute;
-                left: 0;
-                color: vars.$green-100;
-            }
+        .name { grid-area: 1 / 1; }
+        .summary { grid-area: 2 / 1 / 4 / 2; }
+        .bottom {
+            grid-area: 1 / 2 / 3 / 3;
+            padding: 0 0 0 40px;
+            border-top: none;
+            border-left: 1px solid rgba(128, 128, 128, 0.3);
+        }
+        .button {
+            grid-area: 3 / 2;
+            margin-left: 40px;
         }
     }
 
@@ -167,18 +171,31 @@
     }
 }
 
-@media screen and (max-width: 1100px) {
-    .services .list {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
+// Три в ряд уже тесно: карточки друг под другом, широкая – как все
+@media screen and (max-width: 900px) {
+    .services {
+        .list {
+            grid-template-columns: minmax(0, 1fr);
+        }
+
+        .wide {
+            grid-template-columns: minmax(0, 1fr);
+            grid-template-rows: subgrid;
+            grid-row: span 4;
+
+            .name, .summary, .bottom, .button { grid-area: auto; }
+            .bottom {
+                padding: 14px 0 0;
+                border-top: 1px solid rgba(128, 128, 128, 0.3);
+                border-left: none;
+            }
+            .button { margin-left: 0; }
+        }
     }
 }
 
 @media screen and (max-width: 600px) {
     .services {
         margin-top: 70px;
-
-        .list {
-            grid-template-columns: minmax(0, 1fr);
-        }
     }
 }
