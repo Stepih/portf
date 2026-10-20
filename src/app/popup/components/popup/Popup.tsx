@@ -15,8 +15,8 @@ const checkNameReg = (text: string) => /^[A-Za-zА-Яа-яё]{0,25}$/.test(text.
 const checkPhoneReg = (text: string) => /^[0-9]{0,25}$/.test(text);
 
 const errorByStatus: Record<number, string> = {
-    400: 'Проверь, пожалуйста, заполненные поля',
-    429: 'Слишком много заявок, попробуй позже',
+    400: 'Проверьте, пожалуйста, заполненные поля',
+    429: 'Слишком много заявок, попробуйте позже',
 };
 
 const Popup:FC = () => {
@@ -33,7 +33,7 @@ const Popup:FC = () => {
         if (isSending) return;
 
         if (!inputValue.contact.trim() || !inputValue.name.trim()) {
-            return setError('Заполни, пожалуйста, важные поля');
+            return setError('Заполните, пожалуйста, имя и телефон');
         }
 
         const honeypot = new FormData(e.currentTarget).get(HONEYPOT_FIELD);
@@ -47,7 +47,7 @@ const Popup:FC = () => {
             });
 
             if (!response.ok) {
-                throw new Error(errorByStatus[response.status] ?? 'Не удалось отправить заявку, попробуй позже');
+                throw new Error(errorByStatus[response.status] ?? 'Не удалось отправить заявку, попробуйте позже');
             }
 
             // Успех
@@ -57,7 +57,7 @@ const Popup:FC = () => {
             setTextAreaValue(''); // Очистка textarea
         } catch (err) {
             // fetch падает с TypeError, если нет сети
-            setError(err instanceof Error && !(err instanceof TypeError) ? err.message : 'Не удалось отправить заявку, проверь соединение');
+            setError(err instanceof Error && !(err instanceof TypeError) ? err.message : 'Не удалось отправить заявку, проверьте соединение');
             setSuccess('');
         } finally {
             setIsSending(false);

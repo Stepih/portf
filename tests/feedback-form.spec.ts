@@ -28,7 +28,7 @@ test('без обязательных полей заявка не отправ�
     await form.message.fill('Только комментарий');
     await form.submit.click();
 
-    await expect(page.getByText('Заполни, пожалуйста, важные поля')).toBeVisible();
+    await expect(page.getByText('Заполните, пожалуйста, имя и телефон')).toBeVisible();
     expect(requests).toHaveLength(0);
 });
 
@@ -75,6 +75,6 @@ test('ответ 429 показывает понятную ошибку', async 
     await form.contact.fill('79990001122');
     await form.submit.click();
 
-    await expect(page.getByText('Слишком много заявок, попробуй позже')).toBeVisible();
+    await expect(page.getByText('Слишком много заявок, попробуйте позже')).toBeVisible();
     await expect(form.name).toHaveValue('Иван');
 });

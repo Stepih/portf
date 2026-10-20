@@ -7,16 +7,16 @@ export const homeTitleData:ITitleBlockPage = {
 }
 
 export const mediaTitleData:ITitleBlockPage = {
-    title: "Media content",
+    title: "Медиаконтент",
     description: "Создание видеороликов, улучшение качества видео и фото, склейка, цветокоррекция и другие услуги медиаконтента"
 }
 
 export const musicTitleData:ITitleBlockPage = {
-    title: "My musical creativity",
+    title: "Моя музыка",
     description: "Жизнь, как пианино. С чёрными и белыми полосами, но живя, нельзя забывать, что чёрные клавиши тоже создают музыку"
 }
 
 export const popupTitleData:ITitleBlockPage = {
-    title: "FeedBack",
-    description: "Заполни и отправь форму, чтобы я смог связаться с тобой"
+    title: "Обсудить проект",
+    description: "Оставьте имя и телефон и коротко опишите задачу — я свяжусь с вами, чтобы обсудить детали"
 }
