@@ -227,8 +227,9 @@
 - **Тесты:** unit на `industryCounts`; e2e `tests/home.spec.ts` – чип ведёт на `/portfolio?for=…`, там выбран не «Все».
 - **Объём:** S.
 
-### 3.3 Избранные кейсы
+### 3.3 Избранные кейсы ✅ сделано (0de87a8)
 - **Действия:** 3–4 карточки с результатом (`headline`) и ссылкой на кейс, кнопка «Все работы» → `/portfolio`. Переиспользовать карточки из `src/app/portfolio/components/` (`WorkCard`/`FeaturedCard`), не копировать. Какие кейсы показывать — решить при реализации (кандидаты: KEYSTONE, ONKEL, LOTi, Legiscan).
+- **Сделано:** владелец выбрал KEYSTONE, ONKEL, LOTi, Legiscan, карточку `WorkCard` и текст из `headline` (без «Название: »). Список id – `src/data/homeCases.ts`, блок – `src/app/(home)/components/cases/`. 4 в ряд, 2 до 1100px, 1 до 600px.
 - **Объём:** M.
 
 ### 3.4 Услуги и цены
