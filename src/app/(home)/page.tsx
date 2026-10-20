@@ -1,11 +1,10 @@
-import TitleBlockPage from "@/components/title-block-page/TitleBlockPage";
+import Hero from "./components/hero/Hero";
 import ButtonList from "./components/ButtonList";
-import { homeTitleData } from "@/data/titleBlockPage";
 
 export default function Home() {
   return (
     <>
-      <TitleBlockPage props={homeTitleData}/>
+      <Hero />
       <ButtonList />
     </>
   );

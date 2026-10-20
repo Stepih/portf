@@ -33,12 +33,19 @@ const industryShort: Record<PortfolioIndustry, string> = {
     travel: 'туризм'
 }
 
-// «10 проектов · 2023–2026 · стройка, бьюти, …» – считается из портфолио
-export const offerTrustLine = (stats = portfolioStats()): string => [
-    `${stats.count} ${plural(stats.count, ['проект', 'проекта', 'проектов'])}`,
-    yearsRange(stats.years),
-    stats.industries.map((i) => industryShort[i.id]).join(', ')
-].filter(Boolean).join(' · ')
+// Сколько отраслей влезает в строку доверия на первом экране, остальные – «и др.» (выбор владельца, 3.1)
+const trustIndustries = 3
+
+// «10 проектов · 2023–2026 · стройка, бьюти, юристы и бухгалтеры и др.» – считается из портфолио
+export const offerTrustLine = (stats = portfolioStats(), maxIndustries = trustIndustries): string => {
+    const names = stats.industries.map((i) => industryShort[i.id])
+    const shown = names.slice(0, maxIndustries).join(', ')
+    return [
+        `${stats.count} ${plural(stats.count, ['проект', 'проекта', 'проектов'])}`,
+        yearsRange(stats.years),
+        names.length > maxIndustries ? `${shown} и др.` : shown
+    ].filter(Boolean).join(' · ')
+}
 
 export const services: IService[] = [
     {

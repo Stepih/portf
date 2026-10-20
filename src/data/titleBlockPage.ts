@@ -1,11 +1,5 @@
 import { ITitleBlockPage } from "@/interfaces/titleBlockPage"
 
-export const homeTitleData:ITitleBlockPage = {
-    title: "Fullstack developer",
-    description: "Привет! Я Картузов Степан, программист, дизайнер, музыкант, студент РЭУ им. Г.В. Плеханова",
-    img: true
-}
-
 export const mediaTitleData:ITitleBlockPage = {
     title: "Медиаконтент",
     description: "Создание видеороликов, улучшение качества видео и фото, склейка, цветокоррекция и другие услуги медиаконтента"
