@@ -45,15 +45,15 @@ const Services: FC = () => {
                                         ))}
                                     </p>
                                 )}
-
-                                <Link
-                                    href={withService(popupPageURL, service.id)}
-                                    className={`${ralewayBold.className} ${s.button}`}
-                                    aria-label={`${servicesButton}: ${service.title}`}
-                                >
-                                    {servicesButton}
-                                </Link>
                             </div>
+
+                            <Link
+                                href={withService(popupPageURL, service.id)}
+                                className={`${ralewayBold.className} ${s.button}`}
+                                aria-label={`${servicesButton}: ${service.title}`}
+                            >
+                                {servicesButton}
+                            </Link>
                         </li>
                     )
                 })}

@@ -40,10 +40,12 @@
         list-style: none;
     }
 
+    // subgrid: название, описание, список, цена и кнопка в соседних карточках стоят на одной высоте
     .card {
-        display: flex;
-        flex-direction: column;
-        gap: 14px;
+        display: grid;
+        grid-row: span 5;
+        grid-template-rows: subgrid;
+        row-gap: 14px;
 
         padding: 28px 24px;
 
@@ -62,6 +64,7 @@
 
     .summary {
         margin: 0;
+        font-size: 1.05rem;
         color: var(--color-text-50);
         transition: vars.$transition;
     }
@@ -74,6 +77,7 @@
         margin: 0;
         padding: 0;
 
+        font-size: 1rem;
         list-style: none;
 
         li {
@@ -89,14 +93,12 @@
         }
     }
 
-    // Цена и кнопка прижаты к низу: в ряду карточки разной длины
     .bottom {
         display: flex;
         flex-direction: column;
         align-items: flex-start;
         gap: 4px;
 
-        margin-top: auto;
         padding-top: 14px;
 
         border-top: 1px solid rgba(128, 128, 128, 0.3);
@@ -139,10 +141,9 @@
         display: flex;
         align-items: center;
         justify-content: center;
-        align-self: stretch;
+        align-self: end;
 
         min-height: 48px;
-        margin-top: 12px;
         padding: 10px 26px;
 
         font-size: 1.05rem;
