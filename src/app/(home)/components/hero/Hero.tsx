@@ -5,7 +5,7 @@ import photo from '@/assets/_img/rectangles/title-page/i.png'
 
 import s from './Hero.module.scss'
 import { allerta, ralewayRegular } from "@/app/fonts/fonts";
-import { offerHeadline, offerTitle } from "@/data/offer";
+import { heroSlides, heroTitleSlide, offerTitle } from "@/data/offer";
 
 // Первый экран главной (SALES_PLAN 3.1): маленький блок, как на старой главной.
 // Крупная строка на английском – надпись, а h1 – русский оффер: его читают клиенты и поиск.
@@ -16,7 +16,7 @@ const Hero: FC = () => {
             <Image className={s.photo} src={photo} alt="Степан Картузов" priority />
 
             <div className={`${ralewayRegular.className} ${s.card}`}>
-                <p className={`${allerta.className} ${s.headline}`} lang="en">{offerHeadline}</p>
+                <p className={`${allerta.className} ${s.headline}`} lang="en">{heroSlides[heroTitleSlide].headline}</p>
                 <h1 id="hero-title" className={s.title}>{offerTitle}</h1>
             </div>
         </section>

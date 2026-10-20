@@ -1,6 +1,12 @@
 // id услуги: по нему форма предвыбирает услугу (SALES_PLAN 4.2, 4.8)
 export type ServiceId = 'landing' | 'corporate' | 'shop' | 'ai'
 
+// Слайд первого экрана: крупная надпись латиницей и подпись под ней
+export interface IHeroSlide {
+    headline: string,
+    caption: string
+}
+
 export interface IOfferButton {
     title: string,
     href: string

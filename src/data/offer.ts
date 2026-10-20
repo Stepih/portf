@@ -2,16 +2,27 @@
 // формулировки первого экрана и «Почему я» выбрал владелец. Остальное – утвердить.
 // Факты – только из решений владельца и ответов на вопросы в SALES_PLAN.md
 
-import { IFaqItem, IOfferButton, IOfferReason, IOfferStep, IService } from "@/interfaces/offer"
+import { IFaqItem, IHeroSlide, IOfferButton, IOfferReason, IOfferStep, IService } from "@/interfaces/offer"
 import { PortfolioIndustry } from "@/interfaces/portfolio"
 import { myTg, popupPageURL } from "@/constants/urls"
 import { plural, portfolioStats, yearsRange } from "@/scripts/portfolioStats"
 
-// Крупная надпись первого экрана: шрифт Allerta Stencil, только латиница (выбор владельца, 3.1)
-export const offerHeadline = 'Websites & AI agents'
+// h1 главной. «⁠» после дефиса не даёт строке разорваться на «ИИ-» (на телефоне)
+export const offerTitle = 'Сайты под ключ и ИИ-⁠агенты для вашего бизнеса'
 
-// h1 главной: под надписью на первом экране
-export const offerTitle = 'Сайты под ключ и ИИ-автоматизация для бизнеса'
+// Сменяющиеся слайды первого экрана (3.1.1, выбор владельца – набор 2 скилла, подпись слайда 1 поправлена).
+// Надпись – шрифт Allerta Stencil, только латиница. Подпись – одна строка от первого лица
+export const heroSlides: IHeroSlide[] = [
+    { headline: 'Stepan Kartuzov', caption: 'Делаю всё сам – от макета до запуска' },
+    { headline: 'Websites & AI agents', caption: offerTitle },
+    { headline: 'Part of your team', caption: 'Вникаю в ваш бизнес, а не просто сдаю сайт' }
+]
+
+// Подпись этого слайда – h1: в HTML он есть всегда, даже когда на экране другой слайд
+export const heroTitleSlide = 1
+
+// Сколько показывается слайд, мс
+export const heroInterval = 4000
 
 // С первого экрана убран (3.1), пригодится в финальном блоке (3.9)
 export const offerDescription = 'Один исполнитель от макета до запуска. Предоплата – только когда макет вам понравится'

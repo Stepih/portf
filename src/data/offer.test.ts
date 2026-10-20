@@ -1,8 +1,17 @@
 import { describe, expect, it } from "vitest";
-import { offerTrustLine, services } from "./offer";
+import { heroSlides, heroTitleSlide, offerTitle, offerTrustLine, services } from "./offer";
 import { portfolioWorks } from "./portfolio";
 
 describe("offer", () => {
+    it("надписи слайдов – только латиница: у Allerta Stencil нет кириллицы", () => {
+        for (const slide of heroSlides) expect(slide.headline).toMatch(/^[\x20-\x7E’]+$/);
+    });
+
+    it("подпись слайда h1 – оффер, подписи в одну строку", () => {
+        expect(heroSlides[heroTitleSlide].caption).toBe(offerTitle);
+        for (const slide of heroSlides) expect(slide.caption.length).toBeLessThanOrEqual(50);
+    });
+
     it("кейсы-примеры услуг есть в портфолио", () => {
         const ids = portfolioWorks.map((w) => w.id);
         for (const service of services) {
