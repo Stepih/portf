@@ -54,3 +54,13 @@ test('услуги и цены на главной', async ({ page }) => {
     await discuss.click();
     await expect(page).toHaveURL(/\/popup\?service=landing$/);
 });
+
+// Шаги работы списком по порядку (SALES_PLAN 3.5)
+test('как я работаю на главной', async ({ page }) => {
+    await page.goto('/');
+
+    const section = page.getByRole('region', { name: 'Как я работаю' });
+    const steps = section.getByRole('listitem');
+    await expect(steps).toHaveCount(5);
+    await expect(steps.first().getByRole('heading', { level: 3 })).toHaveText('Созвон');
+});

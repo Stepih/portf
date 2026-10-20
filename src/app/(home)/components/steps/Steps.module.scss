@@ -1,0 +1,148 @@
+@use '/src/styles/variables.scss' as vars;
+
+// Номер – кружок в стиле чипов отраслей, линия между кружками – той же серой рамкой
+$circle: 48px;
+$gap: 24px;
+$line-indent: 8px;
+$line: rgba(128, 128, 128, 0.45);
+
+.steps {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+
+    max-width: 1160px;
+    margin: 100px auto 0;
+
+    .title {
+        margin: 0;
+
+        font-size: clamp(1.6rem, 4vw, 2.2rem);
+        text-align: center;
+        color: var(--color-text-100);
+        transition: vars.$transition;
+    }
+
+    .description {
+        margin: 0;
+
+        font-size: 1.05rem;
+        text-align: center;
+        color: var(--color-text-50);
+        transition: vars.$transition;
+    }
+
+    .list {
+        display: grid;
+        grid-template-columns: repeat(5, minmax(0, 1fr));
+        gap: $gap;
+
+        width: 100%;
+        margin: 28px 0 0;
+        padding: 0;
+
+        list-style: none;
+    }
+
+    .step {
+        position: relative;
+
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 10px;
+
+        text-align: center;
+        color: var(--color-text-100);
+
+        // Линия до следующего кружка: от края своего до края соседнего, с отступами
+        &:not(:last-child)::after {
+            content: '';
+
+            position: absolute;
+            top: calc($circle / 2);
+            left: calc(50% + $circle / 2 + $line-indent);
+
+            width: calc(100% + $gap - $circle - 2 * $line-indent);
+            height: 1.5px;
+
+            background: $line;
+        }
+    }
+
+    .number {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+
+        width: $circle;
+        height: $circle;
+        margin-bottom: 4px;
+
+        font-size: 1.2rem;
+
+        border: 1.5px solid $line;
+        border-radius: 50%;
+        transition: vars.$transition;
+    }
+
+    .name {
+        margin: 0;
+        font-size: 1.15rem;
+    }
+
+    .text {
+        margin: 0;
+
+        font-size: 0.95rem;
+        color: var(--color-text-50);
+        transition: vars.$transition;
+    }
+}
+
+// Пять в ряд уже тесно: лента сверху вниз, номер слева, линия вертикальная
+@media screen and (max-width: 900px) {
+    .steps {
+        .list {
+            grid-template-columns: minmax(0, 1fr);
+            max-width: 520px;
+        }
+
+        .step {
+            display: grid;
+            grid-template-columns: $circle minmax(0, 1fr);
+            column-gap: 16px;
+            row-gap: 4px;
+            align-items: start;
+
+            text-align: left;
+
+            &:not(:last-child)::after {
+                top: calc($circle + $line-indent);
+                bottom: calc(-1 * $gap + $line-indent);
+                left: calc($circle / 2);
+
+                width: 1.5px;
+                height: auto;
+            }
+        }
+
+        .number {
+            grid-row: span 2;
+            margin-bottom: 0;
+        }
+
+        // Название по центру кружка
+        .name {
+            padding-top: 12px;
+        }
+    }
+}
+
+@media screen and (max-width: 600px) {
+    .steps {
+        margin-top: 70px;
+    }
+}
