@@ -9,13 +9,16 @@ import s from './Hero.module.scss'
 import { allerta, ralewayBold } from "@/app/fonts/fonts";
 import { offerButtons, offerButtonsNote, offerDescription, offerTitle, offerTrustLine } from "@/data/offer";
 
-// Первый экран главной (SALES_PLAN 3.1): оффер, строка доверия, форма и Telegram на равных
+// Первый экран главной (SALES_PLAN 3.1): фото над карточкой, как было на старой главной;
+// в карточке оффер, строка доверия, форма и Telegram на равных
 const Hero: FC = () => {
     const { form, tg } = offerButtons
 
     return (
         <section className={s.hero} aria-labelledby="hero-title">
-            <div className={s.text}>
+            <Image className={s.photo} src={photo} alt="Степан Картузов" priority />
+
+            <div className={s.card}>
                 <h1 id="hero-title" className={`${allerta.className} ${s.title}`}>{offerTitle}</h1>
                 <p className={s.description}>{offerDescription}</p>
                 <p className={s.trust}>{offerTrustLine()}</p>
@@ -31,8 +34,6 @@ const Hero: FC = () => {
                 </div>
                 <p className={s.note}>{offerButtonsNote}</p>
             </div>
-
-            <Image className={s.photo} src={photo} alt="Степан Картузов" priority />
         </section>
     )
 }
