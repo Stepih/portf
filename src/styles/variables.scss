@@ -27,23 +27,3 @@ $transition: color .5s, background .5s, stroke .5s, fill .5s, border .5s;
     text-align: inherit;
     cursor: pointer;
 }
-
-// Трафаретный разрез через все буквы строки. У Allerta Stencil нет кириллицы,
-// поэтому русские заголовки набираются обычным шрифтом, а разрез рисуется фоном.
-// Высота плитки фона равна высоте строки, так что разрез попадает в каждую строку.
-// Без поддержки background-clip: text остаётся обычный текст
-@mixin stencil-cut($line-height, $from: 50%, $to: 57%) {
-    line-height: $line-height;
-
-    @supports (background-clip: text) or (-webkit-background-clip: text) {
-        background: linear-gradient(
-            to bottom,
-            var(--color-text-100) $from,
-            transparent $from $to,
-            var(--color-text-100) $to
-        ) 0 0 / 100% #{$line-height}em;
-        -webkit-background-clip: text;
-        background-clip: text;
-        color: transparent;
-    }
-}

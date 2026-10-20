@@ -1,39 +1,23 @@
 import { FC } from "react";
 import Image from "next/image";
-import Link from "next/link";
 
 import photo from '@/assets/_img/rectangles/title-page/i.png'
-import TgIcon from '@/assets/_img/icons/tg-white.svg'
 
 import s from './Hero.module.scss'
-import { ralewayBold, ralewayRegular } from "@/app/fonts/fonts";
-import { offerButtons, offerButtonsNote, offerDescription, offerTitle, offerTrustLine } from "@/data/offer";
+import { allerta, ralewayRegular } from "@/app/fonts/fonts";
+import { offerHeadline, offerTitle } from "@/data/offer";
 
-// Первый экран главной (SALES_PLAN 3.1): фото над карточкой, как было на старой главной;
-// в карточке оффер, строка доверия, форма и Telegram на равных
+// Первый экран главной (SALES_PLAN 3.1): маленький блок, как на старой главной.
+// Крупная строка на английском – надпись, а h1 – русский оффер: его читают клиенты и поиск.
+// Кнопки заявки с первого экрана убраны по решению владельца, они будут в финальном блоке (3.9)
 const Hero: FC = () => {
-    const { form, tg } = offerButtons
-
     return (
         <section className={s.hero} aria-labelledby="hero-title">
             <Image className={s.photo} src={photo} alt="Степан Картузов" priority />
 
-            <div className={s.card}>
-                {/* Allerta Stencil без кириллицы: трафарет рисует stencil-cut в стилях */}
-                <h1 id="hero-title" className={`${ralewayRegular.className} ${s.title}`}>{offerTitle}</h1>
-                <p className={s.description}>{offerDescription}</p>
-                <p className={s.trust}>{offerTrustLine()}</p>
-
-                <div className={s.actions}>
-                    <Link href={form.href} className={`${ralewayBold.className} ${s.btn} ${s.primary}`}>
-                        {form.title}
-                    </Link>
-                    <a href={tg.href} target="_blank" rel="noopener" className={`${ralewayBold.className} ${s.btn}`}>
-                        <TgIcon className={s.icon} aria-hidden="true" />
-                        {tg.title}
-                    </a>
-                </div>
-                <p className={s.note}>{offerButtonsNote}</p>
+            <div className={`${ralewayRegular.className} ${s.card}`}>
+                <p className={`${allerta.className} ${s.headline}`} lang="en">{offerHeadline}</p>
+                <h1 id="hero-title" className={s.title}>{offerTitle}</h1>
             </div>
         </section>
     )

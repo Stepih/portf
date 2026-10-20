@@ -7,11 +7,16 @@ import { PortfolioIndustry } from "@/interfaces/portfolio"
 import { myTg, popupPageURL } from "@/constants/urls"
 import { plural, portfolioStats, yearsRange } from "@/scripts/portfolioStats"
 
+// Крупная надпись первого экрана: шрифт Allerta Stencil, только латиница (выбор владельца, 3.1)
+export const offerHeadline = 'Websites & AI agents'
+
+// h1 главной: под надписью на первом экране
 export const offerTitle = 'Сайты под ключ и ИИ-автоматизация для бизнеса'
 
+// С первого экрана убран (3.1), пригодится в финальном блоке (3.9)
 export const offerDescription = 'Один исполнитель от макета до запуска. Предоплата – только когда макет вам понравится'
 
-// Форма и Telegram на равных: две кнопки рядом
+// Форма и Telegram на равных: две кнопки рядом. С первого экрана убраны (3.1), место – финальный блок (3.9)
 export const offerButtons: { form: IOfferButton, tg: IOfferButton } = {
     form: { title: 'Оставить заявку', href: popupPageURL },
     tg: { title: 'Написать в Telegram', href: myTg }
