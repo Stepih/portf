@@ -2,7 +2,7 @@ import { FC, useEffect, useRef } from "react";
 
 import s from './IndustryFilter.module.scss'
 import { IPortfolioIndustry, IPortfolioWork } from "@/interfaces/portfolio";
-import { worksFor } from "@/scripts/portfolioIndustry";
+import { industryCounts } from "@/scripts/portfolioIndustry";
 
 interface IProps {
     works: IPortfolioWork[],
@@ -15,9 +15,7 @@ interface IProps {
 const IndustryFilter: FC<IProps> = ({ works, industries, active, onPick }) => {
     const filters = [
         { industry: null, label: 'Все', count: works.length },
-        ...industries
-            .map((industry) => ({ industry, label: industry.label, count: worksFor(works, industry.id).length }))
-            .filter((f) => f.count > 0)
+        ...industryCounts(works, industries).map(({ industry, count }) => ({ industry, label: industry.label, count }))
     ];
 
     // На телефоне ряд кнопок прокручивается: выбранная кнопка из ссылки может оказаться за краем экрана

@@ -29,3 +29,9 @@ export const nextAfter = <T extends { id: string }>(list: T[], id: string): T | 
     if (index < 0 || list.length < 2) return null;
     return list[(index + 1) % list.length];
 }
+
+// Отрасли с числом подходящих работ, в порядке списка; отрасли без работ не попадают
+export const industryCounts = <T extends { industries: PortfolioIndustry[] }>(works: T[], industries: IPortfolioIndustry[]) =>
+    industries
+        .map((industry) => ({ industry, count: worksFor(works, industry.id).length }))
+        .filter(({ count }) => count > 0);

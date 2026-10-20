@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { findIndustry, nextAfter, withIndustry, worksFor } from "./portfolioIndustry";
+import { findIndustry, industryCounts, nextAfter, withIndustry, worksFor } from "./portfolioIndustry";
 import { portfolioIndustries, portfolioWorks } from "@/data/portfolio";
 
 describe("portfolioIndustry", () => {
@@ -44,5 +44,14 @@ describe("portfolioIndustry", () => {
         for (const work of portfolioWorks) {
             for (const industry of work.industries) expect(ids).toContain(industry);
         }
+    });
+    it("industryCounts считает работы и пропускает отрасли без работ", () => {
+        const works = [
+            { id: 'a', industries: ['medicine' as const, 'b2b' as const] },
+            { id: 'b', industries: ['medicine' as const] }
+        ];
+        const industries = portfolioIndustries.filter((i) => ['b2b', 'medicine', 'travel'].includes(i.id));
+        expect(industryCounts(works, industries).map(({ industry, count }) => [industry.id, count]))
+            .toEqual([['medicine', 2], ['b2b', 1]]);
     });
 });
