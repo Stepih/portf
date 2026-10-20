@@ -239,7 +239,7 @@
 - **Оставшиеся предупреждения** (на 2026-10-08, разбирать в 4.3–5.1):
   - `react-hooks/exhaustive-deps`: `Steps.tsx:120`, `MediaContentList.tsx:31`, `Player.tsx:75`, `Player.tsx:108`, `ImageComparisonSlider.tsx:41`. Не чинить механически: добавление зависимостей меняет, когда срабатывают эффекты. Плеер — в 5.1, «история» — в 5.2 (`Steps.tsx` и `MediaContentList.tsx` ушли вместе с перехватом прокрутки, после 5.2 — 8 предупреждений).
   - ~~`no-unused-vars`~~: убраны в 4.3, после неё 13 предупреждений; после 4.4 — 11.
-  - `no-unused-expressions` (`a && a()` вместо `a?.()` или `if`): `ImageMediaContent.tsx:31`, `Popup.tsx:70–71`, `ButtonMore` в `onClick` (до 4.4 — `ButtonDown`/`ButtonRight`).
+  - `no-unused-expressions` (`a && a()` вместо `a?.()` или `if`): `ImageMediaContent.tsx:31`, ~~`Popup.tsx:70–71`~~ (убраны при переносе в `LeadForm`, SALES_PLAN 4.1), `ButtonMore` в `onClick` (до 4.4 — `ButtonDown`/`ButtonRight`).
   - `@next/next/no-img-element`: `YandexMetrika.tsx:45` — пиксель `<noscript>`, так и задумано; можно подавить комментарием.
 
 ### 4.2 Типы React 19 (A7) — ✅ сделано (`@types/react@^19.3`, `@types/react-dom@^19.3`; `MutableRefObject` → `RefObject` в `player.ts` и `LineTrack.tsx`; в `Volume.tsx` `onInput` → `onChange`: типы React 19 дают в `onInput` `InputEvent` без `target.value`, а `onChange` у range срабатывает на каждое движение так же, как `input`)

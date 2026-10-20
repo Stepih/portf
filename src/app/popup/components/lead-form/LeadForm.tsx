@@ -5,7 +5,7 @@ import { FC, FormEventHandler, useState } from "react";
 import ListInput from "./input/ListInput";
 import { IInputKeyValue } from "@/interfaces/input";
 
-import s from './Popup.module.scss'
+import s from './LeadForm.module.scss'
 import TextAreaInput from "./input/TextAreaInput";
 import ErrorMessage from "@/components/ui/errorMessage/ErrorMessage";
 import { HONEYPOT_FIELD } from "@/lib/validation/feedback";
@@ -19,7 +19,13 @@ const errorByStatus: Record<number, string> = {
     429: 'Слишком много заявок, попробуйте позже',
 };
 
-const Popup:FC = () => {
+// Форма заявки (SALES_PLAN 4.1): на /popup и в финальном блоке главной.
+// Отступы снаружи задаёт страница через className
+interface ILeadForm {
+    className?: string;
+}
+
+const LeadForm: FC<ILeadForm> = ({ className }) => {
     const [inputValue, setInputValue] = useState<IInputKeyValue>({name: '', contact: ''});
     const [focusInput, setFocusInput] = useState<keyof IInputKeyValue | undefined>(undefined)
     const [textAreaValue, setTextAreaValue] = useState('');
@@ -67,8 +73,8 @@ const Popup:FC = () => {
     const handleSetInputValue = (value:IInputKeyValue) => {
         if (focusInput === 'contact' && !checkPhoneReg(value.contact)) return setError('Формат: только цифры, не больше 25 символов')
         if (focusInput === 'name' && !checkNameReg(value.name)) return setError('Формат: только буквы, не больше 25 символов')
-        error.length > 0 && setError('');
-        success.length > 0 && setSuccess('');
+        if (error) setError('');
+        if (success) setSuccess('');
         setInputValue(value)
     }
 
@@ -81,7 +87,7 @@ const Popup:FC = () => {
     }
 
     return (
-        <form className={s.popup} onSubmit={onSubmit}>
+        <form className={className ? `${s.form} ${className}` : s.form} onSubmit={onSubmit}>
             {!success && <ErrorMessage error={error} />}
             <ListInput handleSetFocusInput={handleSetFocusInput} value={inputValue} handleSetValue={handleSetInputValue} />
             <TextAreaInput setValue={handleSetTextAreaValue} value={textAreaValue} />
@@ -90,4 +96,4 @@ const Popup:FC = () => {
     )
 }
 
-export default Popup
+export default LeadForm

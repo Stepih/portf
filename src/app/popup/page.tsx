@@ -1,10 +1,12 @@
 import Breadcrumbs from "@/components/breadCrumb/BreadCrumb";
 import TitleBlockPage from "@/components/title-block-page/TitleBlockPage";
 import { FC } from "react";
-import Popup from "./components/popup/Popup";
+import LeadForm from "./components/lead-form/LeadForm";
 import { popupTitleData } from "@/data/titleBlockPage";
 import { Metadata } from "next";
 import { baseOpenGraph } from "@/data/metadata";
+
+import s from "./page.module.scss";
 
 export const metadata: Metadata = {
     title: "Оставить заявку",
@@ -22,15 +24,15 @@ export const metadata: Metadata = {
     
 };
 
-const MediaPage: FC = () => {
+const PopupPage: FC = () => {
     return (
         <>
             <Breadcrumbs />
             <TitleBlockPage props={popupTitleData}/>
 
-            <Popup />
+            <LeadForm className={s.form} />
         </>
     )
 }
 
-export default MediaPage
+export default PopupPage
