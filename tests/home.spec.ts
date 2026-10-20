@@ -64,3 +64,13 @@ test('как я работаю на главной', async ({ page }) => {
     await expect(steps).toHaveCount(5);
     await expect(steps.first().getByRole('heading', { level: 3 })).toHaveText('Созвон');
 });
+
+// Шесть причин списком, первая – «Один исполнитель» (SALES_PLAN 3.6)
+test('почему я на главной', async ({ page }) => {
+    await page.goto('/');
+
+    const section = page.getByRole('region', { name: 'Почему я' });
+    const reasons = section.getByRole('listitem');
+    await expect(reasons).toHaveCount(6);
+    await expect(reasons.first().getByRole('heading', { level: 3 })).toHaveText('Один исполнитель');
+});

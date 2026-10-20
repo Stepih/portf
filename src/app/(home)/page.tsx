@@ -3,6 +3,7 @@ import IndustryChips from "./components/industries/IndustryChips";
 import HomeCases from "./components/cases/HomeCases";
 import Services from "./components/services/Services";
 import Steps from "./components/steps/Steps";
+import Reasons from "./components/reasons/Reasons";
 import ButtonList from "./components/ButtonList";
 
 export default function Home() {
@@ -13,6 +14,7 @@ export default function Home() {
       <HomeCases />
       <Services />
       <Steps />
+      <Reasons />
       <ButtonList />
     </>
   );
