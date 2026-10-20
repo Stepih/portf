@@ -27,3 +27,16 @@ test('чип отрасли открывает портфолио с фильт�
     await expect(page).toHaveURL(href!);
     await expect(page.getByRole('button', { pressed: true })).not.toHaveText(/^Все/);
 });
+
+// Избранные кейсы ведут на страницы кейсов, кнопка – на всё портфолио (SALES_PLAN 3.3)
+test('избранные кейсы на главной', async ({ page }) => {
+    await page.goto('/');
+
+    const section = page.getByRole('region', { name: 'Избранные кейсы' });
+    const cases = section.getByRole('heading', { level: 3 }).getByRole('link');
+    await expect(cases).toHaveCount(4);
+    await expect(cases.first()).toHaveAttribute('href', /^\/portfolio\/[a-z0-9]+$/);
+
+    await section.getByRole('link', { name: 'Все работы' }).click();
+    await expect(page).toHaveURL('/portfolio');
+});
