@@ -64,12 +64,13 @@ export const offerTrustLine = (stats = portfolioStats(), maxIndustries = trustIn
 }
 
 // Блок «Услуги и цены» на главной (3.4). Списка «что входит» нет: делаю под задачу клиента,
-// цену называю на созвоне (решение владельца). Дизайн, адаптив и гарантия есть во всех проектах, Метрика – не везде. Утвердить
+// цену называю на созвоне. Дизайн, адаптив и гарантия есть во всех сайтах, Метрика – не везде.
+// Тексты – скилл marketing:draft-content, выбор владельца
 export const servicesTitle = 'Услуги и цены'
-export const servicesDescription = 'Делаю под ваши задачи. Точную цену называю на созвоне – он бесплатный'
-export const servicesCommon = 'В каждом проекте: дизайн под вас, адаптив под телефоны, гарантия от 2 недель'
-export const servicesCasesLabel = 'Пример:'
-export const servicesButton = 'Обсудить'
+export const servicesDescription = 'Цена зависит от задачи. На бесплатном созвоне назову точную сумму и срок'
+export const servicesCommon = 'В каждом сайте: дизайн под вас, адаптив под телефоны, гарантия от 2 недель'
+export const servicesCasesLabel = 'Так уже сделано:'
+export const servicesButton = 'Узнать цену'
 
 export const services: IService[] = [
     {
@@ -101,7 +102,7 @@ export const services: IService[] = [
     {
         id: 'ai',
         title: 'ИИ-агенты и автоматизация',
-        summary: 'Бот принимает заявки в Telegram и отвечает клиентам по базе знаний',
+        summary: 'Находим рутину, которую можно отдать ИИ, и я делаю под неё агента. Например, бот заявок или ответы клиентам по базе знаний. Встраивается в ваш сайт или работает отдельно',
         price: 'от 15 000 ₽',
         term: 'от 12 дней',
         note: 'Вместе с сайтом обычно дороже',

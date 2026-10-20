@@ -34,14 +34,14 @@ test('избранные кейсы на главной', async ({ page }) => {
 
     const section = page.getByRole('region', { name: 'Избранные кейсы' });
     const cases = section.getByRole('heading', { level: 3 }).getByRole('link');
-    await expect(cases).toHaveCount(4);
+    await expect(cases).toHaveCount(3);
     await expect(cases.first()).toHaveAttribute('href', /^\/portfolio\/[a-z0-9]+$/);
 
     await section.getByRole('link', { name: 'Все работы' }).click();
     await expect(page).toHaveURL(/\/portfolio$/);
 });
 
-// Карточки услуг с ценой, кнопка ведёт в форму с услугой (SALES_PLAN 3.4)
+// Карточки услуг с ценой, кнопка «Узнать цену» ведёт в форму с услугой (SALES_PLAN 3.4)
 test('услуги и цены на главной', async ({ page }) => {
     await page.goto('/');
 
@@ -49,7 +49,7 @@ test('услуги и цены на главной', async ({ page }) => {
     await expect(section.getByRole('heading', { level: 3 })).toHaveCount(4);
     await expect(section.getByText('от 8 000 ₽')).toBeVisible();
 
-    const discuss = section.getByRole('link', { name: 'Обсудить: Лендинг' });
+    const discuss = section.getByRole('link', { name: 'Узнать цену: Лендинг' });
     await expect(discuss).toHaveAttribute('href', '/popup?service=landing');
     await discuss.click();
     await expect(page).toHaveURL(/\/popup\?service=landing$/);
