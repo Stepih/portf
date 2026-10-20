@@ -38,5 +38,5 @@ test('избранные кейсы на главной', async ({ page }) => {
     await expect(cases.first()).toHaveAttribute('href', /^\/portfolio\/[a-z0-9]+$/);
 
     await section.getByRole('link', { name: 'Все работы' }).click();
-    await expect(page).toHaveURL('/portfolio');
+    await expect(page).toHaveURL(/\/portfolio$/);
 });
