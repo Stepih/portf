@@ -6,7 +6,7 @@ import photo from '@/assets/_img/rectangles/title-page/i.png'
 import TgIcon from '@/assets/_img/icons/tg-white.svg'
 
 import s from './Hero.module.scss'
-import { allerta, ralewayBold } from "@/app/fonts/fonts";
+import { ralewayBold, ralewayRegular } from "@/app/fonts/fonts";
 import { offerButtons, offerButtonsNote, offerDescription, offerTitle, offerTrustLine } from "@/data/offer";
 
 // Первый экран главной (SALES_PLAN 3.1): фото над карточкой, как было на старой главной;
@@ -19,7 +19,8 @@ const Hero: FC = () => {
             <Image className={s.photo} src={photo} alt="Степан Картузов" priority />
 
             <div className={s.card}>
-                <h1 id="hero-title" className={`${allerta.className} ${s.title}`}>{offerTitle}</h1>
+                {/* Allerta Stencil без кириллицы: трафарет рисует stencil-cut в стилях */}
+                <h1 id="hero-title" className={`${ralewayRegular.className} ${s.title}`}>{offerTitle}</h1>
                 <p className={s.description}>{offerDescription}</p>
                 <p className={s.trust}>{offerTrustLine()}</p>
 
