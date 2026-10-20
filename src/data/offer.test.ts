@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { heroSlides, heroTitleSlide, offerTitle, offerTrustLine, services } from "./offer";
+import { heroSlides, heroTitleSlide, offerFaq, offerTitle, offerTrustLine, services } from "./offer";
 import { portfolioWorks } from "./portfolio";
 
 describe("offer", () => {
@@ -39,5 +39,11 @@ describe("offer", () => {
         const stats = { count: 5, years: { from: 2023, to: 2026 }, industries };
         expect(offerTrustLine(stats, 2)).toBe('5 проектов · 2023–2026 · стройка, бьюти и др.');
         expect(offerTrustLine(stats, 3)).toBe('5 проектов · 2023–2026 · стройка, бьюти, туризм');
+    });
+
+    it("в FAQ нет цен и вопросы не повторяются: цены – в «Услугах и ценах» (3.8)", () => {
+        for (const item of offerFaq) expect(item.answer).not.toMatch(/₽/);
+        const questions = offerFaq.map((f) => f.question);
+        expect(new Set(questions).size).toBe(questions.length);
     });
 });

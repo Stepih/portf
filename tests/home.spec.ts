@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test';
-import { offerTitle } from '../src/data/offer';
+import { offerFaq, offerTitle } from '../src/data/offer';
 
 // Слайды первого экрана сменяются, а h1 с оффером в HTML один и есть всегда (SALES_PLAN 3.1.1)
 test('на главной один h1 с оффером, черта переключает слайд', async ({ page }) => {
@@ -73,4 +73,19 @@ test('почему я на главной', async ({ page }) => {
     const reasons = section.getByRole('listitem');
     await expect(reasons).toHaveCount(6);
     await expect(reasons.first().getByRole('heading', { level: 3 })).toHaveText('Один исполнитель');
+});
+
+// FAQ на <details>: первый вопрос раскрыт, клик раскрывает следующий (SALES_PLAN 3.8)
+test('FAQ на главной', async ({ page }) => {
+    await page.goto('/');
+
+    const section = page.getByRole('region', { name: 'Что спрашивают перед заказом' });
+    const items = section.locator('details');
+    await expect(items).toHaveCount(offerFaq.length);
+    await expect(items.first()).toHaveAttribute('open', '');
+    await expect(items.nth(1)).not.toHaveAttribute('open');
+
+    await items.nth(1).locator('summary').click();
+    await expect(items.nth(1)).toHaveAttribute('open', '');
+    await expect(items.nth(1).getByText(offerFaq[1].answer)).toBeVisible();
 });

@@ -4,6 +4,7 @@ import HomeCases from "./components/cases/HomeCases";
 import Services from "./components/services/Services";
 import Steps from "./components/steps/Steps";
 import Reasons from "./components/reasons/Reasons";
+import Faq from "./components/faq/Faq";
 import ButtonList from "./components/ButtonList";
 
 export default function Home() {
@@ -15,6 +16,7 @@ export default function Home() {
       <Services />
       <Steps />
       <Reasons />
+      <Faq />
       <ButtonList />
     </>
   );
