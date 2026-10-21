@@ -47,13 +47,83 @@
         text-transform: uppercase;
     }
 
+    // Название отрасли длинное («Сайты для юристов, бухгалтеров и кадровых агентств»), крупный шрифт его рвёт
+    .industryTitle {
+        max-width: 22ch;
+        margin: 0;
+
+        font-size: clamp(1.8rem, 4.4vw, 3rem);
+        line-height: 1.1;
+        text-wrap: balance;
+    }
+
     .description {
-        max-width: 46ch;
+        max-width: 52ch;
 
         font-size: 1.1rem;
         color: var(--color-text-50);
         text-wrap: pretty;
         transition: vars.$transition;
+    }
+
+    .buttons {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-top: 6px;
+    }
+
+    // Как кнопка Telegram в финальном блоке главной
+    .button {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+
+        min-height: 48px;
+        padding: 10px 26px;
+
+        font-size: 1.05rem;
+        color: var(--color-text-100);
+        text-decoration: none;
+
+        border: 1.5px solid rgba(128, 128, 128, 0.45);
+        border-radius: 24px;
+        transition: vars.$transition;
+
+        &:hover {
+            color: var(--color-bg);
+            background: var(--color-text-100);
+            border-color: var(--color-text-100);
+        }
+
+        &:focus-visible {
+            outline: 2px solid vars.$blue-100;
+            outline-offset: 2px;
+        }
+    }
+
+    // Форма – главное действие, кнопка залита сразу
+    .primary {
+        color: var(--color-bg);
+        background: var(--color-text-100);
+        border-color: var(--color-text-100);
+
+        &:hover {
+            opacity: 0.85;
+        }
+    }
+
+    // Иконка белая, на светлой теме её не видно – красим в цвет текста
+    .icon {
+        flex: none;
+        width: 20px;
+        height: auto;
+
+        path {
+            fill: currentColor;
+            transition: vars.$transition;
+        }
     }
 
     .anchors {
@@ -89,6 +159,14 @@
 
         .count {
             color: var(--color-text-50);
+        }
+    }
+}
+
+@media screen and (max-width: 600px) {
+    .head {
+        .button {
+            flex: 1 1 100%;
         }
     }
 }

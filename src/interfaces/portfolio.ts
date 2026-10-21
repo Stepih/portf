@@ -8,7 +8,7 @@ export interface IPortfolioIndustry {
     id: PortfolioIndustry,
     // Подпись кнопки фильтра
     label: string,
-    // Продолжение фразы «Работы для …»
+    // Продолжение фразы «Сайты для …»: h1 и title подборки
     audience: string
 }
 

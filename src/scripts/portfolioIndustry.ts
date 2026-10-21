@@ -11,9 +11,13 @@ export const findIndustry = (value: string | string[] | null | undefined): IPort
     return industry && portfolioWorks.some((work) => work.industries.includes(industry.id)) ? industry : null;
 }
 
-// Заголовок страницы портфолио: общий или подборки
+// h1 портфолио: общий или подборки — «Сайты для строительных и ремонтных компаний»
+export const portfolioHeading = (industry: IPortfolioIndustry | null): string =>
+    industry ? `Сайты для ${industry.audience}` : 'Портфолио';
+
+// title страницы портфолио: у подборки после h1 ещё «портфолио», иначе во вкладке непонятно, что за страница
 export const portfolioTitle = (industry: IPortfolioIndustry | null): string =>
-    industry ? `Портфолио: ${industry.label}` : 'Портфолио';
+    industry ? `${portfolioHeading(industry)} – портфолио` : 'Портфолио';
 
 // Работы, подходящие отрасли; без отрасли — все
 export const worksFor = <T extends { industries: PortfolioIndustry[] }>(works: T[], industry: PortfolioIndustry | null): T[] =>

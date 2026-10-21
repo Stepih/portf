@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { findIndustry, industryCounts, nextAfter, withIndustry, worksFor } from "./portfolioIndustry";
+import { findIndustry, industryCounts, nextAfter, portfolioHeading, portfolioTitle, withIndustry, worksFor } from "./portfolioIndustry";
 import { portfolioIndustries, portfolioWorks } from "@/data/portfolio";
 
 describe("portfolioIndustry", () => {
@@ -24,6 +24,14 @@ describe("portfolioIndustry", () => {
         expect(worksFor(works, null)).toBe(works);
         expect(worksFor(works, 'medicine').map((w) => w.id)).toEqual(['a', 'b']);
         expect(worksFor(works, 'beauty')).toEqual([]);
+    });
+
+    it("portfolioHeading и portfolioTitle называют отрасль в подборке", () => {
+        const construction = findIndustry('construction');
+        expect(portfolioHeading(null)).toBe('Портфолио');
+        expect(portfolioTitle(null)).toBe('Портфолио');
+        expect(portfolioHeading(construction)).toBe('Сайты для строительных и ремонтных компаний');
+        expect(portfolioTitle(construction)).toBe('Сайты для строительных и ремонтных компаний – портфолио');
     });
 
     it("withIndustry добавляет параметр только при выбранной отрасли", () => {
