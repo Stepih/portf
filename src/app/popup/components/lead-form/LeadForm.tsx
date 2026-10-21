@@ -9,6 +9,7 @@ import s from './LeadForm.module.scss'
 import TextAreaInput from "./input/TextAreaInput";
 import ErrorMessage from "@/components/ui/errorMessage/ErrorMessage";
 import { HONEYPOT_FIELD } from "@/lib/validation/feedback";
+import { leadSourceFromSearch } from "@/scripts/leadSource";
 
 const checkNameReg = (text: string) => /^[A-Za-zА-Яа-яё]{0,25}$/.test(text.replace(/\s+/g, ''));
 
@@ -43,13 +44,15 @@ const LeadForm: FC<ILeadForm> = ({ className }) => {
         }
 
         const honeypot = new FormData(e.currentTarget).get(HONEYPOT_FIELD);
+        // Услуга, кейс или отрасль из ссылки «Обсудить» (SALES_PLAN 4.8): в форме не видны, уходят с заявкой
+        const source = leadSourceFromSearch(window.location.search);
 
         setIsSending(true);
         try {
             const response = await fetch('/api/sendMessage', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ ...inputValue, message: textAreaValue, [HONEYPOT_FIELD]: honeypot }),
+                body: JSON.stringify({ ...inputValue, message: textAreaValue, ...source, [HONEYPOT_FIELD]: honeypot }),
             });
 
             if (!response.ok) {

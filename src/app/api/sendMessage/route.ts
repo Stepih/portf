@@ -1,5 +1,6 @@
 import { createRateLimiter } from '@/lib/rateLimit';
 import { HONEYPOT_FIELD, validateFeedback } from '@/lib/validation/feedback';
+import { leadSourceLines } from '@/scripts/leadSource';
 
 // Rate-limit в памяти: прод работает в одном контейнере, этого достаточно. 5 заявок за 10 минут с одного IP
 const isRateLimited = createRateLimiter({ limit: 5, windowMs: 10 * 60 * 1000 });
@@ -43,8 +44,13 @@ export async function POST(req: Request) {
 
     const { name, contact, message } = result.data;
 
-    // Сообщение для отправки
-    const text = `Name: ${name}\nContact: ${contact}\nMessage: ${message}`;
+    // Сообщение для отправки; ниже – откуда пришёл клиент, если форму открыли по ссылке с услугой, кейсом или отраслью
+    const text = [
+        `Name: ${name}`,
+        `Contact: ${contact}`,
+        `Message: ${message}`,
+        ...leadSourceLines(body as Record<string, unknown>)
+    ].join('\n');
 
     try {
         const response = await fetch(`https://api.telegram.org/bot${telegramBotToken}/sendMessage`, {

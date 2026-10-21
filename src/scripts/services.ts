@@ -1,14 +1,14 @@
 import { IPortfolioWork } from "@/interfaces/portfolio";
 import { ServiceId } from "@/interfaces/offer";
 
-// Параметр ссылки на форму с услугой: /popup?service=landing. Форма начнёт его читать в 4.2
+// Параметр ссылки на форму с услугой: /popup?service=landing. Форма отправляет его с заявкой (4.8)
 export const SERVICE_PARAM = 'service';
 
 // Адрес формы с предвыбранной услугой
 export const withService = (href: string, service: ServiceId): string =>
     `${href}?${SERVICE_PARAM}=${service}`;
 
-// Параметр ссылки на форму из кейса: /popup?case=icc. Форма начнёт его читать в 4.8
+// Параметр ссылки на форму из кейса: /popup?case=icc. Форма отправляет его с заявкой (4.8)
 export const CASE_PARAM = 'case';
 
 // Адрес формы с кейсом, который смотрел клиент

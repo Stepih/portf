@@ -67,6 +67,20 @@ test('валидная заявка уходит одним POST, форма о�
     await expect(form.message).toHaveValue('');
 });
 
+// Ссылка «Обсудить» из кейса: кейс уходит с заявкой, в форме его не видно (SALES_PLAN 4.8)
+test('кейс из ссылки уходит вместе с заявкой', async ({ page }) => {
+    await page.goto('/popup?case=icc');
+    const requests = await mockSendMessage(page);
+    const form = fields(page);
+
+    await form.name.fill('Иван');
+    await form.contact.fill('79990001122');
+    await form.submit.click();
+
+    await expect(page.getByRole('button', { name: 'Отправлено!' })).toBeVisible();
+    expect(requests[0].postDataJSON()).toMatchObject({ name: 'Иван', case: 'icc' });
+});
+
 test('ответ 429 показывает понятную ошибку', async ({ page }) => {
     await mockSendMessage(page, 429);
     const form = fields(page);
