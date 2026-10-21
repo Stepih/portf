@@ -94,7 +94,8 @@ const LeadForm: FC<ILeadForm> = ({ className }) => {
     }
 
     return (
-        <form className={className ? `${s.form} ${className}` : s.form} onSubmit={onSubmit}>
+        // ym-hide-content: Вебвизор не записывает, что ввели в поля заявки (SALES_PLAN 6.2)
+        <form className={`${s.form} ym-hide-content${className ? ` ${className}` : ''}`} onSubmit={onSubmit}>
             {!success && <ErrorMessage error={error} />}
             <ListInput handleSetFocusInput={handleSetFocusInput} value={inputValue} handleSetValue={handleSetInputValue} />
             <TextAreaInput setValue={handleSetTextAreaValue} value={textAreaValue} />

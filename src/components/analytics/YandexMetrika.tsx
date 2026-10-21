@@ -8,7 +8,8 @@ import { YM_ID } from "@/constants/analytics";
 import { reachGoal, ym } from "@/scripts/metrika";
 import { linkGoal } from "@/scripts/metrikaGoals";
 
-const initParams = { clickmap: true, trackLinks: true, accurateTrackBounce: true };
+// webvisor – записи визитов и карта скроллинга (SALES_PLAN 6.2); поля формы скрыты классом ym-hide-content в LeadForm
+const initParams = { clickmap: true, trackLinks: true, accurateTrackBounce: true, webvisor: true };
 
 // Отправляет hit на каждый клиентский переход. Первый hit отправляет сам init
 const RouteTracker: FC = () => {
