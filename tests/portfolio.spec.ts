@@ -30,3 +30,16 @@ test('призывы в кейсе ведут в форму с кейсом и �
     for (const link of await forms.all()) await expect(link).toHaveAttribute('href', '/popup?case=icc');
     await expect(page.getByRole('link', { name: offerTgButton.title })).toHaveCount(2);
 });
+
+// Превью ссылок: у кейса своя картинка, у каталога – общая; обе отдаются как PNG (SALES_PLAN 5.6)
+test('картинки-превью ссылок у кейса и каталога', async ({ page, request }) => {
+    for (const [path, image] of [['/portfolio/icc', '/portfolio/icc/opengraph-image'], ['/portfolio', '/opengraph-image']]) {
+        await page.goto(path);
+        const url = await page.locator('meta[property="og:image"]').getAttribute('content');
+        expect(new URL(url!).pathname).toBe(image);
+
+        const response = await request.get(image);
+        expect(response.status()).toBe(200);
+        expect(response.headers()['content-type']).toBe('image/png');
+    }
+});

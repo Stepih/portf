@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 
 import s from './page.module.scss'
 import { baseOpenGraph } from "@/data/metadata";
+import { ogSize } from "@/lib/og";
 import { portfolioWorks } from "@/data/portfolio";
 import { portfolioCases } from "@/data/portfolioCases";
 import { IPortfolioWork, PortfolioIndustry } from "@/interfaces/portfolio";
@@ -47,6 +48,8 @@ export const generateMetadata = async ({ params }: IProps): Promise<Metadata> =>
             ...baseOpenGraph,
             title,
             description: data.headline,
+            // Своя картинка из opengraph-image.tsx рядом: общая из baseOpenGraph иначе перебивает её
+            images: [{ url: `/portfolio/${work.id}/opengraph-image`, width: ogSize.width, height: ogSize.height }],
         },
     };
 }
