@@ -8,6 +8,13 @@ export const SERVICE_PARAM = 'service';
 export const withService = (href: string, service: ServiceId): string =>
     `${href}?${SERVICE_PARAM}=${service}`;
 
+// Параметр ссылки на форму из кейса: /popup?case=icc. Форма начнёт его читать в 4.8
+export const CASE_PARAM = 'case';
+
+// Адрес формы с кейсом, который смотрел клиент
+export const withCase = (href: string, caseId: string): string =>
+    `${href}?${CASE_PARAM}=${encodeURIComponent(caseId)}`;
+
 // Кейсы-примеры услуги: название и ссылка. Работы без страницы кейса и неизвестные id пропускаются
 export const serviceCases = (
     ids: string[],

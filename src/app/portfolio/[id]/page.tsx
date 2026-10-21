@@ -15,7 +15,7 @@ import CaseFeatures from "./components/CaseFeatures";
 import CaseMetrics from "./components/CaseMetrics";
 import KeyScreens from "./components/KeyScreens";
 import BeforeAfter from "./components/BeforeAfter";
-import { CaseCta, CaseQuote } from "./components/CaseOutro";
+import { CaseCta, CaseCtaShort, CaseQuote } from "./components/CaseOutro";
 import { INextCase, NextCase } from "./components/NextCase";
 
 interface IProps {
@@ -88,10 +88,11 @@ const CasePage: FC<IProps> = async ({ params }) => {
                 <CaseInfo info={data.info} />
                 {data.features && <CaseFeatures features={data.features} />}
                 <CaseMetrics metrics={data.metrics} />
+                <CaseCtaShort caseId={work.id} />
                 <KeyScreens name={work.name} accent={data.accent} screens={data.screens} video={data.screensVideo} />
                 {data.before && after && <BeforeAfter name={work.name} before={data.before} after={after} />}
                 {data.quote && <CaseQuote {...data.quote} accent={data.accent} />}
-                <CaseCta url={data.url} />
+                <CaseCta caseId={work.id} url={data.url} />
                 <NextCase next={next} byIndustry={byIndustry} />
             </div>
         </div>

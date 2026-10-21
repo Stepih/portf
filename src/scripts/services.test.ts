@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { serviceCases, withService } from "./services";
+import { serviceCases, withCase, withService } from "./services";
 import { services } from "@/data/offer";
 import { portfolioWorks } from "@/data/portfolio";
 import { portfolioCases } from "@/data/portfolioCases";
@@ -7,6 +7,12 @@ import { portfolioCases } from "@/data/portfolioCases";
 describe("withService", () => {
     it("добавляет услугу в параметр ссылки", () => {
         expect(withService('/popup', 'shop')).toBe('/popup?service=shop');
+    });
+});
+
+describe("withCase", () => {
+    it("добавляет кейс в параметр ссылки", () => {
+        expect(withCase('/popup', 'icc')).toBe('/popup?case=icc');
     });
 });
 

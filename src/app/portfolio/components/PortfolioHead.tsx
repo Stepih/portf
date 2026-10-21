@@ -7,7 +7,7 @@ import s from './PortfolioHead.module.scss'
 import { allerta, ralewayBold } from "@/app/fonts/fonts";
 import { IPortfolioIndustry } from "@/interfaces/portfolio";
 import { popupPageURL } from "@/constants/urls";
-import { offerTgButton, portfolioDescription, portfolioFormButton } from "@/data/offer";
+import { formButton, offerTgButton, portfolioDescription } from "@/data/offer";
 import { portfolioHeading, withIndustry } from "@/scripts/portfolioIndustry";
 
 interface IProps {
@@ -36,7 +36,7 @@ const PortfolioHead: FC<IProps> = ({ featuredCount, allCount, industry, allTitle
 
                 <div className={`${ralewayBold.className} ${s.buttons}`}>
                     <Link href={withIndustry(popupPageURL, industry?.id ?? null)} className={`${s.button} ${s.primary}`}>
-                        {portfolioFormButton}
+                        {formButton}
                     </Link>
                     <a href={offerTgButton.href} target="_blank" rel="noopener" className={s.button}>
                         <TgIcon className={s.icon} aria-hidden="true" />
