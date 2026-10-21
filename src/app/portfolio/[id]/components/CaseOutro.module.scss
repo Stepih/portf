@@ -234,3 +234,21 @@
         transition: vars.$transition;
     }
 }
+
+// На телефоне кнопки формы и Telegram одной ширины, друг под другом
+@media screen and (max-width: 600px) {
+    .short .ctaActions,
+    .cta .ctaActions {
+        flex-direction: column;
+        align-items: stretch;
+
+        > * {
+            justify-content: center;
+            text-align: center;
+        }
+    }
+
+    .cta .site {
+        align-self: flex-start;
+    }
+}
