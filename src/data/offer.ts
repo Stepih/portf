@@ -2,9 +2,9 @@
 // формулировки выбрал владелец.
 // Факты – только из решений владельца и ответов на вопросы в SALES_PLAN.md
 
-import { IFaqItem, IHeroSlide, IOfferButton, IOfferReason, IOfferStep, IService } from "@/interfaces/offer"
+import { IFaqItem, IHeroSlide, IMoreLink, IOfferButton, IOfferReason, IOfferStep, IService } from "@/interfaces/offer"
 import { PortfolioIndustry } from "@/interfaces/portfolio"
-import { myTg } from "@/constants/urls"
+import { mediaPageURL, musicPageURL, myTg, portfolioTg } from "@/constants/urls"
 import { plural, portfolioStats, yearsRange } from "@/scripts/portfolioStats"
 
 // h1 главной. «⁠» после дефиса не даёт строке разорваться на «ИИ-» (на телефоне)
@@ -206,4 +206,15 @@ export const offerFaq: IFaqItem[] = [
         question: 'Что умеет ИИ-агент?',
         answer: 'Берёт на себя рутину: например, принимает заявки в Telegram или отвечает клиентам по базе знаний. Пример – Legiscan'
     }
+]
+
+// Блок «А ещё я…» внизу главной (3.10): просто навигация, без продающего посыла.
+// Тексты – скилл marketing:draft-content, выбор владельца – вариант A.
+// Цели Метрики – прежние названия кнопок ButtonList, чтобы статистика не прервалась до 6.1
+export const moreTitle = 'А ещё я…'
+
+export const moreLinks: IMoreLink[] = [
+    { title: 'пишу музыку', href: musicPageURL, goal: 'Музыкальное творчество' },
+    { title: 'работаю с фото и видео', href: mediaPageURL, goal: 'Услуги медиаконтента' },
+    { title: 'веду канал с работами', href: portfolioTg, goal: 'Портфолио телеграмм' }
 ]

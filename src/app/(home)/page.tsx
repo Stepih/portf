@@ -6,7 +6,7 @@ import Steps from "./components/steps/Steps";
 import Reasons from "./components/reasons/Reasons";
 import Faq from "./components/faq/Faq";
 import Contact from "./components/contact/Contact";
-import ButtonList from "./components/ButtonList";
+import More from "./components/more/More";
 
 export default function Home() {
   return (
@@ -19,7 +19,7 @@ export default function Home() {
       <Reasons />
       <Faq />
       <Contact />
-      <ButtonList />
+      <More />
     </>
   );
 }

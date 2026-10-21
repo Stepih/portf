@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test';
-import { contactTitle, offerFaq, offerTgButton, offerTitle } from '../src/data/offer';
+import { contactTitle, moreLinks, moreTitle, offerFaq, offerTgButton, offerTitle } from '../src/data/offer';
 
 // Слайды первого экрана сменяются, а h1 с оффером в HTML один и есть всегда (SALES_PLAN 3.1.1)
 test('на главной один h1 с оффером, черта переключает слайд', async ({ page }) => {
@@ -108,4 +108,17 @@ test('форма заявки и Telegram на главной', async ({ page })
 
     await expect(section.getByRole('button', { name: 'Отправлено!' })).toBeVisible();
     expect(requests).toHaveLength(1);
+});
+
+// Музыка, медиа и канал с работами – внизу, после формы (SALES_PLAN 3.10)
+test('блок «А ещё я…» внизу главной', async ({ page }) => {
+    await page.goto('/');
+
+    const section = page.getByRole('region', { name: moreTitle });
+    const links = section.getByRole('link');
+    await expect(links).toHaveCount(moreLinks.length);
+    await expect(links.last()).toHaveAttribute('target', '_blank');
+
+    await section.getByRole('link', { name: moreLinks[0].title }).click();
+    await expect(page).toHaveURL(/\/music$/);
 });

@@ -35,7 +35,7 @@
 ## Карта проекта
 ```
 src/app/                 маршруты (App Router)
-  (home)/                главная: TitleBlockPage + ButtonList (кнопки разделов из src/data/homeButtons.ts)
+  (home)/                главная-лендинг: блоки в (home)/components, тексты в src/data/offer.ts
   music/                 плеер альбомов (PlayMusic/) + «история» (MeHistory/); свои правила — src/app/music/CLAUDE.md
   media/                 услуги медиаконтента: слайдеры до/после, gif, превью битов
   popup/                 страница формы заявки (это обычная страница, не попап) → POST /api/sendMessage
@@ -47,7 +47,7 @@ src/app/                 маршруты (App Router)
   layout.tsx             Background + Header + <main> + Footer + YandexMetrika
   template.tsx           анимация появления страницы
 src/components/          общие UI-компоненты; они же публичный набор design-sync (.design-sync/entry.ts)
-src/data/                статичный контент и конфиг (заголовки страниц, кнопки, поля формы, шаги «истории» и тексты /media)
+src/data/                статичный контент и конфиг (продающие тексты главной (offer.ts), заголовки страниц, поля формы, шаги «истории» и тексты /media)
 src/lib/content/         серверные функции данных: getAlbums (public/music), getMusicHistory (+ видео из public/video), getMediaContent (public/media)
 src/interfaces/          TS-типы, префикс I (IAlbums, IMedia, …)
 src/constants/urls.ts    внешние и внутренние ссылки
