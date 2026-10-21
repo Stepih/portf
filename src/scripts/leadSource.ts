@@ -27,8 +27,23 @@ export const leadSourceLines = (body: Record<string, unknown>): string[] => {
     const industry = portfolioIndustries.find((item) => item.id === body[INDUSTRY_PARAM]);
 
     return [
-        service && `Service: ${service.title}`,
-        work && `Case: ${work.name}`,
-        industry && `Industry: ${industry.label}`
+        service && `Услуга: ${service.title}`,
+        work && `Кейс: ${work.name}`,
+        industry && `Отрасль: ${industry.label}`
     ].filter((line): line is string => Boolean(line));
+}
+
+// Текст заявки для Telegram (SALES_PLAN 4.3): поля формы, ниже – откуда пришёл клиент. Пустой комментарий не пишем
+export const leadMessageText = (
+    lead: { name: string; contact: string; message: string },
+    body: Record<string, unknown>
+): string => {
+    const fields = [
+        `Имя: ${lead.name}`,
+        `Контакт: ${lead.contact}`,
+        lead.message && `Комментарий: ${lead.message}`
+    ].filter(Boolean).join('\n');
+    const source = leadSourceLines(body).join('\n');
+
+    return ['Новая заявка с сайта', fields, source].filter(Boolean).join('\n\n');
 }
