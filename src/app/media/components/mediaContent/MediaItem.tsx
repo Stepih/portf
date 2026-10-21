@@ -69,7 +69,7 @@ const MediaItem: FC<MediaItemProps> = ({ item, id, scrollY, bounds, contentRef, 
                     }}
                     className={s.wrapper}
                 >
-                    <div className={s.text} style={{ textAlign: id % 2 !== 0 ? "end" : "start" }}>
+                    <div className={s.text} style={{ textAlign: id % 2 !== 0 ? "end" : "start" }} data-goal-place="media">
                         
                         <MediaDescription title={item.title} description={item.description} />
                         <ActionButton href="/popup" text="Оставить заявку" />

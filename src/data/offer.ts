@@ -224,11 +224,11 @@ export const offerFaq: IFaqItem[] = [
 
 // Блок «А ещё я…» внизу главной (3.10): просто навигация, без продающего посыла.
 // Тексты – скилл marketing:draft-content, выбор владельца – вариант A.
-// Цели Метрики – прежние названия кнопок ButtonList, чтобы статистика не прервалась до 6.1
+// id – параметр цели more_click в Метрике (6.1)
 export const moreTitle = 'А ещё я…'
 
 export const moreLinks: IMoreLink[] = [
-    { title: 'пишу музыку', href: musicPageURL, goal: 'Музыкальное творчество' },
-    { title: 'работаю с фото и видео', href: mediaPageURL, goal: 'Услуги медиаконтента' },
-    { title: 'веду канал с работами', href: portfolioTg, goal: 'Портфолио телеграмм' }
+    { title: 'пишу музыку', href: musicPageURL, id: 'music' },
+    { title: 'работаю с фото и видео', href: mediaPageURL, id: 'media' },
+    { title: 'веду канал с работами', href: portfolioTg, id: 'channel' }
 ]

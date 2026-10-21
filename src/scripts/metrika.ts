@@ -1,4 +1,4 @@
-import { YM_ID } from "@/constants/analytics";
+import { Goal, YM_ID } from "@/constants/analytics";
 
 declare global {
   interface Window {
@@ -11,4 +11,5 @@ export const ym = (method: string, ...params: unknown[]) => {
   window.ym?.(YM_ID, method, ...params);
 };
 
-export const reachGoal = (goal: string) => ym('reachGoal', goal);
+// Цель с параметрами: где был клик, какая услуга или кейс (SALES_PLAN 6.1)
+export const reachGoal = (goal: Goal, params?: Record<string, string>) => ym('reachGoal', goal, params);

@@ -10,6 +10,8 @@ import TextAreaInput from "./input/TextAreaInput";
 import ErrorMessage from "@/components/ui/errorMessage/ErrorMessage";
 import { HONEYPOT_FIELD } from "@/lib/validation/feedback";
 import { leadSourceFromSearch } from "@/scripts/leadSource";
+import { reachGoal } from "@/scripts/metrika";
+import { GOALS } from "@/constants/analytics";
 
 const checkNameReg = (text: string) => /^[A-Za-zА-Яа-яё]{0,25}$/.test(text.replace(/\s+/g, ''));
 
@@ -59,13 +61,15 @@ const LeadForm: FC<ILeadForm> = ({ className }) => {
                 throw new Error(errorByStatus[response.status] ?? 'Не удалось отправить заявку, попробуйте позже');
             }
 
-            // Успех
+            // Успех; в цели – страница и откуда пришёл клиент (6.1)
+            reachGoal(GOALS.leadSubmit, { page: window.location.pathname, ...source });
             setSuccess('Сообщение успешно отправлено');
             setError(''); // Сброс ошибки
             setInputValue({ name: '', contact: '' }); // Очистка полей
             setTextAreaValue(''); // Очистка textarea
         } catch (err) {
             // fetch падает с TypeError, если нет сети
+            reachGoal(GOALS.leadError, { page: window.location.pathname });
             setError(err instanceof Error && !(err instanceof TypeError) ? err.message : 'Не удалось отправить заявку, проверьте соединение');
             setSuccess('');
         } finally {

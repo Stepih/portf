@@ -52,7 +52,7 @@ export const CaseCtaShort: FC<{ caseId: string }> = ({ caseId }) => {
     return (
         <Rise as="section" className={s.short} aria-label="Обсудить похожий проект">
             <p className={`${ralewayBold.className} ${s.shortText}`}>{caseCtaShort}</p>
-            <div className={s.ctaActions}>
+            <div className={s.ctaActions} data-goal-place="case_short">
                 <CtaButtons caseId={caseId} />
             </div>
         </Rise>
@@ -67,7 +67,7 @@ export const CaseCta: FC<{ caseId: string, url?: string }> = ({ caseId, url }) =
                 <h2 id="cta-title" className={`${allerta.className} ${s.ctaTitle}`}>{caseCtaTitle}</h2>
                 <p className={s.ctaNote}>{caseCtaNote}</p>
             </div>
-            <div className={s.ctaActions}>
+            <div className={s.ctaActions} data-goal-place="case_end">
                 <CtaButtons caseId={caseId} />
                 {url && (
                     <a href={url} target="_blank" rel="noopener" className={s.site}>

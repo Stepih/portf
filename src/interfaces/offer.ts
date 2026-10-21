@@ -43,9 +43,9 @@ export interface IFaqItem {
     answer: string
 }
 
-// Ссылка блока «А ещё я…»; goal – цель Метрики
+// Ссылка блока «А ещё я…»; id – параметр цели Метрики
 export interface IMoreLink {
     title: string,
     href: string,
-    goal: string
+    id: string
 }

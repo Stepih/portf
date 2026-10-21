@@ -28,7 +28,8 @@ const Header:FC = () => {
             onFocus={() => setHover(true)}
             onBlur={(e) => { if (!e.currentTarget.contains(e.relatedTarget)) setHover(false) }}
             animate={{left: !hover ? -100 : 0, willChange: 'unset'}} 
-            className={s.header}>
+            className={s.header}
+            data-goal-place="header">
             
             <motion.div  animate={{opacity: !hover ? 1 : 0}}  className={s.headerTouch}>
                 <Arrow />

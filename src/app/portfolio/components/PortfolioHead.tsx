@@ -34,7 +34,7 @@ const PortfolioHead: FC<IProps> = ({ featuredCount, allCount, industry, allTitle
                 </h1>
                 <p className={s.description}>{portfolioDescription}</p>
 
-                <div className={`${ralewayBold.className} ${s.buttons}`}>
+                <div className={`${ralewayBold.className} ${s.buttons}`} data-goal-place="portfolio">
                     <Link href={withIndustry(popupPageURL, industry?.id ?? null)} className={`${s.button} ${s.primary}`}>
                         {formButton}
                     </Link>

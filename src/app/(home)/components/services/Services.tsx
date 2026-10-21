@@ -48,6 +48,8 @@ const Services: FC = () => {
                             <Link
                                 href={withService(popupPageURL, service.id)}
                                 className={`${ralewayBold.className} ${s.button}`}
+                                data-goal="service_click"
+                                data-goal-id={service.id}
                                 aria-label={`${servicesButton}: ${service.title}`}
                             >
                                 {servicesButton}

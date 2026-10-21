@@ -1,12 +1,9 @@
-"use client"
-
 import { FC } from "react";
 import Link from "next/link";
 
 import s from './More.module.scss'
 import { ralewayBold, ralewayRegular } from "@/app/fonts/fonts";
 import { moreLinks, moreTitle } from "@/data/offer";
-import { reachGoal } from "@/scripts/metrika";
 
 // «А ещё я…» (SALES_PLAN 3.10): музыка, медиа и канал с работами – внизу, после формы.
 // Заменил ButtonList. Внешние ссылки открываются в новой вкладке
@@ -19,11 +16,11 @@ const More: FC = () => {
                 {moreLinks.map((link) => (
                     <li key={link.href}>
                         {link.href.startsWith('http') ? (
-                            <a href={link.href} target="_blank" rel="noopener" className={s.link} onClick={() => reachGoal(link.goal)}>
+                            <a href={link.href} target="_blank" rel="noopener" className={s.link} data-goal="more_click" data-goal-id={link.id}>
                                 {link.title}
                             </a>
                         ) : (
-                            <Link href={link.href} className={s.link} onClick={() => reachGoal(link.goal)}>
+                            <Link href={link.href} className={s.link} data-goal="more_click" data-goal-id={link.id}>
                                 {link.title}
                             </Link>
                         )}

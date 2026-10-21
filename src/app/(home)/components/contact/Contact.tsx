@@ -11,7 +11,7 @@ import LeadForm from "@/app/popup/components/lead-form/LeadForm";
 // До 900px – в столбик, форма под текстом
 const Contact: FC = () => {
     return (
-        <section id="contact" className={`${ralewayRegular.className} ${s.contact}`} aria-labelledby="contact-title">
+        <section id="contact" data-goal-place="final" className={`${ralewayRegular.className} ${s.contact}`} aria-labelledby="contact-title">
             <div className={s.text}>
                 <h2 id="contact-title" className={`${ralewayBold.className} ${s.title}`}>{contactTitle}</h2>
                 <p className={s.description}>{contactDescription}</p>

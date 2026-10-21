@@ -21,7 +21,7 @@ const IndustryChips: FC = () => {
             <ul className={s.chips}>
                 {chips.map(({ industry, count }) => (
                     <li key={industry.id}>
-                        <Link href={withIndustry(portfolioPageURL, industry.id)} className={s.chip}>
+                        <Link href={withIndustry(portfolioPageURL, industry.id)} className={s.chip} data-goal="industry_click" data-goal-id={industry.id}>
                             {industry.label}
                             <span className={s.count}>{count}</span>
                         </Link>

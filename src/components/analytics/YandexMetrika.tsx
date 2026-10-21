@@ -5,7 +5,8 @@ import Script from "next/script";
 import { usePathname, useSearchParams } from "next/navigation";
 
 import { YM_ID } from "@/constants/analytics";
-import { ym } from "@/scripts/metrika";
+import { reachGoal, ym } from "@/scripts/metrika";
+import { linkGoal } from "@/scripts/metrikaGoals";
 
 const initParams = { clickmap: true, trackLinks: true, accurateTrackBounce: true };
 
@@ -30,6 +31,32 @@ const RouteTracker: FC = () => {
   return null;
 };
 
+// Цели по кликам (SALES_PLAN 6.1): один слушатель на документ вместо onClick в каждом блоке,
+// поэтому кнопки в серверных компонентах остаются серверными. Что считать – решает linkGoal
+const GoalTracker: FC = () => {
+  useEffect(() => {
+    const onClick = (e: MouseEvent) => {
+      const link = (e.target as Element | null)?.closest?.<HTMLAnchorElement>('a[href]');
+      if (!link) return;
+
+      const result = linkGoal({
+        href: link.href,
+        origin: window.location.origin,
+        page: window.location.pathname,
+        goal: link.dataset.goal,
+        id: link.dataset.goalId,
+        place: link.closest<HTMLElement>('[data-goal-place]')?.dataset.goalPlace
+      });
+      if (result) reachGoal(result.goal, result.params);
+    };
+
+    document.addEventListener('click', onClick, true);
+    return () => document.removeEventListener('click', onClick, true);
+  }, []);
+
+  return null;
+};
+
 // Подключается один раз в layout.tsx: template.tsx перемонтируется на каждой навигации
 const YandexMetrika: FC = () => (
   <>
@@ -47,6 +74,7 @@ const YandexMetrika: FC = () => (
     <Suspense fallback={null}>
       <RouteTracker />
     </Suspense>
+    <GoalTracker />
   </>
 );
 
