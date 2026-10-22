@@ -49,3 +49,7 @@ next-env.d.ts
 
 # сравнение моделей демо-чата (CONVERSION_PLAN К3.2)
 /.chat-compare/
+
+# бинарник скилла impeccable: лаунчер скачивает его сам при первом запуске
+/.claude/skills/impeccable/scripts/bin/
+/.agents/skills/impeccable/scripts/bin/
