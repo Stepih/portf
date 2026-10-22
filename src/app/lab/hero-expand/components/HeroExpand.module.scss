@@ -116,30 +116,20 @@
         }
     }
 
-    // Инициалы: тёмный круг, как фото, но без лица
-    .monogram {
-        font-size: 2rem;
-        letter-spacing: 0.05em;
-        color: var(--color-bg);
-        background: var(--color-text-100);
-        transition: vars.$transition;
-    }
-
-    // Число работ в контурном круге, как у чипов ниже
+    // Число работ: тёмный круг, как у значка, крупное число и подпись под ним
     .works {
         flex-direction: column;
 
-        font-size: 0.7rem;
+        font-size: 0.8rem;
         line-height: 1;
-        color: var(--color-text-50);
-
-        border: 1.5px solid rgba(128, 128, 128, 0.45);
+        color: var(--color-bg);
+        background: var(--color-text-100);
         transition: vars.$transition;
 
         b {
             margin-bottom: 2px;
-            font-size: 2.2rem;
-            color: var(--color-text-100);
+            font-size: 2.6rem;
+            font-weight: 800;
         }
     }
 
@@ -280,15 +270,11 @@
             height: 72px;
         }
 
-        .monogram {
-            font-size: 1.5rem;
-        }
-
         .works {
-            font-size: 0.6rem;
+            font-size: 0.65rem;
 
             b {
-                font-size: 1.6rem;
+                font-size: 1.9rem;
             }
         }
 

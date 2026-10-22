@@ -1,6 +1,6 @@
 "use client";
 
-import { FC, useLayoutEffect, useRef, useState } from "react";
+import { FC, useEffect, useLayoutEffect, useRef, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { cubicBezier, motion, MotionValue, useMotionValue, useMotionValueEvent, useReducedMotion, useScroll, useTransform, Variants } from "framer-motion";
@@ -17,9 +17,9 @@ import { withIndustry } from "@/scripts/portfolioIndustry";
 import { plural } from "@/scripts/portfolioStats";
 
 // Фото при раскрытии уменьшается и летит в кружок над «Выберите свою отрасль».
-// Фото непрозрачное, поэтому край фона сквозь него не просвечивает. Что в кружке в конце:
-// photo – само фото; monogram – инициалы «СК»; works – число работ; tiles – значок «разделы»
-export type MarkVariant = 'photo' | 'monogram' | 'works' | 'tiles';
+// Фото непрозрачное, поэтому край фона сквозь него не просвечивает. На подлёте фото
+// перетекает в знак на тёмном круге: works – число работ, tiles – значок «разделы»
+export type MarkVariant = 'works' | 'tiles';
 
 interface HeroExpandProps {
     chips: { id: PortfolioIndustry, label: string, count: number }[],
@@ -36,6 +36,9 @@ const SHOW_AT = 0.27;
 const HIDE_AT = 0.2;
 
 const ease = cubicBezier(.4, 0, .2, 1);
+
+// Через сколько мс без событий скролл считается остановленным (где нет события scrollend)
+const SCROLL_IDLE = 150;
 
 // Отступ края фона: от отступа карточки при t = 0 до нуля при t = 1
 const useInset = (t: MotionValue<number>, edge: MotionValue<number>) =>
@@ -118,8 +121,52 @@ const HeroExpand: FC<HeroExpandProps> = ({ chips, worksCount, mark }) => {
         return () => observer.disconnect();
     }, [reduceMotion, top, right, bottom, left, photoDx, photoDy, photoScale]);
 
+    // Доводка: остановились посреди раскрытия – страница докручивается до ближайшего
+    // целого шага по направлению скролла. Вниз – до раскрытого экрана с отраслями, вверх – к началу.
+    // Промежуточного кадра на экране не остаётся
+    useEffect(() => {
+        if (reduceMotion) return;
+        let lastY = window.scrollY;
+        // Доводка едет туда же, куда скроллили, поэтому своё направление она не сбивает
+        let direction = 1;
+        let timer = 0;
+
+        const settle = () => {
+            if (!scene.current) return;
+            const sceneTop = scene.current.getBoundingClientRect().top + window.scrollY;
+            const distance = scene.current.offsetHeight - window.innerHeight;
+            const p = (window.scrollY - sceneTop) / distance;
+            if (p <= EXPAND_FROM || p >= EXPAND_TO) return;
+            // Сцена в первом экране – назад до самого верха, чтобы вернулась и шапка
+            const start = sceneTop <= window.innerHeight ? 0 : sceneTop;
+            const target = direction > 0 ? Math.ceil(sceneTop + distance * EXPAND_TO) : start;
+            window.scrollTo({ top: target, behavior: 'smooth' });
+        };
+
+        const onScroll = () => {
+            const y = window.scrollY;
+            if (y !== lastY) direction = y > lastY ? 1 : -1;
+            lastY = y;
+            window.clearTimeout(timer);
+            timer = window.setTimeout(settle, SCROLL_IDLE);
+        };
+        // scrollend приходит после инерции и когда палец отпущен; таймер – запасной путь
+        const onScrollEnd = () => {
+            window.clearTimeout(timer);
+            settle();
+        };
+
+        window.addEventListener('scroll', onScroll, { passive: true });
+        window.addEventListener('scrollend', onScrollEnd);
+        return () => {
+            window.clearTimeout(timer);
+            window.removeEventListener('scroll', onScroll);
+            window.removeEventListener('scrollend', onScrollEnd);
+        };
+    }, [reduceMotion]);
+
     // На подлёте к кружку фото перетекает в знак: фото гаснет, знак проявляется и дорастает до размера
-    const photoOpacity = useTransform(t, [.7, 1], [1, mark === 'photo' ? 1 : 0]);
+    const photoOpacity = useTransform(t, [.7, 1], [1, 0]);
     const markOpacity = useTransform(t, [.7, 1], [0, 1]);
     const markScale = useTransform(t, [.7, 1], [.6, 1]);
 
@@ -132,8 +179,6 @@ const HeroExpand: FC<HeroExpandProps> = ({ chips, worksCount, mark }) => {
     });
 
     const markContent = {
-        photo: null,
-        monogram: <span className={`${ralewayBold.className} ${s.monogram}`}>СК</span>,
         works: (
             <span className={s.works}>
                 <b className={ralewayBold.className}>{worksCount}</b>
@@ -161,11 +206,9 @@ const HeroExpand: FC<HeroExpandProps> = ({ chips, worksCount, mark }) => {
             {/* Кружок над заголовком: сюда прилетает фото первого экрана и превращается в знак */}
             {!reduceMotion && (
                 <div ref={slot} className={s.slot} aria-hidden="true">
-                    {markContent && (
-                        <motion.div className={s.mark} style={{ opacity: markOpacity, scale: markScale }}>
-                            {markContent}
-                        </motion.div>
-                    )}
+                    <motion.div className={s.mark} style={{ opacity: markOpacity, scale: markScale }}>
+                        {markContent}
+                    </motion.div>
                 </div>
             )}
 

@@ -12,12 +12,10 @@ export const metadata: Metadata = {
     robots: { index: false, follow: false },
 };
 
-// Что в кружке над заголовком, для сравнения: ?mark=photo | monogram | works | tiles
+// Что в кружке над заголовком, для сравнения: ?mark=works | tiles
 const variants: { id: MarkVariant, label: string }[] = [
-    { id: 'monogram', label: 'Инициалы' },
     { id: 'works', label: 'Число работ' },
     { id: 'tiles', label: 'Значок' },
-    { id: 'photo', label: 'Фото' },
 ];
 
 // Черновик анимации для главной, отдельно от неё: карточка первого экрана при скролле
