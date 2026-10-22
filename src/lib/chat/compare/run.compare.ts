@@ -1,6 +1,6 @@
 // Сравнение моделей демо-чата на типовых вопросах (CONVERSION_PLAN К3.2). ТРАТИТ ДЕНЬГИ с ключа BotHub:
 // запускать только с разрешения владельца. Запуск: CHAT_COMPARE=1 npx vitest run --config vitest.compare.config.ts
-// Результат – .chat-compare/<дата>.md (папка в .gitignore)
+// Результат – .chat-compare/<дата>/: промпт каждой модели и report.md (папка в .gitignore)
 
 import { mkdirSync, writeFileSync } from "fs";
 import { expect, it } from "vitest";
@@ -22,6 +22,14 @@ it.runIf(process.env.CHAT_COMPARE === '1')('сравнение моделей', 
     expect(process.env.BOTHUB_API_KEY, 'нет BOTHUB_API_KEY в .env.local').toBeTruthy();
 
     const system = buildSystemPrompt();
+    const stamp = new Date().toISOString().slice(0, 16).replace(/:/g, '-');
+    const dir = `.chat-compare/${stamp}`;
+    mkdirSync(dir, { recursive: true });
+
+    // Промпт каждой модели – в файл до первого запроса: видно, с чем именно она отвечала.
+    // Инструментов (tools) и поиска в запросе нет, модель видит только этот текст и вопрос
+    for (const model of models) writeFileSync(`${dir}/prompt-${model.id}.txt`, system);
+
     const rows: string[] = [];
     const totals = models.map(() => ({ cost: 0, ms: 0, problems: 0, errors: 0 }));
 
@@ -68,8 +76,7 @@ it.runIf(process.env.CHAT_COMPARE === '1')('сравнение моделей', 
         ...rows,
     ].join('\n');
 
-    mkdirSync('.chat-compare', { recursive: true });
-    const file = `.chat-compare/${new Date().toISOString().slice(0, 16).replace(/:/g, '-')}.md`;
+    const file = `${dir}/report.md`;
     writeFileSync(file, report);
     console.log(`Готово: ${file}\n${summary.join('\n')}`);
 });
