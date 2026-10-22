@@ -19,9 +19,11 @@ test('на главной один h1 с оффером, черта перекл
     await expect(third).toHaveAttribute('aria-current', 'true');
 });
 
-// Чип отрасли ведёт в подборку портфолио (SALES_PLAN 3.2)
+// Чип отрасли ведёт в подборку портфолио (SALES_PLAN 3.2). Чипы выезжают, когда первый экран
+// раскрылся при скролле; остановка на середине докручивает до раскрытого экрана
 test('чип отрасли открывает портфолио с фильтром', async ({ page }) => {
     await page.goto('/');
+    await page.mouse.wheel(0, 300);
 
     const chips = page.getByRole('region', { name: 'Выберите свою отрасль' }).getByRole('link');
     await expect(chips.first()).toBeVisible();

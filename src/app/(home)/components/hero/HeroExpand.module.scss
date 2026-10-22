@@ -133,14 +133,6 @@
         }
     }
 
-    // Значок «разделы»: четыре плитки на тёмном круге
-    .tiles {
-        padding: 26%;
-        fill: var(--color-bg);
-        background: var(--color-text-100);
-        transition: vars.$transition;
-    }
-
     .title {
         margin: 0;
 
@@ -291,44 +283,3 @@
     }
 }
 
-// Переключатель вариантов фото – только для демо
-.switcher {
-    position: fixed;
-    top: 16px;
-    left: 50%;
-    z-index: 20;
-    transform: translateX(-50%);
-
-    display: flex;
-    gap: 4px;
-    padding: 4px;
-
-    font-size: 0.9rem;
-
-    background: var(--color-bg);
-    border-radius: 20px;
-    box-shadow: vars.$shadow;
-
-    a {
-        padding: 6px 12px;
-
-        color: var(--color-text-50);
-        text-decoration: none;
-        white-space: nowrap;
-
-        border-radius: 16px;
-    }
-
-    .current {
-        color: var(--color-bg);
-        background: var(--color-text-100);
-    }
-}
-
-@media screen and (max-width: 560px) {
-    .switcher {
-        top: auto;
-        bottom: 90px;
-        font-size: 0.8rem;
-    }
-}

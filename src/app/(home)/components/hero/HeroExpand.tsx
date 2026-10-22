@@ -8,7 +8,7 @@ import { cubicBezier, motion, MotionValue, useMotionValue, useMotionValueEvent, 
 import photo from '@/assets/_img/rectangles/title-page/i.png'
 
 import s from './HeroExpand.module.scss'
-import HeroSlides from "@/app/(home)/components/hero/HeroSlides";
+import HeroSlides from "./HeroSlides";
 import { ralewayBold, ralewayRegular } from "@/app/fonts/fonts";
 import { portfolioPageURL } from "@/constants/urls";
 import { heroInterval, heroSlides, heroTitleSlide } from "@/data/offer";
@@ -16,16 +16,10 @@ import { PortfolioIndustry } from "@/interfaces/portfolio";
 import { withIndustry } from "@/scripts/portfolioIndustry";
 import { plural } from "@/scripts/portfolioStats";
 
-// Фото при раскрытии уменьшается и летит в кружок над «Выберите свою отрасль».
-// Фото непрозрачное, поэтому край фона сквозь него не просвечивает. На подлёте фото
-// перетекает в знак на тёмном круге: works – число работ, tiles – значок «разделы»
-export type MarkVariant = 'works' | 'tiles';
-
 interface HeroExpandProps {
     chips: { id: PortfolioIndustry, label: string, count: number }[],
-    // Сколько работ в портфолио – для варианта works
-    worksCount: number,
-    mark: MarkVariant
+    // Сколько работ в портфолио, число в кружке над заголовком
+    worksCount: number
 }
 
 // Доли прокрутки сцены: раскрытие карточки и порог, после которого выезжают отрасли.
@@ -58,10 +52,14 @@ const item: Variants = {
     }),
 };
 
+// Первый экран главной (SALES_PLAN 3.1) и «Выберите свою отрасль» (3.2) одной сценой.
 // Сцена высотой в несколько экранов, внутри липкий экран. Фон карточки – отдельный слой:
 // его края при скролле едут от размеров карточки к краям окна, а скругление уходит в ноль.
-// Слайды при этом гаснут, а когда фон раскрылся – выезжают отрасли
-const HeroExpand: FC<HeroExpandProps> = ({ chips, worksCount, mark }) => {
+// Слайды при этом гаснут. Фото уменьшается, летит в кружок над заголовком и там перетекает
+// в число работ; фото непрозрачное, поэтому край фона сквозь него не просвечивает.
+// Когда фон раскрылся – снизу по очереди выезжают заголовок, подпись и чипы отраслей.
+// Чип ведёт на /portfolio?for=<id>, отрасли без работ не показываются
+const HeroExpand: FC<HeroExpandProps> = ({ chips, worksCount }) => {
     const reduceMotion = useReducedMotion();
     const scene = useRef<HTMLElement>(null);
     const screen = useRef<HTMLDivElement>(null);
@@ -178,22 +176,6 @@ const HeroExpand: FC<HeroExpandProps> = ({ chips, worksCount, mark }) => {
         else if (p <= HIDE_AT) setShown(false);
     });
 
-    const markContent = {
-        works: (
-            <span className={s.works}>
-                <b className={ralewayBold.className}>{worksCount}</b>
-                {plural(worksCount, ['работа', 'работы', 'работ'])}
-            </span>
-        ),
-        tiles: (
-            <svg className={s.tiles} viewBox="0 0 24 24">
-                <rect x="3" y="3" width="8" height="8" rx="2" />
-                <rect x="13" y="3" width="8" height="8" rx="2" />
-                <rect x="3" y="13" width="8" height="8" rx="2" />
-                <rect x="13" y="13" width="8" height="8" rx="2" />
-            </svg>
-        ),
-    }[mark];
 
     const industries = (
         <motion.div
@@ -203,11 +185,14 @@ const HeroExpand: FC<HeroExpandProps> = ({ chips, worksCount, mark }) => {
             aria-labelledby="industries-title"
             role="region"
         >
-            {/* Кружок над заголовком: сюда прилетает фото первого экрана и превращается в знак */}
+            {/* Кружок над заголовком: сюда прилетает фото первого экрана и превращается в число работ */}
             {!reduceMotion && (
                 <div ref={slot} className={s.slot} aria-hidden="true">
                     <motion.div className={s.mark} style={{ opacity: markOpacity, scale: markScale }}>
-                        {markContent}
+                        <span className={s.works}>
+                            <b className={ralewayBold.className}>{worksCount}</b>
+                            {plural(worksCount, ['работа', 'работы', 'работ'])}
+                        </span>
                     </motion.div>
                 </div>
             )}
