@@ -1,4 +1,5 @@
 import { expect, test, type Page, type Request } from '@playwright/test';
+import { formButton } from '../src/data/offer';
 
 // Подменяет /api/sendMessage: в Telegram ничего не уходит. Возвращает список перехваченных запросов
 const mockSendMessage = async (page: Page, status = 200) => {
@@ -14,7 +15,7 @@ const fields = (page: Page) => ({
     name: page.getByPlaceholder('Имя *'),
     contact: page.getByPlaceholder('Телефон *'),
     message: page.getByPlaceholder('Комментарий'),
-    submit: page.getByRole('button', { name: 'Отправить' }),
+    submit: page.getByRole('button', { name: formButton }),
 });
 
 test.beforeEach(async ({ page }) => {

@@ -15,6 +15,25 @@
     background: vars.$black-8;
 
     box-shadow: vars.$shadow;
+
+    // Отправка – главное действие формы (CONVERSION_PLAN К1.4): залита сразу и во всю ширину.
+    // ActionButton общий (design-sync), поэтому вид задаём отсюда, а не пропсами
+    button[type='submit'] {
+        align-self: stretch;
+
+        font-family: inherit;
+        color: var(--color-bg);
+        background: var(--color-text-100);
+
+        &:hover {
+            opacity: 0.85;
+        }
+
+        &:focus-visible {
+            outline: 2px solid vars.$blue-100;
+            outline-offset: 2px;
+        }
+    }
 }
 
 @media screen and (max-width: 450px) {

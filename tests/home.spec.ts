@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test';
-import { contactTitle, heroTitleSlide, moreLinks, moreTitle, offerFaq, offerTgButton, offerTitle } from '../src/data/offer';
+import { contactTitle, formButton, heroTitleSlide, moreLinks, moreTitle, offerFaq, offerTgButton, offerTitle } from '../src/data/offer';
 
 // Слайды первого экрана сменяются, а h1 с оффером в HTML один и есть всегда (SALES_PLAN 3.1.1).
 // Первым показывается слайд с h1 (CONVERSION_PLAN К1.1): проверяем по HTML с сервера, до смены слайда
@@ -109,7 +109,7 @@ test('форма заявки и Telegram на главной', async ({ page })
 
     await section.getByPlaceholder('Имя *').fill('Иван');
     await section.getByPlaceholder('Телефон *').fill('79990001122');
-    await section.getByRole('button', { name: 'Отправить' }).click();
+    await section.getByRole('button', { name: formButton }).click();
 
     await expect(section.getByRole('button', { name: 'Отправлено!' })).toBeVisible();
     expect(requests).toHaveLength(1);

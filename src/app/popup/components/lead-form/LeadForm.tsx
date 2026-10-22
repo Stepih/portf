@@ -12,6 +12,7 @@ import { HONEYPOT_FIELD, isPhoneInput } from "@/lib/validation/feedback";
 import { leadSourceFromSearch } from "@/scripts/leadSource";
 import { reachGoal } from "@/scripts/metrika";
 import { GOALS } from "@/constants/analytics";
+import { formButton } from "@/data/inputsFeedBack";
 
 const checkNameReg = (text: string) => /^[A-Za-zА-Яа-яё]{0,25}$/.test(text.replace(/\s+/g, ''));
 
@@ -97,7 +98,7 @@ const LeadForm: FC<ILeadForm> = ({ className }) => {
             {!success && <ErrorMessage error={error} />}
             <ListInput handleSetFocusInput={handleSetFocusInput} value={inputValue} handleSetValue={handleSetInputValue} />
             <TextAreaInput setValue={handleSetTextAreaValue} value={textAreaValue} />
-            <ActionButton type='submit' disabled={isSending} text={isSending ? "Отправляется..." : !success ? "Отправить" : "Отправлено!"}/>
+            <ActionButton type='submit' disabled={isSending} text={isSending ? "Отправляется..." : !success ? formButton : "Отправлено!"}/>
         </form>
     )
 }
