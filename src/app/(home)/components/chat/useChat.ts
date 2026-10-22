@@ -8,7 +8,7 @@ import { HONEYPOT_FIELD } from "@/lib/validation/feedback";
 import { chatFailure, chatQuestions, chatRequestMessages, IChatItem } from "@/scripts/chat";
 import { reachGoal } from "@/scripts/metrika";
 
-// Диалог демо-чата (CONVERSION_PLAN К3.2). Живёт в кнопке, а не в окне: закрыли и открыли окно – диалог на месте.
+// Диалог демо-чата (CONVERSION_PLAN К3.2). Живёт в ChatProvider, а не в окне: закрыли и открыли окно или перешли на другую страницу – диалог на месте.
 // Ответ приходит обычным текстом по кускам и дописывается в последнюю реплику
 export const useChat = () => {
     const [items, setItems] = useState<IChatItem[]>([]);

@@ -1,5 +1,5 @@
 import { expect, test, type Page, type Request } from '@playwright/test';
-import { chatButtonTitle, chatLeadSuccess, chatLimitText, chatPlaceholder } from '../src/data/chat';
+import { chatButtonTitle, chatFabLabel, chatLeadSuccess, chatLimitText, chatPlaceholder } from '../src/data/chat';
 import { formButton, offerTgButton } from '../src/data/offer';
 
 // Демо-чат (CONVERSION_PLAN К3.2). /api/chat и /api/sendMessage подменены: к модели и в Telegram ничего не уходит
@@ -105,4 +105,21 @@ test('контакт из чата уходит заявкой с вопроса
     });
     // Контакт уже оставлен – второй раз кнопку не предлагаем
     await expect(dialog.getByRole('button', { name: formButton })).toHaveCount(0);
+});
+
+test('шар в углу открывает тот же чат и есть на других страницах, кроме /music', async ({ page }) => {
+    await mockChat(page);
+    const dialog = await openChat(page);
+    await askQuestion(page, 'Сколько стоит лендинг?');
+    await expect(dialog.getByText(ANSWER)).toBeVisible();
+    await page.keyboard.press('Escape');
+
+    // Диалог живёт в layout: переход по ссылке его не сбрасывает
+    await page.locator('a[href^="/portfolio"]').first().click();
+    await expect(page).toHaveURL(/\/portfolio/);
+    await page.getByRole('button', { name: chatFabLabel }).click();
+    await expect(dialog.getByText('Сколько стоит лендинг?')).toBeVisible();
+
+    await page.goto('/music');
+    await expect(page.getByRole('button', { name: chatFabLabel })).toHaveCount(0);
 });

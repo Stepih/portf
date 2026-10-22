@@ -5,7 +5,7 @@ import s from './Services.module.scss'
 import { ralewayBold, ralewayRegular } from "@/app/fonts/fonts";
 import { popupPageURL, portfolioPageURL } from "@/constants/urls";
 import ChatButton from "../chat/ChatButton";
-import { offerTgButton, services, servicesButton, servicesCasesLabel, servicesCommon, servicesDescription, servicesTitle } from "@/data/offer";
+import { services, servicesButton, servicesCasesLabel, servicesCommon, servicesDescription, servicesTitle } from "@/data/offer";
 import { portfolioWorks } from "@/data/portfolio";
 import { portfolioCases } from "@/data/portfolioCases";
 import { serviceCases, withService } from "@/scripts/services";
@@ -27,7 +27,7 @@ const Services: FC = () => {
                         <li key={service.id} className={`${s.card} ${service.wide ? s.wide : ''}`}>
                             <h3 className={`${ralewayBold.className} ${s.name}`}>{service.title}</h3>
                             <p className={s.summary}>{service.summary}</p>
-                            {service.demoChat && <ChatButton tgButton={offerTgButton} className={s.demo} />}
+                            {service.demoChat && <ChatButton className={s.demo} />}
 
                             <div className={s.bottom}>
                                 <p className={`${ralewayBold.className} ${s.price}`}>{service.price}</p>

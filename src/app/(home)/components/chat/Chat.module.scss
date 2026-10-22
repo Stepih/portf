@@ -1,6 +1,6 @@
 @use '/src/styles/variables.scss' as vars;
 
-// Демо-чат (CONVERSION_PLAN К3.2): кнопка в карточке ИИ-услуги и окно чата
+// Демо-чат (CONVERSION_PLAN К3.2): шар в углу, кнопка в карточке ИИ-услуги и окно чата
 
 // «Живой» шар ассистента: градиент и расходящиеся кольца. Без анимации, если она отключена в системе
 .orb {
@@ -39,6 +39,167 @@
 @keyframes orb-ring {
     from { opacity: 0.8; transform: scale(1); }
     to { opacity: 0; transform: scale(1.8); }
+}
+
+// Плавающий шар в правом нижнем углу (ChatProvider). Подпись выезжает слева при наведении.
+// Дыхание – через transform, увеличение при наведении – через scale: свойства разные и не мешают друг другу
+.fab {
+    @include vars.button-reset;
+
+    position: fixed;
+    right: 24px;
+    bottom: 24px;
+    z-index: 11;
+
+    display: flex;
+    align-items: center;
+
+    &:focus-visible {
+        outline: none;
+
+        .fabOrb {
+            outline: 2px solid vars.$blue-100;
+            outline-offset: 4px;
+        }
+    }
+}
+
+.fabOrb {
+    position: relative;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    width: 60px;
+    height: 60px;
+
+    background: radial-gradient(circle at 30% 25%, #d6f1fc 0%, vars.$blue-100 38%, #3a9bc9 78%, #1fbf6a 120%);
+    border-radius: 50%;
+    box-shadow: 0 6px 24px rgba(119, 199, 234, 0.55), 0 2px 6px rgba(0, 0, 0, 0.15);
+
+    animation: orb-breathe-fab 3.2s ease-in-out infinite;
+    transition: scale 0.3s ease, box-shadow 0.3s ease;
+
+    &::before,
+    &::after {
+        content: '';
+        position: absolute;
+        inset: 0;
+
+        border: 1.5px solid vars.$blue-100;
+        border-radius: 50%;
+
+        animation: fab-ring 3.2s ease-out infinite;
+        pointer-events: none;
+    }
+
+    &::after {
+        animation-delay: 1.6s;
+    }
+}
+
+@keyframes orb-breathe-fab {
+    50% { transform: scale(0.94); }
+}
+
+@keyframes fab-ring {
+    from { opacity: 0.7; transform: scale(1); }
+    to { opacity: 0; transform: scale(1.7); }
+}
+
+// Блик бежит по кругу
+.fabShine {
+    position: absolute;
+    inset: 0;
+
+    background: conic-gradient(from 0deg, transparent 0deg 200deg, rgba(255, 255, 255, 0.6) 260deg, transparent 320deg);
+    border-radius: 50%;
+    mix-blend-mode: soft-light;
+
+    animation: fab-spin 4s linear infinite;
+}
+
+@keyframes fab-spin {
+    to { transform: rotate(1turn); }
+}
+
+.fabIcon {
+    position: relative;
+
+    width: 28px;
+    height: 28px;
+
+    fill: vars.$white-100;
+    filter: drop-shadow(0 1px 2px rgba(0, 40, 70, 0.35));
+}
+
+.fabSpark {
+    transform-box: fill-box;
+    transform-origin: center;
+
+    animation: fab-twinkle 2.4s ease-in-out infinite;
+}
+
+@keyframes fab-twinkle {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.3; transform: scale(0.5); }
+}
+
+// «В сети»
+.fabDot {
+    position: absolute;
+    top: 3px;
+    right: 3px;
+
+    width: 12px;
+    height: 12px;
+
+    background: vars.$green-100;
+    border: 2px solid var(--color-bg);
+    border-radius: 50%;
+    transition: vars.$transition;
+}
+
+.fabLabel {
+    position: absolute;
+    top: 50%;
+    right: calc(100% + 14px);
+
+    padding: 9px 16px;
+
+    font-size: 0.95rem;
+    white-space: nowrap;
+    color: var(--color-text-100);
+
+    background: var(--color-bg);
+    border: 1px solid rgba(128, 128, 128, 0.3);
+    border-radius: 20px;
+    box-shadow: vars.$shadow;
+
+    opacity: 0;
+    transform: translate(10px, -50%);
+    transition: vars.$transition, opacity 0.3s ease, transform 0.3s ease;
+    pointer-events: none;
+}
+
+@media (hover: hover) {
+    .fab:hover {
+        .fabOrb {
+            scale: 1.08;
+            box-shadow: 0 8px 32px rgba(119, 199, 234, 0.75), 0 2px 6px rgba(0, 0, 0, 0.15);
+        }
+
+        .fabLabel {
+            opacity: 1;
+            transform: translate(0, -50%);
+        }
+    }
+}
+
+.fab:focus-visible .fabLabel {
+    opacity: 1;
+    transform: translate(0, -50%);
 }
 
 .trigger {
@@ -417,12 +578,27 @@
     .trigger {
         padding: 12px 14px;
     }
+
+    .fab {
+        right: 16px;
+        bottom: calc(16px + env(safe-area-inset-bottom));
+    }
+
+    .fabOrb {
+        width: 54px;
+        height: 54px;
+    }
 }
 
 @media (prefers-reduced-motion: reduce) {
     .orb,
     .orb::before,
     .orb::after,
+    .fabOrb,
+    .fabOrb::before,
+    .fabOrb::after,
+    .fabShine,
+    .fabSpark,
     .typing span {
         animation: none;
     }

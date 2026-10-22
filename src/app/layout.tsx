@@ -8,7 +8,9 @@ import BackgroundPage from "@/components/bg-page/Background";
 import Header from "@/components/header/Header";
 import Footer from "@/components/footer/Footer";
 import YandexMetrika from "@/components/analytics/YandexMetrika";
+import ChatProvider from "@/app/(home)/components/chat/ChatProvider";
 import { baseOpenGraph } from "@/data/metadata";
+import { offerTgButton } from "@/data/offer";
 
 
 export const metadata: Metadata = {
@@ -49,11 +51,13 @@ export default function RootLayout({
       </head>
       <body className={`${s.body}`}>
           <BackgroundPage />
-          <Header />
-          <main id="main" className={`${ralewayRegular.className} ${s.main}`}>
-            {children}
-          </main>
-          <Footer />
+          <ChatProvider tgButton={offerTgButton}>
+            <Header />
+            <main id="main" className={`${ralewayRegular.className} ${s.main}`}>
+              {children}
+            </main>
+            <Footer />
+          </ChatProvider>
           <YandexMetrika />
       </body>
     </html>

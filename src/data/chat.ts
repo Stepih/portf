@@ -1,9 +1,12 @@
 import type { ChatLimitReason } from "@/lib/chat/guard";
 
-// Тексты окна демо-чата (CONVERSION_PLAN К3.2). Кнопка – в карточке «ИИ-агенты и автоматизация»
+// Тексты окна демо-чата (CONVERSION_PLAN К3.2). Открывается кнопкой в карточке «ИИ-агенты и автоматизация»
+// и шаром в правом нижнем углу (на всех страницах, кроме /music и /popup)
 
 export const chatButtonTitle = 'Спросите ИИ-ассистента'
 export const chatButtonText = 'Это демо: так агент отвечает клиентам на вашем сайте'
+// Подпись шара: видна при наведении, скринридер читает всегда
+export const chatFabLabel = 'Чат с ИИ-ассистентом'
 
 export const chatTitle = 'ИИ-ассистент Степана'
 export const chatSubtitle = 'Демо – отвечает по текстам этого сайта'
