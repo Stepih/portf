@@ -4,11 +4,11 @@ import { FC } from "react";
 
 import s from './HomeCases.module.scss'
 import { useMediaQuery } from "@/hooks/useMediaQuery";
-import { IHomeCase } from "@/scripts/homeCases";
+import { IPortfolioWork } from "@/interfaces/portfolio";
 import WorkCard from "@/app/portfolio/components/WorkCard";
 
 interface IProps {
-    items: IHomeCase[]
+    items: IPortfolioWork[]
 }
 
 // Одинаковая высота макета: в один ряд «ступеньки» из сетки портфолио выглядят случайными
@@ -19,8 +19,9 @@ const HomeCasesGrid: FC<IProps> = ({ items }) => {
 
     return (
         <div className={s.grid}>
-            {items.map(({ work, num }) => (
-                <WorkCard key={work.id} work={{ ...work, coverHeight: COVER_HEIGHT }} num={num} mobile={mobile} />
+            {/* Без номера: «03 / 02 / 08» клиенту ничего не говорит (CONVERSION_PLAN К4.1) */}
+            {items.map((work) => (
+                <WorkCard key={work.id} work={{ ...work, coverHeight: COVER_HEIGHT }} mobile={mobile} />
             ))}
         </div>
     )

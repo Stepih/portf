@@ -5,7 +5,7 @@ import s from './HomeCases.module.scss'
 import { ralewayBold } from "@/app/fonts/fonts";
 import { portfolioPageURL } from "@/constants/urls";
 import { homeCaseIds, homeCasesAllLabel, homeCasesTitle } from "@/data/homeCases";
-import { portfolioWorks } from "@/data/portfolio";
+import { portfolioIndustries, portfolioWorks } from "@/data/portfolio";
 import { portfolioCases } from "@/data/portfolioCases";
 import { homeCases } from "@/scripts/homeCases";
 import HomeCasesGrid from "./HomeCasesGrid";
@@ -13,7 +13,7 @@ import HomeCasesGrid from "./HomeCasesGrid";
 // «Избранные кейсы» (SALES_PLAN 3.3): карточки из сетки портфолио с результатом кейса.
 // Серверный: тексты кейсов не попадают в клиентский бандл, в сетку уходят только нужные работы
 const HomeCases: FC = () => {
-    const items = homeCases(homeCaseIds, portfolioWorks, portfolioCases);
+    const items = homeCases(homeCaseIds, portfolioWorks, portfolioCases, portfolioIndustries);
     if (items.length === 0) return null;
 
     return (

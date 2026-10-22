@@ -15,7 +15,8 @@ import PortfolioLink from "./PortfolioLink";
 
 interface IProps {
     work: IPortfolioWork,
-    num: string,
+    // Место в общем списке; нет – номер не показывается
+    num?: string,
     mobile: boolean
 }
 
@@ -62,7 +63,7 @@ const WorkCard: FC<IProps> = ({ work, num, mobile }) => {
 
             <div className={s.body}>
                 <div className={s.meta}>
-                    <span className={allerta.className}>{num}</span>
+                    {num && <span className={allerta.className}>{num}</span>}
                     <span>{work.year}</span>
                 </div>
                 <h3 className={`${ralewayBold.className} ${s.title}`}>

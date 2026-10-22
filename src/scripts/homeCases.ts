@@ -1,10 +1,4 @@
-import { IPortfolioCase, IPortfolioWork } from "@/interfaces/portfolio";
-
-export interface IHomeCase {
-    work: IPortfolioWork,
-    // Место работы в общем списке портфолио, как в сетке /portfolio
-    num: string
-}
+import { IPortfolioCase, IPortfolioIndustry, IPortfolioWork } from "@/interfaces/portfolio";
 
 // Результат кейса для карточки: headline без префикса «Название: », с заглавной буквы
 export const caseResult = (headline: string): string => {
@@ -13,19 +7,24 @@ export const caseResult = (headline: string): string => {
     return text.charAt(0).toUpperCase() + text.slice(1);
 }
 
-// Работы для главной в порядке ids; описание заменено результатом кейса.
+// Метки карточки на главной: отрасли клиента вместо «Web / Motion / SaaS» (CONVERSION_PLAN К4.1).
+// Работа без отрасли – тип работы
+export const industryTags = (work: IPortfolioWork, industries: IPortfolioIndustry[]): string[] => {
+    const labels = work.industries.flatMap((id) => industries.find((industry) => industry.id === id)?.label ?? []);
+    return labels.length > 0 ? labels : [work.kind];
+}
+
+// Работы для главной в порядке ids; описание заменено результатом кейса, теги – отраслями.
 // Работы без страницы кейса и неизвестные id пропускаются
 export const homeCases = (
     ids: string[],
     works: IPortfolioWork[],
-    cases: Record<string, Pick<IPortfolioCase, 'headline'>>
-): IHomeCase[] =>
+    cases: Record<string, Pick<IPortfolioCase, 'headline'>>,
+    industries: IPortfolioIndustry[]
+): IPortfolioWork[] =>
     ids.flatMap((id) => {
-        const index = works.findIndex((work) => work.id === id);
+        const work = works.find((item) => item.id === id);
         const data = cases[id];
-        if (index === -1 || !data) return [];
-        return [{
-            work: { ...works[index], description: caseResult(data.headline) },
-            num: String(index + 1).padStart(2, '0')
-        }];
+        if (!work || !data) return [];
+        return [{ ...work, description: caseResult(data.headline), tags: industryTags(work, industries) }];
     });
