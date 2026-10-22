@@ -17,7 +17,7 @@ export const portfolioHeading = (industry: IPortfolioIndustry | null): string =>
 
 // title страницы портфолио: у подборки после h1 ещё «портфолио», иначе во вкладке непонятно, что за страница
 export const portfolioTitle = (industry: IPortfolioIndustry | null): string =>
-    industry ? `${portfolioHeading(industry)} – портфолио` : 'Портфолио';
+    industry ? `${portfolioHeading(industry)} – портфолио` : 'Портфолио: сайты для бизнеса – Степан Картузов';
 
 // Работы, подходящие отрасли; без отрасли — все
 export const worksFor = <T extends { industries: PortfolioIndustry[] }>(works: T[], industry: PortfolioIndustry | null): T[] =>

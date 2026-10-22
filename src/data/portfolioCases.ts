@@ -14,6 +14,8 @@ export const portfolioCases: Record<string, IPortfolioCase> = {
         role: 'UX/UI-дизайн, адаптив',
         accent: '#EA7777',
         headline: 'Союз вокалистов: сайт, который объясняет, зачем вступать, и даёт участникам свой музыкальный сервис',
+        metaTitle: 'Союз вокалистов: веб-платформа – кейс',
+        metaDescription: 'Сайт Союза вокалистов объясняет, зачем вступать, и даёт участникам свой музыкальный сервис. UX/UI-дизайн и адаптив: задачи, экраны, результат',
         tags: ['Web', 'Mobile', 'Музыкальный сервис', 'Личный кабинет'],
         slides: [
             { type: 'desktop', src: img('vocal-desktop.jpg'), caption: 'Главная · десктоп', dur: 14 },
@@ -66,6 +68,8 @@ export const portfolioCases: Record<string, IPortfolioCase> = {
         role: 'UX/UI-дизайн, разработка',
         accent: '#EA7777',
         headline: 'ONKEL.MOSCOW: интернет-магазин московского бренда уличной одежды вместо заказов через директ',
+        metaTitle: 'ONKEL.MOSCOW: интернет-магазин одежды – кейс',
+        metaDescription: 'Интернет-магазин московского бренда уличной одежды вместо заказов через директ. UX/UI-дизайн и разработка под ключ за одну неделю',
         tags: ['E-commerce', 'Web', 'Mobile', 'Уличная одежда'],
         slides: [
             { type: 'desktop', src: img('onkel-desktop.jpg'), caption: 'Главная · десктоп', dur: 10 },
@@ -134,6 +138,8 @@ export const portfolioCases: Record<string, IPortfolioCase> = {
         role: 'UX/UI-дизайн, motion',
         accent: '#C9A272',
         headline: 'KEYSTONE: сайт строительной компании, который показывает уровень работ раньше, чем клиент позвонит',
+        metaTitle: 'KEYSTONE: сайт строительной компании – кейс',
+        metaDescription: 'Сайт строительной компании, который показывает уровень работ раньше, чем клиент позвонит. UX/UI-дизайн и motion: задачи, экраны, результат',
         tags: ['Web', 'Motion', 'Строительство', 'Ремонт'],
         slides: [
             { type: 'video', src: img('keystone.mp4'), poster: img('keystone-poster.jpg'), caption: 'Сайт целиком · десктоп', dur: 38 }
@@ -174,6 +180,8 @@ export const portfolioCases: Record<string, IPortfolioCase> = {
         role: 'UX/UI-дизайн, сборка на WordPress',
         accent: '#4CAF2A',
         headline: 'ИКЦ «Презентация»: сайт, на котором пять услуг компании — от 1С до юристов — выглядят как одна команда',
+        metaTitle: 'ИКЦ «Презентация»: сайт компании – кейс',
+        metaDescription: 'Сайт, на котором пять услуг компании, от 1С до юристов, выглядят как одна команда. UX/UI-дизайн и сборка на WordPress: задачи и результат',
         tags: ['Web', 'Mobile', 'B2B-услуги', 'WordPress'],
         url: 'https://icc-presentation.ru/',
         slides: [
@@ -249,6 +257,8 @@ export const portfolioCases: Record<string, IPortfolioCase> = {
         role: 'UX/UI-дизайн, разработка',
         accent: '#C39155',
         headline: 'KeyTravel UAE: экскурсии в Дубае, которые турист из России выбирает сам и оплачивает в рублях',
+        metaTitle: 'KeyTravel UAE: магазин экскурсий в Дубае – кейс',
+        metaDescription: 'Магазин экскурсий в Дубае: турист из России сам выбирает экскурсию и платит в рублях. UX/UI-дизайн и разработка: задачи, экраны, результат',
         tags: ['Web', 'Mobile', 'Туризм', 'Онлайн-бронирование'],
         url: 'https://keytraveluae.com/',
         slides: [
@@ -328,6 +338,8 @@ export const portfolioCases: Record<string, IPortfolioCase> = {
         role: 'UX/UI-дизайн, разработка, motion',
         accent: '#3E8E8A',
         headline: 'LOTi: сайт премиального туроператора, который показывает отдых как кино, а не как список туров',
+        metaTitle: 'LOTi: сайт премиального туроператора – кейс',
+        metaDescription: 'Сайт премиального туроператора, который показывает отдых как кино, а не как список туров. UX/UI-дизайн, разработка и motion',
         tags: ['Web', 'Motion', 'Туризм', 'Scroll-анимация'],
         url: 'https://www.loti.ru/ru',
         slides: [
@@ -403,6 +415,8 @@ export const portfolioCases: Record<string, IPortfolioCase> = {
         role: 'UX/UI-дизайн, разработка',
         accent: '#B73522',
         headline: 'ПТМ: каталог ёмкостного оборудования, где технолог завода находит свой резервуар и сразу оставляет заявку',
+        metaTitle: 'ПТМ: каталог ёмкостного оборудования – кейс',
+        metaDescription: 'Каталог производителя: технолог завода находит свой резервуар и сразу оставляет заявку. UX/UI-дизайн и разработка: задачи и результат',
         tags: ['Web', 'Mobile', 'Производство', 'Каталог'],
         url: 'https://ptmix.ru/',
         slides: [
@@ -479,6 +493,8 @@ export const portfolioCases: Record<string, IPortfolioCase> = {
         role: 'UX/UI-дизайн, разработка',
         accent: '#3B82F6',
         headline: 'Legiscan: ИИ-юрист, который находит опасные пункты договора до подписи и сразу предлагает правку для контрагента',
+        metaTitle: 'Legiscan: ИИ-сервис проверки договоров – кейс',
+        metaDescription: 'ИИ-юрист находит опасные пункты договора до подписи и сразу предлагает правку для контрагента. Дизайн и разработка ИИ-сервиса',
         tags: ['Web', 'Mobile', 'SaaS', 'ИИ', 'LegalTech'],
         url: 'https://legiscan.ru/',
         slides: [
@@ -557,6 +573,8 @@ export const portfolioCases: Record<string, IPortfolioCase> = {
         role: 'UX/UI-дизайн, разработка',
         accent: '#F6005E',
         headline: 'COCOSBEAUTY: магазин натуральной косметики, который показывает состав, текстуру и человека за брендом',
+        metaTitle: 'COCOSBEAUTY: магазин натуральной косметики – кейс',
+        metaDescription: 'Интернет-магазин косметики собственного производства: состав, текстура и человек за брендом. UX/UI-дизайн и разработка',
         tags: ['Web', 'Mobile', 'Косметика', 'E-commerce'],
         url: 'https://cocosbeauty.shop/',
         slides: [
@@ -634,6 +652,8 @@ export const portfolioCases: Record<string, IPortfolioCase> = {
         role: 'UX/UI-дизайн, разработка',
         accent: '#6953DA',
         headline: 'ENDIGO: сайт автохимии, где мастер СТО находит средство по симптому поломки, а не по артикулу',
+        metaTitle: 'ENDIGO: сайт марки автохимии – кейс',
+        metaDescription: 'Сайт профессиональной автохимии: мастер СТО находит средство по симптому поломки, а не по артикулу. UX/UI-дизайн и разработка',
         tags: ['Web', 'Mobile', 'Автохимия', 'B2B'],
         url: 'https://endigo.pro/',
         slides: [

@@ -15,15 +15,17 @@ import { getMusicHistory } from "@/lib/content/musicHistory";
 // Страница пререндерится при сборке и обновляется раз в час: так подхватываются новые альбомы
 export const revalidate = 3600;
 
+const title = 'Моя музыка – Степан Картузов';
+const description = 'Альбомы и треки SyrinxBS с плеером на странице и история о том, как я пришёл к музыке';
+
 export const metadata: Metadata = {
-    title: "Моя музыка",
-    description: "На странице показаны альбомы моих треков, а так же небольшая история, как я пришел к музыки.",
+    title,
+    description,
     keywords: 'музыка, альбомы, треки, история музыки, музыкальное портфолио',
-    
     openGraph: {
         ...baseOpenGraph,
-        title: 'Моя музыка',
-        description: 'На странице показаны альбомы моих треков, а так же небольшая история, как я пришел к музыки.',
+        title,
+        description,
     },
 };
 

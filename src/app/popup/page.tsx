@@ -9,12 +9,12 @@ import { baseOpenGraph } from "@/data/metadata";
 import s from "./page.module.scss";
 
 export const metadata: Metadata = {
-    title: "Обсудить проект",
+    title: "Обсудить проект – Степан Картузов",
     description: popupTitleData.description,
     
     openGraph: {
         ...baseOpenGraph,
-        title: 'Обсудить проект',
+        title: 'Обсудить проект – Степан Картузов',
         description: popupTitleData.description,
     },
     robots: {

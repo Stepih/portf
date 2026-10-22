@@ -89,6 +89,10 @@ export interface IPortfolioCase {
     // Цвет номеров и кавычки
     accent: string,
     headline: string,
+    // title кейса до 60 символов: «{name}: {вид работы} – кейс»
+    metaTitle: string,
+    // description для поиска до 160 символов: headline длиннее и в выдаче обрезается
+    metaDescription: string,
     tags: string[],
     // Адрес живого сайта; нет — кнопки «Открыть сайт» не показываются
     url?: string,

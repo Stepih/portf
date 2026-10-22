@@ -39,15 +39,15 @@ export const generateMetadata = async ({ params }: IProps): Promise<Metadata> =>
     const found = findCase((await params).id);
     if (!found) return {};
     const { work, data } = found;
-    const title = `${work.name} — кейс`;
+    const title = data.metaTitle;
 
     return {
         title,
-        description: data.headline,
+        description: data.metaDescription,
         openGraph: {
             ...baseOpenGraph,
             title,
-            description: data.headline,
+            description: data.metaDescription,
             // Своя картинка из opengraph-image.tsx рядом: общая из baseOpenGraph иначе перебивает её
             images: [{ url: `/portfolio/${work.id}/opengraph-image`, width: ogSize.width, height: ogSize.height }],
         },

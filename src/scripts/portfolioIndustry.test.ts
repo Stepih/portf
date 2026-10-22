@@ -29,7 +29,7 @@ describe("portfolioIndustry", () => {
     it("portfolioHeading и portfolioTitle называют отрасль в подборке", () => {
         const construction = findIndustry('construction');
         expect(portfolioHeading(null)).toBe('Портфолио');
-        expect(portfolioTitle(null)).toBe('Портфолио');
+        expect(portfolioTitle(null)).toBe('Портфолио: сайты для бизнеса – Степан Картузов');
         expect(portfolioHeading(construction)).toBe('Сайты для строительных и ремонтных компаний');
         expect(portfolioTitle(construction)).toBe('Сайты для строительных и ремонтных компаний – портфолио');
     });
