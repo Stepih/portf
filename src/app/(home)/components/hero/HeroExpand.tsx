@@ -3,7 +3,7 @@
 import { FC, useEffect, useLayoutEffect, useRef, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { cubicBezier, motion, MotionValue, useMotionValue, useMotionValueEvent, useReducedMotion, useScroll, useTransform, Variants } from "framer-motion";
+import { animate, AnimationPlaybackControls, cubicBezier, motion, MotionValue, useMotionValue, useMotionValueEvent, useReducedMotion, useScroll, useTransform, Variants } from "framer-motion";
 
 import photo from '@/assets/_img/rectangles/title-page/i.png'
 
@@ -33,6 +33,13 @@ const ease = cubicBezier(.4, 0, .2, 1);
 
 // Через сколько мс без событий скролл считается остановленным (где нет события scrollend)
 const SCROLL_IDLE = 150;
+// Длительность доводки, с: короткий остаток – быстрее, полное раскрытие – дольше
+const SETTLE_MIN = .35;
+const SETTLE_MAX = .8;
+// Пауза между событиями колеса, после которой начинается новый жест, мс
+const WHEEL_GAP = 120;
+// Сдвиг пальца, после которого понятно направление жеста, px
+const TOUCH_SLOP = 6;
 
 // Отступ края фона: от отступа карточки при t = 0 до нуля при t = 1
 const useInset = (t: MotionValue<number>, edge: MotionValue<number>) =>
@@ -119,26 +126,127 @@ const HeroExpand: FC<HeroExpandProps> = ({ chips, worksCount }) => {
         return () => observer.disconnect();
     }, [reduceMotion, top, right, bottom, left, photoDx, photoDy, photoScale]);
 
-    // Доводка: остановились посреди раскрытия – страница докручивается до ближайшего
-    // целого шага по направлению скролла. Вниз – до раскрытого экрана с отраслями, вверх – к началу.
-    // Промежуточного кадра на экране не остаётся
+    // Доводка: раскрытие не останавливается на промежуточном кадре. Две точки – начало
+    // (вверху страницы) и раскрытый экран с отраслями; между ними страницу везёт сам компонент.
+    // Колесо и тачпад: первое же движение внутри раскрытия запускает доводку по направлению,
+    // хвост инерции глотается, чтобы не проскочить точку. Тач: раскрытие идёт за пальцем,
+    // при отпускании доезжает туда, куда вели. Клавиатура и ползунок – по scrollend
     useEffect(() => {
         if (reduceMotion) return;
+        let anim: AnimationPlaybackControls | null = null;
+        let lastWheel = 0;
+        // После доводки события того же жеста колеса (инерция) ещё приходят – их пропускаем
+        let swallowTail = false;
         let lastY = window.scrollY;
-        // Доводка едет туда же, куда скроллили, поэтому своё направление она не сбивает
         let direction = 1;
         let timer = 0;
+        // Тач: null – жест не наш, иначе последняя точка пальца и направление
+        let touch: { y: number, dir: number } | null = null;
+        let touchStart: { x: number, y: number } | null = null;
 
-        const settle = () => {
-            if (!scene.current) return;
+        // Точки доводки в координатах страницы
+        const points = () => {
+            if (!scene.current) return null;
             const sceneTop = scene.current.getBoundingClientRect().top + window.scrollY;
             const distance = scene.current.offsetHeight - window.innerHeight;
-            const p = (window.scrollY - sceneTop) / distance;
-            if (p <= EXPAND_FROM || p >= EXPAND_TO) return;
             // Сцена в первом экране – назад до самого верха, чтобы вернулась и шапка
             const start = sceneTop <= window.innerHeight ? 0 : sceneTop;
-            const target = direction > 0 ? Math.ceil(sceneTop + distance * EXPAND_TO) : start;
-            window.scrollTo({ top: target, behavior: 'smooth' });
+            return { start, end: Math.ceil(sceneTop + distance * EXPAND_TO) };
+        };
+
+        const jumpTo = (y: number) => window.scrollTo({ top: y, behavior: 'instant' });
+
+        const glide = (to: number) => {
+            anim?.stop();
+            const from = window.scrollY;
+            if (Math.abs(to - from) < 1) return;
+            // Чем меньше осталось, тем короче доводка
+            const share = Math.min(1, Math.abs(to - from) / (window.innerHeight * .4));
+            anim = animate(from, to, {
+                duration: SETTLE_MIN + (SETTLE_MAX - SETTLE_MIN) * share,
+                ease: [.25, .1, .25, 1],
+                onUpdate: jumpTo,
+                onComplete: () => {
+                    anim = null;
+                    swallowTail = true;
+                },
+            });
+        };
+
+        const onWheel = (e: WheelEvent) => {
+            const now = performance.now();
+            const gap = now - lastWheel;
+            lastWheel = now;
+            if (e.ctrlKey || Math.abs(e.deltaX) > Math.abs(e.deltaY) || e.deltaY === 0) return;
+            if (anim || (swallowTail && gap < WHEEL_GAP)) {
+                e.preventDefault();
+                return;
+            }
+            swallowTail = false;
+            const pts = points();
+            if (!pts) return;
+            const y = window.scrollY;
+            const down = e.deltaY > 0;
+            if (down ? (y >= pts.start - 1 && y < pts.end - 1) : (y > pts.start + 1 && y <= pts.end + 1)) {
+                e.preventDefault();
+                glide(down ? pts.end : pts.start);
+            }
+        };
+
+        const onTouchStart = (e: TouchEvent) => {
+            anim?.stop();
+            anim = null;
+            touch = null;
+            touchStart = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+        };
+
+        const onTouchMove = (e: TouchEvent) => {
+            const point = e.touches[0];
+            if (touch) {
+                e.preventDefault();
+                const pts = points();
+                if (!pts) return;
+                const dy = touch.y - point.clientY;
+                if (dy !== 0) touch.dir = dy > 0 ? 1 : -1;
+                touch.y = point.clientY;
+                jumpTo(Math.min(pts.end, Math.max(pts.start, window.scrollY + dy)));
+                return;
+            }
+            // Жест решается на первом заметном сдвиге: вертикальный и внутри раскрытия – наш
+            if (!touchStart || e.touches.length > 1) return;
+            const dx = point.clientX - touchStart.x;
+            const dy = touchStart.y - point.clientY;
+            if (Math.abs(dy) < TOUCH_SLOP || Math.abs(dx) > Math.abs(dy)) return;
+            touchStart = null;
+            const pts = points();
+            if (!pts) return;
+            const y = window.scrollY;
+            const down = dy > 0;
+            // На краях наружу – обычный скролл (вниз по странице, вверх – pull-to-refresh)
+            if (down ? (y >= pts.start - 1 && y < pts.end - 1) : (y > pts.start + 1 && y <= pts.end + 1)) {
+                e.preventDefault();
+                touch = { y: point.clientY, dir: down ? 1 : -1 };
+            }
+        };
+
+        const onTouchEnd = () => {
+            touchStart = null;
+            if (!touch) return;
+            const pts = points();
+            if (pts) glide(touch.dir > 0 ? pts.end : pts.start);
+            touch = null;
+            swallowTail = false;
+        };
+
+        // Запасной путь: страницу привели в середину раскрытия клавиатурой, ползунком
+        // или инерцией нативного скролла снизу – доезжаем по направлению
+        const settle = () => {
+            if (anim || touch) return;
+            const pts = points();
+            if (!pts) return;
+            const y = window.scrollY;
+            if (y <= pts.start + 1 || y >= pts.end - 1) return;
+            glide(direction > 0 ? pts.end : pts.start);
         };
 
         const onScroll = () => {
@@ -146,18 +254,28 @@ const HeroExpand: FC<HeroExpandProps> = ({ chips, worksCount }) => {
             if (y !== lastY) direction = y > lastY ? 1 : -1;
             lastY = y;
             window.clearTimeout(timer);
-            timer = window.setTimeout(settle, SCROLL_IDLE);
+            if (!anim && !touch) timer = window.setTimeout(settle, SCROLL_IDLE);
         };
-        // scrollend приходит после инерции и когда палец отпущен; таймер – запасной путь
         const onScrollEnd = () => {
             window.clearTimeout(timer);
             settle();
         };
 
+        window.addEventListener('wheel', onWheel, { passive: false });
+        window.addEventListener('touchstart', onTouchStart, { passive: true });
+        window.addEventListener('touchmove', onTouchMove, { passive: false });
+        window.addEventListener('touchend', onTouchEnd);
+        window.addEventListener('touchcancel', onTouchEnd);
         window.addEventListener('scroll', onScroll, { passive: true });
         window.addEventListener('scrollend', onScrollEnd);
         return () => {
+            anim?.stop();
             window.clearTimeout(timer);
+            window.removeEventListener('wheel', onWheel);
+            window.removeEventListener('touchstart', onTouchStart);
+            window.removeEventListener('touchmove', onTouchMove);
+            window.removeEventListener('touchend', onTouchEnd);
+            window.removeEventListener('touchcancel', onTouchEnd);
             window.removeEventListener('scroll', onScroll);
             window.removeEventListener('scrollend', onScrollEnd);
         };
