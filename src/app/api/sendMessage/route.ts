@@ -1,14 +1,10 @@
+import { getClientIp } from '@/lib/clientIp';
 import { createRateLimiter } from '@/lib/rateLimit';
 import { HONEYPOT_FIELD, validateFeedback } from '@/lib/validation/feedback';
 import { leadMessageText } from '@/scripts/leadSource';
 
 // Rate-limit в памяти: прод работает в одном контейнере, этого достаточно. 5 заявок за 10 минут с одного IP
 const isRateLimited = createRateLimiter({ limit: 5, windowMs: 10 * 60 * 1000 });
-
-const getClientIp = (req: Request) =>
-    req.headers.get('x-forwarded-for')?.split(',')[0].trim() ||
-    req.headers.get('x-real-ip') ||
-    'unknown';
 
 const json = (body: object, status: number) => Response.json(body, { status });
 
