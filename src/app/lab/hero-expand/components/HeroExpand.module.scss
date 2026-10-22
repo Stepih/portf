@@ -1,0 +1,223 @@
+@use '/src/styles/variables.scss' as vars;
+
+// Сцена во всю ширину окна: выходит за поля main и контейнера template.
+// --page-w – ширина окна без полосы прокрутки, её ставит компонент; 100vw с полосой дал бы горизонтальный скролл.
+// margin-top снимает верхний отступ main, чтобы липкий экран начинался от края окна
+.scene {
+    position: relative;
+    height: 320vh;
+    margin: -60px calc(50% - var(--page-w, 100vw) / 2) 0;
+}
+
+.screen {
+    position: sticky;
+    top: 0;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    height: 100vh;
+    height: 100svh;
+    padding: 0 20px;
+    overflow: hidden;
+}
+
+// Фон карточки: края двигает компонент, от размеров карточки до краёв окна
+// z-index: -1 – под карточкой: sticky-экран сам создаёт контекст наложения
+.bg {
+    position: absolute;
+    z-index: -1;
+
+    background: vars.$black-8;
+    box-shadow: vars.$shadow;
+    will-change: top, right, bottom, left;
+}
+
+// Без position: замер offsetTop/Left карточки идёт от липкого экрана
+.hero {
+    width: 100%;
+    max-width: 850px;
+
+    .photo {
+        position: relative;
+        z-index: 1;
+        display: block;
+
+        max-width: 100%;
+        height: auto;
+        margin: 0 auto -30px;
+
+        border-radius: 50%;
+    }
+}
+
+.card {
+    padding: 50px;
+    text-align: center;
+}
+
+.slides {
+    display: flex;
+    justify-content: center;
+}
+
+// Слой отраслей поверх раскрытого фона; кликается, только когда отрасли показаны
+.layer {
+    position: absolute;
+    inset: 0;
+    z-index: 2;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    padding: 0 20px;
+    pointer-events: none;
+
+    &.layerShown {
+        pointer-events: auto;
+    }
+}
+
+.industries {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 14px;
+
+    max-width: 900px;
+    text-align: center;
+
+    .title {
+        margin: 0;
+
+        font-size: clamp(2rem, 5vw, 3.4rem);
+        line-height: 1.15;
+        color: var(--color-text-100);
+        transition: vars.$transition;
+    }
+
+    .description {
+        margin: 0;
+
+        font-size: 1.15rem;
+        color: var(--color-text-50);
+        transition: vars.$transition;
+    }
+
+    .chips {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 12px;
+
+        margin: 20px 0 0;
+        padding: 0;
+
+        list-style: none;
+    }
+
+    // Чипы как на главной и в фильтре /portfolio
+    .chip {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+
+        min-height: 48px;
+        padding: 10px 22px;
+
+        font-size: 1.05rem;
+        color: var(--color-text-100);
+        text-decoration: none;
+
+        border: 1.5px solid rgba(128, 128, 128, 0.45);
+        border-radius: 24px;
+        transition: vars.$transition;
+
+        .count {
+            font-size: 0.8rem;
+            color: var(--color-text-50);
+        }
+
+        &:hover {
+            color: var(--color-bg);
+            background: var(--color-text-100);
+            border-color: var(--color-text-100);
+
+            .count {
+                color: inherit;
+                opacity: 0.6;
+            }
+        }
+
+        &:focus-visible {
+            outline: 2px solid vars.$blue-100;
+            outline-offset: 2px;
+        }
+    }
+}
+
+// «Уменьшить движение»: обычная вёрстка, как сейчас на главной
+.static {
+    max-width: 850px;
+    margin: auto;
+
+    .photo {
+        position: relative;
+        z-index: 1;
+        display: block;
+
+        max-width: 100%;
+        height: auto;
+        margin: 0 auto -30px;
+
+        border-radius: 50%;
+    }
+
+    .cardStatic {
+        background: vars.$black-8;
+        border-radius: 13px;
+        box-shadow: vars.$shadow;
+    }
+
+    .industries {
+        margin: 80px auto 0;
+    }
+}
+
+@media screen and (max-width: 1150px) {
+    .card {
+        padding: 60px 20px;
+    }
+}
+
+@media screen and (max-width: 560px) {
+    .hero .photo,
+    .static .photo {
+        width: 160px;
+    }
+
+    .card {
+        padding: 40px 20px 30px;
+    }
+
+    .industries {
+        gap: 10px;
+
+        .description {
+            font-size: 1rem;
+        }
+
+        .chips {
+            gap: 8px;
+            margin-top: 12px;
+        }
+
+        .chip {
+            min-height: 44px;
+            padding: 8px 14px;
+            font-size: 0.95rem;
+        }
+    }
+}
