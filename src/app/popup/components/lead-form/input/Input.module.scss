@@ -4,6 +4,8 @@
     width: 100%;
     padding: 12px;
     margin-bottom: 25px;
+    // Иначе браузер ставит полям свой шрифт, а textarea – моноширинный (CONVERSION_PLAN К1.3)
+    font: inherit;
     font-size: 1.25rem;
 
     border: none;
