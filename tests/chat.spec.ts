@@ -1,6 +1,7 @@
 import { expect, test, type Page, type Request } from '@playwright/test';
 import { chatButtonTitle, chatFabLabel, chatLeadSuccess, chatLimitText, chatPlaceholder } from '../src/data/chat';
 import { formButton, offerTgButton } from '../src/data/offer';
+import { hiddenPages, musicPageURL } from '../src/constants/urls';
 
 // Демо-чат (CONVERSION_PLAN К3.2). /api/chat и /api/sendMessage подменены: к модели и в Telegram ничего не уходит
 const ANSWER = 'Лендинг стоит от 8 000 ₽, срок 3–4 дня.';
@@ -120,6 +121,8 @@ test('шар в углу открывает тот же чат и есть на 
     await page.getByRole('button', { name: chatFabLabel }).click();
     await expect(dialog.getByText('Сколько стоит лендинг?')).toBeVisible();
 
+    // Пока /music скрыта, проверять отсутствие шара там негде
+    if (hiddenPages.includes(musicPageURL)) return;
     await page.goto('/music');
     await expect(page.getByRole('button', { name: chatFabLabel })).toHaveCount(0);
 });

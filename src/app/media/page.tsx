@@ -7,6 +7,8 @@ import { mediaTitleData } from "@/data/titleBlockPage";
 
 import ImageMediaContent from "./components/ImageMediaContent";
 import { Metadata } from "next";
+import { notFound } from "next/navigation";
+import { hiddenPages, mediaPageURL } from "@/constants/urls";
 import { baseOpenGraph } from "@/data/metadata";
 import { getMediaContent } from "@/lib/content/mediaContent";
 
@@ -28,6 +30,7 @@ export const metadata: Metadata = {
 };
 
 const MediaPage: FC = async () => {
+    if (hiddenPages.includes(mediaPageURL)) notFound();
 
     let content:IMedia[]  = []
     let errorMessage: string | undefined;

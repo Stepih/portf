@@ -6,3 +6,7 @@ export const musicPageURL = "/music"
 export const popupPageURL = "/popup"
 export const mediaPageURL = "/media"
 export const portfolioPageURL = "/portfolio"
+
+// Временно скрытые страницы: отвечают 404, ссылки на них убраны.
+// Чтобы вернуть страницу, убери её отсюда и из exclude в next-sitemap.config.js
+export const hiddenPages: string[] = [musicPageURL, mediaPageURL]

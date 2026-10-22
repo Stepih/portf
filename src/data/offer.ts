@@ -4,7 +4,7 @@
 
 import { IFaqItem, IHeroSlide, IMoreLink, IOfferButton, IOfferReason, IOfferStep, IService } from "@/interfaces/offer"
 import { PortfolioIndustry } from "@/interfaces/portfolio"
-import { mediaPageURL, musicPageURL, myTg, portfolioTg } from "@/constants/urls"
+import { hiddenPages, mediaPageURL, musicPageURL, myTg, portfolioTg } from "@/constants/urls"
 import { plural, portfolioStats, yearsRange } from "@/scripts/portfolioStats"
 
 // h1 главной. «⁠» после дефиса не даёт строке разорваться на «ИИ-» (на телефоне)
@@ -228,11 +228,11 @@ export const offerFaq: IFaqItem[] = [
 
 // Блок «А ещё я…» внизу главной (3.10): просто навигация, без продающего посыла.
 // Тексты – скилл marketing:draft-content, выбор владельца – вариант A.
-// id – параметр цели more_click в Метрике (6.1)
+// id – параметр цели more_click в Метрике (6.1). Ссылки на скрытые страницы (hiddenPages) не показываются
 export const moreTitle = 'А ещё я…'
 
 export const moreLinks: IMoreLink[] = [
     { title: 'пишу музыку', href: musicPageURL, id: 'music' },
     { title: 'работаю с фото и видео', href: mediaPageURL, id: 'media' },
     { title: 'веду канал с работами', href: portfolioTg, id: 'channel' }
-]
+].filter(link => !hiddenPages.includes(link.href))

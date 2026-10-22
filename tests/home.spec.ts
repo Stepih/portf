@@ -1,4 +1,5 @@
 import { expect, test } from '@playwright/test';
+import { hiddenPages } from '../src/constants/urls';
 import { contactTitle, formButton, heroTitleSlide, moreLinks, moreTitle, offerFaq, offerTgButton, offerTitle } from '../src/data/offer';
 
 // Слайды первого экрана сменяются, а h1 с оффером в HTML один и есть всегда (SALES_PLAN 3.1.1).
@@ -123,7 +124,10 @@ test('блок «А ещё я…» внизу главной', async ({ page }) 
     const links = section.getByRole('link');
     await expect(links).toHaveCount(moreLinks.length);
     await expect(links.last()).toHaveAttribute('target', '_blank');
+    for (const path of hiddenPages) await expect(section.locator(`a[href="${path}"]`)).toHaveCount(0);
 
-    await section.getByRole('link', { name: moreLinks[0].title }).click();
-    await expect(page).toHaveURL(/\/music$/);
+    const internal = moreLinks.find(link => link.href.startsWith('/'));
+    if (!internal) return;
+    await section.getByRole('link', { name: internal.title }).click();
+    await expect(page).toHaveURL(new RegExp(`${internal.href}$`));
 });

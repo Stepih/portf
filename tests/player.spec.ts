@@ -1,5 +1,6 @@
 import { expect, test, type Page } from '@playwright/test';
 import type { IAlbums } from '../src/interfaces/albums';
+import { hiddenPages, musicPageURL } from '../src/constants/urls';
 
 // Текущий трек — тот, что отмечен aria-current в списке треков. Текст строки: «имя - исполнительдлительность»
 const currentTrack = async (page: Page) => {
@@ -12,6 +13,7 @@ const currentTrack = async (page: Page) => {
 };
 
 test('альбом открывает плеер, «следующий» переключает трек', async ({ page, request }) => {
+    test.skip(hiddenPages.includes(musicPageURL), 'страница /music временно скрыта');
     // Контент берётся из public/music, поэтому альбом для проверки выбираем по API
     const albums: IAlbums[] = await (await request.get('/api/albums')).json();
     const album = albums.find(a => a.tracks.length >= 2);

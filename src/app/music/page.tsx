@@ -8,6 +8,8 @@ import History from "./MeHistory/History";
 import { IMusicHistory } from "@/interfaces/musicHistory";
 import Breadcrumbs from "@/components/breadCrumb/BreadCrumb";
 import { Metadata } from "next";
+import { notFound } from "next/navigation";
+import { hiddenPages, musicPageURL } from "@/constants/urls";
 import { baseOpenGraph } from "@/data/metadata";
 import { getAlbums } from "@/lib/content/albums";
 import { getMusicHistory } from "@/lib/content/musicHistory";
@@ -30,6 +32,8 @@ export const metadata: Metadata = {
 };
 
 const MusicPage:FC = async() => {
+    if (hiddenPages.includes(musicPageURL)) notFound();
+
     let albums: IAlbums[] = [];
     let musicHistory: IMusicHistory[] = []
     let errorMessage: string | undefined;
