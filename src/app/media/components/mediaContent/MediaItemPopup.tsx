@@ -45,7 +45,7 @@ const MediaItemPopup: FC<IPopup> = ({ handlePopup, content, nextStep, id }) => {
             {id !== undefined && id >= 0 && (
                 <>
                 <div className={s.slider}>
-                    <ImageMediaSlider objectFit='cover' slideNotesPosition='right' anim={false} content={sliderContent} />
+                    <ImageMediaSlider objectFit='cover' slideNotesPosition='right' anim={false} content={sliderContent} alt={content[id].title} />
                 </div>
                 
                 <div className={s.rightBlock}>

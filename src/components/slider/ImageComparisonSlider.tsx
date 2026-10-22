@@ -48,14 +48,15 @@ const ImageComparisonSlider: FC<ImageComparisonSliderProps> = ({
     >
       {/* Левая часть изображения (низкое качество) */}
       <div className={styles.imageWrapper}>
-        <h2 style={{ opacity: sliderPosition / 100 + 0.3 }} className={styles.titleLow}>
+        {/* Подпись, а не заголовок: h2 в каждом слайде засоряли структуру страницы */}
+        <p style={{ opacity: sliderPosition / 100 + 0.3 }} className={styles.titleLow}>
           До
-        </h2>
+        </p>
         <Image
           onLoad={() => setLoadCheck((prev) => ({ ...prev, low: true }))}
           src={lowQualitySrc}
           priority={step === 0} // Priority только для первого изображения
-          alt="Low Quality"
+          alt="Фото до обработки"
           fill
           sizes={sizes}
           draggable="false"
@@ -68,14 +69,14 @@ const ImageComparisonSlider: FC<ImageComparisonSliderProps> = ({
         className={`${styles.imageWrapper} ${styles.imageWrapperHigh}`}
         style={{ clipPath: `inset(0 0 0 ${sliderPosition}%)` }}
       >
-        <h2 style={{ opacity: (1 - sliderPosition / 100) + 0.3 }} className={styles.titleHigh}>
+        <p style={{ opacity: (1 - sliderPosition / 100) + 0.3 }} className={styles.titleHigh}>
           После
-        </h2>
+        </p>
         <Image
           onLoad={() => setLoadCheck((prev) => ({ ...prev, high: true }))}
           src={highQualitySrc}
           priority={step === 0} // Priority только для первого изображения
-          alt="High Quality"
+          alt="Фото после обработки"
           fill
           sizes={sizes}
           draggable="false"

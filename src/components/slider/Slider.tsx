@@ -21,6 +21,8 @@ interface ImageMediaSliderProps {
   objectFit: 'contain' | 'cover'
   // Ширина картинки на экране для next/image, по умолчанию во весь экран
   sizes?: string
+  // Что на слайдах, для alt картинок: «<alt> – 2 из 5»
+  alt?: string
 }
 
 // Функции для проверки типов
@@ -38,7 +40,8 @@ const ImageMediaSlider: FC<ImageMediaSliderProps> = ({
   slideNotesPosition,
   content,
   objectFit,
-  sizes = "100vw"
+  sizes = "100vw",
+  alt = "Слайд"
 }) => {
   const [step, setStep] = useState(0);
   const [load, setLoad] = useState(true);
@@ -107,7 +110,7 @@ const ImageMediaSlider: FC<ImageMediaSliderProps> = ({
                 <Image
                   onLoad={handleLoad}
                   src={content[step].src}
-                  alt={`media-${content[step].id}`}
+                  alt={`${alt} – ${step + 1} из ${content.length}`}
                   fill
                   sizes={sizes}
                   style={{objectFit}}

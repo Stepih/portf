@@ -62,7 +62,8 @@ const MediaItem: FC<MediaItemProps> = ({ item, id, scrollY, bounds, contentRef, 
                     position: pageHeight && pageHeight > 800 ? 'sticky' : 'relative'
                 }}
             >
-                <h2 className={`${s.titleW} ${ralewayBold.className}`}>{item.title}</h2>
+                {/* Копия заголовка из MediaDescription для узкого экрана: в разметке заголовок один */}
+                <p className={`${s.titleW} ${ralewayBold.className}`} aria-hidden="true">{item.title}</p>
                 <motion.div
                     style={{
                         flexDirection: id % 2 === 0 ? "row-reverse" : "row",
@@ -76,7 +77,7 @@ const MediaItem: FC<MediaItemProps> = ({ item, id, scrollY, bounds, contentRef, 
                     </div>
                     <div className={s.wrapperSlider}>
                         {/* Слайдер до 750×400 с cover: на узком экране картинка 16:9 растягивается по высоте до ~711px, поэтому ширина почти постоянная */}
-                        <ImageMediaSlider objectFit='cover' slideNotesPosition="bottom" anim={true} content={content} sizes="750px" />
+                        <ImageMediaSlider objectFit='cover' slideNotesPosition="bottom" anim={true} content={content} sizes="750px" alt={item.title} />
                         {handleSetPopup && (
                             <motion.div 
                                 onHoverStart={()=> setPrompt(true)} 
