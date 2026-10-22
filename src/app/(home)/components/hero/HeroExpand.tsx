@@ -1,14 +1,15 @@
 "use client";
 
-import { FC, useEffect, useLayoutEffect, useRef, useState } from "react";
+import { CSSProperties, FC, ReactNode, useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { animate, AnimationPlaybackControls, cubicBezier, motion, MotionValue, useMotionValue, useMotionValueEvent, useReducedMotion, useScroll, useTransform, Variants } from "framer-motion";
+import { cubicBezier, easeIn, easeOut, motion, MotionValue, useMotionValue, useMotionValueEvent, useReducedMotion, useScroll, useSpring, useTransform } from "framer-motion";
 
 import photo from '@/assets/_img/rectangles/title-page/i.png'
 
 import s from './HeroExpand.module.scss'
 import HeroSlides from "./HeroSlides";
+import { SceneAfterContext } from "./sceneAfter";
 import { ralewayBold, ralewayRegular } from "@/app/fonts/fonts";
 import { popupPageURL, portfolioPageURL } from "@/constants/urls";
 import { formButton, heroInterval, heroSlides, heroTitleSlide, industriesDescription, industriesOther, industriesTitle } from "@/data/offer";
@@ -19,27 +20,44 @@ import { plural } from "@/scripts/portfolioStats";
 interface HeroExpandProps {
     chips: { id: PortfolioIndustry, label: string, count: number }[],
     // Сколько работ в портфолио, число в кружке над заголовком
-    worksCount: number
+    worksCount: number,
+    // Блок после сцены («Избранные кейсы»): виден сквозь дыру портала и стоит на месте, пока она открывается
+    children?: ReactNode
 }
 
-// Доли прокрутки сцены: раскрытие карточки и порог, после которого выезжают отрасли.
-// Порог скрытия ниже порога показа, чтобы на границе блоки не дёргались туда-обратно
-const EXPAND_FROM = 0.02;
-const EXPAND_TO = 0.3;
-const SHOW_AT = 0.27;
-const HIDE_AT = 0.2;
+// Путь портала в экранах: диск растёт из кружка вместе с надписью «10 работ» (PORTAL_GROW), стоит с ней
+// (PORTAL_HOLD), потом в нём открывается дыра и уходит за края экрана (PORTAL_OPEN)
+const PORTAL_GROW = .1;
+const PORTAL_HOLD = .15;
+const PORTAL_OPEN = .3;
+const PORTAL_PATH = PORTAL_GROW + PORTAL_HOLD + PORTAL_OPEN;
+
+// Точки сцены в экранах прокрутки: раскрытие, брызги отраслей (с SHOW_AT, путь BURST_PATH), портал сразу за ними
+const EXPAND_FROM = .024;
+const EXPAND_TO = .36;
+const SHOW_AT = .33;
+const BURST_PATH = .4;
+const PORTAL_FROM = .38 + BURST_PATH;
+const LENGTH = PORTAL_FROM + PORTAL_PATH;
+
+// Во сколько раз длиннее путь сцены: доводки нет, этапы проходятся скроллом.
+// Раскрытие ~0,7 экрана, брызги ~0,8, портал ~1,1
+const PACE = 2;
+// Путь после портала, в экранах: кейсы ещё прилипают, скролл раздаёт их из колоды (SceneAfterContext)
+const AFTER = .85;
+
+// Те же точки в долях прокрутки сцены
+const EXPAND_FROM_P = EXPAND_FROM / LENGTH;
+const EXPAND_TO_P = EXPAND_TO / LENGTH;
+const BURST_FROM_P = SHOW_AT / LENGTH;
+const BURST_TO_P = (SHOW_AT + BURST_PATH) / LENGTH;
+const PORTAL_FROM_P = PORTAL_FROM / LENGTH;
+
+// Сглаживание прогресса: щелчки колеса мыши не дёргают анимацию. Без перелёта, догоняет за ~0,3 с
+const SMOOTH = { stiffness: 170, damping: 30, restDelta: .0001 };
 
 const ease = cubicBezier(.4, 0, .2, 1);
-
-// Через сколько мс без событий скролл считается остановленным (где нет события scrollend)
-const SCROLL_IDLE = 150;
-// Длительность доводки, с: короткий остаток – быстрее, полное раскрытие – дольше
-const SETTLE_MIN = .6;
-const SETTLE_MAX = 1.4;
-// Пауза между событиями колеса, после которой начинается новый жест, мс
-const WHEEL_GAP = 120;
-// Сдвиг пальца, после которого понятно направление жеста, px
-const TOUCH_SLOP = 6;
+const clamp01 = (v: number) => Math.min(1, Math.max(0, v));
 
 // Отступ края фона: от отступа карточки при t = 0 до нуля при t = 1
 const useInset = (t: MotionValue<number>, edge: MotionValue<number>) =>
@@ -49,34 +67,171 @@ const useInset = (t: MotionValue<number>, edge: MotionValue<number>) =>
 const useToward = (t: MotionValue<number>, target: MotionValue<number>, from = 0) =>
     useTransform([t, target], ([p, v]: number[]) => from + (v - from) * p);
 
-// Блоки выезжают снизу один за другим: заголовок, подпись, чипы. Прячутся разом, без очереди
-const item: Variants = {
-    hidden: { opacity: 0, y: 56, transition: { duration: .25 } },
-    shown: (i: number) => ({
-        opacity: 1,
-        y: 0,
-        transition: { duration: .7, ease: [.2, .8, .2, 1], delay: i * .07 },
-    }),
+// Положение элемента внутри root без transform: сумма offsetLeft/Top по цепочке offsetParent
+const offsetIn = (el: HTMLElement, root: HTMLElement) => {
+    let x = 0;
+    let y = 0;
+    let node: HTMLElement | null = el;
+    while (node && node !== root) {
+        x += node.offsetLeft;
+        y += node.offsetTop;
+        node = node.offsetParent as HTMLElement | null;
+    }
+    return { x, y };
 };
 
-// Первый экран главной (SALES_PLAN 3.1) и блок отраслей (3.2) одной сценой.
-// Сцена высотой в несколько экранов, внутри липкий экран. Фон карточки – отдельный слой:
-// его края при скролле едут от размеров карточки к краям окна, а скругление уходит в ноль.
-// Слайды при этом гаснут. Фото уменьшается, летит в кружок над заголовком и там перетекает
-// в число работ; фото непрозрачное, поэтому край фона сквозь него не просвечивает.
-// Когда фон раскрылся – снизу по очереди выезжают заголовок, подпись и чипы отраслей.
+// Портал: off – не начался, on – идёт, open – дыра почти на весь экран, клики проходят к блоку под сценой
+type PortalState = 'off' | 'on' | 'open';
+
+// ---------- Брызги из круга, по скроллу ----------
+// Таймлайн в секундах, но время берётся из скролла: весь путь брызг (BURST_PATH) – вся их длительность.
+// Скролл назад проигрывает их в обратную сторону теми же кадрами
+
+// Капля летит FLIGHT, растекается в пилюлю SPREAD и растворяется в чип FADE; волна от кружка идёт WAVE, с
+const FLIGHT = .7;
+const SPREAD = .35;
+const FADE = .3;
+const WAVE = .9;
+// Размер капли в полёте и подъём дуги над стартом, px
+const DROP = 12;
+const LIFT = 48;
+// Капли вылетают по очереди
+const chipDelay = (i: number) => .2 + i * .05;
+
+// Длительность брызг, с: до конца последней капли и строки «Другая сфера?»
+const burstLength = (count: number) => {
+    const last = chipDelay(Math.max(0, count - 1));
+    return Math.max(last + FLIGHT + SPREAD + FADE, last + FLIGHT + .2 + .5);
+};
+
+// Чип относительно кружка: сдвиг от места чипа до центра кружка и размер чипа
+interface ChipGeom { i: number, dx: number, dy: number, w: number, h: number }
+// Волна по заголовку и подписи: центр кружка относительно их блока, радиус кружка и до какого радиуса волна растёт
+interface WaveGeom { x: number, y: number, from: number, to: number }
+
+const noWave: WaveGeom = { x: 0, y: 0, from: 0, to: 0 };
+
+const circle = (r: number, { x, y }: WaveGeom) => `circle(${r}px at ${x}px ${y}px)`;
+// Капля – тёмная пилюля поверх чипа, в полёте обрезана до точки
+const dot = ({ w, h }: ChipGeom) => `inset(${(h - DROP) / 2}px ${(w - DROP) / 2}px round 24px)`;
+
+const flyEase = cubicBezier(.3, .5, .5, 1);
+const spreadEase = cubicBezier(.2, .9, .3, 1);
+const waveEase = cubicBezier(.2, .6, .3, 1);
+const riseEase = cubicBezier(.2, .8, .2, 1);
+// Доля отрезка [from, from + dur] к моменту time
+const span = (time: number, from: number, dur: number) => clamp01((time - from) / dur);
+const lerp = (a: number, b: number, k: number) => a + (b - a) * k;
+// Значение по ключевым кадрам, между кадрами – по прямой
+const keys = (k: number, values: number[], times: number[]) => {
+    for (let i = 1; i < times.length; i++) {
+        if (k <= times[i]) return lerp(values[i - 1], values[i], (k - times[i - 1]) / (times[i] - times[i - 1]));
+    }
+    return values[values.length - 1];
+};
+
+// Заголовок и подпись проявляются кругом, который расходится от кружка; кружок вздрагивает
+const waveFrame = (time: number, g: WaveGeom) => {
+    const k = span(time, .05, WAVE);
+    const r = lerp(g.from, g.to, waveEase(k));
+    return {
+        clip: circle(r, g),
+        lead: time >= .05 ? 1 : 0,
+        pulse: keys(span(time, 0, .6), [1, 1.1, .97, 1], [0, .3, .65, 1]),
+    };
+};
+
+// Чип в момент time: полёт из кружка по дуге, как из фонтана, капля растекается в пилюлю и растворяется, чип проступает
+const chipFrame = (time: number, g: ChipGeom) => {
+    const d = chipDelay(g.i);
+    const f = span(time, d, FLIGHT);
+    const spread = spreadEase(span(time, d + FLIGHT - .05, SPREAD));
+    return {
+        x: g.dx * (1 - flyEase(f)),
+        y: f < .4 ? g.dy - LIFT * easeOut(f / .4) : (g.dy - LIFT) * (1 - easeIn((f - .4) / .6)),
+        clip: `inset(${(g.h - DROP) / 2 * (1 - spread)}px ${(g.w - DROP) / 2 * (1 - spread)}px round 24px)`,
+        drop: time < d ? 0 : 1 - span(time, d + FLIGHT + SPREAD, FADE),
+        face: easeOut(span(time, d + FLIGHT + .1, .35)),
+    };
+};
+
+interface ScrubChipProps {
+    // Время брызг, с
+    time: MotionValue<number>,
+    geom: ChipGeom,
+    itemRef: (el: HTMLLIElement | null) => void,
+    children: ReactNode
+}
+
+// Чип брызг: кадр считается из времени, без своих анимаций
+const ScrubChip: FC<ScrubChipProps> = ({ time, geom, itemRef, children }) => {
+    const x = useMotionValue(0);
+    const y = useMotionValue(0);
+    const clip = useMotionValue(dot(geom));
+    const drop = useMotionValue(0);
+    const face = useMotionValue(0);
+
+    const paint = useCallback((v: number) => {
+        const f = chipFrame(v, geom);
+        x.set(f.x);
+        y.set(f.y);
+        clip.set(f.clip);
+        drop.set(f.drop);
+        face.set(f.face);
+    }, [geom, x, y, clip, drop, face]);
+    useMotionValueEvent(time, 'change', paint);
+    useEffect(() => paint(time.get()), [paint, time]);
+
+    return (
+        <motion.li ref={itemRef} className={s.chipItem} style={{ x, y }}>
+            <motion.span className={s.drop} style={{ clipPath: clip, opacity: drop }} aria-hidden="true" />
+            <motion.div style={{ opacity: face }}>{children}</motion.div>
+        </motion.li>
+    );
+};
+
+// ---------- Круг-портал ----------
+
+// Доли пути портала: к DISK_TO диск дорос, на OPEN_AT в нём открывается дыра; между ними он стоит с надписью
+const DISK_TO = PORTAL_GROW / PORTAL_PATH;
+const OPEN_AT = (PORTAL_GROW + PORTAL_HOLD) / PORTAL_PATH;
+// Диск до открытия дыры: радиус, px, но не больше доли ширины экрана
+const DISK = 150;
+const DISK_SHARE = .3;
+// Знак «10 работ», выросший с диском, гаснет за эту долю пути портала после открытия дыры
+const MARK_FADE = .1;
+
+// Первый экран главной (SALES_PLAN 3.1), блок отраслей (3.2) и вход в «Избранные кейсы» одной сценой
+// (ANIMATION_PLAN, 1Г + 2Г). Всё ведёт скролл, вперёд и назад, без доводки.
+// Сцена высотой в несколько экранов, внутри липкий экран. Фон карточки раскрывается до краёв окна,
+// фото летит в кружок над заголовком и перетекает в число работ. Из кружка расходится волна с заголовком,
+// чипы вылетают каплями и растекаются по местам. Дальше кружок растёт в диск, в нём открывается дыра,
+// сквозь неё видны кейсы; дыра уходит за края экрана, а кейсы ещё прилипают, пока скролл раздаёт их из колоды.
 // Чип ведёт на /portfolio?for=<id>, отрасли без работ не показываются
-const HeroExpand: FC<HeroExpandProps> = ({ chips, worksCount }) => {
+const HeroExpand: FC<HeroExpandProps> = ({ chips, worksCount, children }) => {
     const reduceMotion = useReducedMotion();
+
     const scene = useRef<HTMLElement>(null);
     const screen = useRef<HTMLDivElement>(null);
     const card = useRef<HTMLDivElement>(null);
     const photoBox = useRef<HTMLDivElement>(null);
     const slot = useRef<HTMLDivElement>(null);
-    const [shown, setShown] = useState(false);
+    const root = useRef<HTMLDivElement>(null);
+    const lead = useRef<HTMLDivElement>(null);
+    const chipEls = useRef<(HTMLLIElement | null)[]>([]);
+    const [portalState, setPortalState] = useState<PortalState>('off');
+    // Путь после портала: распорка в треке кейсов (на телефоне её нет – высота 0) и доля пути
+    const afterEl = useRef<HTMLDivElement>(null);
+    const afterProgress = useMotionValue(0);
+    const [afterOn, setAfterOn] = useState(false);
+    const smoothAfter = useSpring(afterProgress, SMOOTH);
+    const [waveGeom, setWaveGeom] = useState<WaveGeom>(noWave);
+    const [chipGeoms, setChipGeoms] = useState<ChipGeom[]>([]);
 
-    const { scrollYProgress } = useScroll({ target: scene, offset: ['start start', 'end end'] });
-    const t = useTransform(scrollYProgress, [EXPAND_FROM, EXPAND_TO], [0, 1], { ease, clamp: true });
+    const { scrollYProgress: rawProgress } = useScroll({ target: scene, offset: ['start start', 'end end'] });
+    // Анимация идёт за сглаженным прогрессом; сам скролл страницы не трогаем
+    const scrollYProgress = useSpring(rawProgress, SMOOTH);
+    const t = useTransform(scrollYProgress, [EXPAND_FROM_P, EXPAND_TO_P], [0, 1], { ease, clamp: true });
 
     // Отступы карточки от краёв липкого экрана, меряются при загрузке и ресайзе
     const top = useMotionValue(0);
@@ -87,6 +242,12 @@ const HeroExpand: FC<HeroExpandProps> = ({ chips, worksCount }) => {
     const photoDx = useMotionValue(0);
     const photoDy = useMotionValue(0);
     const photoScale = useMotionValue(1);
+    // Портал: центр и радиус кружка в координатах экрана, диск до дыры, радиус до дальнего угла
+    const cx = useMotionValue(0);
+    const cy = useMotionValue(0);
+    const r0 = useMotionValue(0);
+    const diskMax = useMotionValue(DISK);
+    const rMax = useMotionValue(0);
 
     // Объявлены до замера: useTransform подписывается на края в своём эффекте,
     // и замер, сделанный раньше подписки, фон бы не увидел
@@ -102,8 +263,8 @@ const HeroExpand: FC<HeroExpandProps> = ({ chips, worksCount }) => {
     useLayoutEffect(() => {
         if (!screen.current || !card.current || !photoBox.current) return;
         const measure = () => {
-            if (!screen.current || !card.current || !photoBox.current) return;
-            scene.current?.style.setProperty('--page-w', `${document.documentElement.clientWidth}px`);
+            if (!screen.current || !card.current || !photoBox.current || !scene.current) return;
+            scene.current.style.setProperty('--page-w', `${document.documentElement.clientWidth}px`);
             const box = screen.current.getBoundingClientRect();
             // offsetTop/Left не видят transform, поэтому уехавшие слайды и фото не сбивают замер
             const c = card.current;
@@ -112,194 +273,170 @@ const HeroExpand: FC<HeroExpandProps> = ({ chips, worksCount }) => {
             right.set(box.width - c.offsetLeft - c.offsetWidth);
             bottom.set(box.height - c.offsetTop - c.offsetHeight);
 
+            if (!slot.current) return;
             const p = photoBox.current.getBoundingClientRect();
-            if (slot.current) {
-                const target = slot.current.getBoundingClientRect();
-                photoDx.set(target.left + target.width / 2 - (p.left + p.width / 2));
-                photoDy.set(target.top + target.height / 2 - (p.top + p.height / 2));
-                photoScale.set(target.width / p.width);
-            }
+            const target = slot.current.getBoundingClientRect();
+            photoDx.set(target.left + target.width / 2 - (p.left + p.width / 2));
+            photoDy.set(target.top + target.height / 2 - (p.top + p.height / 2));
+            photoScale.set(target.width / p.width);
+
+            // Портал: кружок в координатах липкого экрана
+            const x = target.left + target.width / 2 - box.left;
+            const y = target.top + target.height / 2 - box.top;
+            cx.set(x);
+            cy.set(y);
+            r0.set(target.width / 2);
+            diskMax.set(Math.min(DISK, box.width * DISK_SHARE));
+            rMax.set(Math.hypot(Math.max(x, box.width - x), Math.max(y, box.height - y)) + 2);
+
+            // Брызги: где заголовок и чипы относительно кружка
+            if (!root.current || !lead.current) return;
+            const r = root.current;
+            const o = offsetIn(slot.current, r);
+            const sx = o.x + slot.current.offsetWidth / 2;
+            const sy = o.y + slot.current.offsetHeight / 2;
+            const l = offsetIn(lead.current, r);
+            const lx = sx - l.x;
+            const ly = sy - l.y;
+            setWaveGeom({
+                x: lx,
+                y: ly,
+                from: slot.current.offsetWidth / 2,
+                to: Math.hypot(Math.max(lx, lead.current.offsetWidth - lx), lead.current.offsetHeight - ly) + 8,
+            });
+            setChipGeoms(chipEls.current.map((el, i) => {
+                if (!el) return { i, dx: 0, dy: 0, w: 0, h: 0 };
+                const ch = offsetIn(el, r);
+                return {
+                    i,
+                    dx: sx - (ch.x + el.offsetWidth / 2),
+                    dy: sy - (ch.y + el.offsetHeight / 2),
+                    w: el.offsetWidth,
+                    h: el.offsetHeight,
+                };
+            }));
         };
         measure();
+        document.fonts?.ready.then(measure);
         const observer = new ResizeObserver(measure);
-        [screen.current, card.current, photoBox.current, slot.current].forEach((el) => el && observer.observe(el));
+        [screen.current, card.current, photoBox.current, slot.current, root.current, lead.current]
+            .forEach((el) => el && observer.observe(el));
         return () => observer.disconnect();
-    }, [reduceMotion, top, right, bottom, left, photoDx, photoDy, photoScale]);
+    }, [reduceMotion, top, right, bottom, left, photoDx, photoDy, photoScale, cx, cy, r0, diskMax, rMax]);
 
-    // Доводка: раскрытие не останавливается на промежуточном кадре. Две точки – начало
-    // (вверху страницы) и раскрытый экран с отраслями; между ними страницу везёт сам компонент.
-    // Колесо и тачпад: первое же движение внутри раскрытия запускает доводку по направлению,
-    // хвост инерции глотается, чтобы не проскочить точку. Тач: раскрытие идёт за пальцем,
-    // при отпускании доезжает туда, куда вели. Клавиатура и ползунок – по scrollend
-    useEffect(() => {
-        if (reduceMotion) return;
-        let anim: AnimationPlaybackControls | null = null;
-        let lastWheel = 0;
-        // После доводки события того же жеста колеса (инерция) ещё приходят – их пропускаем
-        let swallowTail = false;
-        let lastY = window.scrollY;
-        let direction = 1;
-        let timer = 0;
-        // Тач: null – жест не наш, иначе последняя точка пальца и направление
-        let touch: { y: number, dir: number } | null = null;
-        let touchStart: { x: number, y: number } | null = null;
+    // Доля пути портала
+    const q = useTransform(scrollYProgress, (p) => clamp01((p - PORTAL_FROM_P) / (1 - PORTAL_FROM_P)));
 
-        // Точки доводки в координатах страницы
-        const points = () => {
-            if (!scene.current) return null;
-            const sceneTop = scene.current.getBoundingClientRect().top + window.scrollY;
-            const distance = scene.current.offsetHeight - window.innerHeight;
-            // Сцена в первом экране – назад до самого верха, чтобы вернулась и шапка
-            const start = sceneTop <= window.innerHeight ? 0 : sceneTop;
-            return { start, end: Math.ceil(sceneTop + distance * EXPAND_TO) };
-        };
-
-        const jumpTo = (y: number) => window.scrollTo({ top: y, behavior: 'instant' });
-
-        const glide = (to: number) => {
-            anim?.stop();
-            const from = window.scrollY;
-            if (Math.abs(to - from) < 1) return;
-            // Чем меньше осталось, тем короче доводка
-            const share = Math.min(1, Math.abs(to - from) / (window.innerHeight * .4));
-            anim = animate(from, to, {
-                duration: SETTLE_MIN + (SETTLE_MAX - SETTLE_MIN) * share,
-                ease: [.25, .1, .25, 1],
-                onUpdate: jumpTo,
-                onComplete: () => {
-                    anim = null;
-                    swallowTail = true;
-                },
-            });
-        };
-
-        const onWheel = (e: WheelEvent) => {
-            const now = performance.now();
-            const gap = now - lastWheel;
-            lastWheel = now;
-            if (e.ctrlKey || Math.abs(e.deltaX) > Math.abs(e.deltaY) || e.deltaY === 0) return;
-            if (anim || (swallowTail && gap < WHEEL_GAP)) {
-                e.preventDefault();
-                return;
-            }
-            swallowTail = false;
-            const pts = points();
-            if (!pts) return;
-            const y = window.scrollY;
-            const down = e.deltaY > 0;
-            if (down ? (y >= pts.start - 1 && y < pts.end - 1) : (y > pts.start + 1 && y <= pts.end + 1)) {
-                e.preventDefault();
-                glide(down ? pts.end : pts.start);
-            }
-        };
-
-        const onTouchStart = (e: TouchEvent) => {
-            anim?.stop();
-            anim = null;
-            touch = null;
-            touchStart = { x: e.touches[0].clientX, y: e.touches[0].clientY };
-        };
-
-        const onTouchMove = (e: TouchEvent) => {
-            const point = e.touches[0];
-            if (touch) {
-                e.preventDefault();
-                const pts = points();
-                if (!pts) return;
-                const dy = touch.y - point.clientY;
-                if (dy !== 0) touch.dir = dy > 0 ? 1 : -1;
-                touch.y = point.clientY;
-                jumpTo(Math.min(pts.end, Math.max(pts.start, window.scrollY + dy)));
-                return;
-            }
-            // Жест решается на первом заметном сдвиге: вертикальный и внутри раскрытия – наш
-            if (!touchStart || e.touches.length > 1) return;
-            const dx = point.clientX - touchStart.x;
-            const dy = touchStart.y - point.clientY;
-            if (Math.abs(dy) < TOUCH_SLOP || Math.abs(dx) > Math.abs(dy)) return;
-            touchStart = null;
-            const pts = points();
-            if (!pts) return;
-            const y = window.scrollY;
-            const down = dy > 0;
-            // На краях наружу – обычный скролл (вниз по странице, вверх – pull-to-refresh)
-            if (down ? (y >= pts.start - 1 && y < pts.end - 1) : (y > pts.start + 1 && y <= pts.end + 1)) {
-                e.preventDefault();
-                touch = { y: point.clientY, dir: down ? 1 : -1 };
-            }
-        };
-
-        const onTouchEnd = () => {
-            touchStart = null;
-            if (!touch) return;
-            const pts = points();
-            if (pts) glide(touch.dir > 0 ? pts.end : pts.start);
-            touch = null;
-            swallowTail = false;
-        };
-
-        // Запасной путь: страницу привели в середину раскрытия клавиатурой, ползунком
-        // или инерцией нативного скролла снизу – доезжаем по направлению
-        const settle = () => {
-            if (anim || touch) return;
-            const pts = points();
-            if (!pts) return;
-            const y = window.scrollY;
-            if (y <= pts.start + 1 || y >= pts.end - 1) return;
-            glide(direction > 0 ? pts.end : pts.start);
-        };
-
-        const onScroll = () => {
-            const y = window.scrollY;
-            if (y !== lastY) direction = y > lastY ? 1 : -1;
-            lastY = y;
-            window.clearTimeout(timer);
-            if (!anim && !touch) timer = window.setTimeout(settle, SCROLL_IDLE);
-        };
-        const onScrollEnd = () => {
-            window.clearTimeout(timer);
-            settle();
-        };
-
-        window.addEventListener('wheel', onWheel, { passive: false });
-        window.addEventListener('touchstart', onTouchStart, { passive: true });
-        window.addEventListener('touchmove', onTouchMove, { passive: false });
-        window.addEventListener('touchend', onTouchEnd);
-        window.addEventListener('touchcancel', onTouchEnd);
-        window.addEventListener('scroll', onScroll, { passive: true });
-        window.addEventListener('scrollend', onScrollEnd);
-        return () => {
-            anim?.stop();
-            window.clearTimeout(timer);
-            window.removeEventListener('wheel', onWheel);
-            window.removeEventListener('touchstart', onTouchStart);
-            window.removeEventListener('touchmove', onTouchMove);
-            window.removeEventListener('touchend', onTouchEnd);
-            window.removeEventListener('touchcancel', onTouchEnd);
-            window.removeEventListener('scroll', onScroll);
-            window.removeEventListener('scrollend', onScrollEnd);
-        };
-    }, [reduceMotion]);
-
-    // На подлёте к кружку фото перетекает в знак: фото гаснет, знак проявляется и дорастает до размера
+    // На подлёте к кружку фото перетекает в знак: фото гаснет, знак проявляется и дорастает до размера.
+    // В портале знак с надписью растёт вместе с диском и гаснет, когда в диске открывается дыра
     const photoOpacity = useTransform(t, [.7, 1], [1, 0]);
-    const markOpacity = useTransform(t, [.7, 1], [0, 1]);
-    const markScale = useTransform(t, [.7, 1], [.6, 1]);
+    const markIn = useTransform(t, [.7, 1], [0, 1]);
+    const markOut = useTransform(q, (v) => 1 - clamp01((v - OPEN_AT) / MARK_FADE));
+    const markOpacity = useTransform([markIn, markOut], ([a, b]: number[]) => a * b);
+    const markScaleIn = useTransform(t, [.7, 1], [.6, 1]);
 
-    const slidesOpacity = useTransform(scrollYProgress, [EXPAND_FROM, EXPAND_FROM + .12], [1, 0]);
-    const slidesY = useTransform(scrollYProgress, [EXPAND_FROM, EXPAND_TO], [0, -60]);
+    const slidesOpacity = useTransform(scrollYProgress, [EXPAND_FROM_P, EXPAND_FROM_P + .1], [1, 0]);
+    const slidesY = useTransform(scrollYProgress, [EXPAND_FROM_P, EXPAND_TO_P], [0, -60]);
 
-    useMotionValueEvent(scrollYProgress, 'change', (p) => {
-        if (p >= SHOW_AT) setShown(true);
-        else if (p <= HIDE_AT) setShown(false);
+    // Отрасли втягиваются к кружку и гаснут, пока он растёт
+    const contentOpacity = useTransform(q, [0, DISK_TO], [1, 0]);
+    const contentScale = useTransform(q, [0, DISK_TO * 1.1], [1, .9]);
+    const contentY = useTransform(q, [0, DISK_TO * 1.1], [0, -24]);
+
+    // Диск растёт из кружка до DISK, стоит с надписью до OPEN_AT, потом в нём открывается дыра. Дыра догоняет край диска,
+    // и оба уходят за дальний угол экрана: кольцо между ними тоньшает до нуля
+    const disk = useTransform([q, r0, diskMax, rMax], ([v, r, dm, rm]: number[]) => {
+        if (v < OPEN_AT) return r + (dm - r) * ease(clamp01(v / DISK_TO));
+        const u = (v - OPEN_AT) / (1 - OPEN_AT);
+        return dm + (rm - dm) * u * u;
+    });
+    // Знак «10 работ» растёт вместе с диском до его размера перед дырой: круг, число и подпись – одним целым
+    const markScale = useTransform([markScaleIn, q, r0, disk, diskMax], ([a, v, r, d, dm]: number[]) =>
+        a * (v > 0 && r > 0 ? Math.min(d, dm) / r : 1));
+    const hole = useTransform([q, diskMax, disk], ([v, dm, d]: number[]) => {
+        if (v <= OPEN_AT) return 0;
+        const u = (v - OPEN_AT) / (1 - OPEN_AT);
+        return d - dm * (1 - u) * (1 - u);
+    });
+    const diskBg = useTransform([q, cx, cy, disk], ([v, x, y, d]: number[]) => v <= 0
+        ? 'none'
+        : `radial-gradient(circle at ${x}px ${y}px, var(--color-text-100) ${d}px, transparent ${d + 1}px)`);
+    const holeMask = useTransform([hole, cx, cy], ([h, x, y]: number[]) => h <= 0
+        ? 'none'
+        : `radial-gradient(circle at ${x}px ${y}px, transparent ${h}px, #000 ${h + 1}px)`);
+    // Сплошная подложка под фоном раскрытой карточки: кейсы не просвечивают до портала
+    const baseOpacity = useTransform(t, [.8, 1], [0, 1]);
+
+    useMotionValueEvent(q, 'change', (v) => {
+        // Клики проходят к кейсам, когда дыра почти на весь экран
+        setPortalState(v <= 0 ? 'off' : v < .9 ? 'on' : 'open');
     });
 
+    // Путь после портала: сколько проехали за концом сцены, в долях распорки
+    const { scrollY } = useScroll();
+    const updateAfter = useCallback(() => {
+        if (!scene.current || !afterEl.current) return;
+        const extra = afterEl.current.offsetHeight;
+        const passed = -scene.current.getBoundingClientRect().top - (scene.current.offsetHeight - window.innerHeight);
+        afterProgress.set(extra > 0 ? clamp01(passed / extra) : 0);
+    }, [afterProgress]);
+    useMotionValueEvent(scrollY, 'change', updateAfter);
+    // Есть ли путь (на телефоне распорки нет) – при загрузке и ресайзе
+    useEffect(() => {
+        const measure = () => {
+            setAfterOn((afterEl.current?.offsetHeight ?? 0) > 0);
+            updateAfter();
+        };
+        measure();
+        window.addEventListener('resize', measure);
+        return () => window.removeEventListener('resize', measure);
+    }, [updateAfter]);
+
+    // Брызги: время их таймлайна, с, и кадр волны, кружка и строки «Другая сфера?»
+    const burstTotal = burstLength(chips.length);
+    const burstTime = useTransform(scrollYProgress, (p) => clamp01((p - BURST_FROM_P) / (BURST_TO_P - BURST_FROM_P)) * burstTotal);
+    const [burstShown, setBurstShown] = useState(false);
+    const leadClip = useMotionValue('none');
+    const leadOpacity = useMotionValue(0);
+    const pulseScale = useMotionValue(1);
+    const otherOpacity = useMotionValue(0);
+    const otherY = useMotionValue(16);
+    const paintBurst = useCallback((v: number) => {
+        const w = waveFrame(v, waveGeom);
+        leadClip.set(w.clip);
+        leadOpacity.set(w.lead);
+        pulseScale.set(w.pulse);
+        const e = riseEase(span(v, chipDelay(chips.length - 1) + FLIGHT + .2, .5));
+        otherOpacity.set(e);
+        otherY.set(16 * (1 - e));
+    }, [waveGeom, chips.length, leadClip, leadOpacity, pulseScale, otherOpacity, otherY]);
+    useMotionValueEvent(burstTime, 'change', (v) => {
+        paintBurst(v);
+        setBurstShown(v >= burstTotal * .95);
+    });
+    useEffect(() => paintBurst(burstTime.get()), [paintBurst, burstTime]);
+
+    // Чипы кликаются, только пока видны
+    const live = reduceMotion || (burstShown && portalState === 'off');
+    const geomOf = (i: number): ChipGeom => chipGeoms[i] ?? { i, dx: 0, dy: 0, w: 0, h: 0 };
+
+    const chipLink = (chip: HeroExpandProps['chips'][number]) => (
+        <Link
+            href={withIndustry(portfolioPageURL, chip.id)}
+            className={s.chip}
+            data-goal="industry_click"
+            data-goal-id={chip.id}
+            tabIndex={live ? undefined : -1}
+        >
+            {chip.label}
+            <span className={s.count}>{chip.count}</span>
+        </Link>
+    );
 
     const industries = (
-        <motion.div
+        <div
+            ref={root}
             className={`${ralewayRegular.className} ${s.industries}`}
-            initial={reduceMotion ? 'shown' : 'hidden'}
-            animate={reduceMotion || shown ? 'shown' : 'hidden'}
             aria-labelledby="industries-title"
             role="region"
         >
@@ -307,93 +444,127 @@ const HeroExpand: FC<HeroExpandProps> = ({ chips, worksCount }) => {
             {!reduceMotion && (
                 <div ref={slot} className={s.slot} aria-hidden="true">
                     <motion.div className={s.mark} style={{ opacity: markOpacity, scale: markScale }}>
-                        <span className={s.works}>
+                        <motion.span className={s.works} style={{ scale: pulseScale }}>
                             <b className={ralewayBold.className}>{worksCount}</b>
-                            {plural(worksCount, ['работа', 'работы', 'работ'])}
-                        </span>
+                            <span>{plural(worksCount, ['работа', 'работы', 'работ'])}</span>
+                        </motion.span>
                     </motion.div>
                 </div>
             )}
 
-            <motion.h2 id="industries-title" className={`${ralewayBold.className} ${s.title}`} variants={item} custom={0}>
-                {industriesTitle}
-            </motion.h2>
-            <motion.p className={s.description} variants={item} custom={1}>{industriesDescription}</motion.p>
-
-            <ul className={s.chips}>
-                {chips.map((chip, i) => (
-                    <motion.li key={chip.id} variants={item} custom={i + 2}>
-                        <Link
-                            href={withIndustry(portfolioPageURL, chip.id)}
-                            className={s.chip}
-                            data-goal="industry_click"
-                            data-goal-id={chip.id}
-                            tabIndex={reduceMotion || shown ? undefined : -1}
-                        >
-                            {chip.label}
-                            <span className={s.count}>{chip.count}</span>
-                        </Link>
-                    </motion.li>
-                ))}
-            </ul>
-
-            {/* Чипы – только примеры: клиент из другой сферы идёт сразу в форму */}
-            <motion.p className={s.other} variants={item} custom={chips.length + 2}>
-                {industriesOther}{' '}
-                <Link
-                    href={popupPageURL}
-                    className={s.otherLink}
-                    data-goal="cta_click"
-                    data-goal-id="industries_other"
-                    tabIndex={reduceMotion || shown ? undefined : -1}
+            <motion.div
+                className={s.content}
+                style={reduceMotion ? undefined : { opacity: contentOpacity, scale: contentScale, y: contentY }}
+            >
+                <motion.div
+                    ref={lead}
+                    className={s.lead}
+                    style={reduceMotion ? undefined : { clipPath: leadClip, opacity: leadOpacity }}
                 >
-                    {formButton}
-                </Link>
-            </motion.p>
-        </motion.div>
+                    <h2 id="industries-title" className={`${ralewayBold.className} ${s.title}`}>{industriesTitle}</h2>
+                    <p className={s.description}>{industriesDescription}</p>
+                </motion.div>
+
+                <ul className={s.chips}>
+                    {chips.map((chip, i) => reduceMotion ? (
+                        <li key={chip.id} className={s.chipItem}>{chipLink(chip)}</li>
+                    ) : (
+                        <ScrubChip key={chip.id} time={burstTime} geom={geomOf(i)} itemRef={(el) => { chipEls.current[i] = el }}>
+                            {chipLink(chip)}
+                        </ScrubChip>
+                    ))}
+                </ul>
+
+                {/* Чипы – только примеры: клиент из другой сферы идёт сразу в форму */}
+                <motion.p className={s.other} style={reduceMotion ? undefined : { opacity: otherOpacity, y: otherY }}>
+                    {industriesOther}{' '}
+                    <Link
+                        href={popupPageURL}
+                        className={s.otherLink}
+                        data-goal="cta_click"
+                        data-goal-id="industries_other"
+                        tabIndex={live ? undefined : -1}
+                    >
+                        {formButton}
+                    </Link>
+                </motion.p>
+            </motion.div>
+        </div>
     );
 
-    // «Уменьшить движение»: без липкой сцены, первый экран и отрасли просто идут друг за другом
+    // «Уменьшить движение»: без липкой сцены, первый экран, отрасли и кейсы просто идут друг за другом
     if (reduceMotion) {
         return (
-            <section className={s.static} aria-labelledby="hero-title">
-                <Image className={s.photo} src={photo} alt="Степан Картузов" priority />
-                <div className={`${ralewayRegular.className} ${s.card} ${s.cardStatic}`}>
-                    <HeroSlides slides={heroSlides} titleSlide={heroTitleSlide} interval={heroInterval} />
-                </div>
-                {industries}
-            </section>
+            <>
+                <section className={s.static} aria-labelledby="hero-title">
+                    <Image className={s.photo} src={photo} alt="Степан Картузов" priority />
+                    <div className={`${ralewayRegular.className} ${s.card} ${s.cardStatic}`}>
+                        <HeroSlides slides={heroSlides} titleSlide={heroTitleSlide} interval={heroInterval} />
+                    </div>
+                    {industries}
+                </section>
+                {children}
+            </>
         );
     }
 
     return (
-        <section ref={scene} className={s.scene} aria-labelledby="hero-title">
-            <div ref={screen} className={s.screen}>
+        <>
+            <section
+                ref={scene}
+                className={s.scene}
+                style={{ height: `${100 + LENGTH * PACE * 100}vh` }}
+                aria-labelledby="hero-title"
+            >
                 <motion.div
-                    className={s.bg}
-                    style={{ top: bgTop, right: bgRight, bottom: bgBottom, left: bgLeft, borderRadius: radius }}
-                    aria-hidden="true"
-                />
+                    ref={screen}
+                    className={`${s.screen} ${portalState === 'open' ? s.passThrough : ''}`}
+                    style={{ maskImage: holeMask, WebkitMaskImage: holeMask }}
+                >
+                    <motion.div className={s.base} style={{ opacity: baseOpacity }} aria-hidden="true" />
+                    <motion.div
+                        className={s.bg}
+                        style={{ top: bgTop, right: bgRight, bottom: bgBottom, left: bgLeft, borderRadius: radius }}
+                        aria-hidden="true"
+                    />
 
-                <div className={s.hero}>
-                    <div ref={photoBox} className={s.photoBox}>
-                        <motion.div style={{ x: towardX, y: towardY, scale: towardScale, opacity: photoOpacity }}>
-                            <Image className={s.photo} src={photo} alt="Степан Картузов" priority />
-                        </motion.div>
+                    <div className={s.hero}>
+                        <div ref={photoBox} className={s.photoBox}>
+                            <motion.div style={{ x: towardX, y: towardY, scale: towardScale, opacity: photoOpacity }}>
+                                <Image className={s.photo} src={photo} alt="Степан Картузов" priority />
+                            </motion.div>
+                        </div>
+
+                        <div ref={card} className={`${ralewayRegular.className} ${s.card}`}>
+                            <motion.div style={{ opacity: slidesOpacity, y: slidesY }}>
+                                <HeroSlides slides={heroSlides} titleSlide={heroTitleSlide} interval={heroInterval} />
+                            </motion.div>
+                        </div>
                     </div>
 
-                    <div ref={card} className={`${ralewayRegular.className} ${s.card}`}>
-                        <motion.div style={{ opacity: slidesOpacity, y: slidesY }}>
-                            <HeroSlides slides={heroSlides} titleSlide={heroTitleSlide} interval={heroInterval} />
-                        </motion.div>
+                    <div className={`${s.layer} ${live ? s.layerShown : ''}`}>
+                        {/* Диск портала: под кружком «10 работ», над отраслями */}
+                        <motion.div className={s.disk} style={{ background: diskBg }} aria-hidden="true" />
+                        {industries}
                     </div>
-                </div>
+                </motion.div>
+            </section>
 
-                <div className={`${s.layer} ${shown ? s.layerShown : ''}`}>
-                    {industries}
+            {/* Кейсы прилипают к экрану на время портала и отпускаются вместе со сценой: --exit – путь портала.
+                Липкость нативная, поэтому за скроллом блок не дёргается; сам он не масштабируется и не сдвигается.
+                До начала портала он спрятан: иначе просвечивает под первым экраном */}
+            <div
+                className={`${s.nextTrack} ${portalState === 'off' ? s.nextHidden : ''}`}
+                style={{ '--exit': `${PORTAL_PATH * PACE * 100}vh` } as CSSProperties}
+            >
+                <div className={s.next}>
+                    <SceneAfterContext.Provider value={afterOn ? smoothAfter : null}>
+                        {children}
+                    </SceneAfterContext.Provider>
                 </div>
+                <div ref={afterEl} className={s.after} style={{ height: `${AFTER * 100}vh` }} aria-hidden="true" />
             </div>
-        </section>
+        </>
     );
 }
 

@@ -1,0 +1,27 @@
+.grid {
+    position: relative;
+}
+
+.slot {
+    position: relative;
+    min-width: 0;
+}
+
+// Карты в колоде наклонены вокруг нижнего края – верх нижних карт выглядывает из-под верхней.
+// Фон сплошной, того же оттенка, что полупрозрачный у карточек: иначе нижние карты просвечивают сквозь верхнюю
+.grid .card {
+    transform-origin: 50% 100%;
+    background: color-mix(in srgb, rgb(57, 57, 57) 8%, var(--color-bg));
+}
+
+// Строка текста выезжает снизу из-под своей маски. Запас снизу – под хвосты букв
+.mask {
+    display: block;
+    overflow: hidden;
+    padding-bottom: 0.15em;
+    margin-bottom: -0.15em;
+}
+
+.rise {
+    display: block;
+}

@@ -1,12 +1,20 @@
 @use '/src/styles/variables.scss' as vars;
 
-// Сцена во всю ширину окна: выходит за поля main и контейнера template.
+// Сцена во всю ширину окна: выходит за поля main и контейнера template. Высоту ставит компонент.
 // --page-w – ширина окна без полосы прокрутки, её ставит компонент; 100vw с полосой дал бы горизонтальный скролл.
 // margin-top снимает верхний отступ main, чтобы липкий экран начинался от края окна
 .scene {
     position: relative;
-    height: 220vh;
     margin: -60px calc(50% - var(--page-w, 100vw) / 2) 0;
+
+    // Сцена над кейсами, которые лежат под ней и видны сквозь дыру портала.
+    // Сама секция прозрачна для кликов: её последний экран лежит поверх кейсов
+    z-index: 1;
+    pointer-events: none;
+
+    .screen {
+        pointer-events: auto;
+    }
 }
 
 .screen {
@@ -23,6 +31,12 @@
     overflow: hidden;
 }
 
+// Дыра почти на весь экран: сцена прозрачна для кликов, чтобы кликался блок под ней
+.passThrough,
+.passThrough * {
+    pointer-events: none !important;
+}
+
 // Фон карточки: края двигает компонент, от размеров карточки до краёв окна
 // z-index: -1 – под карточкой: sticky-экран сам создаёт контекст наложения
 .bg {
@@ -34,14 +48,20 @@
     will-change: top, right, bottom, left;
 }
 
-// Ширина как у Hero на главной: на десктопе во весь контейнер template (1220px), от 1150px и уже – 850px.
-// Без position: замер offsetTop/Left карточки идёт от липкого экрана
+// Портал: сплошной цвет страницы под полупрозрачным фоном карточки
+.base {
+    position: absolute;
+    inset: 0;
+    z-index: -2;
+
+    background: var(--color-bg);
+    transition: vars.$transition;
+}
+
 .hero {
     width: 100%;
     max-width: 1220px;
 
-    // Над фоном и над слоем отраслей: в варианте dock фото встаёт над заголовком
-    // Шириной с фото: по ней считается масштаб аватарки
     .photoBox {
         position: relative;
         z-index: 3;
@@ -83,7 +103,19 @@
     }
 }
 
+// Диск портала: на весь слой, рисуется градиентом. Над отраслями, под кружком «10 работ»
+.disk {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+
+    pointer-events: none;
+}
+
+// position: relative – от него компонент меряет кружок, заголовок и чипы
 .industries {
+    position: relative;
+
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -92,9 +124,24 @@
     max-width: 900px;
     text-align: center;
 
-    // Кружок над заголовком: сюда прилетает фото и превращается в знак
+    .content,
+    .lead {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 14px;
+    }
+
+    .content {
+        width: 100%;
+        transform-origin: 50% 0;
+    }
+
+    // Кружок над заголовком: сюда прилетает фото и превращается в знак. Над чипами и заголовком
     .slot {
         position: relative;
+        z-index: 2;
+
         width: 96px;
         height: 96px;
         margin-bottom: 6px;
@@ -162,7 +209,22 @@
         list-style: none;
     }
 
-    // Чипы как на главной и в фильтре /portfolio
+    .chipItem {
+        position: relative;
+    }
+
+    // Брызги: капля поверх чипа – тёмная, как кружок, из которого вылетела
+    .drop {
+        position: absolute;
+        inset: 0;
+        z-index: 1;
+
+        background: var(--color-text-100);
+        border-radius: 24px;
+        pointer-events: none;
+        transition: vars.$transition;
+    }
+
     .chip {
         display: flex;
         align-items: center;
@@ -201,7 +263,6 @@
         }
     }
 
-    // Строка под чипами для клиента из другой сферы, ссылка – на форму
     .other {
         margin: 12px 0 0;
 
@@ -228,7 +289,55 @@
     }
 }
 
-// «Уменьшить движение»: обычная вёрстка, как сейчас на главной
+// Портал: кейсы лежат под сценой. Трек начинается там, где начинается портал,
+// и длиннее блока на путь портала (--exit): всё это время блок прилипает к экрану и стоит на месте,
+// а отпускается ровно тогда, когда сцена.
+// Запас пути – распоркой, а не padding: sticky ездит только в области содержимого родителя
+.nextTrack {
+    margin-top: calc(-100vh - var(--exit));
+
+    &::after {
+        content: '';
+        display: block;
+        height: var(--exit);
+    }
+}
+
+// Путь после портала: блок ещё прилипает, скролл ведёт его анимацию.
+// На телефоне (≤700px, кейсы в столбик) блок длиннее экрана – пути нет, блок анимируется по своему скроллу
+.after {
+    pointer-events: none;
+}
+
+@media screen and (max-width: 700px) {
+    .after {
+        display: none;
+    }
+}
+
+// До начала портала кейсы спрятаны: экран первого экрана ещё не сплошной, и они просвечивали бы
+.nextHidden {
+    visibility: hidden;
+}
+
+// Блок по центру экрана. Кейсы раздаёт из колоды сама сетка (SceneAfterContext)
+.next {
+    position: sticky;
+    top: 0;
+
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+
+    min-height: 100vh;
+    min-height: 100svh;
+
+    > section {
+        margin-top: 0;
+    }
+}
+
+// «Уменьшить движение»: обычная вёрстка без сцены
 .static {
     max-width: 850px;
     margin: auto;
@@ -279,6 +388,11 @@
     .industries {
         gap: 10px;
 
+        .content,
+        .lead {
+            gap: 10px;
+        }
+
         .description {
             font-size: 1rem;
         }
@@ -308,4 +422,3 @@
         }
     }
 }
-
