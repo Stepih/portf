@@ -1,12 +1,17 @@
 import { expect, test } from '@playwright/test';
-import { contactTitle, moreLinks, moreTitle, offerFaq, offerTgButton, offerTitle } from '../src/data/offer';
+import { contactTitle, heroTitleSlide, moreLinks, moreTitle, offerFaq, offerTgButton, offerTitle } from '../src/data/offer';
 
-// Слайды первого экрана сменяются, а h1 с оффером в HTML один и есть всегда (SALES_PLAN 3.1.1)
+// Слайды первого экрана сменяются, а h1 с оффером в HTML один и есть всегда (SALES_PLAN 3.1.1).
+// Первым показывается слайд с h1 (CONVERSION_PLAN К1.1): проверяем по HTML с сервера, до смены слайда
 test('на главной один h1 с оффером, черта переключает слайд', async ({ page }) => {
     await page.goto('/');
 
     await expect(page.locator('h1')).toHaveCount(1);
     await expect(page.locator('h1')).toHaveText(offerTitle);
+
+    const html = await (await page.request.get('/')).text();
+    expect(html).toMatch(/<h1[^>]*class="[^"]*active/);
+    expect(html).toMatch(new RegExp(`aria-label="Слайд ${heroTitleSlide + 1}" aria-current="true"`));
 
     const third = page.getByRole('button', { name: 'Слайд 3' });
     await third.click();

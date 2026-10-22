@@ -17,13 +17,14 @@ interface HeroSlidesProps {
 
 // Сменяющиеся надпись и подпись первого экрана (SALES_PLAN 3.1.1): старый слайд уходит вверх,
 // новый въезжает снизу. Все слайды лежат в одной ячейке grid, поэтому блок не прыгает по высоте.
+// Показ начинается со слайда с h1, чтобы оффер был виден сразу (CONVERSION_PLAN К1.1).
 // Наведение и фокус ставят паузу. При «уменьшить движение» смены нет, виден слайд с h1
 const HeroSlides: FC<HeroSlidesProps> = ({ slides, titleSlide, interval }) => {
     const reduceMotion = useReducedMotion();
-    const [active, setActive] = useState(0);
+    const [active, setActive] = useState(titleSlide);
     const [leaving, setLeaving] = useState<number | null>(null);
 
-    const activeRef = useRef(0);
+    const activeRef = useRef(titleSlide);
     const elapsed = useRef(0);
     const paused = useRef(false);
     const fills = useRef<(HTMLSpanElement | null)[]>([]);
