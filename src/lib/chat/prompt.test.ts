@@ -19,8 +19,14 @@ describe("buildSystemPrompt", () => {
         for (const w of portfolioWorks) expect(prompt).toContain(w.name);
     });
 
-    it("работа со страницей кейса идёт с адресом", () => {
-        expect(prompt).toContain("/portfolio/legiscan");
+    it("ссылок и адресов в промпте нет: модели они запрещены", () => {
+        expect(prompt).not.toMatch(/https?:\/\/|\/portfolio\/|t\.me/);
+        expect(prompt).toMatch(/Legiscan[^\n]*подробный кейс/);
+    });
+
+    // Промпт кэшируется у провайдера: любой меняющийся кусок (дата, случайный id) обнулит кэш
+    it("промпт одинаковый при каждой сборке", () => {
+        expect(buildSystemPrompt()).toBe(prompt);
     });
 
     it("без невидимых символов вёрстки", () => {
