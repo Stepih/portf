@@ -15,22 +15,34 @@ import { heroInterval, heroSlides, heroTitleSlide } from "@/data/offer";
 import { PortfolioIndustry } from "@/interfaces/portfolio";
 import { withIndustry } from "@/scripts/portfolioIndustry";
 
+// Что делает фото, пока карточка раскрывается. Во всех вариантах фото непрозрачное,
+// поэтому край фона сквозь него не просвечивает:
+// ride – уезжает вверх за экран вместе с верхним краем фона;
+// pop – сжимается в точку в начале раскрытия;
+// dock – уменьшается и встаёт аватаркой над «Выберите свою отрасль»
+export type PhotoVariant = 'ride' | 'pop' | 'dock';
+
 interface HeroExpandProps {
-    chips: { id: PortfolioIndustry, label: string, count: number }[]
+    chips: { id: PortfolioIndustry, label: string, count: number }[],
+    photoVariant: PhotoVariant
 }
 
 // Доли прокрутки сцены: раскрытие карточки и порог, после которого выезжают отрасли.
 // Порог скрытия ниже порога показа, чтобы на границе блоки не дёргались туда-обратно
-const EXPAND_FROM = 0.04;
-const EXPAND_TO = 0.4;
-const SHOW_AT = 0.36;
-const HIDE_AT = 0.3;
+const EXPAND_FROM = 0.02;
+const EXPAND_TO = 0.3;
+const SHOW_AT = 0.27;
+const HIDE_AT = 0.2;
 
-const ease = cubicBezier(.7, 0, .2, 1);
+const ease = cubicBezier(.4, 0, .2, 1);
 
 // Отступ края фона: от отступа карточки при t = 0 до нуля при t = 1
 const useInset = (t: MotionValue<number>, edge: MotionValue<number>) =>
     useTransform([t, edge], ([p, e]: number[]) => e * (1 - p));
+
+// Сдвиг или масштаб фото: от 0 (или 1) при t = 0 до цели при t = 1
+const useToward = (t: MotionValue<number>, target: MotionValue<number>, from = 0) =>
+    useTransform([t, target], ([p, v]: number[]) => from + (v - from) * p);
 
 // Блоки выезжают снизу один за другим: заголовок, подпись, чипы. Прячутся разом, без очереди
 const item: Variants = {
@@ -44,22 +56,28 @@ const item: Variants = {
 
 // Сцена высотой в несколько экранов, внутри липкий экран. Фон карточки – отдельный слой:
 // его края при скролле едут от размеров карточки к краям окна, а скругление уходит в ноль.
-// Слайды при этом гаснут и уходят вверх, а когда фон раскрылся – выезжают отрасли
-const HeroExpand: FC<HeroExpandProps> = ({ chips }) => {
+// Слайды при этом гаснут, а когда фон раскрылся – выезжают отрасли
+const HeroExpand: FC<HeroExpandProps> = ({ chips, photoVariant }) => {
     const reduceMotion = useReducedMotion();
     const scene = useRef<HTMLElement>(null);
     const screen = useRef<HTMLDivElement>(null);
     const card = useRef<HTMLDivElement>(null);
+    const photoBox = useRef<HTMLDivElement>(null);
+    const slot = useRef<HTMLDivElement>(null);
     const [shown, setShown] = useState(false);
 
     const { scrollYProgress } = useScroll({ target: scene, offset: ['start start', 'end end'] });
-    const t = useTransform(scrollYProgress, [EXPAND_FROM, EXPAND_TO], [0, 1], { ease });
+    const t = useTransform(scrollYProgress, [EXPAND_FROM, EXPAND_TO], [0, 1], { ease, clamp: true });
 
     // Отступы карточки от краёв липкого экрана, меряются при загрузке и ресайзе
     const top = useMotionValue(0);
     const right = useMotionValue(0);
     const bottom = useMotionValue(0);
     const left = useMotionValue(0);
+    // Куда едет фото: для ride – за верх экрана, для dock – в место аватарки над заголовком
+    const photoDx = useMotionValue(0);
+    const photoDy = useMotionValue(0);
+    const photoScale = useMotionValue(1);
 
     // Объявлены до замера: useTransform подписывается на края в своём эффекте,
     // и замер, сделанный раньше подписки, фон бы не увидел
@@ -68,37 +86,58 @@ const HeroExpand: FC<HeroExpandProps> = ({ chips }) => {
     const bgBottom = useInset(t, bottom);
     const bgLeft = useInset(t, left);
     const radius = useTransform(t, [0, 1], [13, 0]);
+    const towardX = useToward(t, photoDx);
+    const towardY = useToward(t, photoDy);
+    const towardScale = useToward(t, photoScale, 1);
 
     useLayoutEffect(() => {
-        if (!screen.current || !card.current) return;
+        if (!screen.current || !card.current || !photoBox.current) return;
         const measure = () => {
-            if (!screen.current || !card.current) return;
+            if (!screen.current || !card.current || !photoBox.current) return;
             scene.current?.style.setProperty('--page-w', `${document.documentElement.clientWidth}px`);
             const box = screen.current.getBoundingClientRect();
-            // offsetTop/Left не видят transform, поэтому слайды, уехавшие вверх, не сбивают замер
+            // offsetTop/Left не видят transform, поэтому уехавшие слайды и фото не сбивают замер
             const c = card.current;
             top.set(c.offsetTop);
             left.set(c.offsetLeft);
             right.set(box.width - c.offsetLeft - c.offsetWidth);
             bottom.set(box.height - c.offsetTop - c.offsetHeight);
+
+            const p = photoBox.current.getBoundingClientRect();
+            if (photoVariant === 'ride') {
+                // Низ фото уходит за верх экрана
+                photoDx.set(0);
+                photoDy.set(box.top - p.bottom);
+                photoScale.set(1);
+            }
+            if (photoVariant === 'dock' && slot.current) {
+                const target = slot.current.getBoundingClientRect();
+                photoDx.set(target.left + target.width / 2 - (p.left + p.width / 2));
+                photoDy.set(target.top + target.height / 2 - (p.top + p.height / 2));
+                photoScale.set(target.width / p.width);
+            }
         };
         measure();
         const observer = new ResizeObserver(measure);
-        observer.observe(screen.current);
-        observer.observe(card.current);
+        [screen.current, card.current, photoBox.current, slot.current].forEach((el) => el && observer.observe(el));
         return () => observer.disconnect();
-    }, [reduceMotion, top, right, bottom, left]);
+    }, [reduceMotion, photoVariant, top, right, bottom, left, photoDx, photoDy, photoScale]);
 
-    const slidesOpacity = useTransform(scrollYProgress, [EXPAND_FROM + .02, EXPAND_FROM + .2], [1, 0]);
-    const slidesY = useTransform(scrollYProgress, [EXPAND_FROM, EXPAND_TO], [0, -80]);
-    const slidesScale = useTransform(scrollYProgress, [EXPAND_FROM, EXPAND_TO], [1, .92]);
-    const photoOpacity = useTransform(scrollYProgress, [EXPAND_FROM, EXPAND_FROM + .14], [1, 0]);
-    const photoY = useTransform(scrollYProgress, [EXPAND_FROM, EXPAND_TO], [0, -140]);
+    // pop: фото сжимается в точку за первую треть раскрытия и гаснет только в самом конце
+    const popScale = useTransform(t, [0, .35], [1, 0]);
+    const popOpacity = useTransform(t, [.28, .35], [1, 0]);
+
+    const slidesOpacity = useTransform(scrollYProgress, [EXPAND_FROM, EXPAND_FROM + .12], [1, 0]);
+    const slidesY = useTransform(scrollYProgress, [EXPAND_FROM, EXPAND_TO], [0, -60]);
 
     useMotionValueEvent(scrollYProgress, 'change', (p) => {
         if (p >= SHOW_AT) setShown(true);
         else if (p <= HIDE_AT) setShown(false);
     });
+
+    const photoStyle = photoVariant === 'pop'
+        ? { scale: popScale, opacity: popOpacity }
+        : { x: towardX, y: towardY, scale: towardScale };
 
     const industries = (
         <motion.div
@@ -108,6 +147,9 @@ const HeroExpand: FC<HeroExpandProps> = ({ chips }) => {
             aria-labelledby="industries-title"
             role="region"
         >
+            {/* Место под аватарку: сюда приезжает фото первого экрана */}
+            {photoVariant === 'dock' && !reduceMotion && <div ref={slot} className={s.slot} />}
+
             <motion.h2 id="industries-title" className={`${ralewayBold.className} ${s.title}`} variants={item} custom={0}>
                 Выберите свою отрасль
             </motion.h2>
@@ -155,12 +197,14 @@ const HeroExpand: FC<HeroExpandProps> = ({ chips }) => {
                 />
 
                 <div className={s.hero}>
-                    <motion.div style={{ opacity: photoOpacity, y: photoY }}>
-                        <Image className={s.photo} src={photo} alt="Степан Картузов" priority />
-                    </motion.div>
+                    <div ref={photoBox} className={s.photoBox}>
+                        <motion.div style={photoStyle}>
+                            <Image className={s.photo} src={photo} alt="Степан Картузов" priority />
+                        </motion.div>
+                    </div>
 
                     <div ref={card} className={`${ralewayRegular.className} ${s.card}`}>
-                        <motion.div className={s.slides} style={{ opacity: slidesOpacity, y: slidesY, scale: slidesScale }}>
+                        <motion.div style={{ opacity: slidesOpacity, y: slidesY }}>
                             <HeroSlides slides={heroSlides} titleSlide={heroTitleSlide} interval={heroInterval} />
                         </motion.div>
                     </div>

@@ -5,7 +5,7 @@
 // margin-top снимает верхний отступ main, чтобы липкий экран начинался от края окна
 .scene {
     position: relative;
-    height: 320vh;
+    height: 220vh;
     margin: -60px calc(50% - var(--page-w, 100vw) / 2) 0;
 }
 
@@ -34,14 +34,22 @@
     will-change: top, right, bottom, left;
 }
 
+// Ширина как у Hero на главной: на десктопе во весь контейнер template (1220px), от 1150px и уже – 850px.
 // Без position: замер offsetTop/Left карточки идёт от липкого экрана
 .hero {
     width: 100%;
-    max-width: 850px;
+    max-width: 1220px;
+
+    // Над фоном и над слоем отраслей: в варианте dock фото встаёт над заголовком
+    // Шириной с фото: по ней считается масштаб аватарки
+    .photoBox {
+        position: relative;
+        z-index: 3;
+        width: fit-content;
+        margin: 0 auto;
+    }
 
     .photo {
-        position: relative;
-        z-index: 1;
         display: block;
 
         max-width: 100%;
@@ -55,11 +63,6 @@
 .card {
     padding: 50px;
     text-align: center;
-}
-
-.slides {
-    display: flex;
-    justify-content: center;
 }
 
 // Слой отраслей поверх раскрытого фона; кликается, только когда отрасли показаны
@@ -88,6 +91,13 @@
 
     max-width: 900px;
     text-align: center;
+
+    // Место под аватарку в варианте dock, фото приезжает сюда
+    .slot {
+        width: 96px;
+        height: 96px;
+        margin-bottom: 6px;
+    }
 
     .title {
         margin: 0;
@@ -187,6 +197,10 @@
 }
 
 @media screen and (max-width: 1150px) {
+    .hero {
+        max-width: 850px;
+    }
+
     .card {
         padding: 60px 20px;
     }
@@ -209,6 +223,11 @@
             font-size: 1rem;
         }
 
+        .slot {
+            width: 72px;
+            height: 72px;
+        }
+
         .chips {
             gap: 8px;
             margin-top: 12px;
@@ -219,5 +238,47 @@
             padding: 8px 14px;
             font-size: 0.95rem;
         }
+    }
+}
+
+// Переключатель вариантов фото – только для демо
+.switcher {
+    position: fixed;
+    top: 16px;
+    left: 50%;
+    z-index: 20;
+    transform: translateX(-50%);
+
+    display: flex;
+    gap: 4px;
+    padding: 4px;
+
+    font-size: 0.9rem;
+
+    background: var(--color-bg);
+    border-radius: 20px;
+    box-shadow: vars.$shadow;
+
+    a {
+        padding: 6px 12px;
+
+        color: var(--color-text-50);
+        text-decoration: none;
+        white-space: nowrap;
+
+        border-radius: 16px;
+    }
+
+    .current {
+        color: var(--color-bg);
+        background: var(--color-text-100);
+    }
+}
+
+@media screen and (max-width: 560px) {
+    .switcher {
+        top: auto;
+        bottom: 90px;
+        font-size: 0.8rem;
     }
 }
