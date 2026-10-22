@@ -2,7 +2,7 @@
 
 // Суммы в рублях: «8 000 ₽», «30000 ₽», «15 000 рублей». prefix – есть ли перед суммой «от»
 const prices = (text: string) =>
-    [...text.matchAll(/(от\s)?(\d[\d\s ]*\d|\d)\s*(?:₽|руб)/g)].map((m) => ({
+    [...text.matchAll(/(от\s|from\s)?(\d[\d\s ]*\d|\d)\s*(?:₽|руб)/g)].map((m) => ({
         value: m[2].replace(/[\s ]/g, ''),
         withFrom: Boolean(m[1]),
     }));
