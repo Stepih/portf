@@ -42,3 +42,7 @@ export const validateFeedback = (body: unknown): FeedbackResult => {
 
     return { ok: true, data: { name, contact, message } };
 };
+
+// Что можно набрать в поле «Телефон» (CONVERSION_PLAN К1.2): цифры, «+», пробелы, скобки и дефис –
+// чтобы проходил номер в любом привычном виде, например «+7 (999) 123-45-67». Проверяется только в браузере
+export const isPhoneInput = (text: string) => /^[0-9+()\s-]{0,25}$/.test(text);

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { validateFeedback } from "./feedback";
+import { isPhoneInput, validateFeedback } from "./feedback";
 
 describe("validateFeedback", () => {
     it("валидная заявка проходит, пробелы по краям обрезаются", () => {
@@ -40,5 +40,19 @@ describe("validateFeedback", () => {
         expect(validateFeedback({ ...ok, name: "и".repeat(51) })).toEqual(tooLong);
         expect(validateFeedback({ ...ok, contact: "к".repeat(31) })).toEqual(tooLong);
         expect(validateFeedback({ ...ok, message: "т".repeat(2001) })).toEqual(tooLong);
+    });
+});
+
+describe("isPhoneInput", () => {
+    it("номер проходит в любом привычном виде", () => {
+        for (const phone of ["", "79990001122", "+7 (999) 123-45-67", "8 999 123 45 67", "+79990001122"]) {
+            expect(isPhoneInput(phone), phone).toBe(true);
+        }
+    });
+
+    it("буквы и прочие знаки не проходят, длина – не больше 25", () => {
+        for (const text of ["12a", "@ivan", "+7.999", "1".repeat(26)]) {
+            expect(isPhoneInput(text), text).toBe(false);
+        }
     });
 });

@@ -8,14 +8,12 @@ import { IInputKeyValue } from "@/interfaces/input";
 import s from './LeadForm.module.scss'
 import TextAreaInput from "./input/TextAreaInput";
 import ErrorMessage from "@/components/ui/errorMessage/ErrorMessage";
-import { HONEYPOT_FIELD } from "@/lib/validation/feedback";
+import { HONEYPOT_FIELD, isPhoneInput } from "@/lib/validation/feedback";
 import { leadSourceFromSearch } from "@/scripts/leadSource";
 import { reachGoal } from "@/scripts/metrika";
 import { GOALS } from "@/constants/analytics";
 
 const checkNameReg = (text: string) => /^[A-Za-zА-Яа-яё]{0,25}$/.test(text.replace(/\s+/g, ''));
-
-const checkPhoneReg = (text: string) => /^[0-9]{0,25}$/.test(text);
 
 const errorByStatus: Record<number, string> = {
     400: 'Проверьте, пожалуйста, заполненные поля',
@@ -78,7 +76,7 @@ const LeadForm: FC<ILeadForm> = ({ className }) => {
     };
 
     const handleSetInputValue = (value:IInputKeyValue) => {
-        if (focusInput === 'contact' && !checkPhoneReg(value.contact)) return setError('Формат: только цифры, не больше 25 символов')
+        if (focusInput === 'contact' && !isPhoneInput(value.contact)) return setError('Формат: цифры, +, скобки и дефис, не больше 25 символов')
         if (focusInput === 'name' && !checkNameReg(value.name)) return setError('Формат: только буквы, не больше 25 символов')
         if (error) setError('');
         if (success) setSuccess('');

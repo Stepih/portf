@@ -36,12 +36,21 @@ test('в телефон нельзя ввести буквы, в имя — ци
     const form = fields(page);
 
     await form.contact.pressSequentially('12a');
-    await expect(page.getByText('Формат: только цифры, не больше 25 символов')).toBeVisible();
+    await expect(page.getByText('Формат: цифры, +, скобки и дефис, не больше 25 символов')).toBeVisible();
     await expect(form.contact).toHaveValue('12');
 
     await form.name.pressSequentially('Ив1');
     await expect(page.getByText('Формат: только буквы, не больше 25 символов')).toBeVisible();
     await expect(form.name).toHaveValue('Ив');
+});
+
+// Номер в привычном виде набирается без ошибки (CONVERSION_PLAN К1.2)
+test('телефон с +, пробелами, скобками и дефисом', async ({ page }) => {
+    const form = fields(page);
+
+    await form.contact.pressSequentially('+7 (999) 123-45-67');
+    await expect(form.contact).toHaveValue('+7 (999) 123-45-67');
+    await expect(page.getByText(/^Формат:/)).toHaveCount(0);
 });
 
 test('валидная заявка уходит одним POST, форма очищается', async ({ page }) => {
