@@ -46,3 +46,6 @@ next-env.d.ts
 # playwright
 /test-results/
 /playwright-report/
+
+# сравнение моделей демо-чата (CONVERSION_PLAN К3.2)
+/.chat-compare/

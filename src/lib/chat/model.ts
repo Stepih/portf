@@ -20,6 +20,14 @@ const getClient = (): OpenAI => {
     return client;
 };
 
+// Параметры запроса – общие для сайта и сравнения моделей (compare/), чтобы сравнивать ровно то, что увидит клиент
+const chatParams = (system: string, messages: IChatMessage[], model: string) => ({
+    model,
+    messages: [{ role: 'system' as const, content: system }, ...messages],
+    max_tokens: CHAT_MAX_TOKENS,
+    temperature: 0.3,
+});
+
 // Ответ модели по кускам текста. Ошибка запроса бросается до первого куска, поэтому роут успевает ответить кодом ошибки
 export const streamChatReply = async (
     system: string,
@@ -27,13 +35,7 @@ export const streamChatReply = async (
     { model = CHAT_MODEL, signal }: { model?: string; signal?: AbortSignal } = {}
 ): Promise<AsyncIterable<string>> => {
     const stream = await getClient().chat.completions.create(
-        {
-            model,
-            messages: [{ role: 'system', content: system }, ...messages],
-            max_tokens: CHAT_MAX_TOKENS,
-            temperature: 0.3,
-            stream: true,
-        },
+        { ...chatParams(system, messages, model), stream: true },
         { signal }
     );
 
@@ -43,4 +45,14 @@ export const streamChatReply = async (
             if (text) yield text;
         }
     })();
+};
+
+// Ответ целиком и расход токенов – только для сравнения моделей (compare/), на сайте не используется
+export const chatReplyWithUsage = async (system: string, messages: IChatMessage[], model: string) => {
+    const response = await getClient().chat.completions.create({ ...chatParams(system, messages, model), stream: false });
+    return {
+        text: response.choices[0]?.message?.content ?? '',
+        inputTokens: response.usage?.prompt_tokens ?? 0,
+        outputTokens: response.usage?.completion_tokens ?? 0,
+    };
 };
