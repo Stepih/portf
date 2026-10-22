@@ -84,7 +84,12 @@
         column-gap: 40px;
 
         .name { grid-area: 1 / 1; }
-        .summary { grid-area: 2 / 1 / 4 / 2; }
+        .summary { grid-area: 2 / 1; }
+        // Кнопка демо-чата – под описанием, на уровне кнопки «Узнать цену»
+        .demo {
+            grid-area: 3 / 1;
+            align-self: end;
+        }
         .bottom {
             grid-area: 1 / 2 / 3 / 3;
             padding: 0 0 0 40px;
@@ -181,9 +186,10 @@
         .wide {
             grid-template-columns: minmax(0, 1fr);
             grid-template-rows: subgrid;
-            grid-row: span 4;
+            // Пять строк: название, описание, демо-чат, цена, кнопка
+            grid-row: span 5;
 
-            .name, .summary, .bottom, .button { grid-area: auto; }
+            .name, .summary, .demo, .bottom, .button { grid-area: auto; }
             .bottom {
                 padding: 14px 0 0;
                 border-top: 1px solid rgba(128, 128, 128, 0.3);

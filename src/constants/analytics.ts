@@ -9,7 +9,11 @@ export const GOALS = {
     ctaClick: 'cta_click',
     industryClick: 'industry_click',
     serviceClick: 'service_click',
-    moreClick: 'more_click'
+    moreClick: 'more_click',
+    // Демо-чат (CONVERSION_PLAN К3.2): окно открыто, вопрос задан, контакт оставлен в чате
+    chatOpen: 'chat_open',
+    chatMessage: 'chat_message',
+    chatLead: 'chat_lead'
 } as const
 
 export type Goal = typeof GOALS[keyof typeof GOALS]

@@ -7,6 +7,10 @@ import { CASE_PARAM, SERVICE_PARAM } from "./services";
 // Форма их не показывает, а отправляет вместе с заявкой; владелец видит их в Telegram
 const LEAD_SOURCE_PARAMS = [SERVICE_PARAM, CASE_PARAM, INDUSTRY_PARAM] as const;
 
+// Заявка из окна демо-чата (CONVERSION_PLAN К3.2): поле from в теле запроса, в адресе его нет
+export const LEAD_FROM_FIELD = 'from';
+export const LEAD_FROM_CHAT = 'chat';
+
 export type LeadSource = Partial<Record<typeof LEAD_SOURCE_PARAMS[number], string>>;
 
 // Параметры из адреса страницы с формой; пустые и чужие не попадают
@@ -20,13 +24,14 @@ export const leadSourceFromSearch = (search: string): LeadSource => {
     );
 }
 
-// Строки для сообщения в Telegram. Берутся только известные id: в заявку не попадёт произвольный текст из ссылки
+// Строки для сообщения в Telegram. Берутся только известные id и метка чата: в заявку не попадёт произвольный текст из ссылки
 export const leadSourceLines = (body: Record<string, unknown>): string[] => {
     const service = services.find((item) => item.id === body[SERVICE_PARAM]);
     const work = portfolioWorks.find((item) => item.id === body[CASE_PARAM]);
     const industry = portfolioIndustries.find((item) => item.id === body[INDUSTRY_PARAM]);
 
     return [
+        body[LEAD_FROM_FIELD] === LEAD_FROM_CHAT && 'Откуда: демо-чат',
         service && `Услуга: ${service.title}`,
         work && `Кейс: ${work.name}`,
         industry && `Отрасль: ${industry.label}`

@@ -25,6 +25,11 @@ describe("leadSourceLines", () => {
         ]);
     });
 
+    it("заявка из демо-чата помечается", () => {
+        expect(leadSourceLines({ from: "chat" })).toEqual(["Откуда: демо-чат"]);
+        expect(leadSourceLines({ from: "spam" })).toEqual([]);
+    });
+
     it("неизвестные id и не строки отбрасываются", () => {
         expect(leadSourceLines({ service: "spam", case: 42, for: { id: "medicine" } })).toEqual([]);
         expect(leadSourceLines({})).toEqual([]);

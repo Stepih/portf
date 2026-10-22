@@ -122,7 +122,8 @@ export const services: IService[] = [
         term: 'от 12 дней',
         note: 'Вместе с сайтом обычно дороже',
         caseIds: ['legiscan'],
-        wide: true
+        wide: true,
+        demoChat: true
     }
 ]
 

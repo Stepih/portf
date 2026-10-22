@@ -4,13 +4,14 @@ import Link from "next/link";
 import s from './Services.module.scss'
 import { ralewayBold, ralewayRegular } from "@/app/fonts/fonts";
 import { popupPageURL, portfolioPageURL } from "@/constants/urls";
-import { services, servicesButton, servicesCasesLabel, servicesCommon, servicesDescription, servicesTitle } from "@/data/offer";
+import ChatButton from "../chat/ChatButton";
+import { offerTgButton, services, servicesButton, servicesCasesLabel, servicesCommon, servicesDescription, servicesTitle } from "@/data/offer";
 import { portfolioWorks } from "@/data/portfolio";
 import { portfolioCases } from "@/data/portfolioCases";
 import { serviceCases, withService } from "@/scripts/services";
 
 // «Услуги и цены» (SALES_PLAN 3.4): три вида сайтов в ряд, ИИ – широкой карточкой под ними.
-// Карточки из offer.ts, кейс-пример и кнопка в форму с услугой.
+// Карточки из offer.ts, кейс-пример и кнопка в форму с услугой; в карточке ИИ – кнопка демо-чата (К3.2).
 // Серверный: тексты кейсов в клиентский бандл не попадают
 const Services: FC = () => {
     return (
@@ -26,6 +27,7 @@ const Services: FC = () => {
                         <li key={service.id} className={`${s.card} ${service.wide ? s.wide : ''}`}>
                             <h3 className={`${ralewayBold.className} ${s.name}`}>{service.title}</h3>
                             <p className={s.summary}>{service.summary}</p>
+                            {service.demoChat && <ChatButton tgButton={offerTgButton} className={s.demo} />}
 
                             <div className={s.bottom}>
                                 <p className={`${ralewayBold.className} ${s.price}`}>{service.price}</p>

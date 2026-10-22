@@ -3,6 +3,7 @@
 // Все проверки идут до вызова модели и ничего не стоят
 
 import { createHash } from "crypto";
+import { CHAT_LIMITS } from "./request";
 import type { IChatStore } from "./store";
 
 export const CHAT_GUARD = {
@@ -10,8 +11,8 @@ export const CHAT_GUARD = {
     ipPerWindow: 15,
     ipWindowMin: 10,
     ipPerDay: 30,
-    // Вопросов в одном диалоге (выбор владельца), дальше – кнопки формы и Telegram
-    perDialog: 10,
+    // Вопросов в одном диалоге: общий с окном чата, поэтому лежит в request.ts
+    perDialog: CHAT_LIMITS.dialog,
     // Бюджет чата на всех посетителей за сутки по Москве, ₽ (владелец, 22.10.2026): около 1000 вопросов
     dailyBudgetRub: 50,
     // При какой доле бюджета слать владельцу уведомление в Telegram (раз в сутки на каждый порог)

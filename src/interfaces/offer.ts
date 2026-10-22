@@ -25,7 +25,9 @@ export interface IService {
     // Кейсы-примеры из portfolioWorks; пусто — примера нет
     caseIds: string[],
     // Карточка на всю ширину под остальными: ИИ – отдельное направление, не четвёртый вид сайта
-    wide?: boolean
+    wide?: boolean,
+    // Кнопка демо-чата в карточке (CONVERSION_PLAN К3.2): чат – живой пример этой услуги
+    demoChat?: boolean
 }
 
 export interface IOfferStep {
