@@ -1,18 +1,17 @@
 import { getClientIp } from '@/lib/clientIp';
 import { createRateLimiter } from '@/lib/rateLimit';
+import { sendTelegram, telegramConfigured } from '@/lib/telegram';
 import { HONEYPOT_FIELD, validateFeedback } from '@/lib/validation/feedback';
 import { leadMessageText } from '@/scripts/leadSource';
 
-// Rate-limit в памяти: прод работает в одном контейнере, этого достаточно. 5 заявок за 10 минут с одного IP
+// Rate-limit в памяти, 5 заявок за 10 минут с одного IP. На Vercel у каждого экземпляра функции свой счётчик,
+// защита слабее, чем в одном контейнере, но заявка ничего не стоит – общий Redis здесь не нужен
 const isRateLimited = createRateLimiter({ limit: 5, windowMs: 10 * 60 * 1000 });
 
 const json = (body: object, status: number) => Response.json(body, { status });
 
 export async function POST(req: Request) {
-    // Токен и чат берутся из env: локально .env.local, на проде env Docker-контейнера
-    const telegramBotToken = process.env.TELEGRAM_BOT_TOKEN;
-    const chatId = process.env.TELEGRAM_CHAT_ID;
-    if (!telegramBotToken || !chatId) {
+    if (!telegramConfigured()) {
         console.error('sendMessage: TELEGRAM_BOT_TOKEN or TELEGRAM_CHAT_ID is not set');
         return json({ error: 'Failed to send message' }, 500);
     }
@@ -41,18 +40,7 @@ export async function POST(req: Request) {
     const text = leadMessageText(result.data, body as Record<string, unknown>);
 
     try {
-        const response = await fetch(`https://api.telegram.org/bot${telegramBotToken}/sendMessage`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ chat_id: chatId, text })
-        });
-
-        const data = await response.json() as { ok: boolean; description?: string };
-
-        if (!data.ok) {
-            throw new Error(data.description);
-        }
-
+        await sendTelegram(text);
         return json({ message: 'Message sent successfully' }, 200);
     } catch (error) {
         // Подробности только в лог, клиенту — общая ошибка

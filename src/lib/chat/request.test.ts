@@ -9,6 +9,7 @@ describe("validateChatRequest", () => {
         expect(validateChatRequest({ messages: [user("  Сколько стоит лендинг? ")] })).toEqual({
             ok: true,
             messages: [{ role: "user", content: "Сколько стоит лендинг?" }],
+            questionCount: 1,
         });
     });
 
@@ -53,5 +54,7 @@ describe("validateChatRequest", () => {
         if (!result.ok) return;
         expect(result.messages).toHaveLength(CHAT_LIMITS.history);
         expect(result.messages[result.messages.length - 1].content).toBe("последний");
+        // Вопросы для лимита на диалог считаются по всей истории, а не по обрезанной
+        expect(result.questionCount).toBe(6);
     });
 });

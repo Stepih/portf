@@ -8,6 +8,14 @@ import type { IChatMessage } from "./request";
 // Выбрана по прогону 1: не выдумывает факты (CONVERSION_PLAN К3.2)
 export const CHAT_MODEL = 'claude-haiku-5.5';
 
+// Цена CHAT_MODEL у BotHub, ₽ за 1 млн токенов (каталог на 22.10.2026). Сменили модель – поменяйте и цену:
+// по ней считается бюджет чата на сутки
+export const CHAT_PRICE_RUB = { input: 9.88, output: 49.40 };
+
+// Цена ответа в рублях по токенам
+export const replyCostRub = (inputTokens: number, outputTokens: number) =>
+    (inputTokens * CHAT_PRICE_RUB.input + outputTokens * CHAT_PRICE_RUB.output) / 1e6;
+
 // Предел длины ответа в токенах. Токенизатор Claude дробит русский текст: 4 предложения – 200–400 токенов,
 // при 400 один ответ из 20 обрезался (прогон 2). Длину ответа держит промпт, предел – только страховка цены
 export const CHAT_MAX_TOKENS = 600;
@@ -43,22 +51,42 @@ const chatParams = (system: string, messages: IChatMessage[], model: string, cac
     max_tokens: CHAT_MAX_TOKENS,
 });
 
-// Ответ модели по кускам текста. Ошибка запроса бросается до первого куска, поэтому роут успевает ответить кодом ошибки
+// Итог ответа: токены из usage (null – провайдер их не прислал) и почему модель остановилась
+export interface IChatReplyResult {
+    inputTokens: number | null;
+    outputTokens: number | null;
+    finishReason: string | null;
+}
+
+// Ответ модели по кускам текста. Ошибка запроса бросается до первого куска, поэтому роут успевает ответить кодом ошибки.
+// onDone вызывается после последнего куска: по usage роут списывает фактическую цену из бюджета
 export const streamChatReply = async (
     system: string,
     messages: IChatMessage[],
-    { model = CHAT_MODEL, signal }: { model?: string; signal?: AbortSignal } = {}
+    { model = CHAT_MODEL, signal, onDone }: {
+        model?: string;
+        signal?: AbortSignal;
+        onDone?: (result: IChatReplyResult) => Promise<void> | void;
+    } = {}
 ): Promise<AsyncIterable<string>> => {
     const stream = await getClient().chat.completions.create(
-        { ...chatParams(system, messages, model, CHAT_PROMPT_CACHE), stream: true },
+        // include_usage: последним куском приходит расход токенов
+        { ...chatParams(system, messages, model, CHAT_PROMPT_CACHE), stream: true, stream_options: { include_usage: true } },
         { signal }
     );
 
     return (async function* () {
+        const result: IChatReplyResult = { inputTokens: null, outputTokens: null, finishReason: null };
         for await (const chunk of stream) {
-            const text = chunk.choices[0]?.delta?.content;
-            if (text) yield text;
+            const choice = chunk.choices[0];
+            if (choice?.delta?.content) yield choice.delta.content;
+            if (choice?.finish_reason) result.finishReason = choice.finish_reason;
+            if (chunk.usage) {
+                result.inputTokens = chunk.usage.prompt_tokens;
+                result.outputTokens = chunk.usage.completion_tokens;
+            }
         }
+        await onDone?.(result);
     })();
 };
 

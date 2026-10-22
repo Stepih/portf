@@ -14,8 +14,9 @@ export interface IChatMessage {
     content: string;
 }
 
+// questionCount – вопросов клиента во всём диалоге, до обрезки истории: по нему работает лимит на диалог
 type ChatRequestResult =
-    | { ok: true; messages: IChatMessage[] }
+    | { ok: true; messages: IChatMessage[]; questionCount: number }
     | { ok: false; error: string };
 
 const isRole = (role: unknown): role is IChatMessage['role'] => role === 'user' || role === 'assistant';
@@ -40,5 +41,6 @@ export const validateChatRequest = (body: unknown): ChatRequestResult => {
 
     if (messages[messages.length - 1].role !== 'user') return { ok: false, error: 'Last message must be a question' };
 
-    return { ok: true, messages };
+    const questionCount = raw.filter((item) => (item as Record<string, unknown> | null)?.role === 'user').length;
+    return { ok: true, messages, questionCount };
 };
