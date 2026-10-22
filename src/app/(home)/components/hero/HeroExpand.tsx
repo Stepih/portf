@@ -10,8 +10,8 @@ import photo from '@/assets/_img/rectangles/title-page/i.png'
 import s from './HeroExpand.module.scss'
 import HeroSlides from "./HeroSlides";
 import { ralewayBold, ralewayRegular } from "@/app/fonts/fonts";
-import { portfolioPageURL } from "@/constants/urls";
-import { heroInterval, heroSlides, heroTitleSlide } from "@/data/offer";
+import { popupPageURL, portfolioPageURL } from "@/constants/urls";
+import { formButton, heroInterval, heroSlides, heroTitleSlide, industriesDescription, industriesOther, industriesTitle } from "@/data/offer";
 import { PortfolioIndustry } from "@/interfaces/portfolio";
 import { withIndustry } from "@/scripts/portfolioIndustry";
 import { plural } from "@/scripts/portfolioStats";
@@ -52,7 +52,7 @@ const item: Variants = {
     }),
 };
 
-// Первый экран главной (SALES_PLAN 3.1) и «Выберите свою отрасль» (3.2) одной сценой.
+// Первый экран главной (SALES_PLAN 3.1) и блок отраслей (3.2) одной сценой.
 // Сцена высотой в несколько экранов, внутри липкий экран. Фон карточки – отдельный слой:
 // его края при скролле едут от размеров карточки к краям окна, а скругление уходит в ноль.
 // Слайды при этом гаснут. Фото уменьшается, летит в кружок над заголовком и там перетекает
@@ -198,9 +198,9 @@ const HeroExpand: FC<HeroExpandProps> = ({ chips, worksCount }) => {
             )}
 
             <motion.h2 id="industries-title" className={`${ralewayBold.className} ${s.title}`} variants={item} custom={0}>
-                Выберите свою отрасль
+                {industriesTitle}
             </motion.h2>
-            <motion.p className={s.description} variants={item} custom={1}>Покажу работы из вашей сферы</motion.p>
+            <motion.p className={s.description} variants={item} custom={1}>{industriesDescription}</motion.p>
 
             <ul className={s.chips}>
                 {chips.map((chip, i) => (
@@ -218,6 +218,20 @@ const HeroExpand: FC<HeroExpandProps> = ({ chips, worksCount }) => {
                     </motion.li>
                 ))}
             </ul>
+
+            {/* Чипы – только примеры: клиент из другой сферы идёт сразу в форму */}
+            <motion.p className={s.other} variants={item} custom={chips.length + 2}>
+                {industriesOther}{' '}
+                <Link
+                    href={popupPageURL}
+                    className={s.otherLink}
+                    data-goal="cta_click"
+                    data-goal-id="industries_other"
+                    tabIndex={reduceMotion || shown ? undefined : -1}
+                >
+                    {formButton}
+                </Link>
+            </motion.p>
         </motion.div>
     );
 

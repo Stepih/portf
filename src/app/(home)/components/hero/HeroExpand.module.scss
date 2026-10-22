@@ -200,6 +200,32 @@
             outline-offset: 2px;
         }
     }
+
+    // Строка под чипами для клиента из другой сферы, ссылка – на форму
+    .other {
+        margin: 12px 0 0;
+
+        font-size: 1rem;
+        color: var(--color-text-50);
+        transition: vars.$transition;
+    }
+
+    .otherLink {
+        color: var(--color-text-100);
+        text-decoration: underline;
+        text-underline-offset: 3px;
+        white-space: nowrap;
+        transition: vars.$transition;
+
+        &:hover {
+            text-decoration-thickness: 2px;
+        }
+
+        &:focus-visible {
+            outline: 2px solid vars.$blue-100;
+            outline-offset: 2px;
+        }
+    }
 }
 
 // «Уменьшить движение»: обычная вёрстка, как сейчас на главной

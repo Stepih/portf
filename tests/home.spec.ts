@@ -25,7 +25,7 @@ test('чип отрасли открывает портфолио с фильт�
     await page.goto('/');
     await page.mouse.wheel(0, 300);
 
-    const chips = page.getByRole('region', { name: 'Выберите свою отрасль' }).getByRole('link');
+    const chips = page.getByRole('region', { name: 'Каким может быть сайт для вашего бизнеса' }).getByRole('listitem').getByRole('link');
     await expect(chips.first()).toBeVisible();
 
     const href = await chips.first().getAttribute('href');
