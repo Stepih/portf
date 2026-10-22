@@ -92,11 +92,63 @@
     max-width: 900px;
     text-align: center;
 
-    // Место под аватарку в варианте dock, фото приезжает сюда
+    // Кружок над заголовком: сюда прилетает фото и превращается в знак
     .slot {
+        position: relative;
         width: 96px;
         height: 96px;
         margin-bottom: 6px;
+    }
+
+    .mark {
+        position: absolute;
+        inset: 0;
+
+        > * {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            width: 100%;
+            height: 100%;
+
+            border-radius: 50%;
+        }
+    }
+
+    // Инициалы: тёмный круг, как фото, но без лица
+    .monogram {
+        font-size: 2rem;
+        letter-spacing: 0.05em;
+        color: var(--color-bg);
+        background: var(--color-text-100);
+        transition: vars.$transition;
+    }
+
+    // Число работ в контурном круге, как у чипов ниже
+    .works {
+        flex-direction: column;
+
+        font-size: 0.7rem;
+        line-height: 1;
+        color: var(--color-text-50);
+
+        border: 1.5px solid rgba(128, 128, 128, 0.45);
+        transition: vars.$transition;
+
+        b {
+            margin-bottom: 2px;
+            font-size: 2.2rem;
+            color: var(--color-text-100);
+        }
+    }
+
+    // Значок «разделы»: четыре плитки на тёмном круге
+    .tiles {
+        padding: 26%;
+        fill: var(--color-bg);
+        background: var(--color-text-100);
+        transition: vars.$transition;
     }
 
     .title {
@@ -226,6 +278,18 @@
         .slot {
             width: 72px;
             height: 72px;
+        }
+
+        .monogram {
+            font-size: 1.5rem;
+        }
+
+        .works {
+            font-size: 0.6rem;
+
+            b {
+                font-size: 1.6rem;
+            }
         }
 
         .chips {

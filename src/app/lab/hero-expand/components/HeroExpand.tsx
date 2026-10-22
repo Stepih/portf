@@ -14,17 +14,18 @@ import { portfolioPageURL } from "@/constants/urls";
 import { heroInterval, heroSlides, heroTitleSlide } from "@/data/offer";
 import { PortfolioIndustry } from "@/interfaces/portfolio";
 import { withIndustry } from "@/scripts/portfolioIndustry";
+import { plural } from "@/scripts/portfolioStats";
 
-// Что делает фото, пока карточка раскрывается. Во всех вариантах фото непрозрачное,
-// поэтому край фона сквозь него не просвечивает:
-// ride – уезжает вверх за экран вместе с верхним краем фона;
-// pop – сжимается в точку в начале раскрытия;
-// dock – уменьшается и встаёт аватаркой над «Выберите свою отрасль»
-export type PhotoVariant = 'ride' | 'pop' | 'dock';
+// Фото при раскрытии уменьшается и летит в кружок над «Выберите свою отрасль».
+// Фото непрозрачное, поэтому край фона сквозь него не просвечивает. Что в кружке в конце:
+// photo – само фото; monogram – инициалы «СК»; works – число работ; tiles – значок «разделы»
+export type MarkVariant = 'photo' | 'monogram' | 'works' | 'tiles';
 
 interface HeroExpandProps {
     chips: { id: PortfolioIndustry, label: string, count: number }[],
-    photoVariant: PhotoVariant
+    // Сколько работ в портфолио – для варианта works
+    worksCount: number,
+    mark: MarkVariant
 }
 
 // Доли прокрутки сцены: раскрытие карточки и порог, после которого выезжают отрасли.
@@ -57,7 +58,7 @@ const item: Variants = {
 // Сцена высотой в несколько экранов, внутри липкий экран. Фон карточки – отдельный слой:
 // его края при скролле едут от размеров карточки к краям окна, а скругление уходит в ноль.
 // Слайды при этом гаснут, а когда фон раскрылся – выезжают отрасли
-const HeroExpand: FC<HeroExpandProps> = ({ chips, photoVariant }) => {
+const HeroExpand: FC<HeroExpandProps> = ({ chips, worksCount, mark }) => {
     const reduceMotion = useReducedMotion();
     const scene = useRef<HTMLElement>(null);
     const screen = useRef<HTMLDivElement>(null);
@@ -74,7 +75,7 @@ const HeroExpand: FC<HeroExpandProps> = ({ chips, photoVariant }) => {
     const right = useMotionValue(0);
     const bottom = useMotionValue(0);
     const left = useMotionValue(0);
-    // Куда едет фото: для ride – за верх экрана, для dock – в место аватарки над заголовком
+    // Куда едет фото: сдвиг до кружка над заголовком и масштаб под его размер
     const photoDx = useMotionValue(0);
     const photoDy = useMotionValue(0);
     const photoScale = useMotionValue(1);
@@ -104,13 +105,7 @@ const HeroExpand: FC<HeroExpandProps> = ({ chips, photoVariant }) => {
             bottom.set(box.height - c.offsetTop - c.offsetHeight);
 
             const p = photoBox.current.getBoundingClientRect();
-            if (photoVariant === 'ride') {
-                // Низ фото уходит за верх экрана
-                photoDx.set(0);
-                photoDy.set(box.top - p.bottom);
-                photoScale.set(1);
-            }
-            if (photoVariant === 'dock' && slot.current) {
+            if (slot.current) {
                 const target = slot.current.getBoundingClientRect();
                 photoDx.set(target.left + target.width / 2 - (p.left + p.width / 2));
                 photoDy.set(target.top + target.height / 2 - (p.top + p.height / 2));
@@ -121,11 +116,12 @@ const HeroExpand: FC<HeroExpandProps> = ({ chips, photoVariant }) => {
         const observer = new ResizeObserver(measure);
         [screen.current, card.current, photoBox.current, slot.current].forEach((el) => el && observer.observe(el));
         return () => observer.disconnect();
-    }, [reduceMotion, photoVariant, top, right, bottom, left, photoDx, photoDy, photoScale]);
+    }, [reduceMotion, top, right, bottom, left, photoDx, photoDy, photoScale]);
 
-    // pop: фото сжимается в точку за первую треть раскрытия и гаснет только в самом конце
-    const popScale = useTransform(t, [0, .35], [1, 0]);
-    const popOpacity = useTransform(t, [.28, .35], [1, 0]);
+    // На подлёте к кружку фото перетекает в знак: фото гаснет, знак проявляется и дорастает до размера
+    const photoOpacity = useTransform(t, [.7, 1], [1, mark === 'photo' ? 1 : 0]);
+    const markOpacity = useTransform(t, [.7, 1], [0, 1]);
+    const markScale = useTransform(t, [.7, 1], [.6, 1]);
 
     const slidesOpacity = useTransform(scrollYProgress, [EXPAND_FROM, EXPAND_FROM + .12], [1, 0]);
     const slidesY = useTransform(scrollYProgress, [EXPAND_FROM, EXPAND_TO], [0, -60]);
@@ -135,9 +131,24 @@ const HeroExpand: FC<HeroExpandProps> = ({ chips, photoVariant }) => {
         else if (p <= HIDE_AT) setShown(false);
     });
 
-    const photoStyle = photoVariant === 'pop'
-        ? { scale: popScale, opacity: popOpacity }
-        : { x: towardX, y: towardY, scale: towardScale };
+    const markContent = {
+        photo: null,
+        monogram: <span className={`${ralewayBold.className} ${s.monogram}`}>СК</span>,
+        works: (
+            <span className={s.works}>
+                <b className={ralewayBold.className}>{worksCount}</b>
+                {plural(worksCount, ['работа', 'работы', 'работ'])}
+            </span>
+        ),
+        tiles: (
+            <svg className={s.tiles} viewBox="0 0 24 24">
+                <rect x="3" y="3" width="8" height="8" rx="2" />
+                <rect x="13" y="3" width="8" height="8" rx="2" />
+                <rect x="3" y="13" width="8" height="8" rx="2" />
+                <rect x="13" y="13" width="8" height="8" rx="2" />
+            </svg>
+        ),
+    }[mark];
 
     const industries = (
         <motion.div
@@ -147,8 +158,16 @@ const HeroExpand: FC<HeroExpandProps> = ({ chips, photoVariant }) => {
             aria-labelledby="industries-title"
             role="region"
         >
-            {/* Место под аватарку: сюда приезжает фото первого экрана */}
-            {photoVariant === 'dock' && !reduceMotion && <div ref={slot} className={s.slot} />}
+            {/* Кружок над заголовком: сюда прилетает фото первого экрана и превращается в знак */}
+            {!reduceMotion && (
+                <div ref={slot} className={s.slot} aria-hidden="true">
+                    {markContent && (
+                        <motion.div className={s.mark} style={{ opacity: markOpacity, scale: markScale }}>
+                            {markContent}
+                        </motion.div>
+                    )}
+                </div>
+            )}
 
             <motion.h2 id="industries-title" className={`${ralewayBold.className} ${s.title}`} variants={item} custom={0}>
                 Выберите свою отрасль
@@ -198,7 +217,7 @@ const HeroExpand: FC<HeroExpandProps> = ({ chips, photoVariant }) => {
 
                 <div className={s.hero}>
                     <div ref={photoBox} className={s.photoBox}>
-                        <motion.div style={photoStyle}>
+                        <motion.div style={{ x: towardX, y: towardY, scale: towardScale, opacity: photoOpacity }}>
                             <Image className={s.photo} src={photo} alt="Степан Картузов" priority />
                         </motion.div>
                     </div>
