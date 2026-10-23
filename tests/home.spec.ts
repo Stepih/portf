@@ -39,10 +39,10 @@ for (const viewport of [{ width: 1400, height: 800 }, { width: 375, height: 667 
 }
 
 // Чип отрасли ведёт в подборку портфолио (SALES_PLAN 3.2). Чипы вылетают из кружка по скроллу,
-// когда первый экран раскрылся: к 0,85 экрана брызги доиграли, портал ещё не начался
+// когда первый экран раскрылся: к 0,75 экрана брызги доиграли, портал ещё не начался
 test('чип отрасли открывает портфолио с фильтром', async ({ page }) => {
     await page.goto('/');
-    await page.evaluate(() => window.scrollTo(0, window.innerHeight * .85));
+    await page.evaluate(() => window.scrollTo(0, window.innerHeight * .75));
 
     const chips = page.getByRole('region', { name: 'Каким может быть сайт для вашего бизнеса' }).getByRole('listitem').getByRole('link');
     await expect(chips.first()).toBeVisible();
@@ -273,6 +273,42 @@ for (const { viewport, screens } of [
         expect(top).toBeLessThanOrEqual(screens);
     });
 }
+
+// Шов сцены (DESIGN_FIXES_2_PLAN Д9): волна заголовка идёт, пока фото ещё летит в кружок; кольцо портала
+// гаснет, а не сжимается в дугу; текст верхней карты колоды виден в дыре сразу, до раздачи
+test('сцена без пустых пауз: заголовок, кольцо портала, верхняя карта', async ({ page }) => {
+    await page.setViewportSize({ width: 1400, height: 900 });
+    await page.goto('/');
+    const scrollTo = (screens: number) => page.evaluate((k) => window.scrollTo(0, window.innerHeight * k), screens);
+
+    // 0,3 экрана: раньше здесь был серый экран с одним кружком
+    await scrollTo(.3);
+    const title = page.getByRole('heading', { name: 'Каким может быть сайт для вашего бизнеса' });
+    // Радиус круга волны, px: заголовок проступает дальше самого кружка
+    const waveRadius = () => title.evaluate((el) => {
+        const m = getComputedStyle(el.parentElement!).clipPath.match(/circle\(([\d.]+)px/);
+        return m ? parseFloat(m[1]) : 0;
+    });
+    await expect.poll(() => title.evaluate(opacityOf)).toBe(1);
+    await expect.poll(waveRadius).toBeGreaterThan(100);
+
+    // Диск портала – слой с радиальным градиентом; к 1,25 экрана кольцо уже погасло
+    const diskOpacity = () => page.evaluate(() => {
+        const disk = [...document.querySelectorAll<HTMLElement>('section div[aria-hidden="true"]')]
+            .find((el) => el.style.background.includes('radial-gradient'));
+        return disk ? parseFloat(getComputedStyle(disk).opacity) : -1;
+    });
+    await scrollTo(1);
+    await expect.poll(diskOpacity).toBe(1);
+    await scrollTo(1.25);
+    await expect.poll(diskOpacity).toBeLessThan(.05);
+
+    // Начало портала: средняя карта – верхняя в колоде, название уже выехало из-под маски
+    await scrollTo(1);
+    const top = page.getByRole('region', { name: 'Избранные кейсы' }).getByRole('heading', { level: 3 }).nth(1);
+    await expect.poll(() => top.evaluate((h) =>
+        h.querySelector('a')!.getBoundingClientRect().top - h.getBoundingClientRect().top)).toBeLessThan(3);
+});
 
 // Заявка из чата – кнопкой в шапке окна, с первого открытия, без вопросов модели (DESIGN_FIXES_2_PLAN Д7)
 test('кнопка «Связаться» в шапке чата открывает заявку до вопросов', async ({ page }) => {

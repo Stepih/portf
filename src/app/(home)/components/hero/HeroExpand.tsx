@@ -35,12 +35,16 @@ const PORTAL_OPEN = .3;
 const PORTAL_PATH = PORTAL_GROW + PORTAL_HOLD + PORTAL_OPEN;
 
 // Точки сцены в экранах прокрутки: раскрытие, брызги отраслей (с SHOW_AT, путь BURST_PATH),
-// чипы стоят CHIPS_HOLD, чтобы по ним успели кликнуть, потом портал
+// чипы стоят CHIPS_HOLD, чтобы по ним успели кликнуть, потом портал.
+// Волна заголовка начинается внахлёст с концом полёта фото, а не после него: иначе экран стоит пустым
+// с одним кружком (DESIGN_FIXES_2_PLAN, Д9)
 const EXPAND_FROM = .024;
 const EXPAND_TO = .36;
-const SHOW_AT = .33;
+const SHOW_AT = .24;
 const BURST_PATH = .4;
 const CHIPS_HOLD = .15;
+// Запас после брызг до чипов на месте
+const BURST_TAIL = .05;
 
 // Во сколько раз длиннее путь сцены: доводки нет, этапы проходятся скроллом.
 // Раскрытие ~0,35 экрана, брызги ~0,4, портал ~0,45 (DESIGN_FIXES_PLAN, Д1: цены не дальше ~2,5 экрана)
@@ -56,7 +60,7 @@ const PHONE_PACE = .75;
 
 // Точки сцены в долях её прокрутки и длина сцены в экранах
 const timing = (chipsHold: number) => {
-    const portalFrom = .38 + BURST_PATH + chipsHold;
+    const portalFrom = SHOW_AT + BURST_TAIL + BURST_PATH + chipsHold;
     const length = portalFrom + PORTAL_PATH;
     return {
         length,
@@ -217,6 +221,10 @@ const DISK = 150;
 const DISK_SHARE = .3;
 // Знак «10 работ», выросший с диском, гаснет за эту долю пути портала после открытия дыры
 const MARK_FADE = .1;
+// Кольцо между дырой и краем диска гаснет в этом отрезке пути дыры (доли от открытия до конца),
+// пока оно ещё толстое: не сжимается в волосяную дугу (DESIGN_FIXES_2_PLAN, Д9)
+const RING_FADE_FROM = .3;
+const RING_FADE_TO = .7;
 
 // Первый экран главной (SALES_PLAN 3.1), блок отраслей (3.2) и вход в «Избранные кейсы» одной сценой
 // (ANIMATION_PLAN, 1Г + 2Г). Всё ведёт скролл, вперёд и назад, без доводки.
@@ -379,6 +387,8 @@ const HeroExpand: FC<HeroExpandProps> = ({ chips, worksCount, children }) => {
     const diskBg = useTransform([q, cx, cy, disk], ([v, x, y, d]: number[]) => v <= 0
         ? 'none'
         : `radial-gradient(circle at ${x}px ${y}px, var(--color-text-100) ${d}px, transparent ${d + 1}px)`);
+    const ringOpacity = useTransform(q, (v) =>
+        1 - clamp01(((v - OPEN_AT) / (1 - OPEN_AT) - RING_FADE_FROM) / (RING_FADE_TO - RING_FADE_FROM)));
     const holeMask = useTransform([hole, cx, cy], ([h, x, y]: number[]) => h <= 0
         ? 'none'
         : `radial-gradient(circle at ${x}px ${y}px, transparent ${h}px, #000 ${h + 1}px)`);
@@ -614,7 +624,7 @@ const HeroExpand: FC<HeroExpandProps> = ({ chips, worksCount, children }) => {
 
                     <div className={`${s.layer} ${live ? s.layerShown : ''}`}>
                         {/* Диск портала: под кружком «10 работ», над отраслями */}
-                        <motion.div className={s.disk} style={{ background: diskBg }} aria-hidden="true" />
+                        <motion.div className={s.disk} style={{ background: diskBg, opacity: ringOpacity }} aria-hidden="true" />
                         {industries}
                     </div>
                 </motion.div>

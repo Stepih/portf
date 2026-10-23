@@ -31,6 +31,9 @@ const sceneTiming = (i: number, middle: number): ITiming => ({
     lineDur: .25,
 });
 
+// Верхняя карта колоды видна в дыре портала ещё до раздачи: её текст уже на месте, а не ждёт скролла (DESIGN_FIXES_2_PLAN, Д9)
+const shownText = (timing: ITiming): ITiming => ({ ...timing, textFrom: -(3 * timing.lineStep + timing.lineDur) });
+
 // Телефон: у каждой карточки свой прогресс, от появления снизу до 55% экрана
 const ownTiming: ITiming = { dealFrom: 0, dealTo: .6, textFrom: .3, lineStep: .08, lineDur: .4 };
 
@@ -95,7 +98,7 @@ const HomeCasesGrid: FC<IProps> = ({ items }) => {
                         mobile={mobile}
                         shared={fromScene ? shared : null}
                         stack={stackOf(i)}
-                        timing={fromScene ? sceneTiming(i, middle) : ownTiming}
+                        timing={fromScene ? (i === middle ? shownText(sceneTiming(i, middle)) : sceneTiming(i, middle)) : ownTiming}
                     />
                 </div>
             ))}
