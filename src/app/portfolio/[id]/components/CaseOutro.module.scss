@@ -229,6 +229,11 @@
         line-height: 1.05;
         text-transform: uppercase;
         @include vars.hover-underline(3px);
+
+        // Длинное слово («ПРЕЗЕНТАЦИЯ») не переносится: на узком телефоне кегль идёт от ширины окна (DESIGN_FIXES_4_PLAN Д20)
+        @media screen and (max-width: 400px) {
+            font-size: min(2rem, 6.5vw);
+        }
     }
 
     &:hover .nextName, &:focus-visible .nextName {

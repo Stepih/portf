@@ -218,7 +218,7 @@
     .works {
         flex-direction: column;
 
-        font-size: 0.8rem;
+        font-size: 0.875rem;
         line-height: 1;
         color: var(--color-bg);
         background: var(--color-text-100);
@@ -293,7 +293,7 @@
         transition: vars.$transition;
 
         .count {
-            font-size: 0.8rem;
+            font-size: 0.875rem;
             color: var(--color-text-muted);
         }
 
@@ -476,7 +476,7 @@
         }
 
         .works {
-            font-size: 0.65rem;
+            font-size: 0.875rem;
 
             b {
                 font-size: 1.9rem;

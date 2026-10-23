@@ -1,7 +1,7 @@
 import { expect, Page, test } from '@playwright/test';
 import { ServiceId } from '../src/interfaces/offer';
 import { hiddenPages } from '../src/constants/urls';
-import { contactTitle, faqContactLink, formButton, heroPrice, heroTitleSlide, moreLinks, moreTitle, offerFaq, offerReasons, offerSteps, offerTgButton, offerTitle, services, servicesTitle, stepsContactLink } from '../src/data/offer';
+import { contactTitle, faqContactLink, faqTitle, formButton, heroPrice, heroTitleSlide, moreLinks, moreTitle, offerButtonsNote, offerFaq, offerReasons, offerSteps, offerTgButton, offerTitle, offerTrustLine, services, servicesTitle, stepsContactLink } from '../src/data/offer';
 import { formServiceLabel, formSuccessText, formSuccessTitle, inputsListFeedback, phoneTooShort } from '../src/data/inputsFeedBack';
 import { chatFabLabel, chatLeadOpen, chatLeadSuccess } from '../src/data/chat';
 import { footerName, footerSince, footerTg } from '../src/data/footer';
@@ -589,9 +589,10 @@ test('после заявки на главной – плашка «что да
 // Путь к заявке на телефоне (DESIGN_FIXES_2_PLAN Д7): сцена там короче, цены ближе к началу.
 // На 375×800 было 3,57 экрана до «Услуг и цен», на 1400×900 – 2,79 (компьютер не трогали).
 // Д19 (DESIGN_FIXES_4_PLAN): под кейсами на телефоне – строка отраслей, 244px + отступ 32px = 0,345 экрана:
-// 3,08 → 3,425. Порог поднят только на неё; сама сцена не удлинилась
+// 3,08 → 3,425. Порог поднят только на неё; сама сцена не удлинилась.
+// Д20: корень 16px и до 400px – карточки кейсов и строка отраслей выше на ~80px: 3,425 → 3,53–3,55. Сцена та же
 for (const { viewport, screens } of [
-    { viewport: { width: 375, height: 800 }, screens: 3.45 },
+    { viewport: { width: 375, height: 800 }, screens: 3.6 },
     { viewport: { width: 1400, height: 900 }, screens: 2.85 },
 ]) {
     test(`услуги и цены не дальше ${screens} экрана, ${viewport.width}px`, async ({ page }) => {
@@ -751,5 +752,27 @@ for (const [theme, muted] of [['light', 'rgba(19, 19, 19, 0.62)'], ['dark', 'rgb
 
         const name = page.locator('#contact form').getByPlaceholder(inputsListFeedback[0].placeholder!);
         await expect.poll(() => name.evaluate((el) => getComputedStyle(el, '::placeholder').color)).toBe(muted);
+    });
+}
+
+// Текст на телефоне не мельче Label (0.95rem = 15.2px): корень 16px и до 400px (DESIGN_FIXES_4_PLAN Д20)
+for (const width of [375, 320]) {
+    test(`вторичный текст на телефоне не мельче 15px, ${width}px`, async ({ page }) => {
+        await page.setViewportSize({ width, height: 812 });
+        await page.goto('/');
+
+        const contact = page.locator('#contact');
+        const texts = [
+            page.getByRole('region', { name: faqTitle }).getByText(offerFaq[0].answer),
+            page.getByText(offerSteps[0].text),
+            page.getByText(offerReasons[0].text),
+            contact.getByText(offerButtonsNote),
+            contact.getByText(offerTrustLine()),
+            page.getByRole('contentinfo'),
+        ];
+        for (const text of texts) {
+            expect(await text.evaluate((el) => parseFloat(getComputedStyle(el).fontSize))).toBeGreaterThanOrEqual(15);
+        }
+        expect(await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth)).toBe(0);
     });
 }

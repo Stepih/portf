@@ -84,12 +84,7 @@ p {
   font-weight: 400;
 }
 
-@media screen and (max-width: 400px) {
-  html {
-    font-size: 14px;
-  }
-}
-
+// Корень 16px на всех ширинах: раньше до 400px было 14px, и вторичный текст на телефоне падал до 12–13px (DESIGN_FIXES_4_PLAN Д20)
 @media screen and (max-width: 1100px) {
   h1 {
     font-size: 3rem;
