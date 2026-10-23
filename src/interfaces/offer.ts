@@ -30,9 +30,17 @@ export interface IService {
     demoChat?: boolean
 }
 
+// Что клиент платит на этапе (DESIGN_FIXES_2_PLAN Д5): due – здесь платёж, иначе этап бесплатный
+export interface IOfferStepPay {
+    label: string,
+    note?: string,
+    due?: boolean
+}
+
 export interface IOfferStep {
     title: string,
-    text: string
+    text: string,
+    pay: IOfferStepPay
 }
 
 export interface IOfferReason {

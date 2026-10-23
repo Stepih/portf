@@ -1,6 +1,6 @@
 import { expect, test } from '@playwright/test';
 import { hiddenPages } from '../src/constants/urls';
-import { contactTitle, formButton, heroPrice, heroTitleSlide, moreLinks, moreTitle, offerFaq, offerTgButton, offerTitle } from '../src/data/offer';
+import { contactTitle, formButton, heroPrice, heroTitleSlide, moreLinks, moreTitle, offerFaq, offerSteps, offerTgButton, offerTitle } from '../src/data/offer';
 
 // Слайды первого экрана сменяются, а h1 с оффером в HTML один и есть всегда (SALES_PLAN 3.1.1).
 // Первым показывается слайд с h1 (CONVERSION_PLAN К1.1): проверяем по HTML с сервера, до смены слайда
@@ -146,24 +146,33 @@ test('услуги и цены на главной', async ({ page }) => {
     await expect(page).toHaveURL(/\/popup\?service=landing$/);
 });
 
-// Шаги работы списком по порядку (SALES_PLAN 3.5)
+// Шаги работы списком по порядку (SALES_PLAN 3.5). Под каждым этапом – оплата (DESIGN_FIXES_2_PLAN Д5):
+// до макета 0 ₽, предоплата – на разработке, остаток – на запуске
 test('как я работаю на главной', async ({ page }) => {
     await page.goto('/');
 
     const section = page.getByRole('region', { name: 'Как я работаю' });
     const steps = section.getByRole('listitem');
-    await expect(steps).toHaveCount(5);
+    await expect(steps).toHaveCount(offerSteps.length);
     await expect(steps.first().getByRole('heading', { level: 3 })).toHaveText('Созвон');
+
+    for (const [i, step] of offerSteps.entries()) {
+        await expect(steps.nth(i)).toContainText(`Оплата: ${step.pay.label}`);
+    }
+    await expect(steps.nth(0)).toContainText('Оплата: 0 ₽');
+    await expect(steps.nth(2)).toContainText('Оплата: Предоплата');
+    await expect(steps.nth(3)).toContainText('Оплата: Остаток');
 });
 
-// Шесть причин списком, первая – «Один исполнитель» (SALES_PLAN 3.6)
+// Три отличия из PRODUCT.md, без подписи под заголовком (DESIGN_FIXES_2_PLAN Д5)
 test('почему я на главной', async ({ page }) => {
     await page.goto('/');
 
     const section = page.getByRole('region', { name: 'Почему я' });
     const reasons = section.getByRole('listitem');
-    await expect(reasons).toHaveCount(6);
-    await expect(reasons.first().getByRole('heading', { level: 3 })).toHaveText('Один исполнитель');
+    await expect(reasons).toHaveCount(3);
+    await expect(reasons.first().getByRole('heading', { level: 3 })).toHaveText('Предоплата без риска');
+    await expect(section.locator(':scope > p')).toHaveCount(0);
 });
 
 // FAQ на <details>: первый вопрос раскрыт, клик раскрывает следующий (SALES_PLAN 3.8)

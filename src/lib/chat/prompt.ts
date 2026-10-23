@@ -59,7 +59,7 @@ export const buildSystemPrompt = (): string => plainText([
     // Тексты сайта написаны от лица Степана – без этой строки модель повторяет их «я» (прогон 1)
     '# Сведения\nТексты ниже взяты с сайта и написаны от лица Степана: «я», «делаю», «отвечу» – это Степан. Пересказывай их в третьем лице.',
     `## Услуги и цены\n${servicesSection()}\n${servicesCommon}`,
-    `## Как Степан работает\n${list(offerSteps.map((s) => `${s.title}: ${s.text}`))}`,
+    `## Как Степан работает\n${list(offerSteps.map((s) => `${s.title}: ${s.text}. Оплата: ${s.pay.label}${s.pay.note ? `. ${s.pay.note}` : ''}`))}`,
     `## Почему Степан\n${list(offerReasons.map((r) => `${r.title}: ${r.text}`))}`,
     `## Частые вопросы\n${offerFaq.map((f) => `В: ${f.question}\nО: ${f.answer}`).join('\n')}`,
     `## Портфолио\n${worksSection()}`,

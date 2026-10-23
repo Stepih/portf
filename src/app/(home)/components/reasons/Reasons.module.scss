@@ -21,16 +21,6 @@ $line: rgba(128, 128, 128, 0.45);
         transition: vars.$transition;
     }
 
-    .description {
-        max-width: 640px;
-        margin: 0;
-
-        font-size: 1.05rem;
-        text-align: center;
-        color: var(--color-text-50);
-        transition: vars.$transition;
-    }
-
     .list {
         display: grid;
         grid-template-columns: repeat(3, minmax(0, 1fr));

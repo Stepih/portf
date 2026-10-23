@@ -1,25 +1,24 @@
 @use '/src/styles/variables.scss' as vars;
 
-// Номер – кружок в стиле чипов отраслей, линия между кружками – той же серой рамкой
-$circle: 48px;
-$gap: 24px;
-$line-indent: 8px;
+// Линии – той же серой рамкой, что у чипов отраслей и «Почему я»
 $line: rgba(128, 128, 128, 0.45);
+$dot: 12px;
+$col-pad: 32px;
+$num-col: 3rem;
 
 .steps {
     display: flex;
     flex-direction: column;
-    align-items: center;
     gap: 12px;
 
     max-width: 1160px;
     margin: 100px auto 0;
 
+    // Заголовок слева: секция не повторяет центрированную схему соседних
     .title {
         margin: 0;
 
         font-size: clamp(1.6rem, 4vw, 2.2rem);
-        text-align: center;
         color: var(--color-text-100);
         transition: vars.$transition;
     }
@@ -28,68 +27,44 @@ $line: rgba(128, 128, 128, 0.45);
         margin: 0;
 
         font-size: 1.05rem;
-        text-align: center;
         color: var(--color-text-50);
         transition: vars.$transition;
     }
 
+    // Строки subgrid: номер, название, текст, оплата – на одной высоте у всех этапов
     .list {
         display: grid;
-        grid-template-columns: repeat(5, minmax(0, 1fr));
-        gap: $gap;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        grid-template-rows: auto auto 1fr auto;
 
-        width: 100%;
-        margin: 28px 0 0;
+        margin: 36px 0 0;
         padding: 0;
 
         list-style: none;
     }
 
     .step {
-        position: relative;
+        display: grid;
+        grid-row: span 4;
+        grid-template-rows: subgrid;
 
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        gap: 10px;
-
-        text-align: center;
         color: var(--color-text-100);
 
-        // Линия до следующего кружка: от края своего до края соседнего, с отступами
-        &:not(:last-child)::after {
-            content: '';
-
-            position: absolute;
-            top: calc($circle / 2);
-            left: calc(50% + $circle / 2 + $line-indent);
-
-            width: calc(100% + $gap - $circle - 2 * $line-indent);
-            height: 1.5px;
-
-            background: $line;
+        // Отступ справа – у содержимого, а не у пункта: денежная линия идёт без разрывов
+        > :not(.pay) {
+            padding-right: $col-pad;
         }
     }
 
     .number {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        flex-shrink: 0;
+        margin-bottom: 14px;
 
-        width: $circle;
-        height: $circle;
-        margin-bottom: 4px;
-
-        font-size: 1.2rem;
-
-        border: 1.5px solid $line;
-        border-radius: 50%;
-        transition: vars.$transition;
+        font-size: 2.5rem;
+        line-height: 1;
     }
 
     .name {
-        margin: 0;
+        margin: 0 0 8px;
         font-size: 1.15rem;
     }
 
@@ -100,43 +75,126 @@ $line: rgba(128, 128, 128, 0.45);
         color: var(--color-text-50);
         transition: vars.$transition;
     }
+
+    // Денежная линия: сплошная черта через все этапы, на ней точка этапа
+    .pay {
+        position: relative;
+
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+
+        margin: 28px 0 0;
+        padding: 22px $col-pad 0 0;
+
+        border-top: 1.5px solid $line;
+
+        &::before {
+            content: '';
+
+            position: absolute;
+            top: calc(-1 * $dot / 2 - 0.75px);
+            left: 0;
+
+            width: $dot;
+            height: $dot;
+            box-sizing: border-box;
+
+            background: var(--color-bg);
+            border: 1.5px solid $line;
+            border-radius: 50%;
+            transition: vars.$transition;
+        }
+
+        &.due::before {
+            background: var(--color-text-100);
+            border-color: var(--color-text-100);
+        }
+    }
+
+    // У Raleway цифры по умолчанию минускульные: «0 ₽» читался как «о ₽»
+    .payLabel {
+        font-size: 1.15rem;
+        font-variant-numeric: lining-nums;
+        color: var(--color-text-50);
+        transition: vars.$transition;
+    }
+
+    .due .payLabel {
+        color: var(--color-text-100);
+    }
+
+    .payNote {
+        font-size: 0.95rem;
+        color: var(--color-text-50);
+        transition: vars.$transition;
+    }
+
+    .srOnly {
+        position: absolute;
+
+        width: 1px;
+        height: 1px;
+        overflow: hidden;
+
+        clip-path: inset(50%);
+        white-space: nowrap;
+    }
 }
 
-// Пять в ряд уже тесно: лента сверху вниз, номер слева, линия вертикальная
+// Четыре в ряд уже тесно: лента сверху вниз, номер слева, оплата – внутри этапа под текстом
 @media screen and (max-width: 900px) {
     .steps {
         .list {
             grid-template-columns: minmax(0, 1fr);
-            max-width: 520px;
+            grid-template-rows: none;
+            gap: 32px;
+
+            max-width: 560px;
         }
 
         .step {
-            display: grid;
-            grid-template-columns: $circle minmax(0, 1fr);
-            column-gap: 16px;
-            row-gap: 4px;
+            grid-row: auto;
+            grid-template-columns: $num-col minmax(0, 1fr);
+            grid-template-rows: none;
+            column-gap: 12px;
             align-items: start;
 
-            text-align: left;
-
-            &:not(:last-child)::after {
-                top: calc($circle + $line-indent);
-                bottom: calc(-1 * $gap + $line-indent);
-                left: calc($circle / 2);
-
-                width: 1.5px;
-                height: auto;
+            > :not(.pay) {
+                padding-right: 0;
             }
         }
 
         .number {
-            grid-row: span 2;
+            grid-row: span 3;
             margin-bottom: 0;
+
+            font-size: 2rem;
         }
 
-        // Название по центру кружка
         .name {
-            padding-top: 12px;
+            grid-column: 2;
+            margin-bottom: 4px;
+            padding-top: 6px;
+        }
+
+        .text {
+            grid-column: 2;
+        }
+
+        // Сплошной линии на телефоне нет: от неё остаётся точка перед суммой
+        .pay {
+            grid-column: 2;
+
+            margin-top: 14px;
+            padding: 0 0 0 calc($dot + 10px);
+
+            border-top: none;
+
+            // Центр первой строки подписи: 1.15rem при line-height normal у Raleway ≈ 21.6px
+            &::before {
+                top: calc(1.15rem * 1.17 / 2 - $dot / 2);
+            }
         }
     }
 }
