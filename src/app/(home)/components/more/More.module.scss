@@ -1,6 +1,8 @@
 @use '/src/styles/variables.scss' as vars;
 
-// Компактный блок навигации: ссылки – такие же чипы, как в блоке отраслей под первым экраном
+// Компактный блок навигации: ссылки – такие же чипы, как в блоке отраслей под первым экраном.
+// Это кода после формы, а не секция: отступ меньше секционного, блок и футер читаются одним финалом
+// (DESIGN_FIXES_3_PLAN, Д11)
 .more {
     display: flex;
     flex-direction: column;
@@ -8,7 +10,7 @@
     gap: 12px;
 
     max-width: 850px;
-    margin: 100px auto 0;
+    margin: 72px auto 0;
 
     text-align: center;
 
@@ -61,7 +63,7 @@
 
 @media screen and (max-width: 560px) {
     .more {
-        margin-top: 70px;
+        margin-top: 56px;
 
         .link {
             padding: 8px 14px;

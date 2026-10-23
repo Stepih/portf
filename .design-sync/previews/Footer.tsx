@@ -1,6 +1,6 @@
 import { Footer } from 'portfolio-ui';
 
-// Page footer: muted copyright line with the site start date and today's date.
+// Page footer: muted stencil line with the years (since 2024 to the build year) and a Telegram link.
 export const Default = () => <Footer />;
 
 export const UnderPageContent = () => (

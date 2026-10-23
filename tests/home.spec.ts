@@ -3,6 +3,7 @@ import { hiddenPages } from '../src/constants/urls';
 import { contactTitle, formButton, heroPrice, heroTitleSlide, moreLinks, moreTitle, offerFaq, offerSteps, offerTgButton, offerTitle } from '../src/data/offer';
 import { formSuccessText, formSuccessTitle, phoneTooShort } from '../src/data/inputsFeedBack';
 import { chatFabLabel, chatLeadOpen, chatLeadSuccess } from '../src/data/chat';
+import { footerName, footerSince, footerTg } from '../src/data/footer';
 
 // Слайды первого экрана сменяются, а h1 с оффером в HTML один и есть всегда (SALES_PLAN 3.1.1).
 // Первым показывается слайд с h1 (CONVERSION_PLAN К1.1): проверяем по HTML с сервера, до смены слайда
@@ -374,3 +375,46 @@ test('блок «А ещё я…» внизу главной', async ({ page }) 
     await section.getByRole('link', { name: internal.title }).click();
     await expect(page).toHaveURL(new RegExp(`${internal.href}$`));
 });
+
+// Ритм (DESIGN_FIXES_3_PLAN Д11): после «Все работы» – тот же отступ секции, что между остальными (100px),
+// а не ~230px запаса центрирования. Колода к этому месту уже роздана, блок отпущен
+for (const viewport of [{ width: 1400, height: 900 }, { width: 820, height: 1000 }]) {
+    test(`после кейсов – отступ секции, ${viewport.width}px`, async ({ page }) => {
+        await page.setViewportSize(viewport);
+        await page.goto('/');
+
+        const all = page.getByRole('region', { name: 'Избранные кейсы' }).getByRole('link', { name: 'Все работы' });
+        const services = page.getByRole('heading', { level: 2, name: 'Услуги и цены' });
+        await services.scrollIntoViewIfNeeded();
+        await expect.poll(async () => {
+            const a = await all.boundingBox();
+            const s = await services.boundingBox();
+            return a && s ? Math.round(s.y - (a.y + a.height)) : null;
+        }).toBe(100);
+    });
+}
+
+// Заголовки секций по центру, кроме двухколонной «Давайте обсудим» (DESIGN_FIXES_3_PLAN Д11)
+test('заголовки секций главной выровнены по одному правилу', async ({ page }) => {
+    await page.goto('/');
+
+    const aligns = await page.locator('main h2').evaluateAll((els) =>
+        els.map((el) => ({ text: el.textContent, align: getComputedStyle(el).textAlign })));
+    for (const { text, align } of aligns) {
+        expect(align, text ?? '').toBe(text === contactTitle ? 'start' : 'center');
+    }
+});
+
+// Футер (DESIGN_FIXES_3_PLAN Д11): годы через «–» без сегодняшней даты и ссылка на Telegram, на всех страницах
+for (const path of ['/', '/portfolio', '/popup']) {
+    test(`футер: годы и Telegram, ${path}`, async ({ page }) => {
+        await page.goto(path);
+
+        const footer = page.getByRole('contentinfo');
+        await expect(footer).toContainText(`© ${footerSince}–${new Date().getFullYear()} ${footerName}`);
+        await expect(footer).not.toContainText(new Date().toLocaleDateString('ru-RU'));
+        const tg = footer.getByRole('link', { name: footerTg.title });
+        await expect(tg).toHaveAttribute('href', footerTg.href);
+        await expect(tg).toHaveAttribute('target', '_blank');
+    });
+}

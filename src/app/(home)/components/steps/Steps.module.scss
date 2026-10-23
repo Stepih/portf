@@ -14,11 +14,12 @@ $num-col: 3rem;
     max-width: 1160px;
     margin: 100px auto 0;
 
-    // Заголовок слева: секция не повторяет центрированную схему соседних
+    // Заголовок по центру, как у соседних одноколонных секций (DESIGN_FIXES_3_PLAN, Д11)
     .title {
         margin: 0;
 
         font-size: clamp(1.6rem, 4vw, 2.2rem);
+        text-align: center;
         color: var(--color-text-100);
         transition: vars.$transition;
     }
@@ -27,6 +28,7 @@ $num-col: 3rem;
         margin: 0;
 
         font-size: 1.05rem;
+        text-align: center;
         color: var(--color-text-50);
         transition: vars.$transition;
     }

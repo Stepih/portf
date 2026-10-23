@@ -347,10 +347,11 @@
 
     margin-top: calc(-100vh - var(--exit));
 
+    // + --next-top: блок прилипает ниже верха экрана, и без запаса его отпустило бы раньше, чем доиграет колода
     &::after {
         content: '';
         display: block;
-        height: var(--exit);
+        height: calc(var(--exit) + var(--next-top, 0px));
     }
 }
 
@@ -381,17 +382,12 @@
     opacity: 0;
 }
 
-// Блок по центру экрана. Кейсы раздаёт из колоды сама сетка (SceneAfterContext)
+// Блок по центру экрана. Кейсы раздаёт из колоды сама сетка (SceneAfterContext).
+// Центр – отступом липкости (--next-top из HeroExpand.tsx), а не высотой в экран: иначе после отпускания
+// под «Все работы» оставалась пустая половина запаса, ~230px вместо 100 (DESIGN_FIXES_3_PLAN, Д11)
 .next {
     position: sticky;
-    top: 0;
-
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-
-    min-height: 100vh;
-    min-height: 100svh;
+    top: var(--next-top, 0px);
 
     > section {
         margin-top: 0;

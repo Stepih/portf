@@ -2,10 +2,15 @@
 
 .footer {
     flex: 0 0 auto;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: baseline;
+    column-gap: 10px;
     width: 100%;
 
-    padding: 30px 0;
-    
+    padding: 32px 0 40px;
+
     text-align: center;
     font-size: .875rem;
 
@@ -15,7 +20,18 @@
     z-index: 1;
 }
 
-// Телефон: строка выше плавающего шара чата (54px + отступ 16px снизу), иначе он закрывает дату
+// Ссылка – цветом основного текста, подчёркнута: видно, что она кликается
+.link {
+    color: var(--color-text-100);
+    text-underline-offset: 3px;
+    transition: vars.$transition;
+
+    &:hover {
+        text-decoration-thickness: 2px;
+    }
+}
+
+// Телефон: строка выше плавающего шара чата (54px + отступ 16px снизу), иначе он закрывает ссылку
 @media screen and (max-width: 600px) {
     .footer {
         padding-bottom: calc(86px + env(safe-area-inset-bottom));

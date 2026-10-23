@@ -251,6 +251,9 @@ const HeroExpand: FC<HeroExpandProps> = ({ chips, worksCount, children }) => {
     const afterProgress = useMotionValue(0);
     const [afterOn, setAfterOn] = useState(false);
     const smoothAfter = useSpring(afterProgress, SMOOTH);
+    // Блок кейсов и его отступ липкости: по центру экрана, если короче него (на телефоне длиннее – 0)
+    const nextEl = useRef<HTMLDivElement>(null);
+    const [nextTop, setNextTop] = useState(0);
     const [waveGeom, setWaveGeom] = useState<WaveGeom>(noWave);
     const [chipGeoms, setChipGeoms] = useState<ChipGeom[]>([]);
 
@@ -419,6 +422,20 @@ const HeroExpand: FC<HeroExpandProps> = ({ chips, worksCount, children }) => {
         window.addEventListener('resize', measure);
         return () => window.removeEventListener('resize', measure);
     }, [updateAfter]);
+    // Высота блока меняется со шрифтами и шириной: следим за ним и за окном
+    useEffect(() => {
+        const el = nextEl.current;
+        if (!el) return;
+        const measure = () => setNextTop(Math.max(0, Math.round((window.innerHeight - el.offsetHeight) / 2)));
+        measure();
+        const ro = new ResizeObserver(measure);
+        ro.observe(el);
+        window.addEventListener('resize', measure);
+        return () => {
+            ro.disconnect();
+            window.removeEventListener('resize', measure);
+        };
+    }, [reduceMotion]);
 
     // Брызги: время их таймлайна, с, и кадр волны, кружка и строки «Другая сфера?»
     const burstTotal = burstLength(chips.length);
@@ -638,10 +655,11 @@ const HeroExpand: FC<HeroExpandProps> = ({ chips, worksCount, children }) => {
                 style={{
                     '--exit-desktop': `${PORTAL_PATH * PACE * 100}vh`,
                     '--exit-phone': `${PORTAL_PATH * PHONE_PACE * 100}vh`,
+                    '--next-top': `${nextTop}px`,
                 } as CSSProperties}
                 onFocus={focusCases}
             >
-                <div className={s.next}>
+                <div ref={nextEl} className={s.next}>
                     <SceneAfterContext.Provider value={afterOn ? smoothAfter : null}>
                         {children}
                     </SceneAfterContext.Provider>
