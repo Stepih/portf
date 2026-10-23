@@ -8,7 +8,7 @@
     overflow: hidden;
 
     border-radius: 13px;
-    background: vars.$black-8;
+    background: var(--color-frost);
     box-shadow: vars.$shadow;
     will-change: transform, opacity;
 
@@ -151,8 +151,15 @@
             z-index: 1;
         }
 
+        // Подчёркивается только подпись, без стрелки
+        > :first-child {
+            @include vars.hover-underline;
+        }
+
         &:hover, &:focus-visible {
-            color: vars.$blue-100;
+            > :first-child {
+                text-decoration-color: currentColor;
+            }
         }
 
         .arrow {

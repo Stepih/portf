@@ -2,7 +2,7 @@
 
 .card {
     border-radius: 13px;
-    background: vars.$black-8;
+    background: var(--color-frost);
     box-shadow: vars.$shadow;
     color: var(--color-text-100);
     transition: vars.$transition;
@@ -121,8 +121,15 @@
         text-decoration: none;
         transition: vars.$transition;
 
-        &:hover {
-            color: vars.$blue-100;
+        // Подчёркивается только подпись, без стрелки
+        > :first-child {
+            @include vars.hover-underline;
+        }
+
+        &:hover, &:focus-visible {
+            > :first-child {
+                text-decoration-color: currentColor;
+            }
         }
     }
 }
@@ -221,10 +228,11 @@
         font-size: clamp(2rem, 5vw, 3.6rem);
         line-height: 1.05;
         text-transform: uppercase;
+        @include vars.hover-underline(3px);
     }
 
-    &:hover .nextName {
-        color: vars.$blue-100;
+    &:hover .nextName, &:focus-visible .nextName {
+        text-decoration-color: currentColor;
     }
 
     // Иконка белая, на светлой теме её не видно

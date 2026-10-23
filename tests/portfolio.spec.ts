@@ -43,3 +43,27 @@ test('картинки-превью ссылок у кейса и каталог
         expect(response.headers()['content-type']).toBe('image/png');
     }
 });
+
+// Название кейса при наведении и фокусе подчёркивается, а не голубеет: голубой только у фокуса и фона (DESIGN_FIXES_3_PLAN Д12)
+test('название кейса при наведении и фокусе подчёркнуто, без голубого', async ({ page }) => {
+    await page.goto('/portfolio');
+
+    const title = page.locator('#all h3 a').first();
+    await title.scrollIntoViewIfNeeded();
+    const style = () => title.evaluate((el) => {
+        const cs = getComputedStyle(el);
+        return { line: cs.textDecorationLine, color: cs.color, decoration: cs.textDecorationColor };
+    });
+
+    await expect.poll(async () => (await style()).decoration).toBe('rgba(0, 0, 0, 0)');
+
+    for (const act of [() => title.hover(), () => title.focus()]) {
+        await page.mouse.move(0, 0);
+        await act();
+        await expect.poll(async () => {
+            const s = await style();
+            return s.line === 'underline' && s.decoration === s.color;
+        }).toBe(true);
+        expect((await style()).color).not.toBe('rgb(119, 199, 234)');
+    }
+});

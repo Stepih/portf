@@ -19,7 +19,7 @@ The components use CSS modules with hashed class names, so there are **no public
 | Primary text, borders | `var(--color-text-100)` |
 | Muted text | `var(--color-text-50)` |
 | Overlay chip | `var(--color-overlay)` |
-| Card surface | `background: rgba(57, 57, 57, 0.08)` |
+| Card surface | `var(--color-frost)` (8% grey light / 5% white dark) |
 | Card shadow | `box-shadow: 0 4px 48px 0 rgba(0, 0, 0, 0.25)` |
 | Corner radius | `13px` |
 | Accents | `#EA7777` (red-pink), `#77C7EA` (blue), `#00EA41` (green) |

@@ -36,7 +36,7 @@
       opacity: 0;
       
       
-      background: vars.$black-8;
+      background: var(--color-frost);
       overflow: hidden;
     
       .line {

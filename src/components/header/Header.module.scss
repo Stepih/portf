@@ -19,7 +19,7 @@
 
     color: white;
 
-    background: vars.$black-8;
+    background: var(--color-frost);
     box-shadow: vars.$shadow;
 
     z-index: 11;

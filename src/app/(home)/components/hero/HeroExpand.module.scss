@@ -45,7 +45,7 @@
     position: absolute;
     z-index: -1;
 
-    background: vars.$black-8;
+    background: var(--color-frost);
     box-shadow: vars.$shadow;
     will-change: top, right, bottom, left;
 }
@@ -412,7 +412,7 @@
     }
 
     .cardStatic {
-        background: vars.$black-8;
+        background: var(--color-frost);
         border-radius: 13px;
         box-shadow: vars.$shadow;
     }

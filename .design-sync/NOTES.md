@@ -16,7 +16,7 @@
   `src/app/fonts/fonts.ts` (next/font/local) → `shims/fonts.ts` with classNames `font-raleway`,
   `font-raleway-bold`, `font-allerta`, `font-canada` backed by `shims/fonts.css` @font-face on the repo's .ttf files.
 - `src/styles/globals.scss` is imported by the entry, so tokens (`--color-bg`, `--color-text-100`,
-  `--color-text-50`, `--color-overlay`, light on :root / dark on `[data-theme="dark"]`) and the global
+  `--color-text-50`, `--color-frost`, `--color-overlay`, light on :root / dark on `[data-theme="dark"]`) and the global
   element styles (body Raleway, h1 4rem, p 1.25rem) ship in `_ds_bundle.css`.
 - `cfg.srcDir` deliberately unset: src-derived groups were one-folder-per-component; groups come from
   the category stubs in `.design-sync/groups/*.md` via `cfg.docsMap` (Actions/Layout/Media/Feedback).

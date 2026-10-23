@@ -1,6 +1,7 @@
 $black-100: rgba(19, 19, 19, 1);
 $black-50: rgba(19, 19, 19, 0.5);
 $black-8: rgba(57, 57, 57, 0.08);
+$white-5: rgba(255, 255, 255, 0.05);
 $black-10: rgba(57, 57, 57, 0.1);
 $white-50: rgba(255, 255, 255, 0.5);
 $white-100: rgba(255, 255, 255, 1);
@@ -26,6 +27,16 @@ $transition: color .5s, background .5s, stroke .5s, fill .5s, border .5s;
     font: inherit;
     text-align: inherit;
     cursor: pointer;
+}
+
+// Подчёркивание вместо цвета при наведении и фокусе (DESIGN.md: голубой не заливает текст).
+// Тут – состояние покоя, линия прозрачная; в :hover / :focus-visible ставится text-decoration-color: currentColor
+@mixin hover-underline($thickness: 2px) {
+    text-decoration-line: underline;
+    text-decoration-color: transparent;
+    text-decoration-thickness: $thickness;
+    text-underline-offset: 0.2em;
+    transition: $transition, text-decoration-color .2s;
 }
 
 // Кольцо фокуса (DESIGN.md, Focus): чернила 2px с отступом, за ними голубой ореол – знак системы.

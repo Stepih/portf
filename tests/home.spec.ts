@@ -1,6 +1,6 @@
 import { expect, test } from '@playwright/test';
 import { hiddenPages } from '../src/constants/urls';
-import { contactTitle, formButton, heroPrice, heroTitleSlide, moreLinks, moreTitle, offerFaq, offerSteps, offerTgButton, offerTitle } from '../src/data/offer';
+import { contactTitle, formButton, heroPrice, heroTitleSlide, moreLinks, moreTitle, offerFaq, offerSteps, offerTgButton, offerTitle, servicesTitle } from '../src/data/offer';
 import { formSuccessText, formSuccessTitle, phoneTooShort } from '../src/data/inputsFeedBack';
 import { chatFabLabel, chatLeadOpen, chatLeadSuccess } from '../src/data/chat';
 import { footerName, footerSince, footerTg } from '../src/data/footer';
@@ -416,5 +416,19 @@ for (const path of ['/', '/portfolio', '/popup']) {
         const tg = footer.getByRole('link', { name: footerTg.title });
         await expect(tg).toHaveAttribute('href', footerTg.href);
         await expect(tg).toHaveAttribute('target', '_blank');
+    });
+}
+
+// Плашки в тёмной теме светлее фона, иначе края не видны; светлая тема прежняя (DESIGN_FIXES_3_PLAN Д12)
+for (const [theme, frost] of [['light', 'rgba(57, 57, 57, 0.08)'], ['dark', 'rgba(255, 255, 255, 0.05)']] as const) {
+    test(`плашки услуг и формы, ${theme === 'light' ? 'светлая' : 'тёмная'} тема`, async ({ page }) => {
+        await page.addInitScript((t) => localStorage.setItem('theme', t), theme);
+        await page.goto('/');
+
+        const card = page.getByRole('region', { name: servicesTitle }).locator('li').first();
+        const form = page.locator('#contact form');
+        for (const plaque of [card, form]) {
+            await expect.poll(() => plaque.evaluate((el) => getComputedStyle(el).backgroundColor)).toBe(frost);
+        }
     });
 }
