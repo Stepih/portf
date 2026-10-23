@@ -85,6 +85,56 @@
     text-align: center;
 }
 
+// Призыв под чертами слайдов: отступ сверху больше, чем между кнопкой и ценой, – это отдельная группа
+.cta {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+
+    margin-top: 36px;
+}
+
+// Как главная кнопка в шапке /portfolio: залитая таблетка
+.ctaButton {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    min-height: 48px;
+    padding: 10px 32px;
+
+    font-size: 1.05rem;
+    color: var(--color-bg);
+    text-decoration: none;
+
+    background: var(--color-text-100);
+    border-radius: 24px;
+    transition: vars.$transition, opacity .2s;
+
+    &:hover {
+        opacity: .85;
+    }
+
+    &:focus-visible {
+        outline: 2px solid vars.$blue-100;
+        outline-offset: 2px;
+    }
+}
+
+.ctaNote {
+    margin: 0;
+
+    font-size: .95rem;
+    line-height: 1.4;
+    text-wrap: balance;
+    color: var(--color-text-100);
+
+    b {
+        font-weight: 700;
+    }
+}
+
 // Слой отраслей поверх раскрытого фона; кликается, только когда отрасли показаны
 .layer {
     position: absolute;
@@ -383,6 +433,22 @@
 
     .card {
         padding: 40px 20px 30px;
+    }
+
+    .cta {
+        margin-top: 24px;
+    }
+
+    // На телефоне цена и условие – две строки без «·», иначе строка рвётся посередине условия
+    .ctaNote {
+        b,
+        span {
+            display: block;
+        }
+
+        .ctaDot {
+            display: none;
+        }
     }
 
     .industries {

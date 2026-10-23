@@ -12,7 +12,7 @@ import HeroSlides from "./HeroSlides";
 import { SceneAfterContext } from "./sceneAfter";
 import { ralewayBold, ralewayRegular } from "@/app/fonts/fonts";
 import { popupPageURL, portfolioPageURL } from "@/constants/urls";
-import { formButton, heroInterval, heroSlides, heroTitleSlide, industriesDescription, industriesOther, industriesTitle } from "@/data/offer";
+import { formButton, heroInterval, heroPrice, heroPriceNote, heroSlides, heroTitleSlide, industriesDescription, industriesOther, industriesTitle } from "@/data/offer";
 import { PortfolioIndustry } from "@/interfaces/portfolio";
 import { withIndustry } from "@/scripts/portfolioIndustry";
 import { plural } from "@/scripts/portfolioStats";
@@ -435,6 +435,21 @@ const HeroExpand: FC<HeroExpandProps> = ({ chips, worksCount, children }) => {
         </Link>
     );
 
+    // Призыв первого экрана (DESIGN_FIXES_PLAN Д2): одна залитая кнопка на форму и строка с ценой.
+    // Вне слайдов, чтобы не сменялся вместе с ними
+    const cta = (
+        <div className={s.cta} data-goal-place="hero">
+            <Link href={popupPageURL} className={`${ralewayBold.className} ${s.ctaButton}`}>
+                {formButton}
+            </Link>
+            <p className={s.ctaNote}>
+                <b className={ralewayBold.className}>{heroPrice}</b>
+                <span className={s.ctaDot}> · </span>
+                <span>{heroPriceNote}</span>
+            </p>
+        </div>
+    );
+
     const industries = (
         <div
             ref={root}
@@ -502,6 +517,7 @@ const HeroExpand: FC<HeroExpandProps> = ({ chips, worksCount, children }) => {
                     <Image className={s.photo} src={photo} alt="Степан Картузов" priority />
                     <div className={`${ralewayRegular.className} ${s.card} ${s.cardStatic}`}>
                         <HeroSlides slides={heroSlides} titleSlide={heroTitleSlide} interval={heroInterval} />
+                        {cta}
                     </div>
                     {industries}
                 </section>
@@ -540,6 +556,7 @@ const HeroExpand: FC<HeroExpandProps> = ({ chips, worksCount, children }) => {
                         <div ref={card} className={`${ralewayRegular.className} ${s.card}`}>
                             <motion.div style={{ opacity: slidesOpacity, y: slidesY }}>
                                 <HeroSlides slides={heroSlides} titleSlide={heroTitleSlide} interval={heroInterval} />
+                                {cta}
                             </motion.div>
                         </div>
                     </div>

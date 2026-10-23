@@ -1,6 +1,6 @@
 import { expect, test } from '@playwright/test';
 import { hiddenPages } from '../src/constants/urls';
-import { contactTitle, formButton, heroTitleSlide, moreLinks, moreTitle, offerFaq, offerTgButton, offerTitle } from '../src/data/offer';
+import { contactTitle, formButton, heroPrice, heroTitleSlide, moreLinks, moreTitle, offerFaq, offerTgButton, offerTitle } from '../src/data/offer';
 
 // Слайды первого экрана сменяются, а h1 с оффером в HTML один и есть всегда (SALES_PLAN 3.1.1).
 // Первым показывается слайд с h1 (CONVERSION_PLAN К1.1): проверяем по HTML с сервера, до смены слайда
@@ -18,6 +18,23 @@ test('на главной один h1 с оффером, черта перекл
     await third.click();
     await expect(third).toHaveAttribute('aria-current', 'true');
 });
+
+// Кнопка формы и цена видны на первом экране без прокрутки, и на телефоне тоже (DESIGN_FIXES_PLAN Д2)
+for (const viewport of [{ width: 1400, height: 800 }, { width: 375, height: 667 }]) {
+    test(`призыв и цена на первом экране, ${viewport.width}px`, async ({ page }) => {
+        await page.setViewportSize(viewport);
+        await page.goto('/');
+
+        const hero = page.getByRole('region', { name: offerTitle });
+        // Вторая такая ссылка – у отраслей ниже, она появляется по скроллу
+        const button = hero.getByRole('link', { name: formButton }).first();
+        await expect(button).toBeInViewport({ ratio: 1 });
+        await expect(hero.getByText(heroPrice)).toBeInViewport({ ratio: 1 });
+
+        await button.click();
+        await expect(page).toHaveURL(/\/popup$/);
+    });
+}
 
 // Чип отрасли ведёт в подборку портфолио (SALES_PLAN 3.2). Чипы вылетают из кружка по скроллу,
 // когда первый экран раскрылся: к 0,85 экрана брызги доиграли, портал ещё не начался
