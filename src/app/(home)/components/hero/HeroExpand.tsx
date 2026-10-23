@@ -11,7 +11,8 @@ import s from './HeroExpand.module.scss'
 import HeroSlides from "./HeroSlides";
 import { SceneAfterContext } from "./sceneAfter";
 import { ralewayBold, ralewayRegular } from "@/app/fonts/fonts";
-import { popupPageURL, portfolioPageURL } from "@/constants/urls";
+import { portfolioPageURL } from "@/constants/urls";
+import ContactLink from "../contact-link/ContactLink";
 import { formButton, heroInterval, heroPrice, heroPriceNote, heroSlides, heroTitleSlide, industriesDescription, industriesOther, industriesTitle } from "@/data/offer";
 import { useMediaQuery } from "@/hooks/useMediaQuery";
 import { usePrefersReducedMotion } from "@/hooks/usePrefersReducedMotion";
@@ -511,12 +512,13 @@ const HeroExpand: FC<HeroExpandProps> = ({ chips, worksCount, children }) => {
     );
 
     // Призыв первого экрана (DESIGN_FIXES_PLAN Д2): одна залитая кнопка на форму и строка с ценой.
+    // Форма – на главной, прыжок мимо сцены (DESIGN_FIXES_3_PLAN Д13).
     // Вне слайдов, чтобы не сменялся вместе с ними
     const cta = (
         <div className={s.cta} data-goal-place="hero">
-            <Link href={popupPageURL} className={`${ralewayBold.className} ${s.ctaButton}`}>
+            <ContactLink className={`${ralewayBold.className} ${s.ctaButton}`}>
                 {formButton}
-            </Link>
+            </ContactLink>
             <p className={s.ctaNote}>
                 <b className={ralewayBold.className}>{heroPrice}</b>
                 <span className={s.ctaDot}> · </span>
@@ -571,14 +573,13 @@ const HeroExpand: FC<HeroExpandProps> = ({ chips, worksCount, children }) => {
                 {/* Чипы – только примеры: клиент из другой сферы идёт сразу в форму */}
                 <motion.p className={s.other} style={reduceMotion ? undefined : { opacity: otherOpacity, y: otherY }}>
                     {industriesOther}{' '}
-                    <Link
-                        href={popupPageURL}
+                    <ContactLink
                         className={s.otherLink}
                         data-goal="cta_click"
                         data-goal-id="industries_other"
                     >
                         {formButton}
-                    </Link>
+                    </ContactLink>
                 </motion.p>
             </motion.div>
         </div>

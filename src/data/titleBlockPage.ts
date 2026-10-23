@@ -12,5 +12,5 @@ export const musicTitleData:ITitleBlockPage = {
 
 export const popupTitleData:ITitleBlockPage = {
     title: "Обсудить проект",
-    description: "Оставьте имя и телефон и коротко опишите задачу — я свяжусь с вами, чтобы обсудить детали"
+    description: "Оставьте имя и телефон и коротко опишите задачу – я свяжусь с вами, чтобы обсудить детали"
 }

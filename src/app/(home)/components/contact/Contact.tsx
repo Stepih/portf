@@ -4,16 +4,19 @@ import TgIcon from '@/assets/_img/icons/tg-white.svg'
 
 import s from './Contact.module.scss'
 import { ralewayBold, ralewayRegular } from "@/app/fonts/fonts";
-import { contactDescription, contactTitle, offerButtonsNote, offerTgButton, offerTrustLine } from "@/data/offer";
+import { contactDescription, contactTitle, offerButtonsNote, offerTgButton, offerTrustLine, services } from "@/data/offer";
+import { contactSectionId, contactTitleId } from "@/constants/urls";
+import { serviceLines } from "@/scripts/services";
 import LeadForm from "@/app/popup/components/lead-form/LeadForm";
 
 // Финальный блок главной (SALES_PLAN 3.9): слева заголовок, Telegram и строки доверия, справа форма заявки.
-// До 900px – в столбик, форма под текстом
+// До 900px – в столбик, форма под текстом. Сюда ведут призывы главной (ContactLink, DESIGN_FIXES_3_PLAN Д13):
+// фокус после прыжка – на заголовок, поэтому tabIndex={-1}
 const Contact: FC = () => {
     return (
-        <section id="contact" data-goal-place="final" className={`${ralewayRegular.className} ${s.contact}`} aria-labelledby="contact-title">
+        <section id={contactSectionId} data-goal-place="final" className={`${ralewayRegular.className} ${s.contact}`} aria-labelledby={contactTitleId}>
             <div className={s.text}>
-                <h2 id="contact-title" className={`${ralewayBold.className} ${s.title}`}>{contactTitle}</h2>
+                <h2 id={contactTitleId} tabIndex={-1} className={`${ralewayBold.className} ${s.title}`}>{contactTitle}</h2>
                 <p className={s.description}>{contactDescription}</p>
 
                 <a href={offerTgButton.href} target="_blank" rel="noopener" className={`${ralewayBold.className} ${s.tg}`}>
@@ -24,7 +27,7 @@ const Contact: FC = () => {
                 <p className={s.trust}>{offerTrustLine()}</p>
             </div>
 
-            <LeadForm className={s.form} />
+            <LeadForm className={s.form} serviceLines={serviceLines(services)} />
         </section>
     )
 }

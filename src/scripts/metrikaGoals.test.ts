@@ -18,6 +18,14 @@ describe("linkGoal", () => {
         });
     });
 
+    it("ссылка на форму главной – тоже cta_click, услуга в адресе не мешает", () => {
+        expect(linkGoal({ href: `${origin}/#contact`, origin, page: "/", place: "hero" })).toEqual({
+            goal: "cta_click",
+            params: { page: "/", place: "hero" },
+        });
+        expect(linkGoal({ href: `${origin}/?service=ai#contact`, origin, page: "/" })?.goal).toBe("cta_click");
+    });
+
     it("явная цель с id важнее адреса", () => {
         expect(linkGoal({ href: `${origin}/popup?service=landing`, origin, page: "/", goal: "service_click", id: "landing" })).toEqual({
             goal: "service_click",
@@ -29,5 +37,6 @@ describe("linkGoal", () => {
         expect(linkGoal({ href: `${origin}/music`, origin, page: "/" })).toBeNull();
         expect(linkGoal({ href: `${origin}/music`, origin, page: "/", goal: "Музыкальное творчество" })).toBeNull();
         expect(linkGoal({ href: "https://other.ru/popup", origin, page: "/" })).toBeNull();
+        expect(linkGoal({ href: `${origin}/#faq`, origin, page: "/" })).toBeNull();
     });
 });

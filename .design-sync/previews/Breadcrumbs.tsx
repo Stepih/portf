@@ -23,3 +23,6 @@ const AtRoute = ({ path }: { path: string }) => {
 export const SectionPage = () => <AtRoute path="/music" />;
 
 export const NestedPage = () => <AtRoute path="/media/цветокоррекция" />;
+
+// /popup shows its own label "Оставить заявку" (src/data/breadCrumbs.ts), not the raw segment.
+export const FormPage = () => <AtRoute path="/popup" />;

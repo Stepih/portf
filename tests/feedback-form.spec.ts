@@ -1,6 +1,9 @@
 import { expect, test, type Page, type Request } from '@playwright/test';
 import { formButton } from '../src/data/offer';
-import { formSuccessText, formSuccessTitle, phoneTooShort } from '../src/data/inputsFeedBack';
+import { formServiceLabel, formSuccessText, formSuccessTitle, phoneTooShort } from '../src/data/inputsFeedBack';
+import { breadCrumbLabels } from '../src/data/breadCrumbs';
+import { services } from '../src/data/offer';
+import { serviceLines } from '../src/scripts/services';
 
 // Подменяет /api/sendMessage: в Telegram ничего не уходит. Возвращает список перехваченных запросов
 const mockSendMessage = async (page: Page, status = 200) => {
@@ -110,6 +113,30 @@ test('кейс из ссылки уходит вместе с заявкой', a
 
     await expect(page.getByRole('heading', { name: formSuccessTitle('Иван') })).toBeVisible();
     expect(requests[0].postDataJSON()).toMatchObject({ name: 'Иван', case: 'icc' });
+});
+
+// Прямая ссылка на /popup с услугой: та же строка услуги, что на главной; крошка – «Оставить заявку» (DESIGN_FIXES_3_PLAN Д13)
+test('услуга из ссылки видна в форме и уходит с заявкой', async ({ page }) => {
+    await page.setViewportSize({ width: 375, height: 800 });
+    await page.goto('/popup?service=landing');
+    const requests = await mockSendMessage(page);
+    const form = fields(page);
+
+    await expect(page.getByText(`${formServiceLabel} ${serviceLines(services).landing}`)).toBeVisible();
+    await expect(page.getByRole('navigation', { name: 'Breadcrumb' })).toHaveText(`Главная/${breadCrumbLabels.popup}`);
+
+    await form.name.fill('Иван');
+    await form.contact.fill('79990001122');
+    await form.submit.click();
+    await expect(page.getByRole('heading', { name: formSuccessTitle('Иван') })).toBeVisible();
+    expect(requests[0].postDataJSON()).toMatchObject({ service: 'landing' });
+});
+
+test('без услуги и с неизвестной услугой строки нет', async ({ page }) => {
+    await expect(page.locator('form')).not.toContainText(formServiceLabel);
+    await page.goto('/popup?service=toString');
+    await expect(page.locator('form')).toBeVisible();
+    await expect(page.locator('form')).not.toContainText(formServiceLabel);
 });
 
 test('ответ 429 показывает понятную ошибку', async ({ page }) => {

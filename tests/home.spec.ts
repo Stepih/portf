@@ -1,9 +1,10 @@
 import { expect, test } from '@playwright/test';
 import { hiddenPages } from '../src/constants/urls';
-import { contactTitle, formButton, heroPrice, heroTitleSlide, moreLinks, moreTitle, offerFaq, offerSteps, offerTgButton, offerTitle, servicesTitle } from '../src/data/offer';
-import { formSuccessText, formSuccessTitle, phoneTooShort } from '../src/data/inputsFeedBack';
+import { contactTitle, formButton, heroPrice, heroTitleSlide, moreLinks, moreTitle, offerFaq, offerSteps, offerTgButton, offerTitle, services, servicesTitle } from '../src/data/offer';
+import { formServiceLabel, formSuccessText, formSuccessTitle, phoneTooShort } from '../src/data/inputsFeedBack';
 import { chatFabLabel, chatLeadOpen, chatLeadSuccess } from '../src/data/chat';
 import { footerName, footerSince, footerTg } from '../src/data/footer';
+import { serviceLines } from '../src/scripts/services';
 
 // Слайды первого экрана сменяются, а h1 с оффером в HTML один и есть всегда (SALES_PLAN 3.1.1).
 // Первым показывается слайд с h1 (CONVERSION_PLAN К1.1): проверяем по HTML с сервера, до смены слайда
@@ -34,8 +35,13 @@ for (const viewport of [{ width: 1400, height: 800 }, { width: 375, height: 667 
         await expect(button).toBeInViewport({ ratio: 1 });
         await expect(hero.getByText(heroPrice)).toBeInViewport({ ratio: 1 });
 
+        // Форма – на главной, прыжок мимо сцены, фокус на заголовке формы (DESIGN_FIXES_3_PLAN Д13)
         await button.click();
-        await expect(page).toHaveURL(/\/popup$/);
+        await expect(page).toHaveURL(/\/#contact$/);
+        const title = page.getByRole('heading', { name: contactTitle });
+        await expect(title).toBeFocused();
+        await expect(title).toBeInViewport();
+        await expect(page.locator('#contact')).not.toContainText(formServiceLabel);
     });
 }
 
@@ -114,6 +120,18 @@ test.describe('уменьшить движение', () => {
         expect(errors).toEqual([]);
     });
 
+    // Без сцены прыжок тот же: кнопка первого экрана – к форме главной (DESIGN_FIXES_3_PLAN Д13)
+    test('кнопка первого экрана ведёт к форме', async ({ page }) => {
+        await page.goto('/');
+        const button = page.getByRole('region', { name: offerTitle }).getByRole('link', { name: formButton }).first();
+        // До гидрации клик – обычный переход по якорю, без фокуса: ждём обработчик React
+        await expect.poll(() => button.evaluate((el) => Object.keys(el).some((key) => key.startsWith('__reactProps')))).toBe(true);
+        await button.click();
+        await expect(page).toHaveURL(/\/#contact$/);
+        await expect(page.getByRole('heading', { name: contactTitle })).toBeFocused();
+        await expect(page.getByRole('heading', { name: contactTitle })).toBeInViewport();
+    });
+
     // Хук reduced-motion включается после монтирования: текст кейса не должен остаться за маской с transform первого рендера
     test('текст кейсов виден без анимации', async ({ page }) => {
         await page.goto('/', { waitUntil: 'networkidle' });
@@ -135,8 +153,14 @@ test.describe('уменьшить движение', () => {
     });
 });
 
-// Карточки услуг с ценой, кнопка «Узнать цену» ведёт в форму с услугой (SALES_PLAN 3.4)
+// Карточки услуг с ценой, кнопка «Узнать цену» ведёт в форму главной с услугой (SALES_PLAN 3.4, DESIGN_FIXES_3_PLAN Д13):
+// строка услуги в форме, фокус на заголовке, услуга уходит с заявкой
 test('услуги и цены на главной', async ({ page }) => {
+    const requests: Record<string, unknown>[] = [];
+    await page.route('**/api/sendMessage', route => {
+        requests.push(route.request().postDataJSON());
+        return route.fulfill({ status: 200, json: { message: 'ok' } });
+    });
     await page.goto('/');
 
     const section = page.getByRole('region', { name: 'Услуги и цены' });
@@ -144,9 +168,46 @@ test('услуги и цены на главной', async ({ page }) => {
     await expect(section.getByText('от 8 000 ₽')).toBeVisible();
 
     const discuss = section.getByRole('link', { name: 'Узнать цену: Лендинг' });
-    await expect(discuss).toHaveAttribute('href', '/popup?service=landing');
+    await expect(discuss).toHaveAttribute('href', '/?service=landing#contact');
     await discuss.click();
-    await expect(page).toHaveURL(/\/popup\?service=landing$/);
+    await expect(page).toHaveURL(/\/\?service=landing#contact$/);
+
+    const contact = page.getByRole('region', { name: contactTitle });
+    await expect(page.getByRole('heading', { name: contactTitle })).toBeFocused();
+    await expect(contact.getByText(`${formServiceLabel} ${serviceLines(services).landing}`)).toBeInViewport();
+
+    // Без перезагрузки и без прыжка сцены: позиция после перехода не меняется
+    const y = await page.evaluate(() => window.scrollY);
+    await page.waitForTimeout(500);
+    expect(await page.evaluate(() => window.scrollY)).toBe(y);
+
+    // Другая услуга меняет строку
+    await section.getByRole('link', { name: 'Узнать цену: Магазин или каталог' }).click();
+    await expect(contact.getByText(`${formServiceLabel} ${serviceLines(services).shop}`)).toBeVisible();
+    await expect(page).toHaveURL(/\/\?service=shop#contact$/);
+
+    await contact.getByPlaceholder('Имя *').fill('Иван');
+    await contact.getByPlaceholder('Телефон *').fill('79990001122');
+    await contact.getByRole('button', { name: formButton }).click();
+    await expect(contact.getByRole('heading', { name: formSuccessTitle('Иван') })).toBeVisible();
+    expect(requests).toHaveLength(1);
+    expect(requests[0]).toMatchObject({ name: 'Иван', service: 'shop' });
+});
+
+// Ссылка с услугой из чата или мессенджера открывает главную сразу у формы со строкой услуги (Д13)
+test('прямая ссылка /?service=ai#contact – у формы со строкой услуги', async ({ page }) => {
+    await page.goto('/?service=ai#contact');
+
+    const contact = page.getByRole('region', { name: contactTitle });
+    await expect(contact.getByText(`${formServiceLabel} ${serviceLines(services).ai}`)).toBeVisible();
+    await expect(page.getByRole('heading', { name: contactTitle })).toBeInViewport();
+});
+
+// «Другая сфера? Обсудить проект» у отраслей – к той же форме главной (Д13)
+test('ссылка «Другая сфера» ведёт к форме главной', async ({ page }) => {
+    await page.goto('/');
+    const other = page.getByRole('region', { name: 'Каким может быть сайт для вашего бизнеса' }).getByRole('link', { name: formButton });
+    await expect(other).toHaveAttribute('href', '/#contact');
 });
 
 // Шаги работы списком по порядку (SALES_PLAN 3.5). Под каждым этапом – оплата (DESIGN_FIXES_2_PLAN Д5):

@@ -7,6 +7,8 @@ import { Metadata } from "next";
 import { baseOpenGraph } from "@/data/metadata";
 
 import s from "./page.module.scss";
+import { services } from "@/data/offer";
+import { serviceLines } from "@/scripts/services";
 
 export const metadata: Metadata = {
     title: "Обсудить проект – Степан Картузов",
@@ -30,7 +32,7 @@ const PopupPage: FC = () => {
             <Breadcrumbs />
             <TitleBlockPage props={popupTitleData}/>
 
-            <LeadForm className={s.form} />
+            <LeadForm className={s.form} serviceLines={serviceLines(services)} />
         </>
     )
 }

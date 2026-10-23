@@ -1,0 +1,14 @@
+@use '/src/styles/variables.scss' as vars;
+
+.choice {
+    margin: 0 0 20px;
+
+    font-size: 1.05rem;
+    line-height: 1.4;
+    color: var(--color-text-100);
+    transition: vars.$transition;
+
+    b {
+        font-weight: normal;
+    }
+}

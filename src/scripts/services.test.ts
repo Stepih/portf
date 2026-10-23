@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { serviceCases, withCase, withService } from "./services";
+import { contactHref, serviceCases, serviceLines, withCase, withService } from "./services";
 import { services } from "@/data/offer";
 import { portfolioWorks } from "@/data/portfolio";
 import { portfolioCases } from "@/data/portfolioCases";
@@ -7,6 +7,20 @@ import { portfolioCases } from "@/data/portfolioCases";
 describe("withService", () => {
     it("добавляет услугу в параметр ссылки", () => {
         expect(withService('/popup', 'shop')).toBe('/popup?service=shop');
+    });
+});
+
+describe("contactHref", () => {
+    it("ведёт к форме главной, услуга – параметром", () => {
+        expect(contactHref('landing')).toBe('/?service=landing#contact');
+        expect(contactHref()).toBe('/#contact');
+    });
+});
+
+describe("serviceLines", () => {
+    it("название, цена и срок через точку для каждой услуги", () => {
+        expect(serviceLines(services).landing).toBe('Лендинг · от 8 000 ₽ · 3–⁠4 дня');
+        expect(Object.keys(serviceLines(services))).toEqual(services.map((service) => service.id));
     });
 });
 

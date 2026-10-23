@@ -3,15 +3,16 @@ import Link from "next/link";
 
 import s from './Services.module.scss'
 import { ralewayBold, ralewayRegular } from "@/app/fonts/fonts";
-import { popupPageURL, portfolioPageURL } from "@/constants/urls";
+import { portfolioPageURL } from "@/constants/urls";
 import ChatButton from "../chat/ChatButton";
 import { services, servicesButton, servicesCasesLabel, servicesCommon, servicesDescription, servicesTitle } from "@/data/offer";
 import { portfolioWorks } from "@/data/portfolio";
 import { portfolioCases } from "@/data/portfolioCases";
-import { serviceCases, withService } from "@/scripts/services";
+import { serviceCases } from "@/scripts/services";
+import ContactLink from "../contact-link/ContactLink";
 
 // «Услуги и цены» (SALES_PLAN 3.4): три вида сайтов в ряд, ИИ – широкой карточкой под ними.
-// Карточки из offer.ts, кейс-пример и кнопка в форму с услугой; в карточке ИИ – кнопка демо-чата (К3.2).
+// Карточки из offer.ts, кейс-пример и кнопка в форму главной с услугой (Д13); в карточке ИИ – кнопка демо-чата (К3.2).
 // Серверный: тексты кейсов в клиентский бандл не попадают
 const Services: FC = () => {
     return (
@@ -47,15 +48,15 @@ const Services: FC = () => {
                                 )}
                             </div>
 
-                            <Link
-                                href={withService(popupPageURL, service.id)}
+                            <ContactLink
+                                service={service.id}
                                 className={`${ralewayBold.className} ${s.button}`}
                                 data-goal="service_click"
                                 data-goal-id={service.id}
                                 aria-label={`${servicesButton}: ${service.title}`}
                             >
                                 {servicesButton}
-                            </Link>
+                            </ContactLink>
                         </li>
                     )
                 })}

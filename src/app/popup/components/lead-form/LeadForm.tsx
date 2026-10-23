@@ -1,7 +1,7 @@
 "use client"
 
 import ActionButton from "@/components/ui/buttons/button-action/ActionButton";
-import { FC, FormEventHandler, useEffect, useRef, useState } from "react";
+import { FC, FormEventHandler, Suspense, useEffect, useRef, useState } from "react";
 import ListInput from "./input/ListInput";
 import { IInputKeyValue } from "@/interfaces/input";
 
@@ -14,6 +14,8 @@ import { reachGoal } from "@/scripts/metrika";
 import { GOALS } from "@/constants/analytics";
 import { formButton, formSuccessText, formSuccessTitle, phoneTooShort } from "@/data/inputsFeedBack";
 import { ralewayBold } from "@/app/fonts/fonts";
+import { ServiceId } from "@/interfaces/offer";
+import ServiceChoice from "./service-choice/ServiceChoice";
 
 const errorByStatus: Record<number, string> = {
     400: 'Проверьте, пожалуйста, заполненные поля',
@@ -21,12 +23,14 @@ const errorByStatus: Record<number, string> = {
 };
 
 // Форма заявки (SALES_PLAN 4.1): на /popup и в финальном блоке главной.
-// Отступы снаружи задаёт страница через className
+// Отступы снаружи задаёт страница через className. serviceLines – строки услуг из offer.ts (serviceLines в scripts/services):
+// форма показывает ту, что в адресе (DESIGN_FIXES_3_PLAN Д13)
 interface ILeadForm {
     className?: string;
+    serviceLines?: Partial<Record<ServiceId, string>>;
 }
 
-const LeadForm: FC<ILeadForm> = ({ className }) => {
+const LeadForm: FC<ILeadForm> = ({ className, serviceLines }) => {
     const [inputValue, setInputValue] = useState<IInputKeyValue>({name: '', contact: ''});
     const [focusInput, setFocusInput] = useState<keyof IInputKeyValue | undefined>(undefined)
     const [textAreaValue, setTextAreaValue] = useState('');
@@ -53,7 +57,7 @@ const LeadForm: FC<ILeadForm> = ({ className }) => {
         if (!isPhoneComplete(inputValue.contact)) return setError(phoneTooShort);
 
         const honeypot = new FormData(e.currentTarget).get(HONEYPOT_FIELD);
-        // Услуга, кейс или отрасль из ссылки «Обсудить» (SALES_PLAN 4.8): в форме не видны, уходят с заявкой
+        // Услуга, кейс или отрасль из ссылки «Обсудить» (SALES_PLAN 4.8) уходят с заявкой; видна в форме только услуга (Д13)
         const source = leadSourceFromSearch(window.location.search);
 
         setIsSending(true);
@@ -114,6 +118,11 @@ const LeadForm: FC<ILeadForm> = ({ className }) => {
         // ym-hide-content: Вебвизор не записывает, что ввели в поля заявки (SALES_PLAN 6.2)
         <form className={`${classes} ym-hide-content`} onSubmit={onSubmit}>
             <ErrorMessage error={error} />
+            {serviceLines && (
+                <Suspense fallback={null}>
+                    <ServiceChoice lines={serviceLines} />
+                </Suspense>
+            )}
             <ListInput handleSetFocusInput={handleSetFocusInput} value={inputValue} handleSetValue={handleSetInputValue} />
             <TextAreaInput setValue={handleSetTextAreaValue} value={textAreaValue} />
             <ActionButton type='submit' disabled={isSending} text={isSending ? "Отправляется..." : formButton}/>

@@ -4,6 +4,10 @@ import React from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation'; // Хук для получения текущего пути в Next.js 13+
 import styles from './BreadCrumbs.module.scss'; 
+import { breadCrumbLabels } from '@/data/breadCrumbs';
+
+// Подпись крошки: своя из breadCrumbLabels, иначе – сам сегмент адреса
+const label = (segment: string): string => breadCrumbLabels[segment] ?? decodeURIComponent(segment);
 
 const Breadcrumbs: React.FC = () => {
   const pathname = usePathname();
@@ -31,11 +35,11 @@ const Breadcrumbs: React.FC = () => {
             <li key={href} className={styles.breadcrumbItem}>
               {!isLast ? (
                 <>
-                  <Link href={href}>{decodeURIComponent(segment)}</Link>
+                  <Link href={href}>{label(segment)}</Link>
                   <span className={styles.separator}>/</span>
                 </>
               ) : (
-                <span className={styles.current}>{decodeURIComponent(segment)}</span>
+                <span className={styles.current}>{label(segment)}</span>
               )}
             </li>
           );

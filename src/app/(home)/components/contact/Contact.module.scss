@@ -8,6 +8,8 @@
 
     max-width: 1060px;
     margin: 100px auto 0;
+    // Прыжок с призывов (Д13): блок не прилипает к верхнему краю окна
+    scroll-margin-top: 40px;
 
     .text {
         display: flex;
@@ -22,6 +24,12 @@
         font-size: clamp(1.6rem, 4vw, 2.2rem);
         color: var(--color-text-100);
         transition: vars.$transition;
+
+        // Фокус ставится программно после прыжка (Д13), кольцо здесь не нужно – как у плашки после заявки
+        &:focus {
+            outline: none;
+            box-shadow: none;
+        }
     }
 
     .description {
