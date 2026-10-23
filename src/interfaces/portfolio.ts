@@ -12,6 +12,13 @@ export interface IPortfolioIndustry {
     audience: string
 }
 
+// Чип отрасли на главной: в сцене первого экрана и строкой под кейсами на телефоне; count – работ этой отрасли
+export interface IIndustryChip {
+    id: PortfolioIndustry,
+    label: string,
+    count: number
+}
+
 // Медиа карточки в «Избранном»: макеты десктопа и телефона или запись сайта
 export type IFeaturedMedia =
     | { type: 'devices', desktop: string, mobile: string }

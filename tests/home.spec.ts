@@ -211,6 +211,73 @@ test('ссылка «Другая сфера» ведёт к форме глав
     await expect(other).toHaveAttribute('href', '/#contact');
 });
 
+// Отрасли строкой под кейсами (DESIGN_FIXES_4_PLAN Д19): на телефоне чипы в сцене кликабельны лишь на ~40px прокрутки,
+// поэтому до 700px они повторяются под «Все работы». На компьютере и при «уменьшить движение» строки нет: display: none,
+// не фокусируется и не видна читалке
+const casesIndustries = (page: Page) => page.getByRole('region', { name: 'Избранные кейсы' }).locator('[data-goal-place="cases"]');
+
+test('отрасли под кейсами на телефоне: чип ведёт в портфолио, 375px', async ({ page }) => {
+    await page.setViewportSize({ width: 375, height: 812 });
+    await page.goto('/');
+
+    const row = casesIndustries(page);
+    const all = page.getByRole('region', { name: 'Избранные кейсы' }).getByRole('link', { name: 'Все работы' });
+    const chip = row.getByRole('listitem').getByRole('link').first();
+    await chip.scrollIntoViewIfNeeded();
+    await expect(row).toBeVisible();
+    const [a, r] = [await all.boundingBox(), await row.boundingBox()];
+    expect(r!.y).toBeGreaterThan(a!.y + a!.height);
+
+    const href = await chip.getAttribute('href');
+    expect(href).toMatch(/^\/portfolio\?for=[a-z0-9]+$/);
+    await expect(chip).toHaveAttribute('data-goal', 'industry_click');
+    await chip.click();
+    await expect(page).toHaveURL(href!);
+});
+
+test('«Другая сфера» под кейсами ведёт к форме, 375px', async ({ page }) => {
+    await page.setViewportSize({ width: 375, height: 812 });
+    await page.goto('/');
+
+    const other = casesIndustries(page).getByRole('link', { name: formButton });
+    await expect(other).toHaveAttribute('href', '/#contact');
+    await expect(other).toHaveAttribute('data-goal', 'cta_click');
+    // До гидрации клик – обычный переход по якорю: ждём обработчик React
+    await expect.poll(() => other.evaluate((el) => Object.keys(el).some((key) => key.startsWith('__reactProps')))).toBe(true);
+    await other.scrollIntoViewIfNeeded();
+    await other.click();
+    await expect(page).toHaveURL(/\/#contact$/);
+    await expect(page.getByRole('heading', { name: contactTitle })).toBeFocused();
+});
+
+// Скрытая строка: не видна, ни одна её ссылка не берёт фокус
+const expectRowHidden = async (page: Page) => {
+    const row = casesIndustries(page);
+    await expect(row).toBeHidden();
+    await expect(row.getByRole('link')).toHaveCount(0);
+    const focusable = await row.locator('a').evaluateAll((links) => links.filter((el) => {
+        (el as HTMLElement).focus();
+        return document.activeElement === el;
+    }).length);
+    expect(focusable).toBe(0);
+};
+
+test('на компьютере строки отраслей под кейсами нет, 1400px', async ({ page }) => {
+    await page.setViewportSize({ width: 1400, height: 900 });
+    await page.goto('/');
+    await expectRowHidden(page);
+});
+
+test.describe('строка отраслей под кейсами, уменьшить движение', () => {
+    test.use({ reducedMotion: 'reduce' });
+
+    test('при «уменьшить движение» строки нет, 375px', async ({ page }) => {
+        await page.setViewportSize({ width: 375, height: 812 });
+        await page.goto('/');
+        await expectRowHidden(page);
+    });
+});
+
 // Путь от шагов и FAQ к форме (DESIGN_FIXES_3_PLAN Д15): текстовые ссылки ведут к форме главной, фокус – на её заголовке,
 // без прыжка сцены. Под шагами – ссылка, а не кнопка: залитое действие на экране одно
 for (const { name, region, place } of [
@@ -520,9 +587,11 @@ test('после заявки на главной – плашка «что да
 });
 
 // Путь к заявке на телефоне (DESIGN_FIXES_2_PLAN Д7): сцена там короче, цены ближе к началу.
-// На 375×800 было 3,57 экрана до «Услуг и цен», на 1400×900 – 2,79 (компьютер не трогали)
+// На 375×800 было 3,57 экрана до «Услуг и цен», на 1400×900 – 2,79 (компьютер не трогали).
+// Д19 (DESIGN_FIXES_4_PLAN): под кейсами на телефоне – строка отраслей, 244px + отступ 32px = 0,345 экрана:
+// 3,08 → 3,425. Порог поднят только на неё; сама сцена не удлинилась
 for (const { viewport, screens } of [
-    { viewport: { width: 375, height: 800 }, screens: 3.25 },
+    { viewport: { width: 375, height: 800 }, screens: 3.45 },
     { viewport: { width: 1400, height: 900 }, screens: 2.85 },
 ]) {
     test(`услуги и цены не дальше ${screens} экрана, ${viewport.width}px`, async ({ page }) => {

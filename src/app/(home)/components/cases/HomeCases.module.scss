@@ -57,6 +57,99 @@
             @include vars.focus-ring(2px);
         }
     }
+
+    // Отрасли строкой под «Все работы» (DESIGN_FIXES_4_PLAN Д19): по умолчанию скрыта, показ – в медиа-запросе ниже.
+    // Чипы – как в сцене на телефоне (HeroExpand.module.scss)
+    .industries {
+        display: none;
+        flex-direction: column;
+        align-items: center;
+        gap: 12px;
+
+        width: 100%;
+        text-align: center;
+    }
+
+    .chips {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 8px;
+
+        margin: 0;
+        padding: 0;
+
+        list-style: none;
+    }
+
+    .chip {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+
+        min-height: 44px;
+        padding: 8px 14px;
+
+        font-size: 0.95rem;
+        color: var(--color-text-100);
+        text-decoration: none;
+
+        border: 1.5px solid rgba(128, 128, 128, 0.45);
+        border-radius: 24px;
+        transition: vars.$transition;
+
+        .count {
+            font-size: 0.8rem;
+            color: var(--color-text-muted);
+        }
+
+        &:hover {
+            color: var(--color-bg);
+            background: var(--color-text-100);
+            border-color: var(--color-text-100);
+
+            .count {
+                color: inherit;
+                opacity: 0.6;
+            }
+        }
+
+        &:focus-visible {
+            @include vars.focus-ring(2px);
+        }
+    }
+
+    .other {
+        margin: 0;
+
+        font-size: 1rem;
+        color: var(--color-text-muted);
+        transition: vars.$transition;
+    }
+
+    .otherLink {
+        color: var(--color-text-100);
+        text-decoration: underline;
+        text-underline-offset: 3px;
+        white-space: nowrap;
+        transition: vars.$transition;
+
+        &:hover {
+            text-decoration-thickness: 2px;
+        }
+
+        &:focus-visible {
+            @include vars.focus-ring(2px);
+        }
+    }
+}
+
+// Строка отраслей – только на телефоне и только со сценой: при «уменьшить движение» чипы стоят в статичном первом экране.
+// CSS, а не JS: без скачка при гидрации
+@media screen and (max-width: 700px) and (prefers-reduced-motion: no-preference) {
+    .cases .industries {
+        display: flex;
+    }
 }
 
 // По две в ряд третья карточка осталась бы одна: сразу в столбик, уже в мобильном виде карточки

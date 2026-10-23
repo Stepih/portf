@@ -17,7 +17,7 @@ export default function Home() {
     <>
       {/* Кейсы – внутри сцены первого экрана: портал открывается в них, скролл раздаёт карточки из колоды */}
       <HeroExpand chips={chips} worksCount={portfolioWorks.length}>
-        <HomeCases />
+        <HomeCases chips={chips} />
       </HeroExpand>
       <Services />
       <Steps />

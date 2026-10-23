@@ -16,12 +16,12 @@ import ContactLink from "../contact-link/ContactLink";
 import { formButton, heroInterval, heroPrice, heroPriceNote, heroSlides, heroTitleSlide, industriesDescription, industriesOther, industriesTitle } from "@/data/offer";
 import { useMediaQuery } from "@/hooks/useMediaQuery";
 import { usePrefersReducedMotion } from "@/hooks/usePrefersReducedMotion";
-import { PortfolioIndustry } from "@/interfaces/portfolio";
+import { IIndustryChip } from "@/interfaces/portfolio";
 import { withIndustry } from "@/scripts/portfolioIndustry";
 import { plural } from "@/scripts/portfolioStats";
 
 interface HeroExpandProps {
-    chips: { id: PortfolioIndustry, label: string, count: number }[],
+    chips: IIndustryChip[],
     // Сколько работ в портфолио, число в кружке над заголовком
     worksCount: number,
     // Блок после сцены («Избранные кейсы»): виден сквозь дыру портала и стоит на месте, пока она открывается
@@ -499,7 +499,7 @@ const HeroExpand: FC<HeroExpandProps> = ({ chips, worksCount, children }) => {
     };
     const geomOf = (i: number): ChipGeom => chipGeoms[i] ?? { i, dx: 0, dy: 0, w: 0, h: 0 };
 
-    const chipLink = (chip: HeroExpandProps['chips'][number]) => (
+    const chipLink = (chip: IIndustryChip) => (
         <Link
             href={withIndustry(portfolioPageURL, chip.id)}
             className={s.chip}
