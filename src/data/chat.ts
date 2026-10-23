@@ -31,6 +31,8 @@ export const chatErrorText = {
 }
 
 // Заявка прямо в чате (решение владельца 22.10.2026): имя и телефон уходят в Telegram вместе с вопросами из чата
+// Кнопка заявки в шапке окна: видна с первого открытия (DESIGN_FIXES_2_PLAN, Д7)
+export const chatLeadOpen = 'Связаться'
 export const chatLeadTitle = 'Оставьте контакт – Степан свяжется в течение часа'
 export const chatLeadSubmit = 'Отправить'
 export const chatLeadSending = 'Отправляется...'

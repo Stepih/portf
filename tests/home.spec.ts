@@ -2,6 +2,7 @@ import { expect, test } from '@playwright/test';
 import { hiddenPages } from '../src/constants/urls';
 import { contactTitle, formButton, heroPrice, heroTitleSlide, moreLinks, moreTitle, offerFaq, offerSteps, offerTgButton, offerTitle } from '../src/data/offer';
 import { formSuccessText, formSuccessTitle, phoneTooShort } from '../src/data/inputsFeedBack';
+import { chatFabLabel, chatLeadOpen, chatLeadSuccess } from '../src/data/chat';
 
 // Слайды первого экрана сменяются, а h1 с оффером в HTML один и есть всегда (SALES_PLAN 3.1.1).
 // Первым показывается слайд с h1 (CONVERSION_PLAN К1.1): проверяем по HTML с сервера, до смены слайда
@@ -228,6 +229,49 @@ test('после заявки на главной – плашка «что да
     await expect(section.getByRole('status')).toContainText(formSuccessText);
     await expect(section.getByRole('button', { name: formButton })).toHaveCount(0);
     await expect(page.getByText('Заполните, пожалуйста, имя и телефон')).toHaveCount(0);
+});
+
+// Путь к заявке на телефоне (DESIGN_FIXES_2_PLAN Д7): сцена там короче, цены ближе к началу.
+// На 375×800 было 3,57 экрана до «Услуг и цен», на 1400×900 – 2,79 (компьютер не трогали)
+for (const { viewport, screens } of [
+    { viewport: { width: 375, height: 800 }, screens: 3.25 },
+    { viewport: { width: 1400, height: 900 }, screens: 2.85 },
+]) {
+    test(`услуги и цены не дальше ${screens} экрана, ${viewport.width}px`, async ({ page }) => {
+        await page.setViewportSize(viewport);
+        await page.goto('/');
+
+        const top = await page.getByRole('region', { name: 'Услуги и цены' }).evaluate((el) =>
+            (el.getBoundingClientRect().top + window.scrollY) / window.innerHeight);
+        expect(top).toBeLessThanOrEqual(screens);
+    });
+}
+
+// Заявка из чата – кнопкой в шапке окна, с первого открытия, без вопросов модели (DESIGN_FIXES_2_PLAN Д7)
+test('кнопка «Связаться» в шапке чата открывает заявку до вопросов', async ({ page }) => {
+    const asks: unknown[] = [];
+    await page.route('**/api/chat', route => {
+        asks.push(route.request());
+        return route.fulfill({ status: 500 });
+    });
+    await page.route('**/api/sendMessage', route => route.fulfill({ status: 200, json: { message: 'ok' } }));
+    await page.setViewportSize({ width: 375, height: 667 });
+    await page.goto('/');
+
+    await page.getByRole('button', { name: chatFabLabel }).click();
+    const dialog = page.getByRole('dialog');
+    const open = dialog.getByRole('button', { name: chatLeadOpen });
+    await expect(open).toBeInViewport({ ratio: 1 });
+    await open.click();
+
+    await dialog.getByRole('textbox', { name: 'Имя' }).fill('Иван');
+    await dialog.getByRole('textbox', { name: 'Телефон' }).fill('+7 999 000-11-22');
+    await dialog.getByRole('button', { name: 'Отправить' }).click();
+
+    await expect(dialog.getByText(chatLeadSuccess)).toBeVisible();
+    // Контакт оставлен – кнопка в шапке больше не нужна
+    await expect(open).toHaveCount(0);
+    expect(asks).toHaveLength(0);
 });
 
 // Музыка, медиа и канал с работами – внизу, после формы (SALES_PLAN 3.10)

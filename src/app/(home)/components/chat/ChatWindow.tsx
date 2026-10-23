@@ -5,7 +5,7 @@ import s from './Chat.module.scss'
 import ChatLeadForm from "./ChatLeadForm";
 import type { useChat } from "./useChat";
 import { ralewayBold, ralewayRegular } from "@/app/fonts/fonts";
-import { chatClose, chatGreeting, chatLeadSuccess, chatLimitText, chatPlaceholder, chatSend, chatSubtitle, chatTitle } from "@/data/chat";
+import { chatClose, chatGreeting, chatLeadOpen, chatLeadSuccess, chatLimitText, chatPlaceholder, chatSend, chatSubtitle, chatTitle } from "@/data/chat";
 import { formButton } from "@/data/inputsFeedBack";
 import { CHAT_LIMITS } from "@/lib/chat/request";
 import { HONEYPOT_FIELD } from "@/lib/validation/feedback";
@@ -14,7 +14,8 @@ import { chatQuestions } from "@/scripts/chat";
 import { useBodyScrollLock } from "@/hooks/useBodyScrollLock";
 
 // Окно демо-чата (CONVERSION_PLAN К3.2): на компьютере – панель в правом нижнем углу, на телефоне – на весь экран.
-// Под последним ответом – кнопки «Обсудить проект» (форма прямо в чате) и Telegram
+// Под последним ответом – кнопки «Обсудить проект» (форма прямо в чате) и Telegram.
+// Форму открывает и кнопка в шапке – она видна с первого открытия, ещё до вопросов (DESIGN_FIXES_2_PLAN, Д7)
 interface IChatWindow {
     chat: ReturnType<typeof useChat>;
     tgButton: IOfferButton;
@@ -100,6 +101,16 @@ const ChatWindow: FC<IChatWindow> = ({ chat, tgButton, onClose }) => {
                         <h2 id={titleId} className={`${ralewayBold.className} ${s.title}`}>{chatTitle}</h2>
                         <p className={s.subtitle}>{chatSubtitle}</p>
                     </div>
+                    {/* Пока форма открыта, кнопка держит место: шапка не прыгает по высоте */}
+                    {!leadSent && (
+                        <button
+                            type="button"
+                            className={`${ralewayBold.className} ${s.headLead} ${leadOpen ? s.headLeadIdle : ''}`}
+                            onClick={() => setLeadOpen(true)}
+                        >
+                            {chatLeadOpen}
+                        </button>
+                    )}
                     <button type="button" className={s.close} onClick={onClose} aria-label={chatClose}>
                         <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" /></svg>
                     </button>

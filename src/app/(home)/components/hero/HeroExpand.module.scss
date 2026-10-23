@@ -5,6 +5,8 @@
 // margin-top снимает верхний отступ main, чтобы липкий экран начинался от края окна
 .scene {
     position: relative;
+    // Высота – в экранах пути сцены: на телефоне путь короче (--scene-h-phone, DESIGN_FIXES_2_PLAN, Д7)
+    height: var(--scene-h);
     margin: -60px calc(50% - var(--page-w, 100vw) / 2) 0;
 
     // Сцена над кейсами, которые лежат под ней и видны сквозь дыру портала.
@@ -344,6 +346,8 @@
 // а отпускается ровно тогда, когда сцена.
 // Запас пути – распоркой, а не padding: sticky ездит только в области содержимого родителя
 .nextTrack {
+    --exit: var(--exit-desktop);
+
     margin-top: calc(-100vh - var(--exit));
 
     &::after {
@@ -362,6 +366,15 @@
 @media screen and (max-width: 700px) {
     .after {
         display: none;
+    }
+
+    // Ширина – та же, что PHONE_QUERY в HeroExpand.tsx
+    .scene {
+        height: var(--scene-h-phone);
+    }
+
+    .nextTrack {
+        --exit: var(--exit-phone);
     }
 }
 
