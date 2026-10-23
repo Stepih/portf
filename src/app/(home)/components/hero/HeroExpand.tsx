@@ -28,23 +28,25 @@ interface HeroExpandProps {
 // Путь портала в экранах: диск растёт из кружка вместе с надписью «10 работ» (PORTAL_GROW), стоит с ней
 // (PORTAL_HOLD), потом в нём открывается дыра и уходит за края экрана (PORTAL_OPEN)
 const PORTAL_GROW = .1;
-const PORTAL_HOLD = .15;
+const PORTAL_HOLD = .05;
 const PORTAL_OPEN = .3;
 const PORTAL_PATH = PORTAL_GROW + PORTAL_HOLD + PORTAL_OPEN;
 
-// Точки сцены в экранах прокрутки: раскрытие, брызги отраслей (с SHOW_AT, путь BURST_PATH), портал сразу за ними
+// Точки сцены в экранах прокрутки: раскрытие, брызги отраслей (с SHOW_AT, путь BURST_PATH),
+// чипы стоят CHIPS_HOLD, чтобы по ним успели кликнуть, потом портал
 const EXPAND_FROM = .024;
 const EXPAND_TO = .36;
 const SHOW_AT = .33;
 const BURST_PATH = .4;
-const PORTAL_FROM = .38 + BURST_PATH;
+const CHIPS_HOLD = .15;
+const PORTAL_FROM = .38 + BURST_PATH + CHIPS_HOLD;
 const LENGTH = PORTAL_FROM + PORTAL_PATH;
 
 // Во сколько раз длиннее путь сцены: доводки нет, этапы проходятся скроллом.
-// Раскрытие ~0,7 экрана, брызги ~0,8, портал ~1,1
-const PACE = 2;
+// Раскрытие ~0,35 экрана, брызги ~0,4, портал ~0,45 (DESIGN_FIXES_PLAN, Д1: цены не дальше ~2,5 экрана)
+const PACE = 1;
 // Путь после портала, в экранах: кейсы ещё прилипают, скролл раздаёт их из колоды (SceneAfterContext)
-const AFTER = .85;
+const AFTER = .3;
 
 // Те же точки в долях прокрутки сцены
 const EXPAND_FROM_P = EXPAND_FROM / LENGTH;

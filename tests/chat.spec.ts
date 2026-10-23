@@ -116,8 +116,8 @@ test('шар в углу открывает тот же чат и есть на 
     await page.keyboard.press('Escape');
 
     // Диалог живёт в layout: переход по ссылке его не сбрасывает. Чипы отраслей кликаются,
-    // когда вылетели из кружка: к 1,5 экрана скролла
-    await page.evaluate(() => window.scrollTo(0, window.innerHeight * 1.5));
+    // когда вылетели из кружка: к 0,85 экрана скролла
+    await page.evaluate(() => window.scrollTo(0, window.innerHeight * .85));
     await page.locator('a[href^="/portfolio"]').first().click();
     await expect(page).toHaveURL(/\/portfolio/);
     await page.getByRole('button', { name: chatFabLabel }).click();

@@ -20,10 +20,10 @@ test('на главной один h1 с оффером, черта перекл
 });
 
 // Чип отрасли ведёт в подборку портфолио (SALES_PLAN 3.2). Чипы вылетают из кружка по скроллу,
-// когда первый экран раскрылся: к 1,5 экрана брызги доиграли, портал ещё не начался
+// когда первый экран раскрылся: к 0,85 экрана брызги доиграли, портал ещё не начался
 test('чип отрасли открывает портфолио с фильтром', async ({ page }) => {
     await page.goto('/');
-    await page.evaluate(() => window.scrollTo(0, window.innerHeight * 1.5));
+    await page.evaluate(() => window.scrollTo(0, window.innerHeight * .85));
 
     const chips = page.getByRole('region', { name: 'Каким может быть сайт для вашего бизнеса' }).getByRole('listitem').getByRole('link');
     await expect(chips.first()).toBeVisible();
@@ -37,10 +37,10 @@ test('чип отрасли открывает портфолио с фильт�
 });
 
 // Избранные кейсы ведут на страницы кейсов, кнопка – на всё портфолио (SALES_PLAN 3.3).
-// Кейсы открываются порталом из первого экрана: до него они спрятаны, к 3,6 экрана колода уже раздана
+// Кейсы открываются порталом из первого экрана: до него они спрятаны, к 1,8 экрана колода уже раздана
 test('избранные кейсы на главной', async ({ page }) => {
     await page.goto('/');
-    await page.evaluate(() => window.scrollTo(0, window.innerHeight * 3.6));
+    await page.evaluate(() => window.scrollTo(0, window.innerHeight * 1.8));
 
     const section = page.getByRole('region', { name: 'Избранные кейсы' });
     const cases = section.getByRole('heading', { level: 3 }).getByRole('link');
