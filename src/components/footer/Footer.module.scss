@@ -14,3 +14,10 @@
 
     z-index: 1;
 }
+
+// Телефон: строка выше плавающего шара чата (54px + отступ 16px снизу), иначе он закрывает дату
+@media screen and (max-width: 600px) {
+    .footer {
+        padding-bottom: calc(86px + env(safe-area-inset-bottom));
+    }
+}

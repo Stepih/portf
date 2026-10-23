@@ -64,7 +64,9 @@ interface IRiseProps {
     children: ReactNode
 }
 
-// Строка выезжает снизу из-под своей маски по скроллу, как надписи первого экрана
+// Строка выезжает снизу из-под своей маски по скроллу, как надписи первого экрана.
+// При reduced-motion – явные нули, а не style={undefined}: хук включается после монтирования,
+// и framer-motion оставил бы на элементе transform первого рендера (строка за маской)
 const Rise: FC<IRiseProps> = ({ progress, from, dur, tag = 'span', children }) => {
     const reduceMotion = usePrefersReducedMotion();
     const y = useTransform(progress, (v) => `${((1 - easeOutCubic(local(v, from, dur))) * 110).toFixed(2)}%`);
@@ -73,7 +75,7 @@ const Rise: FC<IRiseProps> = ({ progress, from, dur, tag = 'span', children }) =
 
     return (
         <Mask className={s.mask}>
-            <Inner className={s.rise} style={reduceMotion ? undefined : { y }}>{children}</Inner>
+            <Inner className={s.rise} style={{ y: reduceMotion ? 0 : y }}>{children}</Inner>
         </Mask>
     )
 }
@@ -84,7 +86,7 @@ const Pop: FC<{ progress: MotionValue<number>, from: number, dur: number, childr
     const scale = useTransform(progress, (v) => easeOutBack(local(v, from, dur)));
     const opacity = useTransform(progress, (v) => local(v, from, dur * .4));
 
-    return <motion.li className={t.tag} style={reduceMotion ? undefined : { scale, opacity }}>{children}</motion.li>
+    return <motion.li className={t.tag} style={reduceMotion ? { scale: 1, opacity: 1 } : { scale, opacity }}>{children}</motion.li>
 }
 
 // Карточка «Избранных кейсов» (ANIMATION_PLAN, 2Г): разметка как у WorkCard. Раздачу и текст ведёт скролл:
@@ -122,7 +124,7 @@ const CaseCard: FC<IProps> = ({ work, mobile, shared, stack, timing }) => {
         <motion.article
             ref={ref}
             className={`${w.card} ${s.card}`}
-            style={reduceMotion ? undefined : { x, y, rotate, scale, zIndex: stack?.z }}
+            style={reduceMotion ? { x: 0, y: 0, rotate: 0, scale: 1 } : { x, y, rotate, scale, zIndex: stack?.z }}
         >
             <div className={w.cover} style={{ height: work.coverHeight, backgroundColor: work.tint }}>
                 <div className={w.inner}>

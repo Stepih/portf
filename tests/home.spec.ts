@@ -110,6 +110,26 @@ test.describe('уменьшить движение', () => {
         await expect.poll(() => chip.evaluate(opacityOf)).toBe(1);
         expect(errors).toEqual([]);
     });
+
+    // Хук reduced-motion включается после монтирования: текст кейса не должен остаться за маской с transform первого рендера
+    test('текст кейсов виден без анимации', async ({ page }) => {
+        await page.goto('/', { waitUntil: 'networkidle' });
+
+        const cases = page.getByRole('region', { name: 'Избранные кейсы' });
+        const title = cases.getByRole('heading', { level: 3 }).getByRole('link').first();
+        const tag = cases.getByRole('listitem').first();
+        await title.scrollIntoViewIfNeeded();
+
+        const shifted = (el: Element) => {
+            for (let n: Element | null = el; n && n.tagName !== 'ARTICLE'; n = n.parentElement) {
+                const t = getComputedStyle(n).transform;
+                if (t !== 'none' && t !== 'matrix(1, 0, 0, 1, 0, 0)') return true;
+            }
+            return false;
+        };
+        await expect.poll(() => title.evaluate(shifted)).toBe(false);
+        await expect.poll(() => tag.evaluate(opacityOf)).toBe(1);
+    });
 });
 
 // Карточки услуг с ценой, кнопка «Узнать цену» ведёт в форму с услугой (SALES_PLAN 3.4)
