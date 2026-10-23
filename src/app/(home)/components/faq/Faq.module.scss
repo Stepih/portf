@@ -31,6 +31,18 @@ $icon: 14px;
         transition: vars.$transition;
     }
 
+    // Ссылка к форме – как «Обсудить проект» в сцене: цвет текста и подчёркивание (DESIGN_FIXES_3_PLAN Д15)
+    .link {
+        color: var(--color-text-100);
+        text-decoration: underline;
+        text-underline-offset: 3px;
+        transition: vars.$transition;
+
+        &:hover {
+            text-decoration-thickness: 2px;
+        }
+    }
+
     .list {
         width: 100%;
         margin-top: 28px;

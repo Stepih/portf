@@ -2,11 +2,13 @@ import { FC } from "react";
 
 import s from './Steps.module.scss'
 import { allerta, ralewayBold, ralewayRegular } from "@/app/fonts/fonts";
-import { offerSteps, stepsDescription, stepsTitle } from "@/data/offer";
+import { offerSteps, stepsContactLink, stepsDescription, stepsTitle } from "@/data/offer";
+import ContactLink from "../contact-link/ContactLink";
 
 // «Как я работаю» (SALES_PLAN 3.5, DESIGN_FIXES_2_PLAN Д5): «две линии» – сверху этапы, снизу деньги.
 // На компьютере этапы в ряд, под ними сплошная денежная линия с точкой на каждом этапе:
-// залитая – здесь платёж, пустая – этап бесплатный. На телефоне – лентой сверху вниз, оплата внутри этапа
+// залитая – здесь платёж, пустая – этап бесплатный. На телефоне – лентой сверху вниз, оплата внутри этапа.
+// Под шагами – ссылка к форме (DESIGN_FIXES_3_PLAN Д15): текстом, залитое действие на экране одно
 const Steps: FC = () => {
     return (
         <section className={`${ralewayRegular.className} ${s.steps}`} aria-labelledby="steps-title">
@@ -27,6 +29,10 @@ const Steps: FC = () => {
                     </li>
                 ))}
             </ol>
+
+            <p className={s.next} data-goal-place="steps">
+                <ContactLink className={`${ralewayBold.className} ${s.link}`}>{stepsContactLink}</ContactLink>
+            </p>
         </section>
     )
 }

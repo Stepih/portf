@@ -1,6 +1,6 @@
 import { expect, test } from '@playwright/test';
 import { hiddenPages } from '../src/constants/urls';
-import { contactTitle, formButton, heroPrice, heroTitleSlide, moreLinks, moreTitle, offerFaq, offerSteps, offerTgButton, offerTitle, services, servicesTitle } from '../src/data/offer';
+import { contactTitle, faqContactLink, formButton, heroPrice, heroTitleSlide, moreLinks, moreTitle, offerFaq, offerReasons, offerSteps, offerTgButton, offerTitle, services, servicesTitle, stepsContactLink } from '../src/data/offer';
 import { formServiceLabel, formSuccessText, formSuccessTitle, phoneTooShort } from '../src/data/inputsFeedBack';
 import { chatFabLabel, chatLeadOpen, chatLeadSuccess } from '../src/data/chat';
 import { footerName, footerSince, footerTg } from '../src/data/footer';
@@ -210,6 +210,29 @@ test('ссылка «Другая сфера» ведёт к форме глав
     await expect(other).toHaveAttribute('href', '/#contact');
 });
 
+// Путь от шагов и FAQ к форме (DESIGN_FIXES_3_PLAN Д15): текстовые ссылки ведут к форме главной, фокус – на её заголовке,
+// без прыжка сцены. Под шагами – ссылка, а не кнопка: залитое действие на экране одно
+for (const { name, region, place } of [
+    { name: stepsContactLink, region: 'Как я работаю', place: 'steps' },
+    { name: faqContactLink, region: 'Что спрашивают перед заказом', place: 'faq' }
+]) {
+    test(`ссылка «${name}» ведёт к форме главной`, async ({ page }) => {
+        await page.goto('/');
+
+        const link = page.getByRole('region', { name: region }).getByRole('link', { name });
+        await expect(link).toHaveAttribute('href', '/#contact');
+        await expect(link.locator('xpath=ancestor::*[@data-goal-place][1]')).toHaveAttribute('data-goal-place', place);
+
+        await link.click();
+        await expect(page).toHaveURL(/\/#contact$/);
+        await expect(page.getByRole('heading', { name: contactTitle })).toBeFocused();
+        await expect(page.getByRole('heading', { name: contactTitle })).toBeInViewport();
+        const y = await page.evaluate(() => window.scrollY);
+        await page.waitForTimeout(500);
+        expect(await page.evaluate(() => window.scrollY)).toBe(y);
+    });
+}
+
 // Шаги работы списком по порядку (SALES_PLAN 3.5). Под каждым этапом – оплата (DESIGN_FIXES_2_PLAN Д5):
 // до макета 0 ₽, предоплата – на разработке, остаток – на запуске
 test('как я работаю на главной', async ({ page }) => {
@@ -228,14 +251,17 @@ test('как я работаю на главной', async ({ page }) => {
     await expect(steps.nth(3)).toContainText('Оплата: Остаток');
 });
 
-// Три отличия из PRODUCT.md, без подписи под заголовком (DESIGN_FIXES_2_PLAN Д5)
+// Три отличия из PRODUCT.md, без подписи под заголовком (DESIGN_FIXES_2_PLAN Д5). Первое – «Сайт остаётся вам»,
+// про оплату говорят шаги (DESIGN_FIXES_3_PLAN Д15)
 test('почему я на главной', async ({ page }) => {
     await page.goto('/');
 
     const section = page.getByRole('region', { name: 'Почему я' });
     const reasons = section.getByRole('listitem');
     await expect(reasons).toHaveCount(3);
-    await expect(reasons.first().getByRole('heading', { level: 3 })).toHaveText('Предоплата без риска');
+    await expect(reasons.first().getByRole('heading', { level: 3 })).toHaveText('Сайт остаётся вам');
+    await expect(section).not.toContainText('Предоплата');
+    await expect(reasons.first()).toContainText(offerReasons[0].text);
     await expect(section.locator(':scope > p')).toHaveCount(0);
 });
 

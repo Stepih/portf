@@ -132,6 +132,32 @@ $num-col: 3rem;
         transition: vars.$transition;
     }
 
+    // Под шагами – одна текстовая ссылка к форме, по центру, как заголовок (DESIGN_FIXES_3_PLAN Д15)
+    .next {
+        margin: 26px 0 0;
+
+        font-size: 1.05rem;
+        text-align: center;
+
+        // Ссылка стоит отдельно: поля дают цель касания ≥24px, видимый отступ – прежние 36px
+        .link {
+            display: inline-block;
+            padding: 10px 0;
+        }
+    }
+
+    // Ссылка к форме – как «Обсудить проект» в сцене: цвет текста и подчёркивание (DESIGN_FIXES_3_PLAN Д15)
+    .link {
+        color: var(--color-text-100);
+        text-decoration: underline;
+        text-underline-offset: 3px;
+        transition: vars.$transition;
+
+        &:hover {
+            text-decoration-thickness: 2px;
+        }
+    }
+
     .srOnly {
         position: absolute;
 
@@ -204,5 +230,9 @@ $num-col: 3rem;
 @media screen and (max-width: 600px) {
     .steps {
         margin-top: 70px;
+
+        .next {
+            margin-top: 18px;
+        }
     }
 }
