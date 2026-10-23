@@ -81,6 +81,11 @@
         &:hover, &:focus-visible {
             color: vars.$blue-100;
         }
+
+        // Кольцо фокуса – у всей карточки (ниже); своё у ссылки было бы вторым, а на главной его режет маска строки
+        &:focus-visible {
+            outline: none;
+        }
     }
 
     &:has(.link:focus-visible) {

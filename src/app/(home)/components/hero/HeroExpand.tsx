@@ -1,9 +1,9 @@
 "use client";
 
-import { CSSProperties, FC, ReactNode, useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
+import { CSSProperties, FC, FocusEvent, ReactNode, useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { cubicBezier, easeIn, easeOut, motion, MotionValue, useMotionValue, useMotionValueEvent, useReducedMotion, useScroll, useSpring, useTransform } from "framer-motion";
+import { cubicBezier, easeIn, easeOut, motion, MotionValue, useMotionValue, useMotionValueEvent, useScroll, useSpring, useTransform } from "framer-motion";
 
 import photo from '@/assets/_img/rectangles/title-page/i.png'
 
@@ -13,6 +13,7 @@ import { SceneAfterContext } from "./sceneAfter";
 import { ralewayBold, ralewayRegular } from "@/app/fonts/fonts";
 import { popupPageURL, portfolioPageURL } from "@/constants/urls";
 import { formButton, heroInterval, heroPrice, heroPriceNote, heroSlides, heroTitleSlide, industriesDescription, industriesOther, industriesTitle } from "@/data/offer";
+import { usePrefersReducedMotion } from "@/hooks/usePrefersReducedMotion";
 import { PortfolioIndustry } from "@/interfaces/portfolio";
 import { withIndustry } from "@/scripts/portfolioIndustry";
 import { plural } from "@/scripts/portfolioStats";
@@ -211,7 +212,7 @@ const MARK_FADE = .1;
 // сквозь неё видны кейсы; дыра уходит за края экрана, а кейсы ещё прилипают, пока скролл раздаёт их из колоды.
 // Чип ведёт на /portfolio?for=<id>, отрасли без работ не показываются
 const HeroExpand: FC<HeroExpandProps> = ({ chips, worksCount, children }) => {
-    const reduceMotion = useReducedMotion();
+    const reduceMotion = usePrefersReducedMotion();
 
     const scene = useRef<HTMLElement>(null);
     const screen = useRef<HTMLDivElement>(null);
@@ -418,8 +419,41 @@ const HeroExpand: FC<HeroExpandProps> = ({ chips, worksCount, children }) => {
     });
     useEffect(() => paintBurst(burstTime.get()), [paintBurst, burstTime]);
 
-    // Чипы кликаются, только пока видны
+    // Чипы кликаются мышью, только пока видны. С клавиатуры они доступны всегда (ниже)
     const live = reduceMotion || (burstShown && portalState === 'off');
+
+    // Клавиатура (DESIGN_FIXES_PLAN, Д3): фокус ведёт сцену. Tab к элементу, который сейчас не виден,
+    // прокручивает страницу туда, где сцена его показывает; анимация догоняет за сглаженным прогрессом.
+    // Только для фокуса с клавиатуры: клик мышью страницу не двигает
+    const sceneSpan = () => {
+        const el = scene.current;
+        if (!el) return null;
+        return { top: el.getBoundingClientRect().top + window.scrollY, len: el.offsetHeight - window.innerHeight };
+    };
+    const byKeyboard = (e: FocusEvent<HTMLElement>) => e.target.matches(':focus-visible');
+    // Прогресс сцены вне [from, to] – прокрутить к at
+    const holdScene = (from: number, to: number, at: number) => {
+        const span = sceneSpan();
+        if (!span) return;
+        const p = (window.scrollY - span.top) / span.len;
+        if (p < from || p > to) window.scrollTo({ top: span.top + at * span.len, behavior: 'instant' });
+    };
+    // Первый экран: черты слайдов и кнопка – пока карточка не начала раскрываться
+    const focusHero = (e: FocusEvent<HTMLElement>) => {
+        if (byKeyboard(e)) holdScene(-Infinity, EXPAND_FROM_P, 0);
+    };
+    // Отрасли: брызги разлетелись, портал ещё не начался
+    const focusIndustries = (e: FocusEvent<HTMLElement>) => {
+        if (byKeyboard(e)) holdScene(BURST_TO_P, PORTAL_FROM_P, (BURST_TO_P + PORTAL_FROM_P) / 2);
+    };
+    // Кейсы: сцена кончилась и колода роздана, блок стоит на своём месте в потоке, дальше – к самой карточке
+    const focusCases = (e: FocusEvent<HTMLElement>) => {
+        const span = sceneSpan();
+        if (!span || !byKeyboard(e)) return;
+        const end = span.top + span.len + (afterEl.current?.offsetHeight ?? 0);
+        if (window.scrollY < end) window.scrollTo({ top: end, behavior: 'instant' });
+        (e.target.closest('article') ?? e.target).scrollIntoView({ block: 'nearest', behavior: 'instant' });
+    };
     const geomOf = (i: number): ChipGeom => chipGeoms[i] ?? { i, dx: 0, dy: 0, w: 0, h: 0 };
 
     const chipLink = (chip: HeroExpandProps['chips'][number]) => (
@@ -428,7 +462,6 @@ const HeroExpand: FC<HeroExpandProps> = ({ chips, worksCount, children }) => {
             className={s.chip}
             data-goal="industry_click"
             data-goal-id={chip.id}
-            tabIndex={live ? undefined : -1}
         >
             {chip.label}
             <span className={s.count}>{chip.count}</span>
@@ -456,6 +489,7 @@ const HeroExpand: FC<HeroExpandProps> = ({ chips, worksCount, children }) => {
             className={`${ralewayRegular.className} ${s.industries}`}
             aria-labelledby="industries-title"
             role="region"
+            onFocus={focusIndustries}
         >
             {/* Кружок над заголовком: сюда прилетает фото первого экрана и превращается в число работ */}
             {!reduceMotion && (
@@ -500,7 +534,6 @@ const HeroExpand: FC<HeroExpandProps> = ({ chips, worksCount, children }) => {
                         className={s.otherLink}
                         data-goal="cta_click"
                         data-goal-id="industries_other"
-                        tabIndex={live ? undefined : -1}
                     >
                         {formButton}
                     </Link>
@@ -553,7 +586,7 @@ const HeroExpand: FC<HeroExpandProps> = ({ chips, worksCount, children }) => {
                             </motion.div>
                         </div>
 
-                        <div ref={card} className={`${ralewayRegular.className} ${s.card}`}>
+                        <div ref={card} className={`${ralewayRegular.className} ${s.card}`} onFocus={focusHero}>
                             <motion.div style={{ opacity: slidesOpacity, y: slidesY }}>
                                 <HeroSlides slides={heroSlides} titleSlide={heroTitleSlide} interval={heroInterval} />
                                 {cta}
@@ -571,10 +604,11 @@ const HeroExpand: FC<HeroExpandProps> = ({ chips, worksCount, children }) => {
 
             {/* Кейсы прилипают к экрану на время портала и отпускаются вместе со сценой: --exit – путь портала.
                 Липкость нативная, поэтому за скроллом блок не дёргается; сам он не масштабируется и не сдвигается.
-                До начала портала он спрятан: иначе просвечивает под первым экраном */}
+                До начала портала он прозрачен: иначе просвечивает под первым экраном */}
             <div
                 className={`${s.nextTrack} ${portalState === 'off' ? s.nextHidden : ''}`}
                 style={{ '--exit': `${PORTAL_PATH * PACE * 100}vh` } as CSSProperties}
+                onFocus={focusCases}
             >
                 <div className={s.next}>
                     <SceneAfterContext.Provider value={afterOn ? smoothAfter : null}>

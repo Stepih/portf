@@ -36,6 +36,7 @@
   - ветка `if (reduceMotion)` (`HeroExpand.tsx:496`) рендерит на сервере и клиенте разную разметку → «Hydration failed».
 - **Действия:** ссылки фокусируемы всегда, при фокусе страница прокручивается к их месту в сцене; скрывать через clip/opacity и `inert` только пока блок реально перекрыт; reduced-motion – через CSS media query или после монтирования.
 - **Проверка:** проход Tab по всей главной; Edge с `prefers-reduced-motion: reduce` – без ошибок в консоли.
+- **Сделано (23.10.2026):** Tab к невидимому элементу прокручивает сцену к его месту (первый экран, отрасли, кейсы), только для фокуса с клавиатуры; кейсы под порталом – `opacity: 0`; reduced-motion – хук `usePrefersReducedMotion` (`src/hooks`) в `HeroExpand`, `HeroSlides`, `CaseCard`; у ссылки карточки работы убрана вторая рамка фокуса. Тесты в `tests/home.spec.ts`. Остальные 9 компонентов `/portfolio` на `useReducedMotion` – вне шага.
 
 ## Д4. Финальный проход (`/impeccable polish`)
 - Обе темы, 1400 и 375 px, reduced-motion. Потом – повторный `/impeccable critique` главной для сравнения оценки.

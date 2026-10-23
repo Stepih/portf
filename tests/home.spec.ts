@@ -68,6 +68,50 @@ test('избранные кейсы на главной', async ({ page }) => {
     await expect(page).toHaveURL(/\/portfolio$/);
 });
 
+// Видимость с учётом прозрачности предков: toBeVisible прозрачные элементы считает видимыми
+const opacityOf = (el: Element) => {
+    let op = 1;
+    for (let n: Element | null = el; n; n = n.parentElement) op *= parseFloat(getComputedStyle(n).opacity);
+    return op;
+};
+
+// Клавиатура (DESIGN_FIXES_PLAN Д3): Tab доходит до чипов и кейсов, сцена сама прокручивается туда, где они видны
+for (const viewport of [{ width: 1400, height: 900 }, { width: 375, height: 812 }]) {
+    test(`Tab доходит до чипа и кейса, ${viewport.width}px`, async ({ page }) => {
+        await page.setViewportSize(viewport);
+        await page.goto('/');
+
+        const chip = page.getByRole('region', { name: 'Каким может быть сайт для вашего бизнеса' }).getByRole('listitem').getByRole('link').first();
+        const firstCase = page.getByRole('region', { name: 'Избранные кейсы' }).getByRole('heading', { level: 3 }).getByRole('link').first();
+
+        for (const target of [chip, firstCase]) {
+            for (let i = 0; i < 30 && !(await target.evaluate((el) => el === document.activeElement)); i++) {
+                await page.keyboard.press('Tab');
+            }
+            await expect(target).toBeFocused();
+            await expect(target).toBeInViewport();
+            await expect.poll(() => target.evaluate(opacityOf)).toBeGreaterThan(.95);
+        }
+    });
+}
+
+// «Уменьшить движение»: статичная вёрстка без ошибки гидрации (DESIGN_FIXES_PLAN Д3)
+test.describe('уменьшить движение', () => {
+    test.use({ reducedMotion: 'reduce' });
+
+    test('главная без ошибок гидрации, чипы видны без сцены', async ({ page }) => {
+        const errors: string[] = [];
+        page.on('console', (m) => { if (m.type() === 'error' && /hydrat/i.test(m.text())) errors.push(m.text()); });
+        page.on('pageerror', (e) => errors.push(e.message));
+        await page.goto('/', { waitUntil: 'networkidle' });
+
+        const chip = page.getByRole('region', { name: 'Каким может быть сайт для вашего бизнеса' }).getByRole('listitem').getByRole('link').first();
+        await chip.scrollIntoViewIfNeeded();
+        await expect.poll(() => chip.evaluate(opacityOf)).toBe(1);
+        expect(errors).toEqual([]);
+    });
+});
+
 // Карточки услуг с ценой, кнопка «Узнать цену» ведёт в форму с услугой (SALES_PLAN 3.4)
 test('услуги и цены на главной', async ({ page }) => {
     await page.goto('/');

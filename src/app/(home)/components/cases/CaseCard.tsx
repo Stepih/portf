@@ -2,13 +2,14 @@
 
 import { FC, ReactNode, useCallback, useEffect, useRef } from "react";
 import Image from "next/image";
-import { motion, MotionValue, useMotionValue, useMotionValueEvent, useReducedMotion, useScroll, useTransform } from "framer-motion";
+import { motion, MotionValue, useMotionValue, useMotionValueEvent, useScroll, useTransform } from "framer-motion";
 
 import w from '@/app/portfolio/components/WorkCard.module.scss'
 import t from '@/app/portfolio/components/Tags.module.scss'
 import s from './CaseCard.module.scss'
 import { ralewayBold } from "@/app/fonts/fonts";
 import { portfolioPageURL } from "@/constants/urls";
+import { usePrefersReducedMotion } from "@/hooks/usePrefersReducedMotion";
 import { IPortfolioWork } from "@/interfaces/portfolio";
 import BrowserFrame from "@/app/portfolio/components/BrowserFrame";
 import PortfolioLink from "@/app/portfolio/components/PortfolioLink";
@@ -65,7 +66,7 @@ interface IRiseProps {
 
 // Строка выезжает снизу из-под своей маски по скроллу, как надписи первого экрана
 const Rise: FC<IRiseProps> = ({ progress, from, dur, tag = 'span', children }) => {
-    const reduceMotion = useReducedMotion();
+    const reduceMotion = usePrefersReducedMotion();
     const y = useTransform(progress, (v) => `${((1 - easeOutCubic(local(v, from, dur))) * 110).toFixed(2)}%`);
     const Mask = tag;
     const Inner = tag === 'span' ? motion.span : motion.div;
@@ -79,7 +80,7 @@ const Rise: FC<IRiseProps> = ({ progress, from, dur, tag = 'span', children }) =
 
 // Метка отрасли вырастает из точки
 const Pop: FC<{ progress: MotionValue<number>, from: number, dur: number, children: ReactNode }> = ({ progress, from, dur, children }) => {
-    const reduceMotion = useReducedMotion();
+    const reduceMotion = usePrefersReducedMotion();
     const scale = useTransform(progress, (v) => easeOutBack(local(v, from, dur)));
     const opacity = useTransform(progress, (v) => local(v, from, dur * .4));
 
@@ -90,7 +91,7 @@ const Pop: FC<{ progress: MotionValue<number>, from: number, dur: number, childr
 // на компьютере – путь сцены после портала, на телефоне – скролл самой карточки
 const CaseCard: FC<IProps> = ({ work, mobile, shared, stack, timing }) => {
     const ref = useRef<HTMLElement>(null);
-    const reduceMotion = useReducedMotion();
+    const reduceMotion = usePrefersReducedMotion();
     // Свой прогресс, как у WorkCard на телефоне: от появления снизу до 55% экрана
     const { scrollYProgress: own } = useScroll({ target: ref, offset: ['start end', 'start 0.55'] });
     const progress = shared ?? own;

@@ -1,10 +1,10 @@
 "use client";
 
 import { FC, useCallback, useEffect, useRef, useState } from "react";
-import { useReducedMotion } from "framer-motion";
 
 import s from './HeroSlides.module.scss'
 import { allerta } from "@/app/fonts/fonts";
+import { usePrefersReducedMotion } from "@/hooks/usePrefersReducedMotion";
 import { IHeroSlide } from "@/interfaces/offer";
 
 interface HeroSlidesProps {
@@ -20,7 +20,7 @@ interface HeroSlidesProps {
 // Показ начинается со слайда с h1, чтобы оффер был виден сразу (CONVERSION_PLAN К1.1).
 // Наведение и фокус ставят паузу. При «уменьшить движение» смены нет, виден слайд с h1
 const HeroSlides: FC<HeroSlidesProps> = ({ slides, titleSlide, interval }) => {
-    const reduceMotion = useReducedMotion();
+    const reduceMotion = usePrefersReducedMotion();
     const [active, setActive] = useState(titleSlide);
     const [leaving, setLeaving] = useState<number | null>(null);
 
