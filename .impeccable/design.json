@@ -50,7 +50,7 @@
       "refersTo": "button-primary",
       "description": "Одно залитое главное действие на экране, например отправка формы.",
       "html": "<button class=\"ds-btn-primary\">Обсудить проект</button>",
-      "css": ".ds-btn-primary { padding: 16px 20px; font: inherit; font-size: 1.25rem; color: var(--color-bg, #fff); background: var(--color-text-100, #131313); border: 2px solid var(--color-text-100, #131313); border-radius: 13px; cursor: pointer; transition: color .5s, background .5s, border .5s, opacity .2s; } .ds-btn-primary:hover { opacity: .85; } .ds-btn-primary:focus-visible { outline: 2px solid var(--color-text-100, #131313); outline-offset: 2px; box-shadow: 0 0 0 2px var(--color-bg, #fff), 0 0 10px 6px rgba(119, 199, 234, 0.7); }"
+      "css": ".ds-btn-primary { padding: 16px 20px; font: inherit; font-size: 1.25rem; font-weight: 700; color: var(--color-bg, #fff); background: var(--color-text-100, #131313); border: 2px solid var(--color-text-100, #131313); border-radius: 13px; cursor: pointer; transition: color .5s, background .5s, border .5s, opacity .2s; } .ds-btn-primary:hover { opacity: .85; } .ds-btn-primary:focus-visible { outline: 2px solid var(--color-text-100, #131313); outline-offset: 2px; box-shadow: 0 0 0 2px var(--color-bg, #fff), 0 0 10px 6px rgba(119, 199, 234, 0.7); }"
     },
     {
       "name": "Кнопка-таблетка",

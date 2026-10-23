@@ -178,7 +178,10 @@ $num-col: 3rem;
             grid-template-rows: none;
             gap: 32px;
 
+            // Лента по центру под заголовком, а не у левого края (DESIGN_FIXES_3_PLAN Д17)
+            width: 100%;
             max-width: 560px;
+            margin-inline: auto;
         }
 
         .step {

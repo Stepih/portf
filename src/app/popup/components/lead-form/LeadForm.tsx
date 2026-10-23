@@ -125,7 +125,10 @@ const LeadForm: FC<ILeadForm> = ({ className, serviceLines }) => {
             )}
             <ListInput handleSetFocusInput={handleSetFocusInput} value={inputValue} handleSetValue={handleSetInputValue} />
             <TextAreaInput setValue={handleSetTextAreaValue} value={textAreaValue} />
-            <ActionButton type='submit' disabled={isSending} text={isSending ? "Отправляется..." : formButton}/>
+            {/* Обёртка задаёт жирный Raleway, как у остальных кнопок-действий: ActionButton общий (design-sync) */}
+            <div className={`${ralewayBold.className} ${s.submit}`}>
+                <ActionButton type='submit' disabled={isSending} text={isSending ? "Отправляется..." : formButton}/>
+            </div>
         </form>
     )
 }

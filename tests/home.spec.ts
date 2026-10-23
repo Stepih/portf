@@ -285,7 +285,31 @@ test('раскладка главной на планшете, 820px', async ({ 
     const titleLeft = (await contact.getByRole('heading', { level: 2 }).boundingBox())!.x;
     const formLeft = (await contact.locator('form').boundingBox())!.x;
     expect(Math.abs(formLeft - titleLeft)).toBeLessThan(1);
+
+    // Лента шагов в один столбец – по центру под заголовком, а не у левого края (DESIGN_FIXES_3_PLAN Д17)
+    const steps = page.getByRole('region', { name: 'Как я работаю' });
+    const section = (await steps.boundingBox())!;
+    const list = (await steps.getByRole('list').boundingBox())!;
+    expect(list.width).toBeLessThan(section.width);
+    expect(Math.abs((list.x - section.x) - (section.x + section.width - list.x - list.width))).toBeLessThan(1);
 });
+
+// Отправка формы – жирным, как остальные кнопки-действия, и во всю ширину формы (DESIGN_FIXES_3_PLAN Д17)
+for (const path of ['/', '/popup']) {
+    test(`кнопка отправки формы жирная, ${path}`, async ({ page }) => {
+        await page.goto(path);
+
+        const form = page.locator('form', { has: page.getByPlaceholder('Имя *') });
+        const submit = form.getByRole('button', { name: formButton });
+        expect(await submit.evaluate((el) => getComputedStyle(el).fontWeight)).toBe('700');
+        // Начертание Raleway Bold, а не синтетический жирный из Regular, которым набраны поля
+        const family = (el: Element) => getComputedStyle(el).fontFamily;
+        expect(await submit.evaluate(family)).not.toBe(await form.getByPlaceholder('Имя *').evaluate(family));
+        const name = (await form.getByPlaceholder('Имя *').boundingBox())!;
+        const button = (await submit.boundingBox())!;
+        expect(Math.abs(button.width - name.width)).toBeLessThan(1);
+    });
+}
 
 // FAQ на <details>: первый вопрос раскрыт, клик раскрывает следующий (SALES_PLAN 3.8)
 test('FAQ на главной', async ({ page }) => {

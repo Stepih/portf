@@ -17,11 +17,17 @@
     box-shadow: vars.$shadow;
 
     // Отправка – главное действие формы (CONVERSION_PLAN К1.4): залита сразу и во всю ширину.
-    // ActionButton общий (design-sync), поэтому вид задаём отсюда, а не пропсами
-    button[type='submit'] {
+    // ActionButton общий (design-sync), поэтому вид задаём отсюда, а не пропсами.
+    // Жирный шрифт – от обёртки, как у остальных кнопок-действий (DESIGN_FIXES_3_PLAN Д17)
+    .submit {
+        display: flex;
+        flex-direction: column;
         align-self: stretch;
+    }
 
+    button[type='submit'] {
         font-family: inherit;
+        font-weight: inherit;
         color: var(--color-bg);
         background: var(--color-text-100);
 
