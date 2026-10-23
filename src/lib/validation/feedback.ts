@@ -32,6 +32,8 @@ export const validateFeedback = (body: unknown): FeedbackResult => {
 
     if (!name || !contact || message === undefined) return { ok: false, error: 'Missing required fields' };
 
+    if (!isPhoneComplete(contact)) return { ok: false, error: 'Invalid phone' };
+
     if (
         name.length > FEEDBACK_LIMITS.name ||
         contact.length > FEEDBACK_LIMITS.contact ||
@@ -49,3 +51,7 @@ export const validateFeedback = (body: unknown): FeedbackResult => {
 export const isNameInput = (text: string) => /^[A-Za-zА-Яа-яё]{0,25}$/.test(text.replace(/\s+/g, ''));
 
 export const isPhoneInput = (text: string) => /^[0-9+()\s-]{0,25}$/.test(text);
+
+// Номер целиком – не меньше 10 цифр, «123» не проходит (DESIGN_FIXES_2_PLAN Д6). Проверяется и в браузере, и в /api/sendMessage
+export const PHONE_MIN_DIGITS = 10;
+export const isPhoneComplete = (text: string) => text.replace(/\D/g, '').length >= PHONE_MIN_DIGITS;

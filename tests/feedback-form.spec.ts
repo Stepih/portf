@@ -1,5 +1,6 @@
 import { expect, test, type Page, type Request } from '@playwright/test';
 import { formButton } from '../src/data/offer';
+import { formSuccessText, formSuccessTitle, phoneTooShort } from '../src/data/inputsFeedBack';
 
 // Подменяет /api/sendMessage: в Telegram ничего не уходит. Возвращает список перехваченных запросов
 const mockSendMessage = async (page: Page, status = 200) => {
@@ -54,7 +55,8 @@ test('телефон с +, пробелами, скобками и дефисо�
     await expect(page.getByText(/^Формат:/)).toHaveCount(0);
 });
 
-test('валидная заявка уходит одним POST, форма очищается', async ({ page }) => {
+// После отправки вместо формы – плашка «что дальше», фокус на её заголовке (DESIGN_FIXES_2_PLAN Д6)
+test('валидная заявка уходит одним POST, вместо формы – плашка', async ({ page }) => {
     const requests = await mockSendMessage(page);
     const form = fields(page);
 
@@ -63,7 +65,10 @@ test('валидная заявка уходит одним POST, форма о�
     await form.message.fill('Нужен бит');
     await form.submit.click();
 
-    await expect(page.getByRole('button', { name: 'Отправлено!' })).toBeVisible();
+    const title = page.getByRole('heading', { name: formSuccessTitle('Иван') });
+    await expect(title).toBeVisible();
+    await expect(title).toBeFocused();
+    await expect(page.getByRole('status')).toContainText(formSuccessText);
     expect(requests).toHaveLength(1);
     expect(requests[0].method()).toBe('POST');
     expect(requests[0].postDataJSON()).toEqual({
@@ -72,9 +77,25 @@ test('валидная заявка уходит одним POST, форма о�
         message: 'Нужен бит',
         website: '', // ловушка для ботов пустая
     });
-    await expect(form.name).toHaveValue('');
-    await expect(form.contact).toHaveValue('');
-    await expect(form.message).toHaveValue('');
+
+    // Повторно нажать нечего: формы и кнопки нет, ошибки «Заполните…» тоже
+    await expect(form.submit).toHaveCount(0);
+    await expect(form.name).toHaveCount(0);
+    await expect(page.getByText('Заполните, пожалуйста, имя и телефон')).toHaveCount(0);
+});
+
+// «123» – не номер: заявка не уходит, ошибка подсказывает формат (DESIGN_FIXES_2_PLAN Д6)
+test('телефон короче 10 цифр не отправляется', async ({ page }) => {
+    const requests = await mockSendMessage(page);
+    const form = fields(page);
+
+    await form.name.fill('Иван');
+    await form.contact.fill('123');
+    await form.submit.click();
+
+    await expect(page.getByText(phoneTooShort)).toBeVisible();
+    await expect(form.contact).toHaveValue('123');
+    expect(requests).toHaveLength(0);
 });
 
 // Ссылка «Обсудить» из кейса: кейс уходит с заявкой, в форме его не видно (SALES_PLAN 4.8)
@@ -87,7 +108,7 @@ test('кейс из ссылки уходит вместе с заявкой', a
     await form.contact.fill('79990001122');
     await form.submit.click();
 
-    await expect(page.getByRole('button', { name: 'Отправлено!' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: formSuccessTitle('Иван') })).toBeVisible();
     expect(requests[0].postDataJSON()).toMatchObject({ name: 'Иван', case: 'icc' });
 });
 

@@ -4,8 +4,8 @@ import s from './Chat.module.scss'
 import { ralewayBold } from "@/app/fonts/fonts";
 import { GOALS } from "@/constants/analytics";
 import { chatLeadBack, chatLeadError, chatLeadRequired, chatLeadSending, chatLeadSubmit, chatLeadTitle } from "@/data/chat";
-import { inputsListFeedback } from "@/data/inputsFeedBack";
-import { FEEDBACK_LIMITS, HONEYPOT_FIELD, isNameInput, isPhoneInput } from "@/lib/validation/feedback";
+import { inputsListFeedback, phoneTooShort } from "@/data/inputsFeedBack";
+import { FEEDBACK_LIMITS, HONEYPOT_FIELD, isNameInput, isPhoneComplete, isPhoneInput } from "@/lib/validation/feedback";
 import { chatLeadMessage } from "@/scripts/chat";
 import { LEAD_FROM_CHAT, LEAD_FROM_FIELD } from "@/scripts/leadSource";
 import { reachGoal } from "@/scripts/metrika";
@@ -30,6 +30,7 @@ const ChatLeadForm: FC<IChatLeadForm> = ({ questions, onSent, onBack }) => {
         e.preventDefault();
         if (sending) return;
         if (!name.trim() || !contact.trim()) return setError(chatLeadRequired);
+        if (!isPhoneComplete(contact)) return setError(phoneTooShort);
 
         const honeypot = new FormData(e.currentTarget).get(HONEYPOT_FIELD);
         const page = window.location.pathname;

@@ -1,6 +1,7 @@
 import { expect, test } from '@playwright/test';
 import { hiddenPages } from '../src/constants/urls';
 import { contactTitle, formButton, heroPrice, heroTitleSlide, moreLinks, moreTitle, offerFaq, offerSteps, offerTgButton, offerTitle } from '../src/data/offer';
+import { formSuccessText, formSuccessTitle, phoneTooShort } from '../src/data/inputsFeedBack';
 
 // Слайды первого экрана сменяются, а h1 с оффером в HTML один и есть всегда (SALES_PLAN 3.1.1).
 // Первым показывается слайд с h1 (CONVERSION_PLAN К1.1): проверяем по HTML с сервера, до смены слайда
@@ -206,8 +207,27 @@ test('форма заявки и Telegram на главной', async ({ page })
     await section.getByPlaceholder('Телефон *').fill('79990001122');
     await section.getByRole('button', { name: formButton }).click();
 
-    await expect(section.getByRole('button', { name: 'Отправлено!' })).toBeVisible();
+    await expect(section.getByRole('heading', { name: formSuccessTitle('Иван') })).toBeVisible();
     expect(requests).toHaveLength(1);
+});
+
+// Плашка вместо формы на главной: что дальше, без кнопки и без ошибки (DESIGN_FIXES_2_PLAN Д6)
+test('после заявки на главной – плашка «что дальше»', async ({ page }) => {
+    await page.route('**/api/sendMessage', route => route.fulfill({ status: 200, json: { message: 'ok' } }));
+    await page.goto('/');
+
+    const section = page.getByRole('region', { name: contactTitle });
+    await section.getByPlaceholder('Имя *').fill('Иван');
+    await section.getByPlaceholder('Телефон *').fill('123');
+    await section.getByRole('button', { name: formButton }).click();
+    await expect(page.getByText(phoneTooShort)).toBeVisible();
+
+    await section.getByPlaceholder('Телефон *').fill('+7 999 123-45-67');
+    await section.getByRole('button', { name: formButton }).click();
+
+    await expect(section.getByRole('status')).toContainText(formSuccessText);
+    await expect(section.getByRole('button', { name: formButton })).toHaveCount(0);
+    await expect(page.getByText('Заполните, пожалуйста, имя и телефон')).toHaveCount(0);
 });
 
 // Музыка, медиа и канал с работами – внизу, после формы (SALES_PLAN 3.10)

@@ -36,6 +36,50 @@
     }
 }
 
+// Плашка после отправки (DESIGN_FIXES_2_PLAN Д6): та же матовая карточка, что и форма
+.success {
+    gap: 12px;
+
+    animation: successIn 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.successTitle {
+    margin: 0;
+
+    font-size: 1.6rem;
+    line-height: 1.2;
+    overflow-wrap: anywhere;
+    color: var(--color-text-100);
+    transition: vars.$transition;
+
+    // Фокус ставится программно, кольцо здесь не нужно
+    &:focus {
+        outline: none;
+    }
+}
+
+.successText {
+    margin: 0;
+
+    font-size: 1.05rem;
+    line-height: 1.4;
+    color: var(--color-text-50);
+    transition: vars.$transition;
+}
+
+@keyframes successIn {
+    from {
+        opacity: 0;
+        transform: translateY(12px);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .success {
+        animation: none;
+    }
+}
+
 @media screen and (max-width: 450px) {
     .form {
         padding: 25px;

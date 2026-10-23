@@ -1,18 +1,19 @@
 "use client"
 
 import ActionButton from "@/components/ui/buttons/button-action/ActionButton";
-import { FC, FormEventHandler, useState } from "react";
+import { FC, FormEventHandler, useEffect, useRef, useState } from "react";
 import ListInput from "./input/ListInput";
 import { IInputKeyValue } from "@/interfaces/input";
 
 import s from './LeadForm.module.scss'
 import TextAreaInput from "./input/TextAreaInput";
 import ErrorMessage from "@/components/ui/errorMessage/ErrorMessage";
-import { HONEYPOT_FIELD, isNameInput, isPhoneInput } from "@/lib/validation/feedback";
+import { HONEYPOT_FIELD, isNameInput, isPhoneComplete, isPhoneInput } from "@/lib/validation/feedback";
 import { leadSourceFromSearch } from "@/scripts/leadSource";
 import { reachGoal } from "@/scripts/metrika";
 import { GOALS } from "@/constants/analytics";
-import { formButton } from "@/data/inputsFeedBack";
+import { formButton, formSuccessText, formSuccessTitle, phoneTooShort } from "@/data/inputsFeedBack";
+import { ralewayBold } from "@/app/fonts/fonts";
 
 const errorByStatus: Record<number, string> = {
     400: 'Проверьте, пожалуйста, заполненные поля',
@@ -31,16 +32,25 @@ const LeadForm: FC<ILeadForm> = ({ className }) => {
     const [textAreaValue, setTextAreaValue] = useState('');
     const [error, setError] = useState('');
 
-    const [success, setSuccess] = useState('');
+    // Имя из отправленной заявки: после успеха вместо формы – плашка (DESIGN_FIXES_2_PLAN Д6)
+    const [sentName, setSentName] = useState<string | null>(null);
     const [isSending, setIsSending] = useState(false);
+    const successTitleRef = useRef<HTMLHeadingElement>(null);
+
+    // Форма исчезает вместе с кнопкой, фокус переносим на заголовок плашки
+    useEffect(() => {
+        if (sentName !== null) successTitleRef.current?.focus();
+    }, [sentName]);
 
     const onSubmit: FormEventHandler<HTMLFormElement> = async (e) => {
         e.preventDefault();
         if (isSending) return;
 
-        if (!inputValue.contact.trim() || !inputValue.name.trim()) {
+        const name = inputValue.name.trim();
+        if (!inputValue.contact.trim() || !name) {
             return setError('Заполните, пожалуйста, имя и телефон');
         }
+        if (!isPhoneComplete(inputValue.contact)) return setError(phoneTooShort);
 
         const honeypot = new FormData(e.currentTarget).get(HONEYPOT_FIELD);
         // Услуга, кейс или отрасль из ссылки «Обсудить» (SALES_PLAN 4.8): в форме не видны, уходят с заявкой
@@ -60,15 +70,12 @@ const LeadForm: FC<ILeadForm> = ({ className }) => {
 
             // Успех; в цели – страница и откуда пришёл клиент (6.1)
             reachGoal(GOALS.leadSubmit, { page: window.location.pathname, ...source });
-            setSuccess('Сообщение успешно отправлено');
-            setError(''); // Сброс ошибки
-            setInputValue({ name: '', contact: '' }); // Очистка полей
-            setTextAreaValue(''); // Очистка textarea
+            setError('');
+            setSentName(name);
         } catch (err) {
             // fetch падает с TypeError, если нет сети
             reachGoal(GOALS.leadError, { page: window.location.pathname });
             setError(err instanceof Error && !(err instanceof TypeError) ? err.message : 'Не удалось отправить заявку, проверьте соединение');
-            setSuccess('');
         } finally {
             setIsSending(false);
         }
@@ -78,7 +85,6 @@ const LeadForm: FC<ILeadForm> = ({ className }) => {
         if (focusInput === 'contact' && !isPhoneInput(value.contact)) return setError('Формат: цифры, +, скобки и дефис, не больше 25 символов')
         if (focusInput === 'name' && !isNameInput(value.name)) return setError('Формат: только буквы, не больше 25 символов')
         if (error) setError('');
-        if (success) setSuccess('');
         setInputValue(value)
     }
 
@@ -90,13 +96,27 @@ const LeadForm: FC<ILeadForm> = ({ className }) => {
         setFocusInput(inputName)
     }
 
+    const classes = `${s.form}${className ? ` ${className}` : ''}`;
+
+    if (sentName !== null) {
+        return (
+            // В заголовке имя клиента – Вебвизор его тоже не записывает
+            <div className={`${classes} ${s.success} ym-hide-content`} role="status">
+                <h3 ref={successTitleRef} tabIndex={-1} className={`${ralewayBold.className} ${s.successTitle}`}>
+                    {formSuccessTitle(sentName)}
+                </h3>
+                <p className={s.successText}>{formSuccessText}</p>
+            </div>
+        )
+    }
+
     return (
         // ym-hide-content: Вебвизор не записывает, что ввели в поля заявки (SALES_PLAN 6.2)
-        <form className={`${s.form} ym-hide-content${className ? ` ${className}` : ''}`} onSubmit={onSubmit}>
-            {!success && <ErrorMessage error={error} />}
+        <form className={`${classes} ym-hide-content`} onSubmit={onSubmit}>
+            <ErrorMessage error={error} />
             <ListInput handleSetFocusInput={handleSetFocusInput} value={inputValue} handleSetValue={handleSetInputValue} />
             <TextAreaInput setValue={handleSetTextAreaValue} value={textAreaValue} />
-            <ActionButton type='submit' disabled={isSending} text={isSending ? "Отправляется..." : !success ? formButton : "Отправлено!"}/>
+            <ActionButton type='submit' disabled={isSending} text={isSending ? "Отправляется..." : formButton}/>
         </form>
     )
 }
