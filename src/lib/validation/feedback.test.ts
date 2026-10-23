@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { isPhoneComplete, isPhoneInput, validateFeedback } from "./feedback";
+import { FEEDBACK_LIMITS, isNameInput, isPhoneComplete, isPhoneInput, validateFeedback } from "./feedback";
 
 describe("validateFeedback", () => {
     it("валидная заявка проходит, пробелы по краям обрезаются", () => {
@@ -75,6 +75,26 @@ describe("isPhoneInput", () => {
     it("буквы и прочие знаки не проходят, длина – не больше 25", () => {
         for (const text of ["12a", "@ivan", "+7.999", "1".repeat(26)]) {
             expect(isPhoneInput(text), text).toBe(false);
+        }
+    });
+});
+
+// Настоящие имена (DESIGN_FIXES_3_PLAN Д14)
+describe("isNameInput", () => {
+    it("пропускает дефис, «Ё», апостроф, пробелы и другие алфавиты", () => {
+        for (const name of ["", "Иван", "Анна-Мария", "Ёлкина", "O'Brien", "O’Brien", "Иван Петров", "José", "Zoë", "Ærøskøbing", "Ли Мин"]) {
+            expect(isNameInput(name), name).toBe(true);
+        }
+    });
+
+    it("пропускает имя ровно до лимита, длиннее – нет", () => {
+        expect(isNameInput("а".repeat(FEEDBACK_LIMITS.name))).toBe(true);
+        expect(isNameInput("а".repeat(FEEDBACK_LIMITS.name + 1))).toBe(false);
+    });
+
+    it("цифры, эмодзи и знаки не проходят", () => {
+        for (const name of ["Ив1", "Иван😀", "Иван!", "Иван@", "Иван.", "<b>"]) {
+            expect(isNameInput(name), name).toBe(false);
         }
     });
 });

@@ -1,6 +1,6 @@
 import { expect, test, type Page, type Request } from '@playwright/test';
 import { formButton } from '../src/data/offer';
-import { formServiceLabel, formSuccessText, formSuccessTitle, phoneTooShort } from '../src/data/inputsFeedBack';
+import { formServiceLabel, formSuccessText, formSuccessTitle, nameFormatError, phoneTooShort } from '../src/data/inputsFeedBack';
 import { breadCrumbLabels } from '../src/data/breadCrumbs';
 import { services } from '../src/data/offer';
 import { serviceLines } from '../src/scripts/services';
@@ -45,8 +45,35 @@ test('в телефон нельзя ввести буквы, в имя — ци
     await expect(form.contact).toHaveValue('12');
 
     await form.name.pressSequentially('Ив1');
-    await expect(page.getByText('Формат: только буквы, не больше 25 символов')).toBeVisible();
+    await expect(page.getByText(nameFormatError)).toBeVisible();
     await expect(form.name).toHaveValue('Ив');
+});
+
+// Настоящие имена: дефис, «Ё», апостроф, пробел; ошибка – в живой области для скринридера (DESIGN_FIXES_3_PLAN Д14)
+test('имя с дефисом, «Ё» и апострофом набирается и уходит с заявкой', async ({ page }) => {
+    const requests = await mockSendMessage(page);
+    const form = fields(page);
+    const name = 'Анна-Мария Ёлкина-О’Нил';
+
+    await form.name.pressSequentially(name);
+    await expect(form.name).toHaveValue(name);
+    await expect(page.getByText(nameFormatError)).toHaveCount(0);
+
+    await form.contact.fill('79990001122');
+    await form.submit.click();
+    await expect(page.getByRole('heading', { name: formSuccessTitle(name) })).toBeVisible();
+    expect(requests[0].postDataJSON()).toMatchObject({ name });
+});
+
+test('ошибка формы доступна скринридеру как alert', async ({ page }) => {
+    const form = fields(page);
+
+    await form.name.pressSequentially('Анна7');
+    await expect(page.locator('form').getByRole('alert')).toHaveText(nameFormatError);
+    await expect(form.name).toHaveValue('Анна');
+
+    await form.submit.click();
+    await expect(page.locator('form').getByRole('alert')).toHaveText('Заполните, пожалуйста, имя и телефон');
 });
 
 // Номер в привычном виде набирается без ошибки (CONVERSION_PLAN К1.2)

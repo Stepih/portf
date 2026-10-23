@@ -12,7 +12,7 @@ import { HONEYPOT_FIELD, isNameInput, isPhoneComplete, isPhoneInput } from "@/li
 import { leadSourceFromSearch } from "@/scripts/leadSource";
 import { reachGoal } from "@/scripts/metrika";
 import { GOALS } from "@/constants/analytics";
-import { formButton, formSuccessText, formSuccessTitle, phoneTooShort } from "@/data/inputsFeedBack";
+import { formButton, formSuccessText, formSuccessTitle, nameFormatError, phoneTooShort } from "@/data/inputsFeedBack";
 import { ralewayBold } from "@/app/fonts/fonts";
 import { ServiceId } from "@/interfaces/offer";
 import ServiceChoice from "./service-choice/ServiceChoice";
@@ -87,7 +87,7 @@ const LeadForm: FC<ILeadForm> = ({ className, serviceLines }) => {
 
     const handleSetInputValue = (value:IInputKeyValue) => {
         if (focusInput === 'contact' && !isPhoneInput(value.contact)) return setError('Формат: цифры, +, скобки и дефис, не больше 25 символов')
-        if (focusInput === 'name' && !isNameInput(value.name)) return setError('Формат: только буквы, не больше 25 символов')
+        if (focusInput === 'name' && !isNameInput(value.name)) return setError(nameFormatError)
         if (error) setError('');
         setInputValue(value)
     }

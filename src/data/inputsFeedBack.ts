@@ -33,3 +33,7 @@ export const phoneTooShort = 'Введите номер целиком, напр
 // Подпись выбранной услуги над полями формы: «Вы выбрали: Лендинг · от 8 000 ₽ · 3–4 дня»
 // (DESIGN_FIXES_3_PLAN Д13: скилл marketing:draft-content, выбор владельца)
 export const formServiceLabel = 'Вы выбрали:'
+
+// Ошибка поля «Имя»: набран недопустимый символ (DESIGN_FIXES_3_PLAN Д14: скилл marketing:draft-content,
+// выбор владельца – вариант A). Про длину не пишем: больше FEEDBACK_LIMITS.name поле набрать не даёт
+export const nameFormatError = 'Формат: буквы, пробел, дефис и апостроф'

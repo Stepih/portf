@@ -315,12 +315,15 @@ test('форма заявки и Telegram на главной', async ({ page })
     const section = page.getByRole('region', { name: contactTitle });
     await expect(section.getByRole('link', { name: offerTgButton.title })).toHaveAttribute('href', offerTgButton.href);
 
-    await section.getByPlaceholder('Имя *').fill('Иван');
+    // Имя с дефисом проходит (DESIGN_FIXES_3_PLAN Д14)
+    await section.getByPlaceholder('Имя *').pressSequentially('Анна-Мария');
+    await expect(section.getByPlaceholder('Имя *')).toHaveValue('Анна-Мария');
     await section.getByPlaceholder('Телефон *').fill('79990001122');
     await section.getByRole('button', { name: formButton }).click();
 
-    await expect(section.getByRole('heading', { name: formSuccessTitle('Иван') })).toBeVisible();
+    await expect(section.getByRole('heading', { name: formSuccessTitle('Анна-Мария') })).toBeVisible();
     expect(requests).toHaveLength(1);
+    expect(requests[0]).toMatchObject({ name: 'Анна-Мария' });
 });
 
 // Плашка вместо формы на главной: что дальше, без кнопки и без ошибки (DESIGN_FIXES_2_PLAN Д6)
@@ -333,6 +336,7 @@ test('после заявки на главной – плашка «что да
     await section.getByPlaceholder('Телефон *').fill('123');
     await section.getByRole('button', { name: formButton }).click();
     await expect(page.getByText(phoneTooShort)).toBeVisible();
+    await expect(page.getByRole('alert').filter({ hasText: phoneTooShort })).toHaveCount(1);
 
     await section.getByPlaceholder('Телефон *').fill('+7 999 123-45-67');
     await section.getByRole('button', { name: formButton }).click();
