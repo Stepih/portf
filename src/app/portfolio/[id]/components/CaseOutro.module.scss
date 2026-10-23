@@ -48,7 +48,7 @@
         justify-content: center;
 
         font-size: 1.1rem;
-        color: var(--color-text-50);
+        color: var(--color-text-muted);
 
         border-radius: 50%;
         background: rgba(128, 128, 128, 0.2);
@@ -64,7 +64,7 @@
 
     .role {
         font-size: 0.95rem;
-        color: var(--color-text-50);
+        color: var(--color-text-muted);
         transition: vars.$transition;
     }
 }
@@ -98,7 +98,7 @@
 
         font-size: 1.1rem;
         line-height: 1.5;
-        color: var(--color-text-50);
+        color: var(--color-text-muted);
         text-wrap: pretty;
         transition: vars.$transition;
     }
@@ -216,7 +216,7 @@
 
     .nextLabel {
         font-size: 1.05rem;
-        color: var(--color-text-50);
+        color: var(--color-text-muted);
         transition: vars.$transition;
 
         &:first-of-type {

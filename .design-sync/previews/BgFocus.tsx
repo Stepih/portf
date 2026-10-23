@@ -6,7 +6,7 @@ import { BgFocus, ActionButton } from 'portfolio-ui';
 const Page = () => (
   <div style={{ padding: 40 }}>
     <h1>My musical creativity</h1>
-    <p style={{ color: 'var(--color-text-50)', marginBottom: 24 }}>
+    <p style={{ color: 'var(--color-text-muted)', marginBottom: 24 }}>
       Жизнь, как пианино. С чёрными и белыми полосами
     </p>
     <ActionButton type="button" text="Слушать" />

@@ -50,7 +50,7 @@ export const Confirmation = () => (
       }}
     >
       <h3 style={{ marginBottom: 12 }}>Заявка отправлена</h3>
-      <p style={{ color: 'var(--color-text-50)', marginBottom: 24 }}>Я свяжусь с вами в ближайшее время</p>
+      <p style={{ color: 'var(--color-text-muted)', marginBottom: 24 }}>Я свяжусь с вами в ближайшее время</p>
       <ActionButton type="button" text="Закрыть" />
     </div>
   </PopupParent>

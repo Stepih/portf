@@ -22,6 +22,10 @@
     
     resize: none;
 
+    &::placeholder {
+        color: var(--color-text-muted);
+    }
+
     &:focus {
         border: 2px solid var(--color-text-100);
     }

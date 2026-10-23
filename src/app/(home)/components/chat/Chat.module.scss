@@ -240,7 +240,7 @@
 
 .triggerNote {
     font-size: 0.9rem;
-    color: var(--color-text-50);
+    color: var(--color-text-muted);
     transition: vars.$transition;
 }
 
@@ -306,7 +306,7 @@
 .subtitle {
     margin: 2px 0 0;
     font-size: 0.85rem;
-    color: var(--color-text-50);
+    color: var(--color-text-muted);
     transition: vars.$transition;
 }
 
@@ -419,7 +419,7 @@
 
 // Текст сайта, а не ответ модели: ошибки, лимит, «контакт отправлен»
 .note {
-    color: var(--color-text-50);
+    color: var(--color-text-muted);
     background: none;
     border: 1px dashed rgba(128, 128, 128, 0.45);
 }
@@ -529,7 +529,7 @@
     transition: vars.$transition;
 
     &::placeholder {
-        color: var(--color-text-50);
+        color: var(--color-text-muted);
     }
 
     &:focus-visible {

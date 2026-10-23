@@ -4,7 +4,7 @@ import { ScrollToArrow } from 'portfolio-ui';
 export const UnderSectionIntro = () => (
   <div style={{ textAlign: 'center', width: 420 }}>
     <h3>Моя музыкальная история</h3>
-    <p style={{ color: 'var(--color-text-50)', margin: '12px 0 16px' }}>
+    <p style={{ color: 'var(--color-text-muted)', margin: '12px 0 16px' }}>
       От первых битов в 2019 до релизов на стриминговых площадках
     </p>
     <ScrollToArrow forid="title-history" />

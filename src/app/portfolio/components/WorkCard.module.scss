@@ -58,7 +58,7 @@
         gap: 12px;
 
         font-size: 0.95rem;
-        color: var(--color-text-50);
+        color: var(--color-text-muted);
         transition: vars.$transition;
     }
 
@@ -94,7 +94,7 @@
 
     .description {
         font-size: 1.05rem;
-        color: var(--color-text-50);
+        color: var(--color-text-muted);
         text-wrap: pretty;
         transition: vars.$transition;
     }

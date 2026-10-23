@@ -75,7 +75,7 @@ public/                  музыка, видео, медиа и sitemap
 - Один компонент — одна папка: `Name.tsx` + `Name.module.scss`. Стили импортируются как `s` (`import s from './Name.module.scss'`).
 - Компоненты пишутся как `const Name: FC<Props> = (...) => {}` с `export default Name`. Интерфейсы пропсов объявляются рядом, общие типы — в `src/interfaces`.
 - SVG импортируется как React-компонент: `import Icon from '@/assets/_img/icons/x.svg'` → `<Icon className={s.icon} />`. Это **не URL**, в `next/image` его передавать нельзя.
-- Цвета берутся только из CSS-переменных `var(--color-bg | --color-text-100 | --color-text-50 | --color-overlay)` из `theme.scss`: так работает тёмная тема.
+- Цвета берутся только из CSS-переменных `var(--color-bg | --color-text-100 | --color-text-muted | --color-text-50 | --color-frost | --color-overlay)` (вторичный текст – `--color-text-muted`, `--color-text-50` – только линии и рамки) из `theme.scss`: так работает тёмная тема.
 - Тёмная тема включается атрибутом `data-theme="dark"` на `<html>`. Его ставит `SelectThemeButton`, выбор хранится в `localStorage.theme`.
 - SCSS-переменные (`$shadow`, `$transition`, акцентные цвета) подключаются в каждом модуле строкой `@use '/src/styles/variables.scss' as vars;`.
 - Шрифты импортируются из `@/app/fonts/fonts`, класс навешивается через `font.className`.

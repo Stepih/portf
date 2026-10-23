@@ -8,6 +8,9 @@
 
     --color-text-100: #{vars.$black-100};
     --color-text-50: #{vars.$black-50};
+    // Вторичный текст: подписи, описания, плейсхолдеры – ≥4.5:1 на белом и на плашке (Д16).
+    // --color-text-50 остаётся для линий, рамок и ползунка
+    --color-text-muted: #{vars.$black-62};
 
     --color-overlay: #{vars.$black-50};
 
@@ -21,6 +24,8 @@
     
     --color-text-100: #{vars.$white-100};
     --color-text-50: #{vars.$white-50};
+    // В тёмной 50% уже дают 5.3:1 – оставлены как были (владелец, 23.10.2026)
+    --color-text-muted: #{vars.$white-50};
 
    
     --color-overlay: #{vars.$black-8};

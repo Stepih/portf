@@ -1,7 +1,7 @@
 import { expect, test } from '@playwright/test';
 import { hiddenPages } from '../src/constants/urls';
 import { contactTitle, faqContactLink, formButton, heroPrice, heroTitleSlide, moreLinks, moreTitle, offerFaq, offerReasons, offerSteps, offerTgButton, offerTitle, services, servicesTitle, stepsContactLink } from '../src/data/offer';
-import { formServiceLabel, formSuccessText, formSuccessTitle, phoneTooShort } from '../src/data/inputsFeedBack';
+import { formServiceLabel, formSuccessText, formSuccessTitle, inputsListFeedback, phoneTooShort } from '../src/data/inputsFeedBack';
 import { chatFabLabel, chatLeadOpen, chatLeadSuccess } from '../src/data/chat';
 import { footerName, footerSince, footerTg } from '../src/data/footer';
 import { serviceLines } from '../src/scripts/services';
@@ -521,5 +521,19 @@ for (const [theme, frost] of [['light', 'rgba(57, 57, 57, 0.08)'], ['dark', 'rgb
         for (const plaque of [card, form]) {
             await expect.poll(() => plaque.evaluate((el) => getComputedStyle(el).backgroundColor)).toBe(frost);
         }
+    });
+}
+
+// Вторичный текст и плейсхолдеры – не ниже 4.5:1: в светлой 62% чернил, в тёмной 50% бумаги уже проходят (DESIGN_FIXES_3_PLAN Д16)
+for (const [theme, muted] of [['light', 'rgba(19, 19, 19, 0.62)'], ['dark', 'rgba(255, 255, 255, 0.5)']] as const) {
+    test(`вторичный текст и плейсхолдеры, ${theme === 'light' ? 'светлая' : 'тёмная'} тема`, async ({ page }) => {
+        await page.addInitScript((t) => localStorage.setItem('theme', t), theme);
+        await page.goto('/');
+
+        const summary = page.getByRole('region', { name: servicesTitle }).getByText(services[0].summary);
+        await expect.poll(() => summary.evaluate((el) => getComputedStyle(el).color)).toBe(muted);
+
+        const name = page.locator('#contact form').getByPlaceholder(inputsListFeedback[0].placeholder!);
+        await expect.poll(() => name.evaluate((el) => getComputedStyle(el, '::placeholder').color)).toBe(muted);
     });
 }

@@ -29,7 +29,7 @@ $num-col: 3rem;
 
         font-size: 1.05rem;
         text-align: center;
-        color: var(--color-text-50);
+        color: var(--color-text-muted);
         transition: vars.$transition;
     }
 
@@ -74,7 +74,7 @@ $num-col: 3rem;
         margin: 0;
 
         font-size: 0.95rem;
-        color: var(--color-text-50);
+        color: var(--color-text-muted);
         transition: vars.$transition;
     }
 
@@ -118,7 +118,7 @@ $num-col: 3rem;
     .payLabel {
         font-size: 1.15rem;
         font-variant-numeric: lining-nums;
-        color: var(--color-text-50);
+        color: var(--color-text-muted);
         transition: vars.$transition;
     }
 
@@ -128,7 +128,7 @@ $num-col: 3rem;
 
     .payNote {
         font-size: 0.95rem;
-        color: var(--color-text-50);
+        color: var(--color-text-muted);
         transition: vars.$transition;
     }
 

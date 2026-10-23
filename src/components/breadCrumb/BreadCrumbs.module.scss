@@ -21,14 +21,14 @@
     // Для разделителей между элементами
     .separator {
       margin: 0 8px;
-      color: var(--color-text-50);
+      color: var(--color-text-muted);
       transition: vars.$transition;
     }
 
     // Стили для ссылок
     a {
       text-decoration: none;
-      color: var(--color-text-50);
+      color: var(--color-text-muted);
       transition: vars.$transition;
 
       &:hover {

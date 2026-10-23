@@ -5,7 +5,8 @@
   "extensions": {
     "colorMeta": {
       "ink": { "role": "primary", "displayName": "Чернила", "canonical": "rgba(19, 19, 19, 1)", "tonalRamp": ["#131313", "#262626", "#3a3a3a", "#555555", "#777777", "#9a9a9a", "#c4c4c4", "#ececec"] },
-      "ink-muted": { "role": "neutral", "displayName": "Приглушённые чернила", "canonical": "rgba(19, 19, 19, 0.5)" },
+      "ink-muted": { "role": "neutral", "displayName": "Приглушённые чернила", "canonical": "rgba(19, 19, 19, 0.62)" },
+      "ink-meta": { "role": "neutral", "displayName": "Мета-чернила (линии, рамки)", "canonical": "rgba(19, 19, 19, 0.5)" },
       "paper": { "role": "neutral", "displayName": "Бумага", "canonical": "rgba(255, 255, 255, 1)" },
       "paper-muted": { "role": "neutral", "displayName": "Приглушённая бумага", "canonical": "rgba(255, 255, 255, 0.5)" },
       "frost": { "role": "neutral", "displayName": "Матовое стекло", "canonical": "rgba(57, 57, 57, 0.08)" },
@@ -73,7 +74,7 @@
       "refersTo": "card",
       "description": "Матовая плашка с тенью мастерской: название, описание, цена через волосяную линию.",
       "html": "<div class=\"ds-card\"><h3 class=\"ds-card-name\">Лендинг</h3><p class=\"ds-card-summary\">Одна страница от первого экрана до заявки</p><div class=\"ds-card-bottom\"><p class=\"ds-card-price\">от 8 000 ₽</p><p class=\"ds-card-term\">3–4 дня</p></div></div>",
-      "css": ".ds-card { display: grid; row-gap: 14px; max-width: 340px; padding: 28px 24px; color: var(--color-text-100, #131313); background: rgba(57, 57, 57, 0.08); border-radius: 13px; box-shadow: 0 4px 48px 0 rgba(0, 0, 0, 0.25); font-family: Raleway, Arial, sans-serif; } .ds-card-name { margin: 0; font-size: 1.3rem; } .ds-card-summary { margin: 0; font-size: 1.05rem; color: var(--color-text-50, rgba(19,19,19,.5)); } .ds-card-bottom { padding-top: 14px; border-top: 1px solid rgba(128, 128, 128, 0.3); } .ds-card-price { margin: 0; font-size: 1.6rem; } .ds-card-term { margin: 0; font-size: .95rem; }"
+      "css": ".ds-card { display: grid; row-gap: 14px; max-width: 340px; padding: 28px 24px; color: var(--color-text-100, #131313); background: rgba(57, 57, 57, 0.08); border-radius: 13px; box-shadow: 0 4px 48px 0 rgba(0, 0, 0, 0.25); font-family: Raleway, Arial, sans-serif; } .ds-card-name { margin: 0; font-size: 1.3rem; } .ds-card-summary { margin: 0; font-size: 1.05rem; color: var(--color-text-muted, rgba(19,19,19,.62)); } .ds-card-bottom { padding-top: 14px; border-top: 1px solid rgba(128, 128, 128, 0.3); } .ds-card-price { margin: 0; font-size: 1.6rem; } .ds-card-term { margin: 0; font-size: .95rem; }"
     },
     {
       "name": "Поле ввода",
@@ -109,7 +110,7 @@
       { "name": "Правило одной тени", "body": "Новых теней не придумываем: плашка либо лежит на $shadow, либо плоская. Глубину внутри плашки дают тон и волосяные линии.", "section": "elevation" }
     ],
     "dos": [
-      "Do брать цвет только из переменных темы (--color-bg, --color-text-100, --color-text-50, --color-frost, --color-overlay) и проверять блок в обеих темах.",
+      "Do брать цвет только из переменных темы (--color-bg, --color-text-100, --color-text-muted, --color-text-50, --color-frost, --color-overlay) и проверять блок в обеих темах.",
       "Do класть контент на матовую плашку (frost, 13px, $shadow), а не в рамку.",
       "Do давать на экране одно залитое главное действие; остальные кнопки – контуром или таблеткой.",
       "Do ставить голубое кольцо фокуса (2px, отступ 2px) на всё кликабельное.",
