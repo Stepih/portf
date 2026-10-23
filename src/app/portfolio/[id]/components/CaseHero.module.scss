@@ -13,6 +13,11 @@
     padding: 12px;
 
     outline: none;
+
+    &:focus-visible {
+        outline: none;
+        box-shadow: none;
+    }
 }
 
 .stage {

@@ -192,6 +192,33 @@ test('FAQ на главной', async ({ page }) => {
     await expect(items.nth(1).getByText(offerFaq[1].answer)).toBeVisible();
 });
 
+// Единое кольцо фокуса (DESIGN_FIXES_2_PLAN Д8): чернила 2px и голубой ореол – у шапки, черт слайдов, FAQ и кнопок
+for (const theme of ['light', 'dark'] as const) {
+    test(`одно кольцо фокуса, ${theme === 'light' ? 'светлая' : 'тёмная'} тема`, async ({ page }) => {
+        await page.addInitScript((t) => localStorage.setItem('theme', t), theme);
+        await page.goto('/');
+
+        const ink = theme === 'light' ? 'rgb(19, 19, 19)' : 'rgb(255, 255, 255)';
+        const targets = [
+            page.locator('header').getByRole('link', { name: 'Telegram' }),
+            page.getByRole('button', { name: 'Слайд 2' }),
+            page.getByRole('region', { name: 'Что спрашивают перед заказом' }).locator('summary').first(),
+            page.getByRole('region', { name: offerTitle }).getByRole('link', { name: formButton }).first(),
+        ];
+
+        for (const target of targets) {
+            // Фокус из скрипта без кликов мышью Chromium считает видимым
+            await target.focus();
+            const ring = await target.evaluate((el) => {
+                const cs = getComputedStyle(el);
+                return { style: cs.outlineStyle, width: cs.outlineWidth, color: cs.outlineColor, shadow: cs.boxShadow };
+            });
+            expect(ring).toMatchObject({ style: 'solid', width: '2px', color: ink });
+            expect(ring.shadow).toContain('rgba(119, 199, 234, 0.7)');
+        }
+    });
+}
+
 // Финальный блок: форма прямо на главной и Telegram рядом (SALES_PLAN 3.9)
 test('форма заявки и Telegram на главной', async ({ page }) => {
     const requests: unknown[] = [];

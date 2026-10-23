@@ -27,3 +27,18 @@ $transition: color .5s, background .5s, stroke .5s, fill .5s, border .5s;
     text-align: inherit;
     cursor: pointer;
 }
+
+// Кольцо фокуса (DESIGN.md, Focus): чернила 2px с отступом, за ними голубой ореол – знак системы.
+// Полоса цвета фона под отступом отделяет кольцо от элемента. $shadow – своя тень элемента, чтобы ореол её не стёр
+@mixin focus-ring($offset: 2px, $shadow: null) {
+    $halo: 0 0 0 $offset var(--color-bg), 0 0 10px ($offset + 4px) rgba(119, 199, 234, 0.7);
+
+    outline: 2px solid var(--color-text-100);
+    outline-offset: $offset;
+
+    @if $shadow {
+        box-shadow: $halo, $shadow;
+    } @else {
+        box-shadow: $halo;
+    }
+}

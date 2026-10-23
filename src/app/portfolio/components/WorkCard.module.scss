@@ -85,12 +85,12 @@
         // Кольцо фокуса – у всей карточки (ниже); своё у ссылки было бы вторым, а на главной его режет маска строки
         &:focus-visible {
             outline: none;
+            box-shadow: none;
         }
     }
 
     &:has(.link:focus-visible) {
-        outline: 2px solid vars.$blue-100;
-        outline-offset: 4px;
+        @include vars.focus-ring(4px, vars.$shadow);
     }
 
     .description {

@@ -49,7 +49,7 @@
       "refersTo": "button-primary",
       "description": "Одно залитое главное действие на экране, например отправка формы.",
       "html": "<button class=\"ds-btn-primary\">Обсудить проект</button>",
-      "css": ".ds-btn-primary { padding: 16px 20px; font: inherit; font-size: 1.25rem; color: var(--color-bg, #fff); background: var(--color-text-100, #131313); border: 2px solid var(--color-text-100, #131313); border-radius: 13px; cursor: pointer; transition: color .5s, background .5s, border .5s, opacity .2s; } .ds-btn-primary:hover { opacity: .85; } .ds-btn-primary:focus-visible { outline: 2px solid rgba(119, 199, 234, 1); outline-offset: 2px; }"
+      "css": ".ds-btn-primary { padding: 16px 20px; font: inherit; font-size: 1.25rem; color: var(--color-bg, #fff); background: var(--color-text-100, #131313); border: 2px solid var(--color-text-100, #131313); border-radius: 13px; cursor: pointer; transition: color .5s, background .5s, border .5s, opacity .2s; } .ds-btn-primary:hover { opacity: .85; } .ds-btn-primary:focus-visible { outline: 2px solid var(--color-text-100, #131313); outline-offset: 2px; box-shadow: 0 0 0 2px var(--color-bg, #fff), 0 0 10px 6px rgba(119, 199, 234, 0.7); }"
     },
     {
       "name": "Кнопка-таблетка",
@@ -57,7 +57,7 @@
       "refersTo": "button-pill",
       "description": "Вторичное действие в карточках и кнопка Telegram; заливается при наведении.",
       "html": "<a class=\"ds-btn-pill\" href=\"#\">Узнать цену</a>",
-      "css": ".ds-btn-pill { display: inline-flex; align-items: center; justify-content: center; min-height: 48px; padding: 10px 26px; font-size: 1.05rem; color: var(--color-text-100, #131313); text-decoration: none; border: 1.5px solid rgba(128, 128, 128, 0.45); border-radius: 24px; transition: color .5s, background .5s, border .5s; } .ds-btn-pill:hover { color: var(--color-bg, #fff); background: var(--color-text-100, #131313); border-color: var(--color-text-100, #131313); } .ds-btn-pill:focus-visible { outline: 2px solid rgba(119, 199, 234, 1); outline-offset: 2px; }"
+      "css": ".ds-btn-pill { display: inline-flex; align-items: center; justify-content: center; min-height: 48px; padding: 10px 26px; font-size: 1.05rem; color: var(--color-text-100, #131313); text-decoration: none; border: 1.5px solid rgba(128, 128, 128, 0.45); border-radius: 24px; transition: color .5s, background .5s, border .5s; } .ds-btn-pill:hover { color: var(--color-bg, #fff); background: var(--color-text-100, #131313); border-color: var(--color-text-100, #131313); } .ds-btn-pill:focus-visible { outline: 2px solid var(--color-text-100, #131313); outline-offset: 2px; box-shadow: 0 0 0 2px var(--color-bg, #fff), 0 0 10px 6px rgba(119, 199, 234, 0.7); }"
     },
     {
       "name": "Контурная кнопка",
@@ -65,7 +65,7 @@
       "refersTo": "button-pill",
       "description": "ActionButton по умолчанию: контур чернилами, заливка при наведении.",
       "html": "<button class=\"ds-btn-outline\">Показать ещё</button>",
-      "css": ".ds-btn-outline { padding: 16px 20px; font: inherit; font-size: 1.25rem; color: var(--color-text-100, #131313); background: none; border: 2px solid var(--color-text-100, #131313); border-radius: 13px; cursor: pointer; transition: color .5s, background .5s, border .5s; } .ds-btn-outline:hover { color: var(--color-bg, #fff); background: var(--color-text-100, #131313); } .ds-btn-outline:focus-visible { outline: 2px solid rgba(119, 199, 234, 1); outline-offset: 2px; }"
+      "css": ".ds-btn-outline { padding: 16px 20px; font: inherit; font-size: 1.25rem; color: var(--color-text-100, #131313); background: none; border: 2px solid var(--color-text-100, #131313); border-radius: 13px; cursor: pointer; transition: color .5s, background .5s, border .5s; } .ds-btn-outline:hover { color: var(--color-bg, #fff); background: var(--color-text-100, #131313); } .ds-btn-outline:focus-visible { outline: 2px solid var(--color-text-100, #131313); outline-offset: 2px; box-shadow: 0 0 0 2px var(--color-bg, #fff), 0 0 10px 6px rgba(119, 199, 234, 0.7); }"
     },
     {
       "name": "Карточка услуги",
@@ -89,7 +89,7 @@
       "refersTo": "card",
       "description": "Вертикальная полоса 92px слева на компьютере; до 1200px – полоса сверху.",
       "html": "<nav class=\"ds-rail\"><span class=\"ds-rail-mark\">SK</span><div class=\"ds-rail-contacts\"><span>контакты</span><a href=\"#\" aria-label=\"Telegram\"><svg width=\"22\" height=\"22\" viewBox=\"0 0 24 24\"><path d=\"M21 4 2.5 11.2c-.8.3-.8 1.5.1 1.7l4.6 1.4 1.8 5.6c.2.7 1.1.9 1.6.4l2.6-2.5 4.7 3.5c.6.4 1.4.1 1.6-.6L22.9 5.2c.2-.9-.7-1.6-1.9-1.2Z\" fill=\"currentColor\"/></svg></a></div></nav>",
-      "css": ".ds-rail { display: flex; flex-direction: column; justify-content: space-between; align-items: center; width: 92px; height: 360px; padding-top: 24px; color: var(--color-text-100, #131313); background: rgba(57, 57, 57, 0.08); box-shadow: 0 4px 48px 0 rgba(0, 0, 0, 0.25); font-family: Raleway, Arial, sans-serif; } .ds-rail-mark { font-family: 'Allerta Stencil', sans-serif; font-size: 1.5rem; } .ds-rail-contacts { display: flex; flex-direction: column; align-items: center; gap: 15px; padding: 20px 10px; border-top: 2px solid var(--color-text-50, rgba(19,19,19,.5)); font-size: .875rem; } .ds-rail-contacts a { color: inherit; transition: transform .1s; } .ds-rail-contacts a:hover { transform: translateY(-2px); } .ds-rail-contacts a:focus-visible { outline: 2px solid rgba(119, 199, 234, 1); outline-offset: 2px; }"
+      "css": ".ds-rail { display: flex; flex-direction: column; justify-content: space-between; align-items: center; width: 92px; height: 360px; padding-top: 24px; color: var(--color-text-100, #131313); background: rgba(57, 57, 57, 0.08); box-shadow: 0 4px 48px 0 rgba(0, 0, 0, 0.25); font-family: Raleway, Arial, sans-serif; } .ds-rail-mark { font-family: 'Allerta Stencil', sans-serif; font-size: 1.5rem; } .ds-rail-contacts { display: flex; flex-direction: column; align-items: center; gap: 15px; padding: 20px 10px; border-top: 2px solid var(--color-text-50, rgba(19,19,19,.5)); font-size: .875rem; } .ds-rail-contacts a { color: inherit; transition: transform .1s; } .ds-rail-contacts a:hover { transform: translateY(-2px); } .ds-rail-contacts a:focus-visible { outline: 2px solid var(--color-text-100, #131313); outline-offset: 2px; box-shadow: 0 0 0 2px var(--color-bg, #fff), 0 0 10px 6px rgba(119, 199, 234, 0.7); }"
     }
   ],
   "narrative": {

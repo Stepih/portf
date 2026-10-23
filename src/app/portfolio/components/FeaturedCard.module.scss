@@ -162,8 +162,7 @@
     }
 
     &:has(.more:focus-visible) {
-        outline: 2px solid vars.$blue-100;
-        outline-offset: 4px;
+        @include vars.focus-ring(4px, vars.$shadow);
     }
 
     // Карточка с видео — во всю ширину сетки, медиа слева, текст справа

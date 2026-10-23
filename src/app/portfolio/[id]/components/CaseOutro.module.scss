@@ -149,8 +149,7 @@
     }
 
     &:focus-visible {
-        outline: 2px solid vars.$blue-100;
-        outline-offset: 2px;
+        @include vars.focus-ring(2px);
     }
 }
 

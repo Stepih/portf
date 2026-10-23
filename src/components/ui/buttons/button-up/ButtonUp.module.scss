@@ -7,11 +7,12 @@
 
     background: var(--color-overlay);
     box-shadow: vars.$shadow;
-    
-
-    outline: none;
     border: none;
     border-radius: 13px;
 
     cursor: pointer;
+
+    &:focus-visible {
+        @include vars.focus-ring(2px, vars.$shadow);
+    }
 }

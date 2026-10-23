@@ -56,10 +56,10 @@
 
     &:focus-visible {
         outline: none;
+        box-shadow: none;
 
         .fabOrb {
-            outline: 2px solid vars.$blue-100;
-            outline-offset: 4px;
+            @include vars.focus-ring(4px, (0 6px 24px rgba(119, 199, 234, 0.55), 0 2px 6px rgba(0, 0, 0, 0.15)));
         }
     }
 }
@@ -224,8 +224,7 @@
     }
 
     &:focus-visible {
-        outline: 2px solid vars.$blue-100;
-        outline-offset: 2px;
+        @include vars.focus-ring(2px);
     }
 }
 
@@ -338,8 +337,7 @@
     }
 
     &:focus-visible {
-        outline: 2px solid vars.$blue-100;
-        outline-offset: 2px;
+        @include vars.focus-ring(2px);
     }
 }
 
@@ -371,8 +369,7 @@
     }
 
     &:focus-visible {
-        outline: 2px solid vars.$blue-100;
-        outline-offset: 2px;
+        @include vars.focus-ring(2px);
     }
 }
 
@@ -483,8 +480,7 @@
     transition: vars.$transition;
 
     &:focus-visible {
-        outline: 2px solid vars.$blue-100;
-        outline-offset: 2px;
+        @include vars.focus-ring(2px);
     }
 }
 
