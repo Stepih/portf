@@ -96,8 +96,9 @@
         grid-template-columns: minmax(0, 1fr);
         gap: 32px;
 
+        // По левому краю, как текст над ней
         .form {
-            justify-self: center;
+            justify-self: start;
         }
     }
 }

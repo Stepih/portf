@@ -177,6 +177,28 @@ test('почему я на главной', async ({ page }) => {
     await expect(section.locator(':scope > p')).toHaveCount(0);
 });
 
+// Планшет (DESIGN_FIXES_2_PLAN Д10): кейсы в ряду одной высоты, три отличия в одном ряду, а не 2 + 1,
+// форма заявки по левому краю, как текст над ней
+test('раскладка главной на планшете, 820px', async ({ page }) => {
+    await page.setViewportSize({ width: 820, height: 900 });
+    await page.goto('/');
+
+    // offsetHeight/offsetTop не видят transform колоды
+    const cards = page.getByRole('region', { name: 'Избранные кейсы' }).locator('article');
+    await expect(cards).toHaveCount(3);
+    const heights = await cards.evaluateAll((els) => els.map((el) => (el as HTMLElement).offsetHeight));
+    expect(new Set(heights).size).toBe(1);
+
+    const reasons = page.getByRole('region', { name: 'Почему я' }).getByRole('listitem');
+    const tops = await reasons.evaluateAll((els) => els.map((el) => (el as HTMLElement).offsetTop));
+    expect(new Set(tops).size).toBe(1);
+
+    const contact = page.getByRole('region', { name: 'Давайте обсудим ваш проект' });
+    const titleLeft = (await contact.getByRole('heading', { level: 2 }).boundingBox())!.x;
+    const formLeft = (await contact.locator('form').boundingBox())!.x;
+    expect(Math.abs(formLeft - titleLeft)).toBeLessThan(1);
+});
+
 // FAQ на <details>: первый вопрос раскрыт, клик раскрывает следующий (SALES_PLAN 3.8)
 test('FAQ на главной', async ({ page }) => {
     await page.goto('/');

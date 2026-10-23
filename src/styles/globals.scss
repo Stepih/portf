@@ -53,7 +53,13 @@ body {
 
 /* Ползунок при наведении */
 ::-webkit-scrollbar-thumb:hover {
-  background: #555; /* цвет ползунка при наведении */
+  background: var(--color-text-100);
+}
+
+// Выделение текста – инверсия чернил и бумаги, как у залитой кнопки
+::selection {
+  color: var(--color-bg);
+  background: var(--color-text-100);
 }
 
 h1 {
