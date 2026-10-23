@@ -419,8 +419,8 @@ for (const path of ['/', '/portfolio', '/popup']) {
     });
 }
 
-// Плашки в тёмной теме светлее фона, иначе края не видны; светлая тема прежняя (DESIGN_FIXES_3_PLAN Д12)
-for (const [theme, frost] of [['light', 'rgba(57, 57, 57, 0.08)'], ['dark', 'rgba(255, 255, 255, 0.05)']] as const) {
+// Плашки – матовое стекло 8% серого в обеих темах: светлую заливку в тёмной теме владелец отклонил (DESIGN_FIXES_3_PLAN Д12)
+for (const [theme, frost] of [['light', 'rgba(57, 57, 57, 0.08)'], ['dark', 'rgba(57, 57, 57, 0.08)']] as const) {
     test(`плашки услуг и формы, ${theme === 'light' ? 'светлая' : 'тёмная'} тема`, async ({ page }) => {
         await page.addInitScript((t) => localStorage.setItem('theme', t), theme);
         await page.goto('/');
