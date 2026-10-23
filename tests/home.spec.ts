@@ -1,4 +1,5 @@
-import { expect, test } from '@playwright/test';
+import { expect, Page, test } from '@playwright/test';
+import { ServiceId } from '../src/interfaces/offer';
 import { hiddenPages } from '../src/constants/urls';
 import { contactTitle, faqContactLink, formButton, heroPrice, heroTitleSlide, moreLinks, moreTitle, offerFaq, offerReasons, offerSteps, offerTgButton, offerTitle, services, servicesTitle, stepsContactLink } from '../src/data/offer';
 import { formServiceLabel, formSuccessText, formSuccessTitle, inputsListFeedback, phoneTooShort } from '../src/data/inputsFeedBack';
@@ -232,6 +233,128 @@ for (const { name, region, place } of [
         expect(await page.evaluate(() => window.scrollY)).toBe(y);
     });
 }
+
+// «Назад» после прыжка к форме (DESIGN_FIXES_4_PLAN Д18): прыжок – новая запись истории. «Назад» – мгновенно к месту нажатия,
+// фокус на нажатой ссылке, адрес без #contact и строка услуги по адресу; «Вперёд» – снова форма. Метрика: цели только на клик,
+// hit – один на переход. Скрипт Метрики заблокирован, вызовы ym пишутся в window.__ym
+const backFromForm = async (page: Page, { region, name, url, service }: { region: string, name: string, url: RegExp, service?: ServiceId }) => {
+    await page.route('https://mc.yandex.ru/**', (route) => route.abort());
+    await page.addInitScript(() => {
+        const calls: unknown[][] = [];
+        Object.assign(window, { __ym: calls, ym: (...args: unknown[]) => { calls.push(args) } });
+    });
+    await page.goto('/');
+    const calls = () => page.evaluate(() => (window as unknown as { __ym: unknown[][] }).__ym
+        .filter(([, method]) => method === 'hit' || method === 'reachGoal').map(([, method, arg]) => `${method} ${arg}`));
+
+    const link = page.getByRole('region', { name: region }).getByRole('link', { name });
+    // До гидрации клик – обычный переход по якорю: ждём обработчик React
+    await expect.poll(() => link.evaluate((el) => Object.keys(el).some((key) => key.startsWith('__reactProps')))).toBe(true);
+    await link.scrollIntoViewIfNeeded();
+    const y = await page.evaluate(() => window.scrollY);
+
+    const contact = page.getByRole('region', { name: contactTitle });
+    const title = page.getByRole('heading', { name: contactTitle });
+    const serviceLine = contact.getByText(formServiceLabel);
+    const atForm = async () => {
+        await expect(page).toHaveURL(url);
+        await expect(title).toBeInViewport();
+        if (service) await expect(serviceLine).toHaveText(`${formServiceLabel} ${serviceLines(services)[service]}`);
+        else await expect(serviceLine).toHaveCount(0);
+    };
+
+    // Метрика: на каждом переходе – не больше одного hit, цели – только на клике
+    const hits = (list: string[]) => list.filter((call) => call.startsWith('hit')).length;
+    let seen = 0;
+    const segment = async () => {
+        await page.waitForTimeout(300);
+        const list = (await calls()).slice(seen);
+        seen += list.length;
+        return list;
+    };
+
+    await link.click();
+    await atForm();
+    await expect(title).toBeFocused();
+    const click = await segment();
+    expect(click.filter((call) => call.startsWith('reachGoal'))).toHaveLength(1);
+    expect(hits(click)).toBeLessThanOrEqual(1);
+
+    await page.goBack();
+    await expect(page).toHaveURL(/:\d+\/$/);
+    await expect(link).toBeFocused();
+    await expect(link).toBeInViewport();
+    await expect(serviceLine).toHaveCount(0);
+    expect(await page.evaluate(() => window.scrollY)).toBe(y);
+    const back = await segment();
+    expect(hits(back)).toBe(back.length);
+    expect(hits(back)).toBeLessThanOrEqual(1);
+    // Next не перерисовывает и не прокручивает страницу следом
+    await page.waitForTimeout(500);
+    expect(await page.evaluate(() => window.scrollY)).toBe(y);
+    await expect(link).toBeFocused();
+
+    await page.goForward();
+    await atForm();
+    await expect(title).toBeFocused();
+    await page.waitForTimeout(500);
+    await expect(title).toBeInViewport();
+    const forward = await segment();
+    expect(hits(forward)).toBe(forward.length);
+    expect(hits(forward)).toBeLessThanOrEqual(1);
+};
+
+const backCases = [
+    { region: 'Услуги и цены', name: 'Узнать цену: Сайт компании', url: /\/\?service=corporate#contact$/, service: 'corporate' as const },
+    { region: 'Как я работаю', name: stepsContactLink, url: /\/#contact$/ }
+];
+
+for (const item of backCases) {
+    test(`«Назад» после «${item.name}» – к месту нажатия, «Вперёд» – к форме`, async ({ page }) => {
+        await backFromForm(page, item);
+    });
+}
+
+// Два прыжка подряд: каждый «Назад» отменяет один прыжок. Запись с #contact браузер восстанавливает сам (плавно к якорю,
+// фокус сбрасывается) – позиция и фокус нажатой ссылки должны остаться
+test('«Назад» после двух прыжков к форме – по одному прыжку', async ({ page }) => {
+    await page.goto('/');
+    const section = page.getByRole('region', { name: 'Услуги и цены' });
+    const contact = page.getByRole('region', { name: contactTitle });
+    const landing = section.getByRole('link', { name: 'Узнать цену: Лендинг' });
+    const shop = section.getByRole('link', { name: 'Узнать цену: Магазин или каталог' });
+    await expect.poll(() => landing.evaluate((el) => Object.keys(el).some((key) => key.startsWith('__reactProps')))).toBe(true);
+
+    await landing.scrollIntoViewIfNeeded();
+    await landing.click();
+    await expect(page).toHaveURL(/\/\?service=landing#contact$/);
+    await shop.scrollIntoViewIfNeeded();
+    const y = await page.evaluate(() => window.scrollY);
+    await shop.click();
+    await expect(page).toHaveURL(/\/\?service=shop#contact$/);
+
+    await page.goBack();
+    await expect(page).toHaveURL(/\/\?service=landing#contact$/);
+    await expect(contact.getByText(`${formServiceLabel} ${serviceLines(services).landing}`)).toBeAttached();
+    await page.waitForTimeout(500);
+    await expect(shop).toBeFocused();
+    expect(await page.evaluate(() => window.scrollY)).toBe(y);
+
+    await page.goBack();
+    await expect(page).toHaveURL(/:\d+\/$/);
+    await expect(landing).toBeFocused();
+    await expect(landing).toBeInViewport();
+});
+
+test.describe('«Назад» после прыжка к форме, уменьшить движение', () => {
+    test.use({ reducedMotion: 'reduce' });
+
+    for (const item of backCases) {
+        test(`«${item.name}»`, async ({ page }) => {
+            await backFromForm(page, item);
+        });
+    }
+});
 
 // Шаги работы списком по порядку (SALES_PLAN 3.5). Под каждым этапом – оплата (DESIGN_FIXES_2_PLAN Д5):
 // до макета 0 ₽, предоплата – на разработке, остаток – на запуске
