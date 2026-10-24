@@ -476,18 +476,22 @@ for (const { width, size, merged } of [
     });
 }
 
-// Три отличия из PRODUCT.md, без подписи под заголовком (DESIGN_FIXES_2_PLAN Д5). Первое – «Сайт остаётся вам»,
-// про оплату говорят шаги (DESIGN_FIXES_3_PLAN Д15)
+// Три довода без подписи под заголовком (DESIGN_FIXES_2_PLAN Д5). Без повторов того, что выше (DESIGN_FIXES_5_PLAN Д24):
+// оплата – в шагах, гарантия – в шаге «Запуск» и FAQ, «без менеджеров» – в слайде первого экрана
 test('почему я на главной', async ({ page }) => {
     await page.goto('/');
 
     const section = page.getByRole('region', { name: 'Почему я' });
     const reasons = section.getByRole('listitem');
     await expect(reasons).toHaveCount(3);
-    await expect(reasons.first().getByRole('heading', { level: 3 })).toHaveText('Сайт остаётся вам');
-    await expect(section).not.toContainText('Предоплата');
+    await expect(reasons.first().getByRole('heading', { level: 3 })).toHaveText('Договор и чек на каждую оплату');
     await expect(reasons.first()).toContainText(offerReasons[0].text);
+    for (const repeat of ['Предоплата', 'Гарантия', 'менеджер']) await expect(section).not.toContainText(repeat);
     await expect(section.locator(':scope > p')).toHaveCount(0);
+
+    // «Гарантия от 2 недель» на странице одна – в шаге «Запуск»; в FAQ ответ про поломку
+    const guarantee = await page.locator('main').evaluate((el) => (el.textContent?.match(/гарантия от\s2\sнедель/gi) ?? []).length);
+    expect(guarantee).toBe(1);
 });
 
 // Планшет (DESIGN_FIXES_2_PLAN Д10): кейсы в ряду одной высоты, три отличия в одном ряду, а не 2 + 1,
