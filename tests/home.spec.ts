@@ -846,3 +846,15 @@ test('теги, подпись чата и неразрывные пары на 
     expect(await services.getByRole('link', { name: 'ИКЦ «Презентация»' }).evaluate(linesOf, 'ИКЦ «Презентация»')).toBe(1);
     expect(await services.getByText(chatButtonTitle).evaluate(linesOf, 'ИИ-\u2060ассистента')).toBe(1);
 });
+
+// Фоновые пятна приглушены по теме, чтобы приглушённый текст над ними читался (DESIGN_FIXES_5_PLAN Д25)
+for (const [theme, opacity] of [['light', '0.6'], ['dark', '0.3']] as const) {
+    test(`фоновые пятна приглушены, ${theme === 'light' ? 'светлая' : 'тёмная'} тема`, async ({ page }) => {
+        await page.addInitScript((t) => localStorage.setItem('theme', t), theme);
+        await page.goto('/');
+
+        for (const blob of ['BgRectangle1', 'BgRectangle2']) {
+            await expect(page.locator(`[class*="${blob}"]`)).toHaveCSS('opacity', opacity);
+        }
+    });
+}

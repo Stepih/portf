@@ -6,7 +6,9 @@
     height: auto;
     aspect-ratio: 1;
 
-    opacity: 1;
+    // Сила пятен задаёт тема (theme.scss, Д25); запасное значение – для design-sync без темы
+    opacity: var(--bg-glow-opacity, .6);
+    transition: opacity .5s;
 
     z-index: 2;
 }
