@@ -441,6 +441,41 @@ test('как я работаю на главной', async ({ page }) => {
     await expect(steps.nth(3)).toContainText('Оплата: Остаток');
 });
 
+// Бесплатный отрезок – пик блока (DESIGN_FIXES_4_PLAN Д21): на компьютере линия «Созвон – Макет» чернилами 3px
+// и одна «0 ₽» кеглем цены, вторая – только для чтения с экрана; на телефоне «0 ₽» у каждого шага. Суммы – цветом текста
+for (const { width, size, merged } of [
+    { width: 1400, size: '25.6px', merged: true },
+    { width: 375, size: '20.8px', merged: false }
+]) {
+    test(`бесплатный отрезок в «Как я работаю», ${width}px`, async ({ page }) => {
+        await page.setViewportSize({ width, height: 900 });
+        await page.goto('/');
+
+        const steps = page.getByRole('region', { name: 'Как я работаю' }).getByRole('listitem');
+        const pay = (i: number) => steps.nth(i).locator('p').last();
+        const label = (i: number) => pay(i).locator('span').nth(1);
+        const ink = await steps.first().getByRole('heading', { level: 3 }).evaluate(el => getComputedStyle(el).color);
+
+        for (const i of [0, 1, 2, 3]) {
+            await expect(label(i)).toHaveCSS('color', ink);
+        }
+        await expect(label(0)).toHaveCSS('font-size', size);
+        if (merged) {
+            for (const i of [0, 1]) {
+                await expect(pay(i)).toHaveCSS('border-top-width', '3px');
+                await expect(pay(i)).toHaveCSS('border-top-color', ink);
+            }
+            // Волосяная 1.5px – браузер на 1x округляет до 1px
+            await expect(pay(2)).not.toHaveCSS('border-top-width', '3px');
+            await expect(label(1)).toHaveCSS('clip-path', 'inset(50%)');
+            await expect(steps.nth(1)).toContainText('Оплата: 0 ₽');
+        } else {
+            await expect(label(1)).toBeVisible();
+            await expect(label(1)).toHaveCSS('font-size', size);
+        }
+    });
+}
+
 // Три отличия из PRODUCT.md, без подписи под заголовком (DESIGN_FIXES_2_PLAN Д5). Первое – «Сайт остаётся вам»,
 // про оплату говорят шаги (DESIGN_FIXES_3_PLAN Д15)
 test('почему я на главной', async ({ page }) => {

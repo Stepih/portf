@@ -1,10 +1,22 @@
 @use '/src/styles/variables.scss' as vars;
 
-// Линии – той же серой рамкой, что у чипов отраслей и «Почему я»
+// Линии – той же серой рамкой, что у чипов отраслей и «Почему я»; бесплатный отрезок – чернилами ($free-line)
 $line: rgba(128, 128, 128, 0.45);
 $dot: 12px;
 $col-pad: 32px;
 $num-col: 3rem;
+$free-line: 3px;
+
+@mixin sr-only {
+    position: absolute;
+
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+
+    clip-path: inset(50%);
+    white-space: nowrap;
+}
 
 .steps {
     display: flex;
@@ -114,16 +126,40 @@ $num-col: 3rem;
         }
     }
 
-    // У Raleway цифры по умолчанию минускульные: «0 ₽» читался как «о ₽»
+    // Бесплатный отрезок (DESIGN_FIXES_4_PLAN Д21): линия чернилами 3px до первого платежа,
+    // точка – кольцо чернилами: пустая, но не теряется на пятне в тёмной теме
+    .free {
+        // Подпись на той же высоте, что у платных этапов: линия толще на 1.5px
+        padding-top: calc(22px - ($free-line - 1.5px));
+
+        border-top: $free-line solid var(--color-text-100);
+
+        &::before {
+            top: calc(-1 * $dot / 2 - $free-line / 2);
+            border: 2px solid var(--color-text-100);
+        }
+    }
+
+    // У Raleway цифры по умолчанию минускульные: «0 ₽» читался как «о ₽».
+    // Все суммы – цветом текста; «0 ₽» – кеглем цены одна на весь бесплатный отрезок
     .payLabel {
         font-size: 1.15rem;
         font-variant-numeric: lining-nums;
-        color: var(--color-text-muted);
+        color: var(--color-text-100);
         transition: vars.$transition;
     }
 
-    .due .payLabel {
-        color: var(--color-text-100);
+    .free .payLabel {
+        font-size: 1.6rem;
+        line-height: 1.1;
+        white-space: nowrap;
+    }
+
+    // Этапы в ряд: вторая «0 ₽» подряд не нужна глазу, первая стоит на весь отрезок
+    @media screen and (min-width: 901px) {
+        .repeat .payLabel {
+            @include sr-only;
+        }
     }
 
     .payNote {
@@ -159,14 +195,7 @@ $num-col: 3rem;
     }
 
     .srOnly {
-        position: absolute;
-
-        width: 1px;
-        height: 1px;
-        overflow: hidden;
-
-        clip-path: inset(50%);
-        white-space: nowrap;
+        @include sr-only;
     }
 }
 
@@ -225,6 +254,17 @@ $num-col: 3rem;
             // Центр первой строки подписи: 1.15rem при line-height normal у Raleway ≈ 21.6px
             &::before {
                 top: calc(1.15rem * 1.17 / 2 - $dot / 2);
+            }
+        }
+
+        // Этапы друг под другом: «0 ₽» у каждого бесплатного, кеглем названия карточки
+        .free {
+            &::before {
+                top: calc(1.3rem * 1.1 / 2 - $dot / 2);
+            }
+
+            .payLabel {
+                font-size: 1.3rem;
             }
         }
     }
