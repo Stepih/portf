@@ -135,3 +135,37 @@ test('шар в углу открывает тот же чат и есть на 
     await page.goto('/music');
     await expect(page.getByRole('button', { name: chatFabLabel })).toHaveCount(0);
 });
+
+// DESIGN_FIXES_4_PLAN Д22: шар – матовое стекло с одной тенью мастерской, без голубого ореола и точки «в сети»;
+// окно – плашечные 13px без рамки
+test('шар и окно чата – в системе: стекло, одна тень, 13px без рамки', async ({ page }) => {
+    for (const theme of ['light', 'dark']) {
+        await page.addInitScript(t => localStorage.setItem('theme', t), theme);
+        await page.goto('/');
+        const fab = page.getByRole('button', { name: chatFabLabel });
+        await expect(fab).toBeVisible();
+
+        const orb = await fab.locator('> span[aria-hidden="true"]').evaluate(el => {
+            const cs = getComputedStyle(el);
+            const icon = getComputedStyle(el.querySelector('svg')!);
+            return {
+                bg: cs.backgroundImage, color: cs.backgroundColor, shadow: cs.boxShadow,
+                children: el.children.length, iconFill: icon.fill, iconFilter: icon.filter,
+            };
+        });
+        expect(orb.bg).toBe('none');
+        expect(orb.color).toBe(theme === 'light' ? 'rgb(239, 239, 239)' : 'rgb(33, 33, 33)');
+        expect(orb.shadow).toBe('rgba(0, 0, 0, 0.25) 0px 4px 48px 0px');
+        // свет за стеклом и иконка; точки «в сети» нет
+        expect(orb.children).toBe(2);
+        expect(orb.iconFilter).toBe('none');
+        expect(orb.iconFill).toBe(theme === 'light' ? 'rgb(19, 19, 19)' : 'rgb(255, 255, 255)');
+
+        await fab.click();
+        const win = await page.getByRole('dialog').evaluate(el => {
+            const cs = getComputedStyle(el);
+            return { radius: cs.borderTopLeftRadius, border: cs.borderTopWidth };
+        });
+        expect(win).toEqual({ radius: '13px', border: '0px' });
+    }
+});

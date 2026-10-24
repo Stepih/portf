@@ -2,43 +2,56 @@
 
 // Демо-чат (CONVERSION_PLAN К3.2): шар в углу, кнопка в карточке ИИ-услуги и окно чата
 
-// «Живой» шар ассистента: градиент и расходящиеся кольца. Без анимации, если она отключена в системе
-.orb {
+// «Живой» шар ассистента – матовое стекло со светом за ним (DESIGN.md, «Шар чата»; DESIGN_FIXES_4_PLAN Д22).
+// Стекло – цвет темы и одна тень мастерской, внутри размытое пятно переливается, как фоновые пятна.
+// Без анимации, если она отключена в системе
+%orb-glass {
     position: relative;
+
+    background: var(--color-orb-glass);
+    border-radius: 50%;
+    box-shadow: vars.$shadow;
+    transition: vars.$transition;
+}
+
+// Свет за стеклом: розовый → зелёный → голубой за 20 с, как у BgRectangle
+%orb-light {
+    position: absolute;
+
+    // Без анимации (reduced-motion) пятно стоит голубым
+    background: vars.$blue-100;
+    border-radius: 50%;
+    filter: blur(7px);
+    opacity: 0.7;
+
+    animation: orb-light 20s infinite;
+    pointer-events: none;
+}
+
+@keyframes orb-light {
+    0%, 100% { background: vars.$redPink-100; }
+    33% { background: vars.$green-100; }
+    66% { background: vars.$blue-100; }
+}
+
+.orb {
+    @extend %orb-glass;
     flex-shrink: 0;
 
     width: 40px;
     height: 40px;
 
-    background: radial-gradient(circle at 35% 30%, vars.$white-100 0%, vars.$blue-100 45%, vars.$green-100 130%);
-    border-radius: 50%;
-
     animation: orb-breathe 3s ease-in-out infinite;
 
-    &::before,
-    &::after {
+    &::before {
+        @extend %orb-light;
         content: '';
-        position: absolute;
-        inset: 0;
-
-        border: 2px solid vars.$blue-100;
-        border-radius: 50%;
-
-        animation: orb-ring 3s ease-out infinite;
-    }
-
-    &::after {
-        animation-delay: 1.5s;
+        inset: 28%;
     }
 }
 
 @keyframes orb-breathe {
     50% { transform: scale(0.9); }
-}
-
-@keyframes orb-ring {
-    from { opacity: 0.8; transform: scale(1); }
-    to { opacity: 0; transform: scale(1.8); }
 }
 
 // Плавающий шар в правом нижнем углу (ChatProvider). Подпись выезжает слева при наведении.
@@ -59,13 +72,13 @@
         box-shadow: none;
 
         .fabOrb {
-            @include vars.focus-ring(4px, (0 6px 24px rgba(119, 199, 234, 0.55), 0 2px 6px rgba(0, 0, 0, 0.15)));
+            @include vars.focus-ring(4px, vars.$shadow);
         }
     }
 }
 
 .fabOrb {
-    position: relative;
+    @extend %orb-glass;
 
     display: flex;
     align-items: center;
@@ -74,54 +87,17 @@
     width: 60px;
     height: 60px;
 
-    background: radial-gradient(circle at 30% 25%, #d6f1fc 0%, vars.$blue-100 38%, #3a9bc9 78%, #1fbf6a 120%);
-    border-radius: 50%;
-    box-shadow: 0 6px 24px rgba(119, 199, 234, 0.55), 0 2px 6px rgba(0, 0, 0, 0.15);
-
     animation: orb-breathe-fab 3.2s ease-in-out infinite;
-    transition: scale 0.3s ease, box-shadow 0.3s ease;
-
-    &::before,
-    &::after {
-        content: '';
-        position: absolute;
-        inset: 0;
-
-        border: 1.5px solid vars.$blue-100;
-        border-radius: 50%;
-
-        animation: fab-ring 3.2s ease-out infinite;
-        pointer-events: none;
-    }
-
-    &::after {
-        animation-delay: 1.6s;
-    }
+    transition: vars.$transition, scale 0.3s ease;
 }
 
 @keyframes orb-breathe-fab {
     50% { transform: scale(0.94); }
 }
 
-@keyframes fab-ring {
-    from { opacity: 0.7; transform: scale(1); }
-    to { opacity: 0; transform: scale(1.7); }
-}
-
-// Блик бежит по кругу
-.fabShine {
-    position: absolute;
-    inset: 0;
-
-    background: conic-gradient(from 0deg, transparent 0deg 200deg, rgba(255, 255, 255, 0.6) 260deg, transparent 320deg);
-    border-radius: 50%;
-    mix-blend-mode: soft-light;
-
-    animation: fab-spin 4s linear infinite;
-}
-
-@keyframes fab-spin {
-    to { transform: rotate(1turn); }
+.fabLight {
+    @extend %orb-light;
+    inset: 17px;
 }
 
 .fabIcon {
@@ -130,8 +106,8 @@
     width: 28px;
     height: 28px;
 
-    fill: vars.$white-100;
-    filter: drop-shadow(0 1px 2px rgba(0, 40, 70, 0.35));
+    fill: var(--color-text-100);
+    transition: vars.$transition;
 }
 
 .fabSpark {
@@ -144,21 +120,6 @@
 @keyframes fab-twinkle {
     0%, 100% { opacity: 1; transform: scale(1); }
     50% { opacity: 0.3; transform: scale(0.5); }
-}
-
-// «В сети»
-.fabDot {
-    position: absolute;
-    top: 3px;
-    right: 3px;
-
-    width: 12px;
-    height: 12px;
-
-    background: vars.$green-100;
-    border: 2px solid var(--color-bg);
-    border-radius: 50%;
-    transition: vars.$transition;
 }
 
 .fabLabel {
@@ -174,7 +135,7 @@
 
     background: var(--color-bg);
     border: 1px solid rgba(128, 128, 128, 0.3);
-    border-radius: 20px;
+    border-radius: 24px;
     box-shadow: vars.$shadow;
 
     opacity: 0;
@@ -187,7 +148,6 @@
     .fab:hover {
         .fabOrb {
             scale: 1.08;
-            box-shadow: 0 8px 32px rgba(119, 199, 234, 0.75), 0 2px 6px rgba(0, 0, 0, 0.15);
         }
 
         .fabLabel {
@@ -271,9 +231,8 @@
     color: var(--color-text-100);
 
     background: var(--color-bg);
-    // Рамка – в тёмной теме фон окна и страницы одинаковые
-    border: 1px solid rgba(128, 128, 128, 0.3);
-    border-radius: 16px;
+    // Без рамки, плашечные 13px (Д22): окно лежит на затемнении и тени мастерской
+    border-radius: 13px;
     box-shadow: vars.$shadow;
     transition: vars.$transition;
 
@@ -359,7 +318,7 @@
     color: var(--color-text-100);
 
     border: 1.5px solid rgba(128, 128, 128, 0.45);
-    border-radius: 20px;
+    border-radius: 24px;
     transition: vars.$transition;
 
     &:hover {
@@ -400,7 +359,7 @@
     white-space: pre-wrap;
     overflow-wrap: anywhere;
 
-    border-radius: 14px;
+    border-radius: 13px;
     transition: vars.$transition;
 }
 
@@ -476,7 +435,7 @@
     font-size: 0.95rem;
     text-decoration: none;
 
-    border-radius: 20px;
+    border-radius: 24px;
     transition: vars.$transition;
 
     &:focus-visible {
@@ -525,7 +484,7 @@
 
     background: none;
     border: 1px solid rgba(128, 128, 128, 0.45);
-    border-radius: 12px;
+    border-radius: 13px;
     transition: vars.$transition;
 
     &::placeholder {
@@ -600,7 +559,6 @@
     .window {
         width: 100%;
         height: 100dvh;
-        border: none;
         border-radius: 0;
     }
 
@@ -622,11 +580,8 @@
 @media (prefers-reduced-motion: reduce) {
     .orb,
     .orb::before,
-    .orb::after,
     .fabOrb,
-    .fabOrb::before,
-    .fabOrb::after,
-    .fabShine,
+    .fabLight,
     .fabSpark,
     .typing span {
         animation: none;
