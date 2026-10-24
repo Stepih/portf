@@ -110,7 +110,7 @@
     transition: vars.$transition;
 }
 
-.fabSpark {
+.spark {
     transform-box: fill-box;
     transform-origin: center;
 
@@ -162,6 +162,7 @@
     transform: translate(0, -50%);
 }
 
+// Кнопка в карточке ИИ – таблетка, как «Узнать цену» (Д26): контур hairline 45%, при наведении заливка чернилами
 .trigger {
     @include vars.button-reset;
 
@@ -170,22 +171,44 @@
     gap: 16px;
 
     width: 100%;
-    padding: 14px 18px;
+    padding: 12px 26px 12px 14px;
 
     color: var(--color-text-100);
 
-    border: 1.5px dashed rgba(128, 128, 128, 0.45);
-    border-radius: 13px;
+    border: 1.5px solid rgba(128, 128, 128, 0.45);
+    border-radius: 24px;
     transition: vars.$transition;
 
     &:hover {
-        border-color: vars.$blue-100;
-        border-style: solid;
+        color: var(--color-bg);
+        background: var(--color-text-100);
+        border-color: var(--color-text-100);
+
+        .triggerNote {
+            color: var(--color-bg);
+        }
     }
 
     &:focus-visible {
         @include vars.focus-ring(2px);
     }
+}
+
+// Малый шар в кнопке – со звездой, как плавающий
+.triggerOrb {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.triggerIcon {
+    position: relative;
+
+    width: 20px;
+    height: 20px;
+
+    fill: var(--color-text-100);
+    transition: vars.$transition;
 }
 
 .triggerText {
@@ -563,7 +586,7 @@
     }
 
     .trigger {
-        padding: 12px 14px;
+        padding: 12px 20px 12px 14px;
     }
 
     .fab {
@@ -582,7 +605,7 @@
     .orb::before,
     .fabOrb,
     .fabLight,
-    .fabSpark,
+    .spark,
     .typing span {
         animation: none;
     }

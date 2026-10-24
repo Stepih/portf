@@ -169,3 +169,30 @@ test('шар и окно чата – в системе: стекло, одна 
         expect(win).toEqual({ radius: '13px', border: '0px' });
     }
 });
+
+test('кнопка демо в карточке ИИ – таблетка со звездой в шаре, открывает чат (Д26)', async ({ page }) => {
+    for (const theme of ['light', 'dark']) {
+        await page.addInitScript(t => localStorage.setItem('theme', t), theme);
+        await page.goto('/');
+        const button = page.getByRole('button', { name: chatButtonTitle });
+        await button.scrollIntoViewIfNeeded();
+
+        const look = await button.evaluate(el => {
+            const cs = getComputedStyle(el);
+            const icon = el.querySelector('span[aria-hidden="true"] > svg');
+            return {
+                // 1.5px Chromium при DPR 1 округляет до 1px
+                style: cs.borderTopStyle, width: parseFloat(cs.borderTopWidth) >= 1, radius: cs.borderTopLeftRadius,
+                iconFill: icon ? getComputedStyle(icon).fill : null,
+            };
+        });
+        // пунктира больше нет: сплошной контур таблетки, звезда чернилами
+        expect(look).toEqual({
+            style: 'solid', width: true, radius: '24px',
+            iconFill: theme === 'light' ? 'rgb(19, 19, 19)' : 'rgb(255, 255, 255)',
+        });
+
+        await button.click();
+        await expect(page.getByRole('dialog')).toBeVisible();
+    }
+});
