@@ -224,18 +224,21 @@
         background: var(--color-text-100);
         transition: vars.$transition;
 
+        // Ступень «Число» (DESIGN.md), как номера шагов
         b {
             margin-bottom: 2px;
-            font-size: 2.6rem;
+            font-size: 2.5rem;
             font-weight: 800;
         }
     }
 
+    // Ступень «Сцена» (DESIGN.md): на ступень крупнее заголовков секций, не крупнее (DESIGN_FIXES_5_PLAN Д27)
     .title {
         margin: 0;
 
-        font-size: clamp(2rem, 5vw, 3.4rem);
+        font-size: clamp(1.8rem, 4.5vw, 2.75rem);
         line-height: 1.15;
+        text-wrap: balance;
         color: var(--color-text-100);
         transition: vars.$transition;
     }
@@ -479,7 +482,7 @@
             font-size: 0.875rem;
 
             b {
-                font-size: 1.9rem;
+                font-size: 2rem;
             }
         }
 

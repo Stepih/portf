@@ -858,3 +858,22 @@ for (const [theme, opacity] of [['light', '0.6'], ['dark', '0.3']] as const) {
         }
     });
 }
+
+// Ступени заголовков: сцена на ступень крупнее заголовков секций, а не на две; число в кружке – одной ступенью с номерами шагов (DESIGN_FIXES_5_PLAN Д27)
+for (const [width, scene, numeral] of [[1400, 44, 40], [375, 28.8, 32]] as const) {
+    test(`ступени заголовка сцены и чисел, ${width}px`, async ({ page }) => {
+        await page.setViewportSize({ width, height: 900 });
+        await page.goto('/');
+
+        const size = (sel: string) => page.locator(sel).first().evaluate((el) => parseFloat(getComputedStyle(el).fontSize));
+        const sceneSize = await size('#industries-title');
+        const headline = await size('#services-title');
+        expect(sceneSize).toBeCloseTo(scene, 0);
+        expect(sceneSize).toBeGreaterThan(headline);
+        expect(sceneSize / headline).toBeLessThan(1.3);
+        await expect(page.locator('#industries-title')).toHaveCSS('text-wrap', /balance/);
+
+        expect(await size('[class*="works"] b')).toBeCloseTo(numeral, 0);
+        expect(await size('section[aria-labelledby="steps-title"] li > span[aria-hidden="true"]')).toBeCloseTo(numeral, 0);
+    });
+}
