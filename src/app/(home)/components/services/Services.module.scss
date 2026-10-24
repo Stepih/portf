@@ -131,7 +131,9 @@
         transition: vars.$transition;
     }
 
+    // Название клиента не рвётся на строки («ИКЦ / «Презентация»» на телефоне)
     .caseLink {
+        white-space: nowrap;
         color: var(--color-text-100);
         text-underline-offset: 3px;
         transition: vars.$transition;

@@ -3,7 +3,7 @@ import { ServiceId } from '../src/interfaces/offer';
 import { hiddenPages } from '../src/constants/urls';
 import { contactTitle, faqContactLink, faqTitle, formButton, heroPrice, heroTitleSlide, moreLinks, moreTitle, offerButtonsNote, offerFaq, offerReasons, offerSteps, offerTgButton, offerTitle, offerTrustLine, services, servicesTitle, stepsContactLink } from '../src/data/offer';
 import { formServiceLabel, formSuccessText, formSuccessTitle, inputsListFeedback, phoneTooShort } from '../src/data/inputsFeedBack';
-import { chatFabLabel, chatLeadOpen, chatLeadSuccess } from '../src/data/chat';
+import { chatButtonText, chatButtonTitle, chatFabLabel, chatLeadOpen, chatLeadSuccess } from '../src/data/chat';
 import { footerName, footerSince, footerTg } from '../src/data/footer';
 import { serviceLines } from '../src/scripts/services';
 
@@ -811,3 +811,34 @@ for (const width of [375, 320]) {
         expect(await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth)).toBe(0);
     });
 }
+
+// Финальный проход (DESIGN_FIXES_4_PLAN Д23): теги кейсов и подпись демо-чата кеглем Label,
+// число с единицей, название клиента и «ИИ-ассистента» не рвутся на строки
+test('теги, подпись чата и неразрывные пары на телефоне, 375px', async ({ page }) => {
+    await page.setViewportSize({ width: 375, height: 812 });
+    await page.goto('/');
+
+    const tag = page.getByRole('region', { name: 'Избранные кейсы' }).getByRole('article').first().getByRole('listitem').first();
+    const services = page.getByRole('region', { name: servicesTitle });
+    for (const text of [tag, services.getByText(chatButtonText)]) {
+        expect(await text.evaluate((el) => parseFloat(getComputedStyle(el).fontSize))).toBeGreaterThanOrEqual(15);
+    }
+
+    // Сколько строк занимает кусок текста внутри элемента
+    const linesOf = (el: Element, part: string) => {
+        const walker = document.createTreeWalker(el, NodeFilter.SHOW_TEXT);
+        for (let node = walker.nextNode(); node; node = walker.nextNode()) {
+            const start = node.textContent!.indexOf(part);
+            if (start < 0) continue;
+            const range = document.createRange();
+            range.setStart(node, start);
+            range.setEnd(node, start + part.length);
+            return new Set([...range.getClientRects()].map((r) => Math.round(r.top))).size;
+        }
+        return 0;
+    };
+    const step = page.getByText(offerSteps[3].text);
+    expect(await step.evaluate(linesOf, '2\u00A0недель')).toBe(1);
+    expect(await services.getByRole('link', { name: 'ИКЦ «Презентация»' }).evaluate(linesOf, 'ИКЦ «Презентация»')).toBe(1);
+    expect(await services.getByText(chatButtonTitle).evaluate(linesOf, 'ИИ-\u2060ассистента')).toBe(1);
+});

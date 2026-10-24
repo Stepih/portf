@@ -95,7 +95,7 @@ export const offerTrustLine = (stats = portfolioStats(), maxIndustries = trustIn
 // Тексты – скилл marketing:draft-content, выбор владельца
 export const servicesTitle = 'Услуги и цены'
 export const servicesDescription = 'Цена зависит от задачи. На бесплатном созвоне назову точную сумму и срок'
-export const servicesCommon = 'В каждом сайте: дизайн под вас, адаптив под телефоны, гарантия от 2 недель'
+export const servicesCommon = 'В каждом сайте: дизайн под вас, адаптив под телефоны, гарантия от 2 недель'
 export const servicesCasesLabel = 'Так уже сделано:'
 export const servicesButton = 'Узнать цену'
 
@@ -170,7 +170,7 @@ export const offerSteps: IOfferStep[] = [
     },
     {
         title: 'Запуск',
-        text: 'Хостинг и домен – на ваше имя, учу работать в админке. Гарантия от 2 недель',
+        text: 'Хостинг и домен – на ваше имя, учу работать в админке. Гарантия от 2 недель',
         pay: { label: 'Остаток', note: 'После запуска', due: true }
     }
 ]
@@ -186,7 +186,7 @@ export const reasonsTitle = 'Почему я'
 export const offerReasons: IOfferReason[] = [
     {
         title: 'Сайт остаётся вам',
-        text: 'Домен и хостинг – на ваше имя, в админке научу работать сам. Гарантия от 2 недель после запуска'
+        text: 'Домен и хостинг – на ваше имя, в админке научу работать сам. Гарантия от 2 недель после запуска'
     },
     {
         title: 'Без менеджеров',
