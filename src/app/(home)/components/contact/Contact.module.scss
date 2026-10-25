@@ -120,3 +120,8 @@
         }
     }
 }
+
+// Без висячих слов в последней строке абзаца (DESIGN_FIXES_5_PLAN Д29)
+.contact p {
+    text-wrap: pretty;
+}

@@ -877,3 +877,13 @@ for (const [width, scene, numeral] of [[1400, 44, 40], [375, 28.8, 32]] as const
         expect(await size('section[aria-labelledby="steps-title"] li > span[aria-hidden="true"]')).toBeCloseTo(numeral, 0);
     });
 }
+
+// Финальный проход: абзацы блоков без висячих слов, таблетка «Ещё» на токене 24px (DESIGN_FIXES_5_PLAN Д29)
+test('абзацы блоков без висячих слов, таблетка «Ещё» 24px', async ({ page }) => {
+    await page.goto('/');
+
+    for (const id of ['cases-title', 'services-title', 'steps-title', 'reasons-title', 'faq-title', 'contact-title']) {
+        await expect(page.locator(`section[aria-labelledby="${id}"] p`).first()).toHaveCSS('text-wrap', /pretty/);
+    }
+    await expect(page.locator('section[aria-labelledby="more-title"] a').first()).toHaveCSS('border-radius', '24px');
+});
