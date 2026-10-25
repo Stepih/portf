@@ -662,13 +662,14 @@ test('сцена без пустых пауз: заголовок, кольцо 
     await expect.poll(() => title.evaluate(opacityOf)).toBe(1);
     await expect.poll(waveRadius).toBeGreaterThan(100);
 
-    // Диск портала – слой с радиальным градиентом; к 1,25 экрана кольцо уже погасло.
-    // Середина портала (кольцо ещё видно) – только кадр в движении: на остановке сцена доводится (Д30, тест ниже)
+    // Диск портала – слой с радиальным градиентом; к 1,25 экрана кольцо уже погасло
     const diskOpacity = () => page.evaluate(() => {
         const disk = [...document.querySelectorAll<HTMLElement>('section div[aria-hidden="true"]')]
             .find((el) => el.style.background.includes('radial-gradient'));
         return disk ? parseFloat(getComputedStyle(disk).opacity) : -1;
     });
+    await scrollTo(1);
+    await expect.poll(diskOpacity).toBe(1);
     await scrollTo(1.25);
     await expect.poll(diskOpacity).toBeLessThan(.05);
 
@@ -677,49 +678,6 @@ test('сцена без пустых пауз: заголовок, кольцо 
     const top = page.getByRole('region', { name: 'Избранные кейсы' }).getByRole('heading', { level: 3 }).nth(1);
     await expect.poll(() => top.evaluate((h) =>
         h.querySelector('a')!.getBoundingClientRect().top - h.getBoundingClientRect().top)).toBeLessThan(3);
-});
-
-// Остановка посреди перехода (DESIGN_FIXES_6_PLAN Д30): анимация доходит до кадра по направлению скролла –
-// первый экран, отрасли или кейсы; scrollY не меняется, чипы в кадре отраслей с подписями и кликаются
-test('остановка посреди сцены доводит её до устойчивого кадра', async ({ page }) => {
-    await page.setViewportSize({ width: 1400, height: 900 });
-    await page.goto('/');
-    const region = page.getByRole('region', { name: 'Каким может быть сайт для вашего бизнеса' });
-    const title = page.getByRole('heading', { name: 'Каким может быть сайт для вашего бизнеса' });
-    const chip = region.getByRole('listitem').getByRole('link').first();
-    const cases = page.getByRole('region', { name: 'Избранные кейсы' });
-    const slides = page.locator('[class*="HeroExpand_card"] > div').first();
-    // Капля поверх чипа – тёмная пилюля без текста; в кадре отраслей её нет
-    const dropOpacity = () => chip.evaluate((a) => parseFloat(getComputedStyle(a.closest('li')!.querySelector('span[aria-hidden]')!).opacity));
-    const scrollY = () => page.evaluate(() => Math.round(window.scrollY));
-
-    // 250px вниз: раньше заголовок здесь обрезала волна, а чипы были чёрными пилюлями
-    await page.evaluate(() => window.scrollTo(0, 250));
-    await expect.poll(() => title.evaluate(opacityOf)).toBe(1);
-    await expect.poll(() => chip.evaluate(opacityOf)).toBe(1);
-    await expect.poll(dropOpacity).toBe(0);
-    expect(await scrollY()).toBe(250);
-
-    // Назад на 100px: к первому экрану
-    await page.evaluate(() => window.scrollTo(0, 150));
-    await expect.poll(() => slides.evaluate(opacityOf)).toBe(1);
-    await expect.poll(() => title.evaluate(opacityOf)).toBe(0);
-    expect(await scrollY()).toBe(150);
-
-    // Середина портала вниз: дыра на весь экран, кейсы видны целиком
-    await page.evaluate(() => window.scrollTo(0, 950));
-    await expect.poll(() => cases.evaluate(opacityOf)).toBe(1);
-    await expect(page.locator('[class*="HeroExpand_passThrough"]')).toHaveCount(1);
-    expect(await scrollY()).toBe(950);
-
-    // Чип кликается в доведённом кадре отраслей
-    await page.evaluate(() => window.scrollTo(0, 0));
-    await expect.poll(() => slides.evaluate(opacityOf)).toBe(1);
-    await page.evaluate(() => window.scrollTo(0, 250));
-    await expect.poll(() => chip.evaluate(opacityOf)).toBe(1);
-    const href = await chip.getAttribute('href');
-    await chip.click();
-    await expect(page).toHaveURL(href!);
 });
 
 // Заявка из чата – кнопкой в шапке окна, с первого открытия, без вопросов модели (DESIGN_FIXES_2_PLAN Д7)
