@@ -13,9 +13,6 @@ interface IProps {
     items: IPortfolioWork[]
 }
 
-// Одинаковая высота макета, как на главной
-const COVER_HEIGHT = 260;
-
 // Колода: наклон и масштаб нижних карт; на телефоне карта лежит под предыдущей выше на DEAL_UP, px
 const DEAL_TILT = 7;
 const DEAL_SCALE = .94;
@@ -94,7 +91,7 @@ const HomeCasesGrid: FC<IProps> = ({ items }) => {
                     {/* key: при смене режима (сцена или свой скролл) окна другие – карточка монтируется заново */}
                     <CaseCard
                         key={String(fromScene)}
-                        work={{ ...work, coverHeight: COVER_HEIGHT }}
+                        work={work}
                         mobile={mobile}
                         shared={fromScene ? shared : null}
                         stack={stackOf(i)}

@@ -126,7 +126,8 @@ const CaseCard: FC<IProps> = ({ work, mobile, shared, stack, timing }) => {
             className={`${w.card} ${s.card}`}
             style={reduceMotion ? { x: 0, y: 0, rotate: 0, scale: 1 } : { x, y, rotate, scale, zIndex: stack?.z }}
         >
-            <div className={w.cover} style={{ height: work.coverHeight, backgroundColor: work.tint }}>
+            {/* Высота макета – в CaseCard.module.scss: до 1000px не фиксированная, а пропорцией */}
+            <div className={`${w.cover} ${s.cover}`} style={{ backgroundColor: work.tint }}>
                 <div className={w.inner}>
                     <BrowserFrame className={w.frame}>
                         <Image
