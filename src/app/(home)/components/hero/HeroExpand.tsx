@@ -29,10 +29,12 @@ interface HeroExpandProps {
 }
 
 // Путь портала в экранах: диск растёт из кружка вместе с надписью «10 работ» (PORTAL_GROW), стоит с ней
-// (PORTAL_HOLD), потом в нём открывается дыра и уходит за края экрана (PORTAL_OPEN)
-const PORTAL_GROW = .1;
-const PORTAL_HOLD = .05;
-const PORTAL_OPEN = .3;
+// (PORTAL_HOLD), потом в нём открывается дыра и уходит за края экрана (PORTAL_OPEN).
+// Рост и дыра вдвое короче, чем были (.1 и .3): кружок поверх заголовка и чёрное кольцо – недорисованные кадры,
+// на них не должно получаться остановиться; путь отдан стоянию диска и чипам (DESIGN_FIXES_6_PLAN Д30, выбор владельца)
+const PORTAL_GROW = .05;
+const PORTAL_HOLD = .1;
+const PORTAL_OPEN = .2;
 const PORTAL_PATH = PORTAL_GROW + PORTAL_HOLD + PORTAL_OPEN;
 
 // Точки сцены в экранах прокрутки: раскрытие, брызги отраслей (с SHOW_AT, путь BURST_PATH),
@@ -42,13 +44,15 @@ const PORTAL_PATH = PORTAL_GROW + PORTAL_HOLD + PORTAL_OPEN;
 const EXPAND_FROM = .024;
 const EXPAND_TO = .36;
 const SHOW_AT = .24;
-const BURST_PATH = .4;
-const CHIPS_HOLD = .15;
+// Брызги короче вместе со своей длительностью (было .4 на 1,85 с – тот же путь на секунду брызг);
+// чипы стоят дольше на этот хвост и на сжатый портал: длина сцены прежняя (Д30)
+const BURST_PATH = .32;
+const CHIPS_HOLD = .33;
 // Запас после брызг до чипов на месте
 const BURST_TAIL = .05;
 
-// Во сколько раз длиннее путь сцены: доводки нет, этапы проходятся скроллом.
-// Раскрытие ~0,35 экрана, брызги ~0,4, портал ~0,45 (DESIGN_FIXES_PLAN, Д1: цены не дальше ~2,5 экрана)
+// Во сколько раз длиннее путь сцены: доводки нет, этапы проходятся только скроллом (доводку владелец отклонил, Д30).
+// Раскрытие ~0,35 экрана, брызги ~0,32, чипы ~0,33, портал ~0,35 (DESIGN_FIXES_PLAN, Д1: цены не дальше ~2,5 экрана)
 const PACE = 1;
 // Путь после портала, в экранах: кейсы ещё прилипают, скролл раздаёт их из колоды (SceneAfterContext)
 const AFTER = .3;
@@ -56,7 +60,7 @@ const AFTER = .3;
 // Телефон (≤700px, как у распорки .after): кейсы в столбик длиннее экрана, и до цен далеко.
 // Чипы стоят меньше, а вся сцена проходится быстрее (DESIGN_FIXES_2_PLAN, Д7). Ширина – та же, что в @media стилей .scene и .nextTrack
 const PHONE_QUERY = '(max-width: 700px)';
-const PHONE_CHIPS_HOLD = .05;
+const PHONE_CHIPS_HOLD = .23;
 const PHONE_PACE = .75;
 
 // Точки сцены в долях её прокрутки и длина сцены в экранах
@@ -109,21 +113,29 @@ type PortalState = 'off' | 'on' | 'open';
 // Таймлайн в секундах, но время берётся из скролла: весь путь брызг (BURST_PATH) – вся их длительность.
 // Скролл назад проигрывает их в обратную сторону теми же кадрами
 
-// Капля летит FLIGHT, растекается в пилюлю SPREAD и растворяется в чип FADE; волна от кружка идёт WAVE, с
+// Капля летит FLIGHT, растекается в пилюлю SPREAD и растворяется в чип FADE; волна от кружка идёт WAVE, с.
+// Растекание и растворение вдвое короче, чем были (.35 и .3 – и капли вылетают чаще), волна – тоже (.9): чёрная пилюля без текста и обрезанный
+// волной заголовок – недорисованные кадры (DESIGN_FIXES_6_PLAN Д30)
 const FLIGHT = .7;
-const SPREAD = .35;
-const FADE = .3;
-const WAVE = .9;
+const SPREAD = .15;
+const FADE = .15;
+const WAVE = .45;
+// Чип проступает под каплей: FACE_FROM после конца полёта, за FACE, с – до того, как капля растворится
+const FACE_FROM = .05;
+const FACE = .3;
+// Строка «Другая сфера?» поднимается, когда долетела последняя капля: OTHER_FROM после её полёта, за OTHER_RISE, с
+const OTHER_FROM = 0;
+const OTHER_RISE = .4;
 // Размер капли в полёте и подъём дуги над стартом, px
 const DROP = 12;
 const LIFT = 48;
 // Капли вылетают по очереди
-const chipDelay = (i: number) => .2 + i * .05;
+const chipDelay = (i: number) => .2 + i * .04;
 
 // Длительность брызг, с: до конца последней капли и строки «Другая сфера?»
 const burstLength = (count: number) => {
     const last = chipDelay(Math.max(0, count - 1));
-    return Math.max(last + FLIGHT + SPREAD + FADE, last + FLIGHT + .2 + .5);
+    return last + FLIGHT + Math.max(SPREAD + FADE, FACE_FROM + FACE, OTHER_FROM + OTHER_RISE);
 };
 
 // Чип относительно кружка: сдвиг от места чипа до центра кружка и размер чипа
@@ -173,7 +185,7 @@ const chipFrame = (time: number, g: ChipGeom) => {
         y: f < .4 ? g.dy - LIFT * easeOut(f / .4) : (g.dy - LIFT) * (1 - easeIn((f - .4) / .6)),
         clip: `inset(${(g.h - DROP) / 2 * (1 - spread)}px ${(g.w - DROP) / 2 * (1 - spread)}px round 24px)`,
         drop: time < d ? 0 : 1 - span(time, d + FLIGHT + SPREAD, FADE),
-        face: easeOut(span(time, d + FLIGHT + .1, .35)),
+        face: easeOut(span(time, d + FLIGHT + FACE_FROM, FACE)),
     };
 };
 
@@ -223,9 +235,10 @@ const DISK_SHARE = .3;
 // Знак «10 работ», выросший с диском, гаснет за эту долю пути портала после открытия дыры
 const MARK_FADE = .1;
 // Кольцо между дырой и краем диска гаснет в этом отрезке пути дыры (доли от открытия до конца),
-// пока оно ещё толстое: не сжимается в волосяную дугу (DESIGN_FIXES_2_PLAN, Д9)
-const RING_FADE_FROM = .3;
-const RING_FADE_TO = .7;
+// пока оно ещё толстое: не сжимается в волосяную дугу (DESIGN_FIXES_2_PLAN, Д9). Раньше – .3–.7: чёрный «бублик»
+// стоял ~190px прокрутки, теперь ~90 (DESIGN_FIXES_6_PLAN Д30)
+const RING_FADE_FROM = .2;
+const RING_FADE_TO = .5;
 
 // Первый экран главной (SALES_PLAN 3.1), блок отраслей (3.2) и вход в «Избранные кейсы» одной сценой
 // (ANIMATION_PLAN, 1Г + 2Г). Всё ведёт скролл, вперёд и назад, без доводки.
@@ -452,7 +465,7 @@ const HeroExpand: FC<HeroExpandProps> = ({ chips, worksCount, children }) => {
         leadClip.set(w.clip);
         leadOpacity.set(w.lead);
         pulseScale.set(w.pulse);
-        const e = riseEase(span(v, chipDelay(chips.length - 1) + FLIGHT + .2, .5));
+        const e = riseEase(span(v, chipDelay(chips.length - 1) + FLIGHT + OTHER_FROM, OTHER_RISE));
         otherOpacity.set(e);
         otherY.set(16 * (1 - e));
     }, [waveGeom, chips.length, leadClip, leadOpacity, pulseScale, otherOpacity, otherY]);

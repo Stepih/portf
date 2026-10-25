@@ -680,6 +680,22 @@ test('сцена без пустых пауз: заголовок, кольцо 
         h.querySelector('a')!.getBoundingClientRect().top - h.getBoundingClientRect().top)).toBeLessThan(3);
 });
 
+// Недорисованные кадры сцены вдвое короче, путь отдан чипам (DESIGN_FIXES_6_PLAN Д30): на 1400×900 кадр отраслей
+// целый с 0,56 до 0,94 экрана, раньше – с 0,64 до 0,84. Текст каждого чипа виден, чёрной капли над ним нет
+test('кадр отраслей стоит дольше: чипы с подписями от 0,58 до 0,92 экрана', async ({ page }) => {
+    await page.setViewportSize({ width: 1400, height: 900 });
+    await page.goto('/');
+    const items = page.getByRole('region', { name: 'Каким может быть сайт для вашего бизнеса' }).getByRole('listitem');
+    for (const screens of [.58, .92]) {
+        await page.evaluate((k) => window.scrollTo(0, window.innerHeight * k), screens);
+        await expect.poll(() => items.evaluateAll((lis) => lis.every((li) => {
+            let op = 1;
+            for (let n: Element | null = li.querySelector('a'); n; n = n.parentElement) op *= parseFloat(getComputedStyle(n).opacity);
+            return op > .98 && parseFloat(getComputedStyle(li.querySelector('span[aria-hidden]')!).opacity) < .02;
+        }))).toBe(true);
+    }
+});
+
 // Заявка из чата – кнопкой в шапке окна, с первого открытия, без вопросов модели (DESIGN_FIXES_2_PLAN Д7)
 test('кнопка «Связаться» в шапке чата открывает заявку до вопросов', async ({ page }) => {
     const asks: unknown[] = [];
