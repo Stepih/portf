@@ -47,7 +47,7 @@ const CHIPS_HOLD = .15;
 // Запас после брызг до чипов на месте
 const BURST_TAIL = .05;
 
-// Во сколько раз длиннее путь сцены: доводки нет, этапы проходятся скроллом.
+// Во сколько раз длиннее путь сцены: этапы проходятся скроллом, доводка (SETTLE_DELAY) только дотягивает до кадра.
 // Раскрытие ~0,35 экрана, брызги ~0,4, портал ~0,45 (DESIGN_FIXES_PLAN, Д1: цены не дальше ~2,5 экрана)
 const PACE = 1;
 // Путь после портала, в экранах: кейсы ещё прилипают, скролл раздаёт их из колоды (SceneAfterContext)
@@ -77,6 +77,15 @@ const PHONE_TIMING = timing(PHONE_CHIPS_HOLD);
 
 // Сглаживание прогресса: щелчки колеса мыши не дёргают анимацию. Без перелёта, догоняет за ~0,3 с
 const SMOOTH = { stiffness: 170, damping: 30, restDelta: .0001 };
+
+// Доводка (DESIGN_FIXES_6_PLAN Д30): скролл стоит SETTLE_DELAY, мс, посреди перехода – анимация сама доходит
+// до устойчивого кадра по направлению скролла (первый экран, отрасли, кейсы). scrollY не трогаем:
+// прогресс анимации расходится со скроллом и держит кадр, пока скролл его не догонит
+const SETTLE_DELAY = 150;
+// Скролл назад от доведённого кадра меньше этого, px, кадр не сбивает: дрожание тачпада и колеса
+const SETTLE_SLACK = 40;
+// Доведённый кадр: где он, в какую сторону вели и где стоял скролл
+interface Settle { at: number, dir: number, from: number }
 
 const ease = cubicBezier(.4, 0, .2, 1);
 const clamp01 = (v: number) => Math.min(1, Math.max(0, v));
@@ -228,7 +237,7 @@ const RING_FADE_FROM = .3;
 const RING_FADE_TO = .7;
 
 // Первый экран главной (SALES_PLAN 3.1), блок отраслей (3.2) и вход в «Избранные кейсы» одной сценой
-// (ANIMATION_PLAN, 1Г + 2Г). Всё ведёт скролл, вперёд и назад, без доводки.
+// (ANIMATION_PLAN, 1Г + 2Г). Всё ведёт скролл, вперёд и назад; остановка посреди перехода доводит до кадра (Settle).
 // Сцена высотой в несколько экранов, внутри липкий экран. Фон карточки раскрывается до краёв окна,
 // фото летит в кружок над заголовком и перетекает в число работ. Из кружка расходится волна с заголовком,
 // чипы вылетают каплями и растекаются по местам. Дальше кружок растёт в диск, в нём открывается дыра,
@@ -259,8 +268,54 @@ const HeroExpand: FC<HeroExpandProps> = ({ chips, worksCount, children }) => {
     const [chipGeoms, setChipGeoms] = useState<ChipGeom[]>([]);
 
     const { scrollYProgress: rawProgress } = useScroll({ target: scene, offset: ['start start', 'end end'] });
-    // Анимация идёт за сглаженным прогрессом; сам скролл страницы не трогаем
-    const scrollYProgress = useSpring(rawProgress, SMOOTH);
+    // Анимация идёт за сглаженным прогрессом; сам скролл страницы не трогаем.
+    // progress – прогресс скролла или доведённый кадр (Settle)
+    const progress = useMotionValue(rawProgress.get());
+    const scrollYProgress = useSpring(progress, SMOOTH);
+
+    const settled = useRef<Settle | null>(null);
+    const lastRaw = useRef(rawProgress.get());
+    const lastDir = useRef(0);
+    const settleTimer = useRef<ReturnType<typeof setTimeout>>(undefined);
+    // Переходы между устойчивыми кадрами: раскрытие с брызгами и портал
+    const gaps = [[tm.expandFrom, tm.burstTo], [tm.portalFrom, 1]];
+    const settle = () => {
+        if (reduceMotion) return;
+        const v = progress.get();
+        const gap = gaps.find(([a, b]) => v > a + 1e-4 && v < b - 1e-4);
+        if (!gap) return;
+        // Направления ещё нет (загрузка посреди сцены) – к ближайшему кадру
+        const dir = lastDir.current || (v - gap[0] < gap[1] - v ? -1 : 1);
+        const at = dir > 0 ? gap[1] : gap[0];
+        settled.current = { at, dir, from: lastRaw.current };
+        progress.set(at);
+    };
+    const scheduleSettle = () => {
+        clearTimeout(settleTimer.current);
+        settleTimer.current = setTimeout(settle, SETTLE_DELAY);
+    };
+    useMotionValueEvent(rawProgress, 'change', (r) => {
+        const dir = Math.sign(r - lastRaw.current);
+        lastRaw.current = r;
+        if (dir) lastDir.current = dir;
+        const lock = settled.current;
+        if (lock) {
+            const len = (scene.current?.offsetHeight ?? 0) - window.innerHeight;
+            // Скролл догнал кадр или ушёл назад дальше запаса – сцена снова идёт за скроллом
+            const caught = (r - lock.at) * lock.dir >= 0;
+            const back = len > 0 && (lock.from - r) * lock.dir * len > SETTLE_SLACK;
+            if (!caught && !back) return scheduleSettle();
+            settled.current = null;
+        }
+        progress.set(r);
+        scheduleSettle();
+    });
+    useEffect(() => {
+        if (reduceMotion) return;
+        scheduleSettle();
+        return () => clearTimeout(settleTimer.current);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [reduceMotion]);
     const t = useTransform(scrollYProgress, [tm.expandFrom, tm.expandTo], [0, 1], { ease, clamp: true });
 
     // Отступы карточки от краёв липкого экрана, меряются при загрузке и ресайзе
