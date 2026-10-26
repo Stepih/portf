@@ -17,6 +17,8 @@ $icon: 14px;
         margin: 0;
 
         font-size: clamp(1.6rem, 4vw, 2.2rem);
+        // Перенос заголовка – строки поровну (DESIGN_FIXES_6_PLAN Д33)
+        text-wrap: balance;
         text-align: center;
         color: var(--color-text-100);
         transition: vars.$transition;

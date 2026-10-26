@@ -18,6 +18,8 @@
         margin: 0;
 
         font-size: clamp(1.3rem, 3vw, 1.6rem);
+        // Перенос заголовка – строки поровну (DESIGN_FIXES_6_PLAN Д33)
+        text-wrap: balance;
         color: var(--color-text-100);
         transition: vars.$transition;
     }

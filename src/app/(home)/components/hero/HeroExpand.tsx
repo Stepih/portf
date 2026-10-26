@@ -554,7 +554,8 @@ const HeroExpand: FC<HeroExpandProps> = ({ chips, worksCount, children }) => {
                     <motion.div className={s.mark} style={{ opacity: markOpacity, scale: markScale }}>
                         <motion.span className={s.works} style={{ scale: pulseScale }}>
                             <b className={ralewayBold.className}>{worksCount}</b>
-                            <span>{plural(worksCount, ['работа', 'работы', 'работ'])}</span>
+                            {/* «проекты» – как в заголовке кейсов и строке доверия (DESIGN_FIXES_6_PLAN Д33, выбор владельца) */}
+                            <span>{plural(worksCount, ['проект', 'проекта', 'проектов'])}</span>
                         </motion.span>
                     </motion.div>
                 </div>

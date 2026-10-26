@@ -69,12 +69,12 @@ test('избранные кейсы на главной', async ({ page }) => {
     await page.goto('/');
     await page.evaluate(() => window.scrollTo(0, window.innerHeight * 1.8));
 
-    const section = page.getByRole('region', { name: 'Избранные кейсы' });
+    const section = page.getByRole('region', { name: 'Лучшие проекты' });
     const cases = section.getByRole('heading', { level: 3 }).getByRole('link');
     await expect(cases).toHaveCount(3);
     await expect(cases.first()).toHaveAttribute('href', /^\/portfolio\/[a-z0-9]+$/);
 
-    await section.getByRole('link', { name: 'Все работы' }).click();
+    await section.getByRole('link', { name: 'Все проекты' }).click();
     await expect(page).toHaveURL(/\/portfolio$/);
 });
 
@@ -92,7 +92,7 @@ for (const viewport of [{ width: 1400, height: 900 }, { width: 375, height: 812 
         await page.goto('/');
 
         const chip = page.getByRole('region', { name: 'Каким может быть сайт для вашего бизнеса' }).getByRole('listitem').getByRole('link').first();
-        const firstCase = page.getByRole('region', { name: 'Избранные кейсы' }).getByRole('heading', { level: 3 }).getByRole('link').first();
+        const firstCase = page.getByRole('region', { name: 'Лучшие проекты' }).getByRole('heading', { level: 3 }).getByRole('link').first();
 
         for (const target of [chip, firstCase]) {
             for (let i = 0; i < 30 && !(await target.evaluate((el) => el === document.activeElement)); i++) {
@@ -137,7 +137,7 @@ test.describe('уменьшить движение', () => {
     test('текст кейсов виден без анимации', async ({ page }) => {
         await page.goto('/', { waitUntil: 'networkidle' });
 
-        const cases = page.getByRole('region', { name: 'Избранные кейсы' });
+        const cases = page.getByRole('region', { name: 'Лучшие проекты' });
         const title = cases.getByRole('heading', { level: 3 }).getByRole('link').first();
         const tag = cases.getByRole('listitem').first();
         await title.scrollIntoViewIfNeeded();
@@ -214,14 +214,14 @@ test('ссылка «Другая сфера» ведёт к форме глав
 // Отрасли строкой под кейсами (DESIGN_FIXES_4_PLAN Д19): на телефоне чипы в сцене кликабельны лишь на ~40px прокрутки,
 // поэтому до 700px они повторяются под «Все работы». На компьютере и при «уменьшить движение» строки нет: display: none,
 // не фокусируется и не видна читалке
-const casesIndustries = (page: Page) => page.getByRole('region', { name: 'Избранные кейсы' }).locator('[data-goal-place="cases"]');
+const casesIndustries = (page: Page) => page.getByRole('region', { name: 'Лучшие проекты' }).locator('[data-goal-place="cases"]');
 
 test('отрасли под кейсами на телефоне: чип ведёт в портфолио, 375px', async ({ page }) => {
     await page.setViewportSize({ width: 375, height: 812 });
     await page.goto('/');
 
     const row = casesIndustries(page);
-    const all = page.getByRole('region', { name: 'Избранные кейсы' }).getByRole('link', { name: 'Все работы' });
+    const all = page.getByRole('region', { name: 'Лучшие проекты' }).getByRole('link', { name: 'Все проекты' });
     const chip = row.getByRole('listitem').getByRole('link').first();
     await chip.scrollIntoViewIfNeeded();
     await expect(row).toBeVisible();
@@ -501,7 +501,7 @@ test('раскладка главной на планшете, 820px', async ({ 
     await page.goto('/');
 
     // offsetHeight/offsetTop не видят transform колоды
-    const cards = page.getByRole('region', { name: 'Избранные кейсы' }).locator('article');
+    const cards = page.getByRole('region', { name: 'Лучшие проекты' }).locator('article');
     await expect(cards).toHaveCount(3);
     const heights = await cards.evaluateAll((els) => els.map((el) => (el as HTMLElement).offsetHeight));
     expect(new Set(heights).size).toBe(1);
@@ -675,7 +675,7 @@ test('сцена без пустых пауз: заголовок, кольцо 
 
     // Начало портала: средняя карта – верхняя в колоде, название уже выехало из-под маски
     await scrollTo(1);
-    const top = page.getByRole('region', { name: 'Избранные кейсы' }).getByRole('heading', { level: 3 }).nth(1);
+    const top = page.getByRole('region', { name: 'Лучшие проекты' }).getByRole('heading', { level: 3 }).nth(1);
     await expect.poll(() => top.evaluate((h) =>
         h.querySelector('a')!.getBoundingClientRect().top - h.getBoundingClientRect().top)).toBeLessThan(3);
 });
@@ -746,7 +746,7 @@ for (const viewport of [{ width: 1400, height: 900 }, { width: 820, height: 1000
         await page.setViewportSize(viewport);
         await page.goto('/');
 
-        const all = page.getByRole('region', { name: 'Избранные кейсы' }).getByRole('link', { name: 'Все работы' });
+        const all = page.getByRole('region', { name: 'Лучшие проекты' }).getByRole('link', { name: 'Все проекты' });
         const services = page.getByRole('heading', { level: 2, name: 'Услуги и цены' });
         await services.scrollIntoViewIfNeeded();
         await expect.poll(async () => {
@@ -838,7 +838,7 @@ test('теги, подпись чата и неразрывные пары на 
     await page.setViewportSize({ width: 375, height: 812 });
     await page.goto('/');
 
-    const tag = page.getByRole('region', { name: 'Избранные кейсы' }).getByRole('article').first().getByRole('listitem').first();
+    const tag = page.getByRole('region', { name: 'Лучшие проекты' }).getByRole('article').first().getByRole('listitem').first();
     const services = page.getByRole('region', { name: servicesTitle });
     for (const text of [tag, services.getByText(chatButtonText)]) {
         expect(await text.evaluate((el) => parseFloat(getComputedStyle(el).fontSize))).toBeGreaterThanOrEqual(15);
@@ -903,3 +903,42 @@ test('абзацы блоков без висячих слов, таблетка
     }
     await expect(page.locator('section[aria-labelledby="more-title"] a').first()).toHaveCSS('border-radius', '24px');
 });
+
+// Набор (DESIGN_FIXES_6_PLAN Д33): заголовки секций переносятся поровну, ни одна строка главной не начинается с «–»
+// (перед тире неразрывный пробел)
+for (const width of [1400, 1100, 820, 375]) {
+    test(`заголовки поровну, строки не начинаются с тире, ${width}px`, async ({ page }) => {
+        await page.setViewportSize({ width, height: 900 });
+        await page.goto('/');
+
+        const wraps = await page.locator('main h2').evaluateAll((els) =>
+            els.map((el) => ({ text: el.textContent, wrap: getComputedStyle(el).textWrap })));
+        for (const { text, wrap } of wraps) {
+            expect(wrap, text ?? '').toMatch(/balance/);
+        }
+
+        // Тире, которое стоит ниже предыдущей буквы, – в начале строки
+        const dashStarts = await page.locator('main').evaluate((main) => {
+            const found: string[] = [];
+            const walker = document.createTreeWalker(main, NodeFilter.SHOW_TEXT);
+            for (let node = walker.nextNode(); node; node = walker.nextNode()) {
+                const text = node.textContent!;
+                for (let i = text.indexOf('–'); i >= 0; i = text.indexOf('–', i + 1)) {
+                    let prev = i - 1;
+                    while (prev >= 0 && /\s/.test(text[prev])) prev--;
+                    if (prev < 0) continue;
+                    const rect = (from: number) => {
+                        const range = document.createRange();
+                        range.setStart(node!, from);
+                        range.setEnd(node!, from + 1);
+                        return range.getClientRects()[0];
+                    };
+                    const dash = rect(i), before = rect(prev);
+                    if (dash && before && dash.top > before.top + dash.height / 2) found.push(text.trim().slice(0, 60));
+                }
+            }
+            return found;
+        });
+        expect(dashStarts).toEqual([]);
+    });
+}
