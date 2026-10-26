@@ -1,6 +1,6 @@
 "use client"
 
-import { FC, useState } from "react";
+import { FC, useEffect, useRef, useState } from "react";
 import { motion } from "framer-motion";
 
 import Link from "next/link";
@@ -17,11 +17,22 @@ import BgFocus from "../bg-page/BgFocus";
 const Header:FC = () => {
 
     const [hover, setHover] = useState(false)
-    
-    
+    const headerRef = useRef<HTMLElement>(null)
+
+    // Касание вне открытой шапки закрывает её: на тач-экране наведения нет
+    useEffect(() => {
+        if (!hover) return
+        const close = (e: PointerEvent) => {
+            if (!headerRef.current?.contains(e.target as Node)) setHover(false)
+        }
+        document.addEventListener("pointerdown", close)
+        return () => document.removeEventListener("pointerdown", close)
+    }, [hover])
+
     return (
         <>
-        <motion.header 
+        <motion.header
+            ref={headerRef}
             onHoverStart={() => setHover(true)} 
             onHoverEnd={()=> setHover(false)}
             // С клавиатуры шапка выезжает, пока фокус внутри неё
@@ -31,9 +42,16 @@ const Header:FC = () => {
             className={s.header}
             data-goal-place="header">
             
-            <motion.div  animate={{opacity: !hover ? 1 : 0}}  className={s.headerTouch}>
+            {/* Кнопка, а не div: на тач-экране шире 1200px шапка открывается касанием */}
+            <motion.button
+                type="button"
+                aria-label="Открыть панель"
+                aria-expanded={hover}
+                onClick={() => setHover(true)}
+                animate={{opacity: !hover ? 1 : 0}}
+                className={s.headerTouch}>
                 <Arrow />
-            </motion.div>
+            </motion.button>
             <SelectThemeButton />
             <div className={s.contacts}>
                 <span className={s.contactsTitle}>Контакты</span>

@@ -27,7 +27,9 @@
     
 
     .headerTouch {
-        
+        @include vars.button-reset;
+        display: flex;
+
         position: absolute;
         top: 50%;
         left: 120%;

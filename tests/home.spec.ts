@@ -942,3 +942,25 @@ for (const width of [1400, 1100, 820, 375]) {
         expect(dashStarts).toEqual([]);
     });
 }
+
+test.describe('шапка на планшете с касанием, 1366px', () => {
+    test.use({ viewport: { width: 1366, height: 1024 }, hasTouch: true });
+
+    test('касание «›» открывает шапку, касание вне – закрывает', async ({ page }) => {
+        await page.goto('/');
+        const header = page.locator('header');
+        const open = header.getByRole('button', { name: 'Открыть панель' });
+        const left = async () => (await header.boundingBox())!.x;
+
+        await expect(open).toHaveAttribute('aria-expanded', 'false');
+        expect(await left()).toBeLessThan(-50);
+
+        await open.tap();
+        await expect(open).toHaveAttribute('aria-expanded', 'true');
+        await expect.poll(left).toBe(0);
+
+        await page.touchscreen.tap(700, 300);
+        await expect(open).toHaveAttribute('aria-expanded', 'false');
+        await expect.poll(left).toBeLessThan(-50);
+    });
+});
