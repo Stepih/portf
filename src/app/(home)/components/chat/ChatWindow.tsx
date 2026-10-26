@@ -5,7 +5,7 @@ import s from './Chat.module.scss'
 import ChatLeadForm from "./ChatLeadForm";
 import type { useChat } from "./useChat";
 import { ralewayBold, ralewayRegular } from "@/app/fonts/fonts";
-import { chatClose, chatGreeting, chatLeadOpen, chatLeadSuccess, chatLimitText, chatPlaceholder, chatSend, chatSubtitle, chatTitle } from "@/data/chat";
+import { chatClose, chatGreeting, chatLeadOpen, chatLeadSuccess, chatLimitText, chatPlaceholder, chatSend, chatStarters, chatStartersLabel, chatSubtitle, chatTitle } from "@/data/chat";
 import { formButton } from "@/data/inputsFeedBack";
 import { CHAT_LIMITS } from "@/lib/chat/request";
 import { HONEYPOT_FIELD } from "@/lib/validation/feedback";
@@ -73,6 +73,8 @@ const ChatWindow: FC<IChatWindow> = ({ chat, tgButton, onClose }) => {
     const questions = chatQuestions(items);
     const waiting = loading && items[items.length - 1]?.role === 'user';
     const showActions = !loading && !leadOpen && (questions.length > 0 || limit !== null);
+    // Готовые вопросы – только до первого принятого вопроса (Д32): не принят – таблетки возвращаются
+    const showStarters = !loading && !leadOpen && !limit && questions.length === 0;
 
     return (
         <motion.div
@@ -119,6 +121,20 @@ const ChatWindow: FC<IChatWindow> = ({ chat, tgButton, onClose }) => {
                 {/* aria-busy: пока ответ дописывается, скринридер не читает его по кускам */}
                 <div className={s.messages} ref={listRef} aria-live="polite" aria-busy={loading}>
                     <p className={`${s.bubble} ${s.assistant}`}>{chatGreeting}</p>
+                    {showStarters && (
+                        <div className={s.starters} role="group" aria-label={chatStartersLabel}>
+                            {chatStarters.map((starter) => (
+                                <button
+                                    key={starter}
+                                    type="button"
+                                    className={s.starter}
+                                    onClick={() => ask(starter, honeypotRef.current?.value)}
+                                >
+                                    {starter}
+                                </button>
+                            ))}
+                        </div>
+                    )}
                     {items.map((item) => (
                         <p
                             key={item.id}

@@ -285,6 +285,12 @@
     font-size: 1.05rem;
 }
 
+// Шапка без висячих слов: «Демо: отвечает / по сайту», а не «…по / сайту» (Д32)
+.title,
+.subtitle {
+    text-wrap: balance;
+}
+
 .subtitle {
     margin: 2px 0 0;
     font-size: 0.875rem;
@@ -442,6 +448,43 @@
 
 .actions {
     margin-top: 4px;
+}
+
+// Готовые вопросы под приветствием (Д32): таблетки контуром, как «Связаться»; справа – как реплики клиента
+.starters {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    gap: 8px;
+
+    margin-top: 4px;
+}
+
+.starter {
+    @include vars.button-reset;
+
+    min-height: 40px;
+    padding: 8px 16px;
+
+    font-size: 0.95rem;
+    color: var(--color-text-100);
+
+    border: 1.5px solid rgba(128, 128, 128, 0.45);
+    border-radius: 24px;
+    transition: vars.$transition;
+
+    // Только при настоящем наведении: на телефоне после касания заливка не залипает
+    @media (hover: hover) {
+        &:hover {
+            color: var(--color-bg);
+            background: var(--color-text-100);
+            border-color: var(--color-text-100);
+        }
+    }
+
+    &:focus-visible {
+        @include vars.focus-ring(2px);
+    }
 }
 
 .primary,

@@ -9,9 +9,13 @@ export const chatButtonText = 'Это демо: так агент отвечае
 // Подпись шара: видна при наведении, скринридер читает всегда
 export const chatFabLabel = 'Чат с ИИ-ассистентом'
 
-export const chatTitle = 'ИИ-ассистент Степана'
-export const chatSubtitle = 'Демо – отвечает по текстам этого сайта'
+export const chatTitle = 'ИИ-⁠ассистент Степана'
+export const chatSubtitle = 'Демо: отвечает по сайту'
 export const chatGreeting = 'Здравствуйте! Спросите, какой сайт или ИИ-агент вам подойдёт, сколько он стоит и сколько займёт работа.'
+// Готовые вопросы под приветствием (DESIGN_FIXES_6_PLAN Д32, вариант A владельца): уходят модели как обычный вопрос,
+// после первого вопроса скрываются
+export const chatStarters = ['Сколько стоит лендинг?', 'Что умеет ИИ-⁠агент?', 'Как проходит оплата?']
+export const chatStartersLabel = 'Готовые вопросы'
 export const chatPlaceholder = 'Ваш вопрос'
 export const chatSend = 'Отправить'
 export const chatClose = 'Закрыть чат'

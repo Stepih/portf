@@ -1,5 +1,5 @@
 import { expect, test, type Page, type Request } from '@playwright/test';
-import { chatButtonTitle, chatFabLabel, chatLeadSuccess, chatLimitText, chatPlaceholder } from '../src/data/chat';
+import { chatButtonTitle, chatFabLabel, chatLeadSuccess, chatLimitText, chatPlaceholder, chatStarters, chatStartersLabel, chatSubtitle, chatTitle } from '../src/data/chat';
 import { formButton, offerTgButton } from '../src/data/offer';
 import { phoneTooShort } from '../src/data/inputsFeedBack';
 import { hiddenPages, musicPageURL } from '../src/constants/urls';
@@ -68,6 +68,53 @@ test('второй вопрос уходит с историей, диалог �
         { role: 'assistant', content: ANSWER },
         { role: 'user', content: 'А сроки?' },
     ]);
+});
+
+test('готовые вопросы: нажатие шлёт вопрос, после ответа таблетки скрыты (Д32)', async ({ page }) => {
+    const requests = await mockChat(page);
+    const dialog = await openChat(page);
+    const starters = dialog.getByRole('group', { name: chatStartersLabel });
+
+    await expect(starters.getByRole('button')).toHaveCount(chatStarters.length);
+    await starters.getByRole('button', { name: chatStarters[0] }).click();
+
+    await expect(dialog.getByText(ANSWER)).toBeVisible();
+    expect(requests).toHaveLength(1);
+    expect(requests[0].postDataJSON().messages).toEqual([{ role: 'user', content: chatStarters[0] }]);
+    await expect(starters).toHaveCount(0);
+});
+
+test('готовый вопрос упёрся в лимит – текст лимита, таблеток нет (Д32)', async ({ page }) => {
+    await mockChat(page, { status: 429, json: { error: 'limit', reason: 'budget' } });
+    const dialog = await openChat(page);
+
+    await dialog.getByRole('button', { name: chatStarters[1] }).click();
+
+    await expect(dialog.getByText(chatLimitText.budget)).toBeVisible();
+    await expect(dialog.getByRole('group', { name: chatStartersLabel })).toHaveCount(0);
+});
+
+test('шапка окна на 375: заголовок и подзаголовок – не больше двух строк, «ИИ-» не отрывается (Д32)', async ({ page }) => {
+    await page.setViewportSize({ width: 375, height: 740 });
+    const dialog = await openChat(page);
+
+    const lines = async (text: string) => dialog.getByText(text, { exact: true }).evaluate((el) =>
+        Math.round(el.getBoundingClientRect().height / parseFloat(getComputedStyle(el).lineHeight === 'normal'
+            ? String(parseFloat(getComputedStyle(el).fontSize) * 1.2) : getComputedStyle(el).lineHeight)));
+    expect(await lines(chatTitle)).toBeLessThanOrEqual(2);
+    expect(await lines(chatSubtitle)).toBeLessThanOrEqual(2);
+
+    // Первая строка заголовка – не один «ИИ-»
+    const firstLine = await dialog.getByText(chatTitle, { exact: true }).evaluate((el) => {
+        const range = document.createRange();
+        const node = el.firstChild as Text;
+        const top = (i: number) => { range.setStart(node, i); range.setEnd(node, i + 1); return range.getBoundingClientRect().top; };
+        const first = top(0);
+        let i = 0;
+        while (i < node.length && Math.abs(top(i) - first) < 2) i++;
+        return node.data.slice(0, i);
+    });
+    expect(firstLine.replace(/⁠/g, '').trim().length).toBeGreaterThan(3);
 });
 
 test('бюджет исчерпан – текст лимита, поле вопроса скрыто', async ({ page }) => {
