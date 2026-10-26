@@ -1,6 +1,6 @@
-import { expect, test, type Page, type Request } from '@playwright/test';
+import { expect, test, type Locator, type Page, type Request } from '@playwright/test';
 import { formButton } from '../src/data/offer';
-import { formServiceLabel, formSuccessText, formSuccessTitle, nameFormatError, phoneTooShort } from '../src/data/inputsFeedBack';
+import { formServiceLabel, formSuccessText, formSuccessTitle, nameEmptyError, nameFormatError, phoneEmptyError, phoneFormatError, phoneTooShort } from '../src/data/inputsFeedBack';
 import { breadCrumbLabels } from '../src/data/breadCrumbs';
 import { services } from '../src/data/offer';
 import { serviceLines } from '../src/scripts/services';
@@ -13,6 +13,20 @@ const mockSendMessage = async (page: Page, status = 200) => {
         return route.fulfill({ status, json: status === 200 ? { message: 'ok' } : { error: 'mock' } });
     });
     return requests;
+};
+
+// Ошибка у поля: текст под ним, aria-invalid, aria-describedby на этот текст, контур цветом ошибки (DESIGN_FIXES_6_PLAN Д31)
+const expectFieldError = async (field: Locator, text: string) => {
+    await expect(field).toHaveAttribute('aria-invalid', 'true');
+    await expect(field).toHaveAccessibleDescription(text);
+    // Контур меняется переходом темы (0.5 с) – ждём конца
+    const error = await field.evaluate(el => getComputedStyle(el).getPropertyValue('--color-error').replace(/\s/g, ''));
+    await expect.poll(() => field.evaluate(el => getComputedStyle(el).borderTopColor.replace(/\s/g, ''))).toBe(error);
+};
+
+const expectNoFieldError = async (field: Locator) => {
+    await expect(field).not.toHaveAttribute('aria-invalid');
+    await expect(field).not.toHaveAttribute('aria-describedby');
 };
 
 const fields = (page: Page) => ({
@@ -33,19 +47,32 @@ test('без обязательных полей заявка не отправ�
     await form.message.fill('Только комментарий');
     await form.submit.click();
 
-    await expect(page.getByText('Заполните, пожалуйста, имя и телефон')).toBeVisible();
+    // Ошибки – под своими полями, фокус на первом неверном (DESIGN_FIXES_6_PLAN Д31)
+    await expectFieldError(form.name, nameEmptyError);
+    await expectFieldError(form.contact, phoneEmptyError);
+    await expect(form.name).toBeFocused();
     expect(requests).toHaveLength(0);
+
+    // Исправленное поле теряет ошибку, второе её держит
+    await form.name.pressSequentially('Иван');
+    await expectNoFieldError(form.name);
+    await expectFieldError(form.contact, phoneEmptyError);
+
+    await form.submit.click();
+    await expect(form.contact).toBeFocused();
+    await form.contact.fill('79990001122');
+    await expectNoFieldError(form.contact);
 });
 
 test('в телефон нельзя ввести буквы, в имя — цифры', async ({ page }) => {
     const form = fields(page);
 
     await form.contact.pressSequentially('12a');
-    await expect(page.getByText('Формат: цифры, +, скобки и дефис, не больше 25 символов')).toBeVisible();
+    await expectFieldError(form.contact, phoneFormatError);
     await expect(form.contact).toHaveValue('12');
 
     await form.name.pressSequentially('Ив1');
-    await expect(page.getByText(nameFormatError)).toBeVisible();
+    await expectFieldError(form.name, nameFormatError);
     await expect(form.name).toHaveValue('Ив');
 });
 
@@ -65,15 +92,18 @@ test('имя с дефисом, «Ё» и апострофом набирает�
     expect(requests[0].postDataJSON()).toMatchObject({ name });
 });
 
-test('ошибка формы доступна скринридеру как alert', async ({ page }) => {
+test('ошибка поля доступна скринридеру как alert', async ({ page }) => {
     const form = fields(page);
+    const alerts = page.locator('form').getByRole('alert');
 
     await form.name.pressSequentially('Анна7');
-    await expect(page.locator('form').getByRole('alert')).toHaveText(nameFormatError);
+    await expect(alerts.filter({ hasText: nameFormatError })).toHaveCount(1);
     await expect(form.name).toHaveValue('Анна');
 
     await form.submit.click();
-    await expect(page.locator('form').getByRole('alert')).toHaveText('Заполните, пожалуйста, имя и телефон');
+    await expect(alerts.filter({ hasText: phoneEmptyError })).toHaveCount(1);
+    // Ошибки полей – не в плашке: в ней только сеть и сервер
+    await expect(page.locator('form > [role=alert]')).toBeEmpty();
 });
 
 // Номер в привычном виде набирается без ошибки (CONVERSION_PLAN К1.2)
@@ -108,10 +138,10 @@ test('валидная заявка уходит одним POST, вместо �
         website: '', // ловушка для ботов пустая
     });
 
-    // Повторно нажать нечего: формы и кнопки нет, ошибки «Заполните…» тоже
+    // Повторно нажать нечего: формы и кнопки нет, ошибок у полей тоже
     await expect(form.submit).toHaveCount(0);
     await expect(form.name).toHaveCount(0);
-    await expect(page.getByText('Заполните, пожалуйста, имя и телефон')).toHaveCount(0);
+    await expect(page.getByText(nameEmptyError)).toHaveCount(0);
 });
 
 // «123» – не номер: заявка не уходит, ошибка подсказывает формат (DESIGN_FIXES_2_PLAN Д6)
@@ -123,7 +153,8 @@ test('телефон короче 10 цифр не отправляется', as
     await form.contact.fill('123');
     await form.submit.click();
 
-    await expect(page.getByText(phoneTooShort)).toBeVisible();
+    await expectFieldError(form.contact, phoneTooShort);
+    await expect(form.contact).toBeFocused();
     await expect(form.contact).toHaveValue('123');
     expect(requests).toHaveLength(0);
 });
@@ -176,4 +207,20 @@ test('ответ 429 показывает понятную ошибку', async 
 
     await expect(page.getByText('Слишком много заявок, попробуйте позже')).toBeVisible();
     await expect(form.name).toHaveValue('Иван');
+    await expectNoFieldError(form.name);
+});
+
+// Нет сети – плашка, а не ошибка у поля; поля не отмечены (DESIGN_FIXES_6_PLAN Д31)
+test('без сети – плашка, введённое сохраняется', async ({ page }) => {
+    await page.route('**/api/sendMessage', route => route.abort('internetdisconnected'));
+    const form = fields(page);
+
+    await form.name.fill('Иван');
+    await form.contact.fill('79990001122');
+    await form.submit.click();
+
+    await expect(page.getByText('Не удалось отправить заявку, проверьте соединение')).toBeVisible();
+    await expect(form.contact).toHaveValue('79990001122');
+    await expectNoFieldError(form.name);
+    await expectNoFieldError(form.contact);
 });

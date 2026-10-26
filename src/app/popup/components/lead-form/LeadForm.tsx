@@ -2,7 +2,7 @@
 
 import ActionButton from "@/components/ui/buttons/button-action/ActionButton";
 import { FC, FormEventHandler, Suspense, useEffect, useRef, useState } from "react";
-import ListInput from "./input/ListInput";
+import ListInput, { FieldErrors } from "./input/ListInput";
 import { IInputKeyValue } from "@/interfaces/input";
 
 import s from './LeadForm.module.scss'
@@ -12,10 +12,13 @@ import { HONEYPOT_FIELD, isNameInput, isPhoneComplete, isPhoneInput } from "@/li
 import { leadSourceFromSearch } from "@/scripts/leadSource";
 import { reachGoal } from "@/scripts/metrika";
 import { GOALS } from "@/constants/analytics";
-import { formButton, formSuccessText, formSuccessTitle, nameFormatError, phoneTooShort } from "@/data/inputsFeedBack";
+import { formButton, formSuccessText, formSuccessTitle, nameEmptyError, nameFormatError, phoneEmptyError, phoneFormatError, phoneTooShort } from "@/data/inputsFeedBack";
 import { ralewayBold } from "@/app/fonts/fonts";
 import { ServiceId } from "@/interfaces/offer";
 import ServiceChoice from "./service-choice/ServiceChoice";
+
+// Порядок полей на экране: фокус уходит на первое неверное
+const inputsOrder: (keyof IInputKeyValue)[] = ['name', 'contact'];
 
 const errorByStatus: Record<number, string> = {
     400: 'Проверьте, пожалуйста, заполненные поля',
@@ -34,7 +37,10 @@ const LeadForm: FC<ILeadForm> = ({ className, serviceLines }) => {
     const [inputValue, setInputValue] = useState<IInputKeyValue>({name: '', contact: ''});
     const [focusInput, setFocusInput] = useState<keyof IInputKeyValue | undefined>(undefined)
     const [textAreaValue, setTextAreaValue] = useState('');
+    // Ошибки полей – под полями (DESIGN_FIXES_6_PLAN Д31); плашка ErrorMessage – только сеть и сервер
+    const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
     const [error, setError] = useState('');
+    const inputRefs = useRef<Partial<Record<keyof IInputKeyValue, HTMLInputElement | null>>>({});
 
     // Имя из отправленной заявки: после успеха вместо формы – плашка (DESIGN_FIXES_2_PLAN Д6)
     const [sentName, setSentName] = useState<string | null>(null);
@@ -51,10 +57,19 @@ const LeadForm: FC<ILeadForm> = ({ className, serviceLines }) => {
         if (isSending) return;
 
         const name = inputValue.name.trim();
-        if (!inputValue.contact.trim() || !name) {
-            return setError('Заполните, пожалуйста, имя и телефон');
+        const contact = inputValue.contact.trim();
+        const errors: FieldErrors = {};
+        if (!name) errors.name = nameEmptyError;
+        if (!contact) errors.contact = phoneEmptyError;
+        else if (!isPhoneComplete(contact)) errors.contact = phoneTooShort;
+
+        const firstInvalid = inputsOrder.find(key => errors[key]);
+        if (firstInvalid) {
+            setFieldErrors(errors);
+            setError('');
+            inputRefs.current[firstInvalid]?.focus();
+            return;
         }
-        if (!isPhoneComplete(inputValue.contact)) return setError(phoneTooShort);
 
         const honeypot = new FormData(e.currentTarget).get(HONEYPOT_FIELD);
         // Услуга, кейс или отрасль из ссылки «Обсудить» (SALES_PLAN 4.8) уходят с заявкой; видна в форме только услуга (Д13)
@@ -85,11 +100,17 @@ const LeadForm: FC<ILeadForm> = ({ className, serviceLines }) => {
         }
     };
 
+    // Недопустимый символ не набирается, под полем – формат. Правка поля снимает его ошибку
     const handleSetInputValue = (value:IInputKeyValue) => {
-        if (focusInput === 'contact' && !isPhoneInput(value.contact)) return setError('Формат: цифры, +, скобки и дефис, не больше 25 символов')
-        if (focusInput === 'name' && !isNameInput(value.name)) return setError(nameFormatError)
+        if (focusInput === 'contact' && !isPhoneInput(value.contact)) return setFieldError('contact', phoneFormatError)
+        if (focusInput === 'name' && !isNameInput(value.name)) return setFieldError('name', nameFormatError)
+        if (focusInput) setFieldError(focusInput, undefined);
         if (error) setError('');
         setInputValue(value)
+    }
+
+    const setFieldError = (key: keyof IInputKeyValue, message: string | undefined) => {
+        setFieldErrors(prev => prev[key] === message ? prev : { ...prev, [key]: message });
     }
 
     const handleSetTextAreaValue = (message: string) => {
@@ -123,7 +144,7 @@ const LeadForm: FC<ILeadForm> = ({ className, serviceLines }) => {
                     <ServiceChoice lines={serviceLines} />
                 </Suspense>
             )}
-            <ListInput handleSetFocusInput={handleSetFocusInput} value={inputValue} handleSetValue={handleSetInputValue} />
+            <ListInput handleSetFocusInput={handleSetFocusInput} value={inputValue} handleSetValue={handleSetInputValue} errors={fieldErrors} inputRefs={inputRefs} />
             <TextAreaInput setValue={handleSetTextAreaValue} value={textAreaValue} />
             {/* Обёртка задаёт жирный Raleway, как у остальных кнопок-действий: ActionButton общий (design-sync) */}
             <div className={`${ralewayBold.className} ${s.submit}`}>

@@ -37,3 +37,9 @@ export const formServiceLabel = 'Вы выбрали:'
 // Ошибка поля «Имя»: набран недопустимый символ (DESIGN_FIXES_3_PLAN Д14: скилл marketing:draft-content,
 // выбор владельца – вариант A). Про длину не пишем: больше FEEDBACK_LIMITS.name поле набрать не даёт
 export const nameFormatError = 'Формат: буквы, пробел, дефис и апостроф'
+export const phoneFormatError = 'Формат: цифры, +, скобки и дефис, не больше 25 символов'
+
+// Ошибки пустых полей – под своим полем, а не общей плашкой (DESIGN_FIXES_6_PLAN Д31: скилл
+// marketing:draft-content, выбор владельца – вариант A)
+export const nameEmptyError = 'Введите имя'
+export const phoneEmptyError = 'Введите телефон'

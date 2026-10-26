@@ -622,7 +622,7 @@ test('после заявки на главной – плашка «что да
 
     await expect(section.getByRole('status')).toContainText(formSuccessText);
     await expect(section.getByRole('button', { name: formButton })).toHaveCount(0);
-    await expect(page.getByText('Заполните, пожалуйста, имя и телефон')).toHaveCount(0);
+    await expect(page.getByRole('alert').filter({ hasText: phoneTooShort })).toHaveCount(0);
 });
 
 // Путь к заявке на телефоне (DESIGN_FIXES_2_PLAN Д7): сцена там короче, цены ближе к началу.
