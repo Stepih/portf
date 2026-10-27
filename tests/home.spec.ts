@@ -762,6 +762,58 @@ test.describe('тач-экран', () => {
     });
 });
 
+// Диск «10 проектов» перед дырой не уходит за верх экрана (DESIGN_FIXES_6_PLAN С2): размер прежний – min(150px, 30% ширины),
+// где с запасом 12px не влезает, центр сдвинут внутрь экрана, знак – вместе с ним. До правки на 375×667 верх диска был
+// на -2px, на 360×640 – на -37px; на 375×812 и 1400 сдвига нет
+for (const { viewport, shifted } of [
+    { viewport: { width: 375, height: 667 }, shifted: true },
+    { viewport: { width: 360, height: 640 }, shifted: true },
+    { viewport: { width: 375, height: 812 }, shifted: false },
+    { viewport: { width: 1400, height: 900 }, shifted: false },
+]) {
+    test(`диск портала целиком в экране, ${viewport.width}×${viewport.height}`, async ({ page }) => {
+        await page.setViewportSize(viewport);
+        await page.goto('/');
+        await page.waitForTimeout(800);
+        // Середина стояния диска, доля пути сцены: начало портала + (DISK_TO + OPEN_AT) / 2 его пути (HeroExpand.tsx)
+        const from = viewport.width <= 700 ? .84 / 1.19 : .94 / 1.29;
+        const at = from + (1 - from) * 2 / 7;
+        await sceneScreen(page).evaluate((el: HTMLElement, k) => {
+            const scene = el.parentElement!;
+            const top = scene.getBoundingClientRect().top + window.scrollY;
+            window.scrollTo({ top: top + k * (scene.offsetHeight - el.offsetHeight), behavior: 'instant' });
+        }, at);
+
+        const radius = Math.min(150, viewport.width * .3);
+        const frame = () => sceneScreen(page).evaluate((el) => {
+            // Пока сглаженный прогресс не дошёл до портала, диска нет
+            const disk = [...el.querySelectorAll<HTMLElement>('div[aria-hidden="true"]')]
+                .find((d) => d.style.background.includes('radial-gradient'));
+            if (!disk) return null;
+            const [, x, y, r] = disk.style.background.match(/circle at ([\d.]+)px ([\d.]+)px, [^,]+ ([\d.]+)px/)!.map(Number);
+            // Знак – круг с числом и подписью «проектов»; кружок над заголовком (его место без transform) – через слой выше
+            const works = [...el.querySelectorAll('b')].find((b) => /проект/.test(b.nextElementSibling?.textContent ?? ''))!.parentElement!;
+            const mark = works.getBoundingClientRect();
+            const slot = works.parentElement!.parentElement!.getBoundingClientRect();
+            const box = el.getBoundingClientRect();
+            return {
+                x, y, r, height: box.height,
+                mark: { y: mark.top + mark.height / 2 - box.top, r: mark.height / 2 },
+                slotY: slot.top + slot.height / 2 - box.top,
+            };
+        });
+        await expect.poll(async () => (await frame())?.r ?? 0).toBeCloseTo(radius, 0);
+        const f = (await frame())!;
+        expect(f.y - f.r).toBeGreaterThanOrEqual(12 - .5);
+        expect(f.y + f.r).toBeLessThanOrEqual(f.height - 12 + .5);
+        // Знак «10 проектов» – одним целым с диском
+        expect(Math.abs(f.mark.y - f.y)).toBeLessThan(1);
+        expect(Math.abs(f.mark.r - f.r)).toBeLessThan(1);
+        if (shifted) expect(f.y - f.slotY).toBeGreaterThan(1);
+        else expect(Math.abs(f.y - f.slotY)).toBeLessThan(1);
+    });
+}
+
 // Заявка из чата – кнопкой в шапке окна, с первого открытия, без вопросов модели (DESIGN_FIXES_2_PLAN Д7)
 test('кнопка «Связаться» в шапке чата открывает заявку до вопросов', async ({ page }) => {
     const asks: unknown[] = [];

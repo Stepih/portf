@@ -233,6 +233,9 @@ const OPEN_AT = (PORTAL_GROW + PORTAL_HOLD) / PORTAL_PATH;
 // Диск до открытия дыры: радиус, px, но не больше доли ширины экрана
 const DISK = 150;
 const DISK_SHARE = .3;
+// Запас от диска до краёв экрана, px. Где диск с ним не влезает (короткий телефон), он вместе со знаком, пока растёт,
+// сдвигается внутрь экрана ровно настолько, насколько нужно; размер не меняется (DESIGN_FIXES_6_PLAN С2, решение владельца)
+const DISK_GAP = 12;
 // Знак «10 работ», выросший с диском, гаснет за эту долю пути портала после открытия дыры
 const MARK_FADE = .1;
 // Кольцо между дырой и краем диска гаснет в этом отрезке пути дыры (доли от открытия до конца),
@@ -293,11 +296,12 @@ const HeroExpand: FC<HeroExpandProps> = ({ chips, worksCount, children }) => {
     const photoDx = useMotionValue(0);
     const photoDy = useMotionValue(0);
     const photoScale = useMotionValue(1);
-    // Портал: центр и радиус кружка в координатах экрана, диск до дыры, радиус до дальнего угла
+    // Портал: центр и радиус кружка в координатах экрана, диск до дыры, сдвиг его центра внутрь экрана, радиус до дальнего угла
     const cx = useMotionValue(0);
     const cy = useMotionValue(0);
     const r0 = useMotionValue(0);
     const diskMax = useMotionValue(DISK);
+    const diskDy = useMotionValue(0);
     const rMax = useMotionValue(0);
 
     // Объявлены до замера: useTransform подписывается на края в своём эффекте,
@@ -340,8 +344,16 @@ const HeroExpand: FC<HeroExpandProps> = ({ chips, worksCount, children }) => {
             cx.set(x);
             cy.set(y);
             r0.set(target.width / 2);
-            diskMax.set(Math.min(DISK, box.width * DISK_SHARE));
-            rMax.set(Math.hypot(Math.max(x, box.width - x), Math.max(y, box.height - y)) + 2);
+            const dm = Math.min(DISK, box.width * DISK_SHARE);
+            diskMax.set(dm);
+            // Центр диска – ближайшая к кружку точка, где диск с запасом влезает в экран по высоте (по ширине влезает всегда:
+            // радиус не больше 30% ширины); экран ниже диска с запасами – по центру
+            const lo = dm + DISK_GAP;
+            const hi = box.height - dm - DISK_GAP;
+            const dy = (lo <= hi ? Math.min(Math.max(y, lo), hi) : box.height / 2) - y;
+            diskDy.set(dy);
+            // Дыра открывается из нового центра
+            rMax.set(Math.hypot(Math.max(x, box.width - x), Math.max(y + dy, box.height - y - dy)) + 2);
 
             // Брызги: где заголовок и чипы относительно кружка
             if (!root.current || !lead.current) return;
@@ -376,7 +388,7 @@ const HeroExpand: FC<HeroExpandProps> = ({ chips, worksCount, children }) => {
         [scene.current, screen.current, card.current, photoBox.current, slot.current, root.current, lead.current]
             .forEach((el) => el && observer.observe(el));
         return () => observer.disconnect();
-    }, [reduceMotion, sceneTop, sceneLen, top, right, bottom, left, photoDx, photoDy, photoScale, cx, cy, r0, diskMax, rMax]);
+    }, [reduceMotion, sceneTop, sceneLen, top, right, bottom, left, photoDx, photoDy, photoScale, cx, cy, r0, diskMax, diskDy, rMax]);
 
     // Тач-экран: экран сцены не ниже наибольшего innerHeight при этой ширине окна (--screen-max-h в стилях).
     // Только растёт – панели браузера сворачиваются и разворачиваются на скролле; при смене ширины (поворот) – заново.
@@ -425,6 +437,9 @@ const HeroExpand: FC<HeroExpandProps> = ({ chips, worksCount, children }) => {
         const u = (v - OPEN_AT) / (1 - OPEN_AT);
         return dm + (rm - dm) * u * u;
     });
+    // Сдвиг центра внутрь экрана идёт вместе с ростом диска, дальше стоит: край диска не заходит за запас ни в одном кадре
+    const diskY = useTransform([q, diskDy], ([v, dy]: number[]) => dy * ease(clamp01(v / DISK_TO)));
+    const diskCy = useTransform([cy, diskY], ([y, d]: number[]) => y + d);
     // Знак «10 работ» растёт вместе с диском до его размера перед дырой: круг, число и подпись – одним целым
     const markScale = useTransform([markScaleIn, q, r0, disk, diskMax], ([a, v, r, d, dm]: number[]) =>
         a * (v > 0 && r > 0 ? Math.min(d, dm) / r : 1));
@@ -433,12 +448,12 @@ const HeroExpand: FC<HeroExpandProps> = ({ chips, worksCount, children }) => {
         const u = (v - OPEN_AT) / (1 - OPEN_AT);
         return d - dm * (1 - u) * (1 - u);
     });
-    const diskBg = useTransform([q, cx, cy, disk], ([v, x, y, d]: number[]) => v <= 0
+    const diskBg = useTransform([q, cx, diskCy, disk], ([v, x, y, d]: number[]) => v <= 0
         ? 'none'
         : `radial-gradient(circle at ${x}px ${y}px, var(--color-text-100) ${d}px, transparent ${d + 1}px)`);
     const ringOpacity = useTransform(q, (v) =>
         1 - clamp01(((v - OPEN_AT) / (1 - OPEN_AT) - RING_FADE_FROM) / (RING_FADE_TO - RING_FADE_FROM)));
-    const holeMask = useTransform([hole, cx, cy], ([h, x, y]: number[]) => h <= 0
+    const holeMask = useTransform([hole, cx, diskCy], ([h, x, y]: number[]) => h <= 0
         ? 'none'
         : `radial-gradient(circle at ${x}px ${y}px, transparent ${h}px, #000 ${h + 1}px)`);
     // Сплошная подложка под фоном раскрытой карточки: кейсы не просвечивают до портала
@@ -578,7 +593,7 @@ const HeroExpand: FC<HeroExpandProps> = ({ chips, worksCount, children }) => {
             {/* Кружок над заголовком: сюда прилетает фото первого экрана и превращается в число работ */}
             {!reduceMotion && (
                 <div ref={slot} className={s.slot} aria-hidden="true">
-                    <motion.div className={s.mark} style={{ opacity: markOpacity, scale: markScale }}>
+                    <motion.div className={s.mark} style={{ opacity: markOpacity, scale: markScale, y: diskY }}>
                         <motion.span className={s.works} style={{ scale: pulseScale }}>
                             <b className={ralewayBold.className}>{worksCount}</b>
                             {/* «проекты» – как в заголовке кейсов и строке доверия (DESIGN_FIXES_6_PLAN Д33, выбор владельца) */}
