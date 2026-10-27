@@ -112,8 +112,10 @@
         transition: vars.$transition;
     }
 
+    // Размер явно: глобальный p – 1.25rem
     .examplesLabel {
         margin: 0 0 6px;
+        font-size: 1rem;
     }
 
     .examplesList {
