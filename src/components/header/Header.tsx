@@ -13,11 +13,15 @@ import s from './Header.module.scss'
 import { myTg } from "@/constants/urls";
 import SelectThemeButton from "./SelectThemeButton";
 import BgFocus from "../bg-page/BgFocus";
+import { usePrefersReducedMotion } from "@/hooks/usePrefersReducedMotion";
 
 const Header:FC = () => {
 
     const [hover, setHover] = useState(false)
     const headerRef = useRef<HTMLElement>(null)
+    // При «Уменьшить движение» панель и «›» меняются сразу, без выезда
+    const reduceMotion = usePrefersReducedMotion()
+    const instant = reduceMotion ? { duration: 0 } : undefined
 
     // Касание вне открытой шапки закрывает её: на тач-экране наведения нет
     useEffect(() => {
@@ -38,7 +42,10 @@ const Header:FC = () => {
             // С клавиатуры шапка выезжает, пока фокус внутри неё
             onFocus={() => setHover(true)}
             onBlur={(e) => { if (!e.currentTarget.contains(e.relatedTarget)) setHover(false) }}
+            // Без initial панель после гидрации уезжала из left: 0 на каждой загрузке – теперь стоит там, где её ставит CSS
+            initial={false}
             animate={{left: !hover ? -100 : 0, willChange: 'unset'}} 
+            transition={instant}
             className={s.header}
             data-goal-place="header">
             
@@ -48,7 +55,9 @@ const Header:FC = () => {
                 aria-label="Открыть панель"
                 aria-expanded={hover}
                 onClick={() => setHover(true)}
+                initial={false}
                 animate={{opacity: !hover ? 1 : 0}}
+                transition={instant}
                 className={s.headerTouch}>
                 <Arrow />
             </motion.button>

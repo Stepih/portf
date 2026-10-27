@@ -968,3 +968,40 @@ test.describe('шапка на планшете с касанием, 1366px', ()
         await expect.poll(left).toBeLessThan(-50);
     });
 });
+
+// При «Уменьшить движение» шапка не выезжает, а пелена не проявляется – сразу конечное положение
+test.describe('шапка при reduced-motion, 1400px', () => {
+    test.use({ viewport: { width: 1400, height: 900 }, reducedMotion: 'reduce' });
+
+    test('панель и пелена без промежуточных кадров', async ({ page }) => {
+        await page.goto('/');
+        const header = page.locator('header');
+        const open = header.getByRole('button', { name: 'Открыть панель' });
+        await expect(open).toHaveAttribute('aria-expanded', 'false');
+
+        // Положение панели и прозрачность пелены (div сразу за шапкой) в каждом кадре
+        await page.evaluate(() => {
+            const w = window as unknown as { frames_: [number, number][]; stop_: boolean };
+            const h = document.querySelector('header')!;
+            const bg = h.nextElementSibling!;
+            w.frames_ = [];
+            const tick = () => {
+                w.frames_.push([h.getBoundingClientRect().x, Number(getComputedStyle(bg).opacity)]);
+                if (!w.stop_) requestAnimationFrame(tick);
+            };
+            requestAnimationFrame(tick);
+        });
+        await open.hover();
+        await expect(open).toHaveAttribute('aria-expanded', 'true');
+        await page.waitForTimeout(600);
+        const frames = await page.evaluate(() => {
+            const w = window as unknown as { frames_: [number, number][]; stop_: boolean };
+            w.stop_ = true;
+            return w.frames_;
+        });
+
+        expect(frames.at(-1)).toEqual([0, 0.7]);
+        expect(frames.filter(([x]) => x > -99 && x < -1)).toEqual([]);
+        expect(frames.filter(([, o]) => o > 0.01 && o < 0.69)).toEqual([]);
+    });
+});

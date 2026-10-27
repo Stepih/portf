@@ -9,7 +9,8 @@
     justify-content: space-between;
     align-items: center;
 
-    left: 0;
+    // Спрятана с первого кадра, ещё до гидрации; выезжает через animate в Header.tsx
+    left: -100px;
     top: 0;
 
     height: 100%;
