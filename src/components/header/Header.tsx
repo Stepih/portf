@@ -14,6 +14,7 @@ import { myTg } from "@/constants/urls";
 import SelectThemeButton from "./SelectThemeButton";
 import BgFocus from "../bg-page/BgFocus";
 import { usePrefersReducedMotion } from "@/hooks/usePrefersReducedMotion";
+import { useMediaQuery } from "@/hooks/useMediaQuery";
 
 const Header:FC = () => {
 
@@ -22,6 +23,9 @@ const Header:FC = () => {
     // При «Уменьшить движение» панель и «›» меняются сразу, без выезда
     const reduceMotion = usePrefersReducedMotion()
     const instant = reduceMotion ? { duration: 0 } : undefined
+    // До 1200px шапка – полоса сверху, выезжать ей некуда: наведение и фокус не включают пелену на всю страницу
+    const wide = useMediaQuery('(min-width: 1201px)')
+    const open = hover && wide
 
     // Касание вне открытой шапки закрывает её: на тач-экране наведения нет
     useEffect(() => {
@@ -44,7 +48,7 @@ const Header:FC = () => {
             onBlur={(e) => { if (!e.currentTarget.contains(e.relatedTarget)) setHover(false) }}
             // Без initial панель после гидрации уезжала из left: 0 на каждой загрузке – теперь стоит там, где её ставит CSS
             initial={false}
-            animate={{left: !hover ? -100 : 0, willChange: 'unset'}} 
+            animate={{left: !open ? -100 : 0, willChange: 'unset'}} 
             transition={instant}
             className={s.header}
             data-goal-place="header">
@@ -53,10 +57,10 @@ const Header:FC = () => {
             <motion.button
                 type="button"
                 aria-label="Открыть панель"
-                aria-expanded={hover}
+                aria-expanded={open}
                 onClick={() => setHover(true)}
                 initial={false}
-                animate={{opacity: !hover ? 1 : 0}}
+                animate={{opacity: !open ? 1 : 0}}
                 transition={instant}
                 className={s.headerTouch}>
                 <Arrow />
@@ -71,9 +75,9 @@ const Header:FC = () => {
                 </div>
             </div>
         </motion.header>
-        <BgFocus status={hover}/>
+        <BgFocus status={open}/>
         <motion.div 
-            animate={{opacity: hover ? .8 : 0, }} 
+            animate={{opacity: open ? .8 : 0, }} 
             className={s.bg}
         >
         </motion.div>

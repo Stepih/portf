@@ -1005,3 +1005,24 @@ test.describe('шапка при reduced-motion, 1400px', () => {
         expect(frames.filter(([, o]) => o > 0.01 && o < 0.69)).toEqual([]);
     });
 });
+
+// До 1200px шапка – полоса сверху: наведение и фокус на ней не затемняют страницу
+test.describe('шапка-полоса без пелены, 1100px', () => {
+    test.use({ viewport: { width: 1100, height: 800 } });
+
+    test('наведение и фокус не включают пелену', async ({ page }) => {
+        await page.goto('/');
+        const header = page.locator('header');
+        const veil = page.locator('header + div');
+        const opacity = () => veil.evaluate((el) => Number(getComputedStyle(el).opacity));
+
+        await header.hover();
+        await page.waitForTimeout(600);
+        expect(await opacity()).toBe(0);
+
+        await header.getByRole('link', { name: 'Telegram' }).focus();
+        await page.waitForTimeout(600);
+        expect(await opacity()).toBe(0);
+        expect((await header.boundingBox())!.x).toBe(0);
+    });
+});
