@@ -19,6 +19,7 @@ import { usePrefersReducedMotion } from "@/hooks/usePrefersReducedMotion";
 import { IIndustryChip } from "@/interfaces/portfolio";
 import { withIndustry } from "@/scripts/portfolioIndustry";
 import { plural } from "@/scripts/portfolioStats";
+import { isTouchDevice } from "@/scripts/typeDevice";
 
 interface HeroExpandProps {
     chips: IIndustryChip[],
@@ -262,6 +263,7 @@ const HeroExpand: FC<HeroExpandProps> = ({ chips, worksCount, children }) => {
     const [portalState, setPortalState] = useState<PortalState>('off');
     // Путь после портала: распорка в треке кейсов (на телефоне её нет – высота 0) и доля пути
     const afterEl = useRef<HTMLDivElement>(null);
+    const nextTrack = useRef<HTMLDivElement>(null);
     const afterProgress = useMotionValue(0);
     const [afterOn, setAfterOn] = useState(false);
     const smoothAfter = useSpring(afterProgress, SMOOTH);
@@ -271,7 +273,13 @@ const HeroExpand: FC<HeroExpandProps> = ({ chips, worksCount, children }) => {
     const [waveGeom, setWaveGeom] = useState<WaveGeom>(noWave);
     const [chipGeoms, setChipGeoms] = useState<ChipGeom[]>([]);
 
-    const { scrollYProgress: rawProgress } = useScroll({ target: scene, offset: ['start start', 'end end'] });
+    // Прогресс – от начала сцены до места, где браузер отпускает липкий экран: путь – высота сцены без высоты экрана.
+    // Не useScroll по сцене ('end end' меряет по окну): экран выше окна, пока панели браузера развёрнуты,
+    // и прогресс не доходил бы до 1, когда экран уже уезжает (DESIGN_FIXES_6_PLAN С1)
+    const sceneTop = useMotionValue(0);
+    const sceneLen = useMotionValue(1);
+    const { scrollY } = useScroll();
+    const rawProgress = useTransform([scrollY, sceneTop, sceneLen], ([y, top, len]: number[]) => clamp01((y - top) / len));
     // Анимация идёт за сглаженным прогрессом; сам скролл страницы не трогаем
     const scrollYProgress = useSpring(rawProgress, SMOOTH);
     const t = useTransform(scrollYProgress, [tm.expandFrom, tm.expandTo], [0, 1], { ease, clamp: true });
@@ -308,6 +316,9 @@ const HeroExpand: FC<HeroExpandProps> = ({ chips, worksCount, children }) => {
         const measure = () => {
             if (!screen.current || !card.current || !photoBox.current || !scene.current) return;
             scene.current.style.setProperty('--page-w', `${document.documentElement.clientWidth}px`);
+            // offsetTop, а не getBoundingClientRect: страница въезжает на 20px (template.tsx), и замер во время въезда сбивал бы путь
+            sceneTop.set(offsetIn(scene.current, document.body).y);
+            sceneLen.set(Math.max(1, scene.current.offsetHeight - screen.current.offsetHeight));
             const box = screen.current.getBoundingClientRect();
             // offsetTop/Left не видят transform, поэтому уехавшие слайды и фото не сбивают замер
             const c = card.current;
@@ -362,10 +373,31 @@ const HeroExpand: FC<HeroExpandProps> = ({ chips, worksCount, children }) => {
         measure();
         document.fonts?.ready.then(measure);
         const observer = new ResizeObserver(measure);
-        [screen.current, card.current, photoBox.current, slot.current, root.current, lead.current]
+        [scene.current, screen.current, card.current, photoBox.current, slot.current, root.current, lead.current]
             .forEach((el) => el && observer.observe(el));
         return () => observer.disconnect();
-    }, [reduceMotion, top, right, bottom, left, photoDx, photoDy, photoScale, cx, cy, r0, diskMax, rMax]);
+    }, [reduceMotion, sceneTop, sceneLen, top, right, bottom, left, photoDx, photoDy, photoScale, cx, cy, r0, diskMax, rMax]);
+
+    // Тач-экран: экран сцены не ниже наибольшего innerHeight при этой ширине окна (--screen-max-h в стилях).
+    // Только растёт – панели браузера сворачиваются и разворачиваются на скролле; при смене ширины (поворот) – заново.
+    // На компьютере lvh и так равна окну, а растущий запас мешал бы при уменьшении окна по высоте
+    useEffect(() => {
+        if (reduceMotion || !isTouchDevice()) return;
+        let width = 0;
+        let max = 0;
+        const update = () => {
+            if (window.innerWidth !== width) {
+                width = window.innerWidth;
+                max = 0;
+            }
+            if (window.innerHeight <= max) return;
+            max = window.innerHeight;
+            [scene.current, nextTrack.current].forEach((el) => el?.style.setProperty('--screen-max-h', `${max}px`));
+        };
+        update();
+        window.addEventListener('resize', update);
+        return () => window.removeEventListener('resize', update);
+    }, [reduceMotion]);
 
     // Доля пути портала
     const q = useTransform(scrollYProgress, (p) => clamp01((p - tm.portalFrom) / (1 - tm.portalFrom)));
@@ -418,13 +450,12 @@ const HeroExpand: FC<HeroExpandProps> = ({ chips, worksCount, children }) => {
     });
 
     // Путь после портала: сколько проехали за концом сцены, в долях распорки
-    const { scrollY } = useScroll();
     const updateAfter = useCallback(() => {
-        if (!scene.current || !afterEl.current) return;
+        if (!afterEl.current) return;
         const extra = afterEl.current.offsetHeight;
-        const passed = -scene.current.getBoundingClientRect().top - (scene.current.offsetHeight - window.innerHeight);
+        const passed = window.scrollY - sceneTop.get() - sceneLen.get();
         afterProgress.set(extra > 0 ? clamp01(passed / extra) : 0);
-    }, [afterProgress]);
+    }, [afterProgress, sceneTop, sceneLen]);
     useMotionValueEvent(scrollY, 'change', updateAfter);
     // Есть ли путь (на телефоне распорки нет) – при загрузке и ресайзе
     useEffect(() => {
@@ -481,11 +512,7 @@ const HeroExpand: FC<HeroExpandProps> = ({ chips, worksCount, children }) => {
     // Клавиатура (DESIGN_FIXES_PLAN, Д3): фокус ведёт сцену. Tab к элементу, который сейчас не виден,
     // прокручивает страницу туда, где сцена его показывает; анимация догоняет за сглаженным прогрессом.
     // Только для фокуса с клавиатуры: клик мышью страницу не двигает
-    const sceneSpan = () => {
-        const el = scene.current;
-        if (!el) return null;
-        return { top: el.getBoundingClientRect().top + window.scrollY, len: el.offsetHeight - window.innerHeight };
-    };
+    const sceneSpan = () => scene.current ? { top: sceneTop.get(), len: sceneLen.get() } : null;
     const byKeyboard = (e: FocusEvent<HTMLElement>) => e.target.matches(':focus-visible');
     // Прогресс сцены вне [from, to] – прокрутить к at
     const holdScene = (from: number, to: number, at: number) => {
@@ -622,8 +649,8 @@ const HeroExpand: FC<HeroExpandProps> = ({ chips, worksCount, children }) => {
                 ref={scene}
                 className={s.scene}
                 style={{
-                    '--scene-h': `${100 + DESKTOP_TIMING.length * PACE * 100}vh`,
-                    '--scene-h-phone': `${100 + PHONE_TIMING.length * PHONE_PACE * 100}vh`,
+                    '--scene-h': `calc(var(--screen-h) + ${DESKTOP_TIMING.length * PACE * 100}vh)`,
+                    '--scene-h-phone': `calc(var(--screen-h) + ${PHONE_TIMING.length * PHONE_PACE * 100}vh)`,
                 } as CSSProperties}
                 aria-labelledby="hero-title"
             >
@@ -666,6 +693,7 @@ const HeroExpand: FC<HeroExpandProps> = ({ chips, worksCount, children }) => {
                 Липкость нативная, поэтому за скроллом блок не дёргается; сам он не масштабируется и не сдвигается.
                 До начала портала он прозрачен: иначе просвечивает под первым экраном */}
             <div
+                ref={nextTrack}
                 className={`${s.nextTrack} ${portalState === 'off' ? s.nextHidden : ''}`}
                 style={{
                     '--exit-desktop': `${PORTAL_PATH * PACE * 100}vh`,

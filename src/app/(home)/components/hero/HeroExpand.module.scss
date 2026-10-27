@@ -1,5 +1,18 @@
 @use '/src/styles/variables.scss' as vars;
 
+// Высота липкого экрана – большая высота окна (lvh, со свёрнутыми панелями браузера), а не svh: с svh снизу
+// оставалась полоса в Яндекс Браузере и под стеклянной панелью Safari 26. Не меньше --screen-max-h –
+// наибольшего innerHeight на тач-экране (ставит компонент): запас на браузеры, где и lvh меньше видимой области.
+// Из неё же – длина сцены и сдвиг кейсов (DESIGN_FIXES_6_PLAN С1)
+.scene,
+.nextTrack {
+    --screen-h: 100vh;
+
+    @supports (height: 100lvh) {
+        --screen-h: max(100lvh, var(--screen-max-h, 0px));
+    }
+}
+
 // Сцена во всю ширину окна: выходит за поля main и контейнера template. Высоту ставит компонент.
 // --page-w – ширина окна без полосы прокрутки, её ставит компонент; 100vw с полосой дал бы горизонтальный скролл.
 // margin-top снимает верхний отступ main, чтобы липкий экран начинался от края окна
@@ -27,8 +40,7 @@
     align-items: center;
     justify-content: center;
 
-    height: 100vh;
-    height: 100svh;
+    height: var(--screen-h);
     padding: 0 20px;
     overflow: hidden;
 }
@@ -348,7 +360,7 @@
 .nextTrack {
     --exit: var(--exit-desktop);
 
-    margin-top: calc(-100vh - var(--exit));
+    margin-top: calc(-1 * var(--screen-h) - var(--exit));
 
     // + --next-top: блок прилипает ниже верха экрана, и без запаса его отпустило бы раньше, чем доиграет колода
     &::after {

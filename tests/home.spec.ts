@@ -700,6 +700,68 @@ test('кадр отраслей стоит дольше: чипы с подпи�
     }
 });
 
+// Экран сцены – на большую высоту окна, а не на svh (DESIGN_FIXES_6_PLAN С1): в Яндекс Браузере и под стеклянной
+// панелью Safari снизу оставалась полоса, на портале в ней были видны кейсы. Панели браузеров Playwright не эмулирует:
+// проверяем, что экран закрывает окно до низа до самого конца пути и отпускается ровно там, где прогресс доходит до 1
+const sceneScreen = (page: Page) => page.locator('section[aria-labelledby="hero-title"] > div').first();
+// Последний пиксель пути сцены: дальше браузер отпускает липкий экран
+const sceneEnd = (page: Page) => sceneScreen(page).evaluate((el: HTMLElement) => {
+    const scene = el.parentElement!;
+    return scene.getBoundingClientRect().top + window.scrollY + scene.offsetHeight - el.offsetHeight;
+});
+const screenBox = (page: Page) => sceneScreen(page).evaluate((el) => {
+    const r = el.getBoundingClientRect();
+    return { top: r.top, bottom: r.bottom, height: r.height, window: window.innerHeight };
+});
+
+for (const viewport of [{ width: 1400, height: 900 }, { width: 375, height: 667 }]) {
+    test(`экран сцены закрывает окно до конца сцены, ${viewport.width}px`, async ({ page }) => {
+        await page.setViewportSize(viewport);
+        await page.goto('/');
+        // Страница въезжает на 20px за 0,75 с (template.tsx): до конца въезда экран не у верха
+        await page.waitForTimeout(800);
+        const end = await sceneEnd(page);
+        for (const y of [end * .3, end * .7, end - 1]) {
+            await page.evaluate((v) => window.scrollTo({ top: v, behavior: 'instant' }), y);
+            const box = await screenBox(page);
+            expect(Math.abs(box.top)).toBeLessThan(1);
+            expect(box.bottom).toBeGreaterThanOrEqual(box.window - 1);
+        }
+        // Конец пути – там, где экран отпускается: дыра на весь экран, клики проходят к кейсам
+        await page.evaluate((v) => window.scrollTo({ top: v, behavior: 'instant' }), end);
+        await expect.poll(() => sceneScreen(page).evaluate((el) => getComputedStyle(el).pointerEvents)).toBe('none');
+    });
+}
+
+test.describe('тач-экран', () => {
+    test.use({ viewport: { width: 375, height: 667 }, hasTouch: true });
+
+    // Запас на браузеры, где и lvh меньше видимой области: экран не ниже наибольшего innerHeight при этой ширине.
+    // Панели свернулись – окно выросло, развернулись – экран не сжимается; поворот (другая ширина) – заново
+    test('экран сцены не ниже наибольшей высоты окна при этой ширине', async ({ page }) => {
+        await page.goto('/');
+        await page.waitForTimeout(800);
+        const height = async () => (await screenBox(page)).height;
+        expect(await height()).toBe(667);
+
+        await page.setViewportSize({ width: 375, height: 760 });
+        await expect.poll(height).toBe(760);
+        await page.setViewportSize({ width: 375, height: 667 });
+        await page.waitForTimeout(200);
+        expect(await height()).toBe(760);
+
+        // Путь сцены прежний, экран отпускается в его конце и до этого закрывает окно
+        const end = await sceneEnd(page);
+        await page.evaluate((v) => window.scrollTo({ top: v, behavior: 'instant' }), end - 1);
+        const box = await screenBox(page);
+        expect(Math.abs(box.top)).toBeLessThan(1);
+        expect(box.bottom).toBeGreaterThanOrEqual(box.window);
+
+        await page.setViewportSize({ width: 667, height: 375 });
+        await expect.poll(height).toBe(375);
+    });
+});
+
 // Заявка из чата – кнопкой в шапке окна, с первого открытия, без вопросов модели (DESIGN_FIXES_2_PLAN Д7)
 test('кнопка «Связаться» в шапке чата открывает заявку до вопросов', async ({ page }) => {
     const asks: unknown[] = [];
