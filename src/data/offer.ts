@@ -34,7 +34,11 @@ export const heroPriceNote = 'сначала макет, потом оплата
 // говорит клиенту из другой сферы, что его тоже возьмут
 export const industriesTitle = 'Каким может быть сайт для вашего бизнеса'
 export const industriesDescription = 'Это примеры из разных сфер, а не полный список'
-export const industriesOther = 'Другая сфера? Сайт учтёт специфику вашего бизнеса.'
+// Вопрос строки набран жирным, поэтому строка разбита на две части (DESIGN_FIXES_7_PLAN Д35, выбор владельца)
+export const industriesOtherQuestion = 'Другая сфера?'
+export const industriesOther = 'Сайт учтёт специфику вашего бизнеса.'
+// Подпись числа на чипе отрасли: «Бьюти · 1 проект» (Д35, скилл marketing:draft-content, выбор владельца – вариант A)
+export const industryChipCount = (count: number): string => `${count} ${plural(count, ['проект', 'проекта', 'проектов'])}`
 
 // Финальный блок главной с формой (3.9). Тексты – скилл marketing:draft-content, тон теплее блоков выше,
 // выбор владельца – вариант A. «Бесплатный созвон» в подписи не повторяется: он есть в строке под кнопкой

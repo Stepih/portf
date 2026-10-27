@@ -1,7 +1,7 @@
 import { expect, Locator, Page, test } from '@playwright/test';
 import { ServiceId } from '../src/interfaces/offer';
 import { hiddenPages } from '../src/constants/urls';
-import { contactTitle, faqContactLink, faqTitle, formButton, heroPrice, heroTitleSlide, moreLinks, moreTitle, offerButtonsNote, offerFaq, offerReasons, offerSteps, offerTgButton, offerTitle, offerTrustLine, services, servicesTitle, stepsContactLink } from '../src/data/offer';
+import { contactTitle, faqContactLink, industriesOtherQuestion, industryChipCount, faqTitle, formButton, heroPrice, heroTitleSlide, moreLinks, moreTitle, offerButtonsNote, offerFaq, offerReasons, offerSteps, offerTgButton, offerTitle, offerTrustLine, services, servicesTitle, stepsContactLink } from '../src/data/offer';
 import { contactIncomplete, formSuccessText, formSuccessTitle, inputsListFeedback } from '../src/data/inputsFeedBack';
 import { chatButtonText, chatButtonTitle, chatFabLabel, chatLeadOpen, chatLeadSuccess } from '../src/data/chat';
 import { footerName, footerSince, footerTg } from '../src/data/footer';
@@ -252,6 +252,83 @@ test('«Другая сфера» под кейсами ведёт к форме
     await other.click();
     await expect(page).toHaveURL(/\/#contact$/);
     await expect(page.getByRole('heading', { name: contactTitle })).toBeFocused();
+});
+
+// Строка «Другая сфера?» и подписи чисел на чипах (DESIGN_FIXES_7_PLAN Д35): вопрос жирным, строка цветом текста,
+// а не вторичным; число на чипе – «· 2 проекта», читалка слышит «Отрасль, 2 проекта». Строка видна целиком,
+// и ссылка в ней – верхний элемент под курсором: клик доходит до неё
+const expectOtherLine = async (box: Locator) => {
+    const line = box.locator('p', { hasText: industriesOtherQuestion });
+    const link = line.getByRole('link', { name: formButton });
+    await expect.poll(() => line.evaluate((el) => {
+        let op = 1;
+        for (let n: Element | null = el; n; n = n.parentElement) op *= parseFloat(getComputedStyle(n).opacity);
+        return op;
+    })).toBeGreaterThan(.98);
+    const style = await line.evaluate((el) => {
+        const b = el.querySelector('b')!;
+        const a = el.querySelector('a')!;
+        return { text: b.textContent, weight: parseInt(getComputedStyle(b).fontWeight), color: getComputedStyle(el).color, link: getComputedStyle(a).color };
+    });
+    expect(style.text).toBe(industriesOtherQuestion);
+    expect(style.weight).toBeGreaterThanOrEqual(700);
+    expect(style.color).toBe(style.link);
+    await expect(link).toBeInViewport({ ratio: 1 });
+    expect(await link.evaluate((el) => {
+        const r = el.getBoundingClientRect();
+        return el.contains(document.elementFromPoint(r.x + r.width / 2, r.y + r.height / 2));
+    })).toBe(true);
+
+    const chip = box.getByRole('listitem').getByRole('link').first();
+    const name = await chip.getAttribute('aria-label');
+    expect(name).toMatch(/, \d+ проект(а|ов)?$/);
+    const count = Number(name!.match(/(\d+) проект/)![1]);
+    // Отступы в чипе – gap, а не пробелы: сверяем подписи по отдельности
+    expect(await chip.locator('span').allTextContents()).toEqual(['·', industryChipCount(count)]);
+    return link;
+};
+
+const industriesRegion = (page: Page) => page.getByRole('region', { name: 'Каким может быть сайт для вашего бизнеса' });
+
+for (const viewport of [{ width: 1400, height: 900 }, { width: 375, height: 667 }]) {
+    test(`«Другая сфера?» видна и кликабельна в кадре отраслей, ${viewport.width}px`, async ({ page }) => {
+        await page.setViewportSize(viewport);
+        await page.goto('/');
+        await page.waitForTimeout(800);
+        // До гидрации клик – обычный переход по якорю: ждём обработчик React
+        const region = industriesRegion(page);
+        await expect.poll(() => region.getByRole('link', { name: formButton }).evaluate((el) => Object.keys(el).some((key) => key.startsWith('__reactProps')))).toBe(true);
+        // Устойчивый кадр отраслей – середина пути сцены, как в тесте «скролл назад»
+        const path = await scenePath(page);
+        await scrollInstant(page, path.top + path.len * .6);
+        const link = await expectOtherLine(region);
+        await link.click();
+        await expect(page).toHaveURL(/\/#contact$/);
+        await expect(page.getByRole('heading', { name: contactTitle })).toBeFocused();
+    });
+}
+
+test('«Другая сфера?» под «Все проекты»: вопрос жирным, числа подписаны, 375px', async ({ page }) => {
+    await page.setViewportSize({ width: 375, height: 812 });
+    await page.goto('/');
+    const row = casesIndustries(page);
+    await row.scrollIntoViewIfNeeded();
+    await expectOtherLine(row);
+});
+
+test.describe('«Другая сфера?» в статичном первом экране, уменьшить движение', () => {
+    test.use({ reducedMotion: 'reduce' });
+    for (const viewport of [{ width: 1400, height: 900 }, { width: 375, height: 812 }]) {
+        test(`${viewport.width}px`, async ({ page }) => {
+            await page.setViewportSize(viewport);
+            await page.goto('/', { waitUntil: 'networkidle' });
+            const region = industriesRegion(page);
+            await region.getByRole('link', { name: formButton }).scrollIntoViewIfNeeded();
+            const link = await expectOtherLine(region);
+            await link.click();
+            await expect(page).toHaveURL(/\/#contact$/);
+        });
+    }
 });
 
 // Скрытая строка: не видна, ни одна её ссылка не берёт фокус

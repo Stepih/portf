@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { heroSlides, heroTitleSlide, offerFaq, offerTitle, offerTrustLine, services } from "./offer";
+import { heroSlides, heroTitleSlide, industryChipCount, offerFaq, offerTitle, offerTrustLine, services } from "./offer";
 import { portfolioWorks } from "./portfolio";
 
 describe("offer", () => {
@@ -45,5 +45,9 @@ describe("offer", () => {
         for (const item of offerFaq) expect(item.answer).not.toMatch(/₽/);
         const questions = offerFaq.map((f) => f.question);
         expect(new Set(questions).size).toBe(questions.length);
+    });
+
+    it("подпись числа на чипе отрасли склоняется по числу", () => {
+        expect([1, 2, 5].map(industryChipCount)).toEqual(['1 проект', '2 проекта', '5 проектов']);
     });
 });

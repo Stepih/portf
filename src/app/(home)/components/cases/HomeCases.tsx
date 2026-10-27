@@ -5,7 +5,7 @@ import s from './HomeCases.module.scss'
 import { ralewayBold } from "@/app/fonts/fonts";
 import { portfolioPageURL } from "@/constants/urls";
 import { homeCaseIds, homeCasesAllLabel, homeCasesTitle } from "@/data/homeCases";
-import { formButton, industriesOther } from "@/data/offer";
+import { formButton, industriesOther, industriesOtherQuestion, industryChipCount } from "@/data/offer";
 import { IIndustryChip } from "@/interfaces/portfolio";
 import { portfolioIndustries, portfolioWorks } from "@/data/portfolio";
 import { portfolioCases } from "@/data/portfolioCases";
@@ -49,14 +49,17 @@ const HomeCases: FC<IProps> = ({ chips = [] }) => {
                                     className={s.chip}
                                     data-goal="industry_click"
                                     data-goal-id={chip.id}
+                                    aria-label={`${chip.label}, ${industryChipCount(chip.count)}`}
                                 >
                                     {chip.label}
-                                    <span className={s.count}>{chip.count}</span>
+                                    <span className={s.count} aria-hidden="true">·</span>
+                                    <span className={s.count}>{industryChipCount(chip.count)}</span>
                                 </Link>
                             </li>
                         ))}
                     </ul>
                     <p className={s.other}>
+                        <b className={ralewayBold.className}>{industriesOtherQuestion}</b>{' '}
                         {industriesOther}{' '}
                         <ContactLink className={s.otherLink} data-goal="cta_click" data-goal-id="industries_other">
                             {formButton}

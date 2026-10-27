@@ -13,7 +13,7 @@ import { SceneAfterContext } from "./sceneAfter";
 import { ralewayBold, ralewayRegular } from "@/app/fonts/fonts";
 import { portfolioPageURL } from "@/constants/urls";
 import ContactLink from "../contact-link/ContactLink";
-import { formButton, heroInterval, heroPrice, heroPriceNote, heroSlides, heroTitleSlide, industriesDescription, industriesOther, industriesTitle } from "@/data/offer";
+import { formButton, heroInterval, heroPrice, heroPriceNote, heroSlides, heroTitleSlide, industriesDescription, industriesOther, industriesOtherQuestion, industriesTitle, industryChipCount } from "@/data/offer";
 import { useMediaQuery } from "@/hooks/useMediaQuery";
 import { usePrefersReducedMotion } from "@/hooks/usePrefersReducedMotion";
 import { IIndustryChip } from "@/interfaces/portfolio";
@@ -581,9 +581,12 @@ const HeroExpand: FC<HeroExpandProps> = ({ chips, worksCount, children }) => {
             className={s.chip}
             data-goal="industry_click"
             data-goal-id={chip.id}
+            aria-label={`${chip.label}, ${industryChipCount(chip.count)}`}
         >
+            {/* Число подписано: «· 2 проекта» (DESIGN_FIXES_7_PLAN Д35) */}
             {chip.label}
-            <span className={s.count}>{chip.count}</span>
+            <span className={s.count} aria-hidden="true">·</span>
+            <span className={s.count}>{industryChipCount(chip.count)}</span>
         </Link>
     );
 
@@ -649,6 +652,7 @@ const HeroExpand: FC<HeroExpandProps> = ({ chips, worksCount, children }) => {
 
                 {/* Чипы – только примеры: клиент из другой сферы идёт сразу в форму */}
                 <motion.p className={s.other} style={reduceMotion ? undefined : { opacity: otherOpacity, y: otherY }}>
+                    <b className={ralewayBold.className}>{industriesOtherQuestion}</b>{' '}
                     {industriesOther}{' '}
                     <ContactLink
                         className={s.otherLink}
