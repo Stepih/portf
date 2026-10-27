@@ -11,6 +11,7 @@ describe("buildSystemPrompt", () => {
             expect(prompt).toContain(plainText(s.title));
             expect(prompt).toContain(plainText(s.price));
             expect(prompt).toContain(plainText(s.term));
+            for (const e of s.examples ?? []) expect(prompt).toContain(plainText(e.text));
         }
     });
 

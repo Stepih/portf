@@ -5,14 +5,14 @@ import s from './Services.module.scss'
 import { ralewayBold, ralewayRegular } from "@/app/fonts/fonts";
 import { portfolioPageURL } from "@/constants/urls";
 import ChatButton from "../chat/ChatButton";
-import { services, servicesButton, servicesCasesLabel, servicesCommon, servicesDescription, servicesTitle } from "@/data/offer";
+import { services, servicesButton, servicesCasesLabel, servicesCommon, servicesDescription, servicesExamplesLabel, servicesTitle } from "@/data/offer";
 import { portfolioWorks } from "@/data/portfolio";
 import { portfolioCases } from "@/data/portfolioCases";
 import { serviceCases } from "@/scripts/services";
 import ContactLink from "../contact-link/ContactLink";
 
 // «Услуги и цены» (SALES_PLAN 3.4): три вида сайтов в ряд, ИИ – широкой карточкой под ними.
-// Карточки из offer.ts, кейс-пример и кнопка в форму главной с услугой (Д13); в карточке ИИ – кнопка демо-чата (К3.2).
+// Карточки из offer.ts, кейс-пример и кнопка в форму главной с услугой (Д13); в карточке ИИ – примеры задач и кнопка демо-чата (К3.2).
 // Серверный: тексты кейсов в клиентский бандл не попадают
 const Services: FC = () => {
     return (
@@ -28,6 +28,18 @@ const Services: FC = () => {
                         <li key={service.id} className={`${s.card} ${service.wide ? s.wide : ''}`}>
                             <h3 className={`${ralewayBold.className} ${s.name}`}>{service.title}</h3>
                             <p className={s.summary}>{service.summary}</p>
+                            {service.examples && (
+                                <div className={s.examples}>
+                                    <p className={s.examplesLabel}>{servicesExamplesLabel}</p>
+                                    <ul className={s.examplesList}>
+                                        {service.examples.map((example) => (
+                                            <li key={example.title}>
+                                                <span className={`${ralewayBold.className} ${s.exampleTitle}`}>{example.title}</span>{' '}– {example.text}
+                                            </li>
+                                        ))}
+                                    </ul>
+                                </div>
+                            )}
                             {service.demoChat && <ChatButton className={s.demo} />}
 
                             <div className={s.bottom}>

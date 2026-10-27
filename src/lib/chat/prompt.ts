@@ -12,9 +12,12 @@ export const plainText = (text: string) => text.replace(/⁠/g, '').replace(/ /
 
 const list = (items: string[]) => items.map((item) => `- ${item}`).join('\n');
 
-const servicesSection = () => list(services.map((s) =>
-    [`${s.title}: ${s.summary}. Цена ${s.price}, срок ${s.term}`, s.note].filter(Boolean).join('. ')
-));
+const servicesSection = () => list(services.map((s) => [
+    `${s.title}: ${s.summary}`,
+    s.examples && `Например: ${s.examples.map((e) => `${e.title.toLowerCase()} – ${e.text}`).join('; ')}`,
+    `Цена ${s.price}, срок ${s.term}`,
+    s.note
+].filter(Boolean).join('. ')));
 
 // Адресов страниц нет: ссылки модели запрещены. Есть кейс – модель может сказать, что он есть в «Портфолио»
 const worksSection = () => list(portfolioWorks.map((w) => {

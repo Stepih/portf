@@ -20,6 +20,12 @@ export interface IOfferButton {
     href: string
 }
 
+// Пример задачи в карточке услуги: «Контроль качества – оценивает звонки…»
+export interface IServiceExample {
+    title: string,
+    text: string
+}
+
 export interface IService {
     id: ServiceId,
     title: string,
@@ -30,6 +36,8 @@ export interface IService {
     term: string,
     // Уточнение к цене или сроку
     note?: string,
+    // Список «Например:» под описанием; есть только у широкой карточки
+    examples?: IServiceExample[],
     // Кейсы-примеры из portfolioWorks; пусто — примера нет
     caseIds: string[],
     // Карточка на всю ширину под остальными: ИИ – отдельное направление, не четвёртый вид сайта

@@ -80,28 +80,58 @@
     .wide {
         grid-column: 1 / -1;
         grid-row: auto;
-        // Лишняя высота правой колонки уходит во 2-ю строку, описание остаётся под названием
-        grid-template-rows: auto 1fr auto;
+        // Лишняя высота правой колонки уходит в строку примеров, описание и примеры остаются под названием
+        grid-template-rows: auto auto 1fr auto;
         grid-template-columns: minmax(0, 2fr) minmax(0, 1fr);
         column-gap: 40px;
 
         .name { grid-area: 1 / 1; }
         .summary { grid-area: 2 / 1; }
-        // Кнопка демо-чата – под описанием, на уровне кнопки «Узнать цену»
+        .examples { grid-area: 3 / 1; }
+        // Кнопка демо-чата – под примерами, на уровне кнопки «Узнать цену»
         .demo {
-            grid-area: 3 / 1;
+            grid-area: 4 / 1;
             align-self: end;
         }
         .bottom {
-            grid-area: 1 / 2 / 3 / 3;
+            grid-area: 1 / 2 / 4 / 3;
             padding: 0 0 0 40px;
             border-top: none;
             border-left: 1px solid rgba(128, 128, 128, 0.3);
         }
         .button {
-            grid-area: 3 / 2;
+            grid-area: 4 / 2;
             margin-left: 40px;
         }
+    }
+
+    // Примеры задач ИИ: название задачи – основным цветом, что делает агент – вторичным
+    .examples {
+        font-size: 1rem;
+        color: var(--color-text-muted);
+        transition: vars.$transition;
+    }
+
+    .examplesLabel {
+        margin: 0 0 6px;
+    }
+
+    .examplesList {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+
+        margin: 0;
+        padding: 0 0 0 1.1em;
+
+        li::marker {
+            color: var(--color-text-50);
+        }
+    }
+
+    .exampleTitle {
+        color: var(--color-text-100);
+        transition: vars.$transition;
     }
 
     .bottom {
@@ -188,10 +218,10 @@
         .wide {
             grid-template-columns: minmax(0, 1fr);
             grid-template-rows: subgrid;
-            // Пять строк: название, описание, демо-чат, цена, кнопка
-            grid-row: span 5;
+            // Шесть строк: название, описание, примеры, демо-чат, цена, кнопка
+            grid-row: span 6;
 
-            .name, .summary, .demo, .bottom, .button { grid-area: auto; }
+            .name, .summary, .examples, .demo, .bottom, .button { grid-area: auto; }
             .bottom {
                 padding: 14px 0 0;
                 border-top: 1px solid rgba(128, 128, 128, 0.3);
