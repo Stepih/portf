@@ -4,7 +4,7 @@
 
 Стек: Next.js 15 (App Router), React 19, TypeScript, SCSS Modules, framer-motion.
 
-Подробности об устройстве проекта, соглашения и ловушки описаны в [CLAUDE.md](CLAUDE.md). Известные проблемы перечислены в [AUDIT.md](AUDIT.md), план их исправления — в [REFACTOR_PLAN.md](REFACTOR_PLAN.md).
+Подробности об устройстве проекта, соглашения и ловушки описаны в [CLAUDE.md](CLAUDE.md). Известные проблемы перечислены в [docs/plans/done/AUDIT.md](docs/plans/done/AUDIT.md), план их исправления — в [docs/plans/done/REFACTOR_PLAN.md](docs/plans/done/REFACTOR_PLAN.md). Текущий план правок – [DESIGN_FIXES_7_PLAN.md](DESIGN_FIXES_7_PLAN.md).
 
 ## Запуск
 

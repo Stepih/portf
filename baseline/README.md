@@ -1,4 +1,4 @@
-# Baseline (шаг 0.2 REFACTOR_PLAN.md)
+# Baseline (шаг 0.2 docs/plans/done/REFACTOR_PLAN.md)
 
 Снято 2026-10-07 на коммите `9a97234`. Node v22.23.2, Next.js 15.1.6, Windows.
 
