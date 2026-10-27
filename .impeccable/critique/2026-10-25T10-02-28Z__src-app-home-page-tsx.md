@@ -10,6 +10,7 @@ target_fingerprint: "sha256:230c8e1258b841099318342e4313d8e58a1cfe31e25044002408
 target_path: "W:\\programming\\projects\\react\\portfolio\\src\\app\\(home)\\page.tsx"
 timestamp: 2026-10-25T10-02-28Z
 slug: src-app-home-page-tsx
+closed: true
 ---
 Method: dual-agent (A: design review · B: detector + browser)
 
