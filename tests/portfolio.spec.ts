@@ -1,4 +1,5 @@
 import { expect, test } from '@playwright/test';
+import { collectErrors } from './errors';
 import { caseCtaShort, formButton, offerTgButton } from '../src/data/offer';
 
 // Шапка каталога: оффер и две кнопки; в подборке ?for= заголовок с отраслью, отрасль уходит в форму (SALES_PLAN 5.1)
@@ -67,3 +68,29 @@ test('название кейса при наведении и фокусе по
         expect((await style()).color).not.toBe('rgb(119, 199, 234)');
     }
 });
+
+// «Уменьшить движение» узнаём после монтирования, как на главной (DESIGN_FIXES_PLAN Д3): гидрация без ошибок,
+// при reduce карточки без трансформации и блоки кейса видны сразу. Карточки ниже экрана «откинуты» и шире колонки,
+// но страница на телефоне вбок не едет (было 33px)
+for (const reducedMotion of ['no-preference', 'reduce'] as const) {
+    test(`портфолио на телефоне без прокрутки вбок, reduced-motion: ${reducedMotion}`, async ({ page }) => {
+        await page.emulateMedia({ reducedMotion });
+        await page.setViewportSize({ width: 375, height: 740 });
+        const errors = collectErrors(page);
+
+        await page.goto('/portfolio');
+        const cards = page.locator('#all article');
+        await expect(cards.first()).toBeVisible();
+        const transformed = () => cards.evaluateAll((els) => els.filter((el) => getComputedStyle(el).transform !== 'none').length);
+        if (reducedMotion === 'reduce') await expect.poll(transformed).toBe(0);
+        else await expect.poll(transformed).toBeGreaterThan(0);
+        expect(await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth)).toBe(0);
+
+        await page.goto('/portfolio/icc');
+        const hidden = () => page.locator('main').evaluate((main) => [...main.querySelectorAll<HTMLElement>('*')].filter((el) => el.style.opacity === '0').length);
+        if (reducedMotion === 'reduce') await expect.poll(hidden).toBe(0);
+        else await expect.poll(hidden).toBeGreaterThan(0);
+
+        expect(errors).toEqual([]);
+    });
+}
