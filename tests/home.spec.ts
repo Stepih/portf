@@ -498,17 +498,20 @@ test('почему я на главной', async ({ page }) => {
     expect(guarantee).toBe(1);
 });
 
-// Планшет (DESIGN_FIXES_2_PLAN Д10): кейсы в ряду одной высоты, три отличия в одном ряду, а не 2 + 1,
-// форма заявки по левому краю, как текст над ней
+// Планшет (DESIGN_FIXES_2_PLAN Д10): три отличия в одном ряду, а не 2 + 1, форма заявки по левому краю, как текст над ней.
+// Кейсы – в столбик, как услуги (DESIGN_FIXES_6_PLAN Д34): в три колонки теги отраслей переносились на две строки
 test('раскладка главной на планшете, 820px', async ({ page }) => {
     await page.setViewportSize({ width: 820, height: 900 });
     await page.goto('/');
 
-    // offsetHeight/offsetTop не видят transform колоды
+    // offsetLeft/offsetTop не видят transform колоды; меряется ячейка сетки – у карточки offsetParent она сама
     const cards = page.getByRole('region', { name: 'Лучшие проекты' }).locator('article');
     await expect(cards).toHaveCount(3);
-    const heights = await cards.evaluateAll((els) => els.map((el) => (el as HTMLElement).offsetHeight));
-    expect(new Set(heights).size).toBe(1);
+    await expect.poll(() => cards.evaluateAll((els) => {
+        const lefts = els.map((el) => el.parentElement?.offsetLeft);
+        const tops = els.map((el) => el.parentElement?.offsetTop);
+        return new Set(lefts).size === 1 && new Set(tops).size === 3;
+    })).toBe(true);
 
     const reasons = page.getByRole('region', { name: 'Почему я' }).getByRole('listitem');
     const tops = await reasons.evaluateAll((els) => els.map((el) => (el as HTMLElement).offsetTop));
@@ -526,6 +529,29 @@ test('раскладка главной на планшете, 820px', async ({ 
     expect(list.width).toBeLessThan(section.width);
     expect(Math.abs((list.x - section.x) - (section.x + section.width - list.x - list.width))).toBeLessThan(1);
 });
+
+// Теги отраслей в карточках кейсов – в одну строку на любой ширине; в три колонки карточки одной высоты (DESIGN_FIXES_6_PLAN Д34)
+for (const width of [1400, 1100, 900, 899, 820, 701, 375]) {
+    test(`кейсы: теги в одну строку, ${width}px`, async ({ page }) => {
+        await page.setViewportSize({ width, height: 900 });
+        await page.goto('/');
+
+        // poll: карточки монтируются заново, когда сцена включает раздачу колоды (key в HomeCasesGrid)
+        const region = page.getByRole('region', { name: 'Лучшие проекты' });
+        await expect.poll(() => region.locator('article li').evaluateAll((els) => {
+            const heights = els.map((el) => (el as HTMLElement).offsetHeight);
+            return els.length > 0 && Math.max(...heights) - Math.min(...heights) < 2;
+        })).toBe(true);
+
+        if (width >= 900) {
+            await expect.poll(() => region.locator('article').evaluateAll((els) => {
+                const tops = els.map((el) => el.parentElement?.offsetTop);
+                const heights = els.map((el) => (el as HTMLElement).offsetHeight);
+                return els.length === 3 && new Set(tops).size === 1 && new Set(heights).size === 1;
+            })).toBe(true);
+        }
+    });
+}
 
 // Отправка формы – жирным, как остальные кнопки-действия, и во всю ширину формы (DESIGN_FIXES_3_PLAN Д17)
 for (const path of ['/', '/popup']) {

@@ -240,7 +240,8 @@
     }
 }
 
-// Без висячих слов в последней строке абзаца (DESIGN_FIXES_5_PLAN Д29)
-.services p {
+// Без висячих слов в последней строке абзаца (DESIGN_FIXES_5_PLAN Д29) и пункта примеров ИИ (DESIGN_FIXES_6_PLAN Д34)
+.services p,
+.services .examplesList li {
     text-wrap: pretty;
 }

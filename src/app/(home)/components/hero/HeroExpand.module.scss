@@ -275,6 +275,8 @@
         margin: 0;
 
         font-size: 1.15rem;
+        // По центру под заголовком – строки поровну, без висячего «список» на телефоне (DESIGN_FIXES_6_PLAN Д34)
+        text-wrap: balance;
         color: var(--color-text-muted);
         transition: vars.$transition;
     }
@@ -387,16 +389,18 @@
 }
 
 // Путь после портала: блок ещё прилипает, скролл ведёт его анимацию.
-// На телефоне (≤700px, кейсы в столбик) блок длиннее экрана – пути нет, блок анимируется по своему скроллу
+// Кейсы в столбик (≤899px, HomeCases.module.scss) – блок длиннее экрана, пути нет, карточки анимируются по своему скроллу
 .after {
     pointer-events: none;
 }
 
-@media screen and (max-width: 700px) {
+@media screen and (max-width: 899px) {
     .after {
         display: none;
     }
+}
 
+@media screen and (max-width: 700px) {
     // Ширина – та же, что PHONE_QUERY в HeroExpand.tsx
     .scene {
         height: calc(var(--scene-h-phone) + var(--hold));

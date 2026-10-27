@@ -1,4 +1,4 @@
-import { FC } from "react";
+import { FC, Fragment } from "react";
 
 import TgIcon from '@/assets/_img/icons/tg-white.svg'
 
@@ -23,7 +23,15 @@ const Contact: FC = () => {
                     <TgIcon className={s.icon} aria-hidden="true" />
                     {offerTgButton.title}
                 </a>
-                <p className={s.note}>{offerButtonsNote}</p>
+                {/* Части строки не рвутся внутри: перенос – только после «·», точка остаётся в конце строки (DESIGN_FIXES_6_PLAN Д34) */}
+                <p className={s.note}>
+                    {offerButtonsNote.split(' · ').map((part, i) => (
+                        <Fragment key={part}>
+                            {i > 0 && ' · '}
+                            <span className={s.part}>{part}</span>
+                        </Fragment>
+                    ))}
+                </p>
                 <p className={s.trust}>{offerTrustLine()}</p>
             </div>
 

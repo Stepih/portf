@@ -129,7 +129,8 @@ $icon: 14px;
     }
 }
 
-// Без висячих слов в последней строке абзаца (DESIGN_FIXES_5_PLAN Д29)
-.faq p {
+// Без висячих слов в последней строке абзаца (DESIGN_FIXES_5_PLAN Д29) и вопроса – «удалённо?», «ИП?» на телефоне (DESIGN_FIXES_6_PLAN Д34)
+.faq p,
+.faq .question {
     text-wrap: pretty;
 }

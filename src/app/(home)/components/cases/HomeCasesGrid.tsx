@@ -46,9 +46,9 @@ const HomeCasesGrid: FC<IProps> = ({ items }) => {
     const cards = useRef<(HTMLDivElement | null)[]>([]);
     const grid = useRef<HTMLDivElement>(null);
     const [boxes, setBoxes] = useState<IBox[]>([]);
-    // Сетка в столбик (≤700px, как на главной) и мобильный вид карточки
-    const column = useMediaQuery('(max-width: 700px)');
+    // Сетка в столбик и мобильный вид карточки – до 899px (HomeCases.module.scss, распорка .after в HeroExpand.module.scss)
     const mobile = useMediaQuery('(max-width: 899px)');
+    const column = mobile;
     // Раздачу ведёт сцена – только на компьютере; на телефоне у сцены нет пути после портала
     const fromScene = shared !== null && !column;
 
