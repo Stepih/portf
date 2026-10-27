@@ -2,12 +2,12 @@
 
 import { FC, useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import Image from "next/image";
-import { useReducedMotion } from "framer-motion";
 
 import s from './KeyScreens.module.scss'
 import { ICaseScreen } from "@/interfaces/portfolio";
 import { allerta, ralewayBold } from "@/app/fonts/fonts";
 import { useMediaQuery } from "@/hooks/useMediaQuery";
+import { usePrefersReducedMotion } from "@/hooks/usePrefersReducedMotion";
 import { cameraOffset } from "./caseMath";
 import Rise from "./Rise";
 
@@ -42,7 +42,7 @@ const pad = (v: number) => String(v).padStart(2, '0');
 // «Ключевые экраны»: слева шаги с пунктами, справа прилипшее окно. При скролле окно показывает экран текущего шага,
 // камера наезжает на метку текущего пункта; у кейса с видео скролл проматывает запись по отрезкам шагов
 const KeyScreens: FC<IProps> = ({ name, accent, screens, video }) => {
-    const reduceMotion = useReducedMotion();
+    const reduceMotion = usePrefersReducedMotion();
     const mobile = useMediaQuery('(max-width: 899px)');
 
     const storyRef = useRef<HTMLDivElement>(null);

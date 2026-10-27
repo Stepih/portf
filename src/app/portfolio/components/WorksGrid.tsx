@@ -1,12 +1,13 @@
 "use client";
 
 import { FC, useEffect, useRef } from "react";
-import { motion, MotionValue, useMotionValue, useReducedMotion, useScroll, useTransform } from "framer-motion";
+import { motion, MotionValue, useMotionValue, useScroll, useTransform } from "framer-motion";
 
 import s from './WorksGrid.module.scss'
 import { IPortfolioWork } from "@/interfaces/portfolio";
 import { ralewayBold } from "@/app/fonts/fonts";
 import { useMediaQuery } from "@/hooks/useMediaQuery";
+import { usePrefersReducedMotion } from "@/hooks/usePrefersReducedMotion";
 import WorkCard from "./WorkCard";
 
 interface IWorkItem {
@@ -34,7 +35,7 @@ interface IColumnProps {
 }
 
 const Column: FC<IColumnProps> = ({ items, pad, speed, progress, travel, mobile }) => {
-    const reduceMotion = useReducedMotion();
+    const reduceMotion = usePrefersReducedMotion();
     // Сдвиг вверх пропорционально пройденному сеткой пути
     const y = useTransform([progress, travel], ([p, t]: number[]) => -p * t * speed);
 

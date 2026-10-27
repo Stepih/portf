@@ -2,7 +2,8 @@
 
 import { FC } from "react";
 import Image from "next/image";
-import { motion, MotionValue, useReducedMotion, useTransform } from "framer-motion";
+import { motion, MotionValue, useTransform } from "framer-motion";
+import { usePrefersReducedMotion } from "@/hooks/usePrefersReducedMotion";
 
 import s from './ScrollShot.module.scss'
 import { easeInOutQuad } from "./easing";
@@ -21,7 +22,7 @@ interface IProps {
 // Длинный скриншот в рамке: при скролле страницы листается сверху вниз.
 // object-fit: cover + object-position сдвигают картинку без замера её высоты
 const ScrollShot: FC<IProps> = ({ src, alt, progress, sizes, priority }) => {
-    const reduceMotion = useReducedMotion();
+    const reduceMotion = usePrefersReducedMotion();
     const objectPosition = useTransform(progress, (t) => `50% ${(easeInOutQuad(t) * 100).toFixed(2)}%`);
 
     return (

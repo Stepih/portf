@@ -2,11 +2,12 @@
 
 import { FC, KeyboardEvent, PointerEvent, useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import Image from "next/image";
-import { useInView, useReducedMotion } from "framer-motion";
+import { useInView } from "framer-motion";
 
 import s from './BeforeAfter.module.scss'
 import { ICaseBefore } from "@/interfaces/portfolio";
 import { allerta, ralewayBold } from "@/app/fonts/fonts";
+import { usePrefersReducedMotion } from "@/hooks/usePrefersReducedMotion";
 import Rise from "./Rise";
 
 interface IProps {
@@ -20,7 +21,7 @@ const VERTICAL_MAX = 600;
 
 // «До и после»: новая версия под старой, ползунок открывает «до» на нужную долю
 const BeforeAfter: FC<IProps> = ({ name, before, after }) => {
-    const reduceMotion = useReducedMotion();
+    const reduceMotion = usePrefersReducedMotion();
     const boxRef = useRef<HTMLDivElement>(null);
     const panelRef = useRef<HTMLDivElement>(null);
     const dragging = useRef(false);

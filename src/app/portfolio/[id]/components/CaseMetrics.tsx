@@ -1,10 +1,11 @@
 "use client";
 
 import { CSSProperties, FC, useEffect, useRef } from "react";
-import { useInView, useReducedMotion } from "framer-motion";
+import { useInView } from "framer-motion";
 
 import s from './CaseMetrics.module.scss'
 import { allerta } from "@/app/fonts/fonts";
+import { usePrefersReducedMotion } from "@/hooks/usePrefersReducedMotion";
 import { easeOutCubic } from "../../components/easing";
 import { formatMetric, parseMetric } from "./caseMath";
 import Rise from "./Rise";
@@ -15,7 +16,7 @@ const COUNT_MS = 1400;
 const Counter: FC<{ value: string }> = ({ value }) => {
     const ref = useRef<HTMLSpanElement>(null);
     const inView = useInView(ref, { once: true, margin: '0px 0px -8% 0px' });
-    const reduceMotion = useReducedMotion();
+    const reduceMotion = usePrefersReducedMotion();
 
     useEffect(() => {
         const el = ref.current;

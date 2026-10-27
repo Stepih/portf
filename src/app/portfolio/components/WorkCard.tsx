@@ -2,12 +2,13 @@
 
 import { FC, useRef } from "react";
 import Image from "next/image";
-import { motion, useReducedMotion, useScroll, useTransform } from "framer-motion";
+import { motion, useScroll, useTransform } from "framer-motion";
 
 import s from './WorkCard.module.scss'
 import { IPortfolioWork } from "@/interfaces/portfolio";
 import { allerta, ralewayBold } from "@/app/fonts/fonts";
 import { portfolioPageURL } from "@/constants/urls";
+import { usePrefersReducedMotion } from "@/hooks/usePrefersReducedMotion";
 import { easeOutCubic, passToCenter } from "./easing";
 import BrowserFrame from "./BrowserFrame";
 import Tags from "./Tags";
@@ -23,7 +24,7 @@ interface IProps {
 // Карточка сетки: при появлении «откидывается» назад и выпрямляется, макет внутри движется медленнее карточки
 const WorkCard: FC<IProps> = ({ work, num, mobile }) => {
     const ref = useRef<HTMLElement>(null);
-    const reduceMotion = useReducedMotion();
+    const reduceMotion = usePrefersReducedMotion();
 
     // На телефоне карточка успевает выпрямиться раньше: экран короче
     const { scrollYProgress: reveal } = useScroll({ target: ref, offset: ['start end', mobile ? 'start 0.55' : 'start 0.25'] });

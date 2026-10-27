@@ -3,12 +3,13 @@
 import { FC, KeyboardEvent, PointerEvent, useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { motion, useReducedMotion, useScroll, useTransform } from "framer-motion";
+import { motion, useScroll, useTransform } from "framer-motion";
 
 import s from './CaseHero.module.scss'
 import { ICaseSlide } from "@/interfaces/portfolio";
 import { allerta } from "@/app/fonts/fonts";
 import { portfolioPageURL } from "@/constants/urls";
+import { usePrefersReducedMotion } from "@/hooks/usePrefersReducedMotion";
 import { easeInOutQuad } from "../../components/easing";
 import { slideTint } from "./caseTint";
 import PortfolioLink from "../../components/PortfolioLink";
@@ -113,7 +114,7 @@ const SlideContent: FC<{ slide: ICaseSlide, first: boolean }> = ({ slide, first 
 // Слайды меняются сами по таймеру, свайпом, стрелками и клавишами ← →
 const CaseHero: FC<IProps> = ({ name, year, kind, role, headline, tags, accent, url, slides }) => {
     const [index, setIndex] = useState(0);
-    const reduceMotion = useReducedMotion();
+    const reduceMotion = usePrefersReducedMotion();
 
     const heroRef = useRef<HTMLElement>(null);
     const stageRef = useRef<HTMLDivElement>(null);

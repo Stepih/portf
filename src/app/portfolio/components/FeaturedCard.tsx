@@ -1,13 +1,14 @@
 "use client";
 
 import { FC, useEffect, useRef } from "react";
-import { motion, useInView, useMotionTemplate, useReducedMotion, useScroll, useTransform } from "framer-motion";
+import { motion, useInView, useMotionTemplate, useScroll, useTransform } from "framer-motion";
 
 import s from './FeaturedCard.module.scss'
 import { IPortfolioWork } from "@/interfaces/portfolio";
 import { allerta, ralewayBold } from "@/app/fonts/fonts";
 import { portfolioPageURL } from "@/constants/urls";
 import { useMediaQuery } from "@/hooks/useMediaQuery";
+import { usePrefersReducedMotion } from "@/hooks/usePrefersReducedMotion";
 import { easeOutCubic, passToCenter } from "./easing";
 import BrowserFrame from "./BrowserFrame";
 import ScrollShot from "./ScrollShot";
@@ -22,7 +23,7 @@ interface IProps {
 // Карточка «Избранного»: выезжает снизу при скролле, макеты внутри двигаются с разной скоростью
 const FeaturedCard: FC<IProps> = ({ work, num }) => {
     const ref = useRef<HTMLElement>(null);
-    const reduceMotion = useReducedMotion();
+    const reduceMotion = usePrefersReducedMotion();
     const mobile = useMediaQuery('(max-width: 899px)');
     const media = work.featured;
 
