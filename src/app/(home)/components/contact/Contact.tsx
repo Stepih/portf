@@ -6,7 +6,7 @@ import s from './Contact.module.scss'
 import { ralewayBold, ralewayRegular } from "@/app/fonts/fonts";
 import { contactDescription, contactTitle, offerButtonsNote, offerTgButton, offerTrustLine, services } from "@/data/offer";
 import { contactSectionId, contactTitleId } from "@/constants/urls";
-import { serviceLines } from "@/scripts/services";
+import { leadServices } from "@/scripts/services";
 import LeadForm from "@/app/popup/components/lead-form/LeadForm";
 
 // Финальный блок главной (SALES_PLAN 3.9): слева заголовок, Telegram и строки доверия, справа форма заявки.
@@ -27,7 +27,7 @@ const Contact: FC = () => {
                 <p className={s.trust}>{offerTrustLine()}</p>
             </div>
 
-            <LeadForm className={s.form} serviceLines={serviceLines(services)} />
+            <LeadForm className={s.form} services={leadServices(services)} />
         </section>
     )
 }

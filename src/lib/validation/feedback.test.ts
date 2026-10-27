@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { FEEDBACK_LIMITS, isNameInput, isPhoneComplete, isPhoneInput, validateFeedback } from "./feedback";
+import { FEEDBACK_LIMITS, isContactComplete, isContactInput, isNameInput, validateFeedback } from "./feedback";
 
 describe("validateFeedback", () => {
     it("валидная заявка проходит, пробелы по краям обрезаются", () => {
@@ -31,50 +31,60 @@ describe("validateFeedback", () => {
         expect(validateFeedback({ name: "Иван", contact: "79990001122", message: 5 })).toEqual(missing);
     });
 
-    it("лимиты: имя 50, контакт 30, комментарий 2000 символов после trim", () => {
-        const ok = { name: "и".repeat(50), contact: "1".repeat(30), message: "т".repeat(2000) };
+    it("лимиты: имя 50, контакт 50, комментарий 2000 символов после trim", () => {
+        const ok = { name: "и".repeat(50), contact: "1".repeat(50), message: "т".repeat(2000) };
         expect(validateFeedback(ok).ok).toBe(true);
         expect(validateFeedback({ ...ok, name: ` ${ok.name} ` }).ok).toBe(true);
 
         const tooLong = { ok: false, error: "Field too long" };
         expect(validateFeedback({ ...ok, name: "и".repeat(51) })).toEqual(tooLong);
-        expect(validateFeedback({ ...ok, contact: "1".repeat(31) })).toEqual(tooLong);
+        expect(validateFeedback({ ...ok, contact: "1".repeat(51) })).toEqual(tooLong);
         expect(validateFeedback({ ...ok, message: "т".repeat(2001) })).toEqual(tooLong);
     });
 
-    // DESIGN_FIXES_2_PLAN Д6: «123» и прочие обрывки номера сервер не принимает
-    it("в контакте меньше 10 цифр — Invalid phone", () => {
-        const invalid = { ok: false, error: "Invalid phone" };
-        for (const contact of ["123", "+7 (999) 123-4", "@ivan", "999-00-11"]) {
+    // DESIGN_FIXES_2_PLAN Д6, SALES_PLAN 4.2: обрывки номера и короткие ники сервер не принимает
+    it("контакт не номер целиком и не ник — Invalid contact", () => {
+        const invalid = { ok: false, error: "Invalid contact" };
+        for (const contact of ["123", "+7 (999) 123-4", "@ivan", "999-00-11", "Иван Петров"]) {
             expect(validateFeedback({ name: "Иван", contact }), contact).toEqual(invalid);
         }
     });
+
+    it("ник Telegram проходит", () => {
+        expect(validateFeedback({ name: "Иван", contact: "@ivan_petrov" })).toMatchObject({ ok: true, data: { contact: "@ivan_petrov" } });
+    });
 });
 
-describe("isPhoneComplete", () => {
+describe("isContactComplete", () => {
     it("10 цифр и больше – номер целиком, знаки не считаются", () => {
         for (const phone of ["9990001122", "79990001122", "+7 (999) 123-45-67", "8 999 123 45 67", "+44 20 7946 0958"]) {
-            expect(isPhoneComplete(phone), phone).toBe(true);
+            expect(isContactComplete(phone), phone).toBe(true);
         }
     });
 
-    it("меньше 10 цифр – нет", () => {
-        for (const text of ["", "123", "999000112", "+7 (999) 123-4", "(((---)))+++"]) {
-            expect(isPhoneComplete(text), text).toBe(false);
+    it("ник Telegram – с @, ссылкой t.me или без них", () => {
+        for (const nick of ["@ivan_petrov", "ivan_petrov", "t.me/ivan_petrov", "https://t.me/IvanPetrov", "@abcde"]) {
+            expect(isContactComplete(nick), nick).toBe(true);
+        }
+    });
+
+    it("короткий номер, короткий ник, ник с цифры и смесь – нет", () => {
+        for (const text of ["", "123", "999000112", "+7 (999) 123-4", "(((---)))+++", "@abcd", "@1ivan", "@ivan petrov", "+7 999 ivan_1", "t.me/", "@" + "a".repeat(33)]) {
+            expect(isContactComplete(text), text).toBe(false);
         }
     });
 });
 
-describe("isPhoneInput", () => {
-    it("номер проходит в любом привычном виде", () => {
-        for (const phone of ["", "79990001122", "+7 (999) 123-45-67", "8 999 123 45 67", "+79990001122"]) {
-            expect(isPhoneInput(phone), phone).toBe(true);
+describe("isContactInput", () => {
+    it("номер в любом привычном виде и ник проходят", () => {
+        for (const text of ["", "79990001122", "+7 (999) 123-45-67", "8 999 123 45 67", "@ivan_petrov", "https://t.me/ivan"]) {
+            expect(isContactInput(text), text).toBe(true);
         }
     });
 
-    it("буквы и прочие знаки не проходят, длина – не больше 25", () => {
-        for (const text of ["12a", "@ivan", "+7.999", "1".repeat(26)]) {
-            expect(isPhoneInput(text), text).toBe(false);
+    it("кириллица, эмодзи и прочие знаки не проходят, длина – не больше лимита", () => {
+        for (const text of ["Иван", "@ivan😀", "+7,999", "#1", "1".repeat(FEEDBACK_LIMITS.contact + 1)]) {
+            expect(isContactInput(text), text).toBe(false);
         }
     });
 });

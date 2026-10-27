@@ -1,10 +1,12 @@
 import { services } from "@/data/offer";
+import { formServiceOther } from "@/data/inputsFeedBack";
 import { portfolioIndustries, portfolioWorks } from "@/data/portfolio";
 import { INDUSTRY_PARAM } from "./portfolioIndustry";
 import { CASE_PARAM, SERVICE_PARAM } from "./services";
 
 // Откуда пришёл клиент (SALES_PLAN 4.8): услуга, кейс или отрасль из ссылки «Обсудить» на форму.
-// Форма их не показывает, а отправляет вместе с заявкой; владелец видит их в Telegram
+// Форма отправляет их вместе с заявкой; владелец видит их в Telegram. Услугу форма показывает выбранным чипом,
+// клиент может её сменить или снять (4.2) – тогда в заявку уходит его выбор
 const LEAD_SOURCE_PARAMS = [SERVICE_PARAM, CASE_PARAM, INDUSTRY_PARAM] as const;
 
 // Заявка из окна демо-чата (CONVERSION_PLAN К3.2): поле from в теле запроса, в адресе его нет
@@ -26,7 +28,8 @@ export const leadSourceFromSearch = (search: string): LeadSource => {
 
 // Строки для сообщения в Telegram. Берутся только известные id и метка чата: в заявку не попадёт произвольный текст из ссылки
 export const leadSourceLines = (body: Record<string, unknown>): string[] => {
-    const service = services.find((item) => item.id === body[SERVICE_PARAM]);
+    // Тип проекта из чипов формы: услуга или «Другое» (4.2)
+    const service = [...services, formServiceOther].find((item) => item.id === body[SERVICE_PARAM]);
     const work = portfolioWorks.find((item) => item.id === body[CASE_PARAM]);
     const industry = portfolioIndustries.find((item) => item.id === body[INDUSTRY_PARAM]);
 

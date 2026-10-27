@@ -1,9 +1,8 @@
 import { expect, test, type Locator, type Page, type Request } from '@playwright/test';
 import { formButton } from '../src/data/offer';
-import { formServiceLabel, formSuccessText, formSuccessTitle, nameEmptyError, nameFormatError, phoneEmptyError, phoneFormatError, phoneTooShort } from '../src/data/inputsFeedBack';
+import { contactEmptyError, contactFormatError, contactIncomplete, formServiceOther, formServiceTitle, formSuccessText, formSuccessTitle, nameEmptyError, nameFormatError } from '../src/data/inputsFeedBack';
 import { breadCrumbLabels } from '../src/data/breadCrumbs';
 import { services } from '../src/data/offer';
-import { serviceLines } from '../src/scripts/services';
 
 // Подменяет /api/sendMessage: в Telegram ничего не уходит. Возвращает список перехваченных запросов
 const mockSendMessage = async (page: Page, status = 200) => {
@@ -31,7 +30,7 @@ const expectNoFieldError = async (field: Locator) => {
 
 const fields = (page: Page) => ({
     name: page.getByPlaceholder('Имя *'),
-    contact: page.getByPlaceholder('Телефон *'),
+    contact: page.getByPlaceholder('Телефон или Telegram *'),
     message: page.getByPlaceholder('Комментарий'),
     submit: page.getByRole('button', { name: formButton }),
 });
@@ -49,14 +48,14 @@ test('без обязательных полей заявка не отправ�
 
     // Ошибки – под своими полями, фокус на первом неверном (DESIGN_FIXES_6_PLAN Д31)
     await expectFieldError(form.name, nameEmptyError);
-    await expectFieldError(form.contact, phoneEmptyError);
+    await expectFieldError(form.contact, contactEmptyError);
     await expect(form.name).toBeFocused();
     expect(requests).toHaveLength(0);
 
     // Исправленное поле теряет ошибку, второе её держит
     await form.name.pressSequentially('Иван');
     await expectNoFieldError(form.name);
-    await expectFieldError(form.contact, phoneEmptyError);
+    await expectFieldError(form.contact, contactEmptyError);
 
     await form.submit.click();
     await expect(form.contact).toBeFocused();
@@ -64,11 +63,11 @@ test('без обязательных полей заявка не отправ�
     await expectNoFieldError(form.contact);
 });
 
-test('в телефон нельзя ввести буквы, в имя — цифры', async ({ page }) => {
+test('в контакт нельзя ввести кириллицу, в имя — цифры', async ({ page }) => {
     const form = fields(page);
 
-    await form.contact.pressSequentially('12a');
-    await expectFieldError(form.contact, phoneFormatError);
+    await form.contact.pressSequentially('12я');
+    await expectFieldError(form.contact, contactFormatError);
     await expect(form.contact).toHaveValue('12');
 
     await form.name.pressSequentially('Ив1');
@@ -101,7 +100,7 @@ test('ошибка поля доступна скринридеру как alert
     await expect(form.name).toHaveValue('Анна');
 
     await form.submit.click();
-    await expect(alerts.filter({ hasText: phoneEmptyError })).toHaveCount(1);
+    await expect(alerts.filter({ hasText: contactEmptyError })).toHaveCount(1);
     // Ошибки полей – не в плашке: в ней только сеть и сервер
     await expect(page.locator('form > [role=alert]')).toBeEmpty();
 });
@@ -153,7 +152,7 @@ test('телефон короче 10 цифр не отправляется', as
     await form.contact.fill('123');
     await form.submit.click();
 
-    await expectFieldError(form.contact, phoneTooShort);
+    await expectFieldError(form.contact, contactIncomplete);
     await expect(form.contact).toBeFocused();
     await expect(form.contact).toHaveValue('123');
     expect(requests).toHaveLength(0);
@@ -173,14 +172,19 @@ test('кейс из ссылки уходит вместе с заявкой', a
     expect(requests[0].postDataJSON()).toMatchObject({ name: 'Иван', case: 'icc' });
 });
 
-// Прямая ссылка на /popup с услугой: та же строка услуги, что на главной; крошка – «Оставить заявку» (DESIGN_FIXES_3_PLAN Д13)
-test('услуга из ссылки видна в форме и уходит с заявкой', async ({ page }) => {
+// Тип проекта – чипы (SALES_PLAN 4.2): услуга из ссылки выбрана заранее, её можно сменить или снять; крошка – «Оставить заявку»
+const chip = (page: Page, name: string) => page.getByRole('group', { name: formServiceTitle }).getByRole('button', { name, exact: true });
+
+test('услуга из ссылки выбрана в чипах и уходит с заявкой', async ({ page }) => {
     await page.setViewportSize({ width: 375, height: 800 });
     await page.goto('/popup?service=landing');
     const requests = await mockSendMessage(page);
     const form = fields(page);
 
-    await expect(page.getByText(`${formServiceLabel} ${serviceLines(services).landing}`)).toBeVisible();
+    await expect(chip(page, 'Лендинг')).toHaveAttribute('aria-pressed', 'true');
+    for (const service of [...services.filter(({ id }) => id !== 'landing'), formServiceOther]) {
+        await expect(chip(page, service.title)).toHaveAttribute('aria-pressed', 'false');
+    }
     await expect(page.getByRole('navigation', { name: 'Breadcrumb' })).toHaveText(`Главная/${breadCrumbLabels.popup}`);
 
     await form.name.fill('Иван');
@@ -190,11 +194,54 @@ test('услуга из ссылки видна в форме и уходит с
     expect(requests[0].postDataJSON()).toMatchObject({ service: 'landing' });
 });
 
-test('без услуги и с неизвестной услугой строки нет', async ({ page }) => {
-    await expect(page.locator('form')).not.toContainText(formServiceLabel);
+test('другой чип меняет услугу, повторное нажатие снимает выбор', async ({ page }) => {
+    await page.goto('/popup?service=landing');
+    const requests = await mockSendMessage(page);
+    const form = fields(page);
+
+    await chip(page, formServiceOther.title).click();
+    await expect(chip(page, formServiceOther.title)).toHaveAttribute('aria-pressed', 'true');
+    await expect(chip(page, 'Лендинг')).toHaveAttribute('aria-pressed', 'false');
+
+    await form.name.fill('Иван');
+    await form.contact.fill('79990001122');
+    await form.submit.click();
+    await expect(page.getByRole('heading', { name: formSuccessTitle('Иван') })).toBeVisible();
+    expect(requests[0].postDataJSON()).toMatchObject({ service: 'other' });
+
+    // Снятый выбор убирает и услугу из ссылки
+    await page.goto('/popup?service=landing&case=icc');
+    await expect(chip(page, 'Лендинг')).toHaveAttribute('aria-pressed', 'true');
+    await chip(page, 'Лендинг').click();
+    await expect(chip(page, 'Лендинг')).toHaveAttribute('aria-pressed', 'false');
+    await fields(page).name.fill('Иван');
+    await fields(page).contact.fill('79990001122');
+    await fields(page).submit.click();
+    await expect(page.getByRole('heading', { name: formSuccessTitle('Иван') })).toBeVisible();
+    expect(requests[1].postDataJSON()).not.toHaveProperty('service');
+    expect(requests[1].postDataJSON()).toMatchObject({ case: 'icc' });
+});
+
+test('без услуги и с неизвестной услугой ничего не выбрано', async ({ page }) => {
+    const group = page.getByRole('group', { name: formServiceTitle });
+    await expect(group.getByRole('button')).toHaveCount(services.length + 1);
+    await expect(group.locator('[aria-pressed=true]')).toHaveCount(0);
     await page.goto('/popup?service=toString');
     await expect(page.locator('form')).toBeVisible();
-    await expect(page.locator('form')).not.toContainText(formServiceLabel);
+    await expect(group.locator('[aria-pressed=true]')).toHaveCount(0);
+});
+
+// В контакт можно ник Telegram вместо номера (SALES_PLAN 4.2)
+test('ник Telegram отправляется', async ({ page }) => {
+    const requests = await mockSendMessage(page);
+    const form = fields(page);
+
+    await form.name.fill('Иван');
+    await form.contact.pressSequentially('@ivan_petrov');
+    await expectNoFieldError(form.contact);
+    await form.submit.click();
+    await expect(page.getByRole('heading', { name: formSuccessTitle('Иван') })).toBeVisible();
+    expect(requests[0].postDataJSON()).toMatchObject({ contact: '@ivan_petrov' });
 });
 
 test('ответ 429 показывает понятную ошибку', async ({ page }) => {

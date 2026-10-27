@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { contactHref, serviceCases, serviceLines, withCase, withService } from "./services";
+import { contactHref, leadServices, serviceCases, withCase, withService } from "./services";
 import { services } from "@/data/offer";
 import { portfolioWorks } from "@/data/portfolio";
 import { portfolioCases } from "@/data/portfolioCases";
@@ -17,10 +17,12 @@ describe("contactHref", () => {
     });
 });
 
-describe("serviceLines", () => {
-    it("название, цена и срок через точку для каждой услуги", () => {
-        expect(serviceLines(services).landing).toBe('Лендинг · от 8 000 ₽ · 3–⁠4 дня');
-        expect(Object.keys(serviceLines(services))).toEqual(services.map((service) => service.id));
+describe("leadServices", () => {
+    it("услуги по порядку и «Другое» в конце, только id и название", () => {
+        expect(leadServices(services)).toEqual([
+            ...services.map(({ id, title }) => ({ id, title })),
+            { id: 'other', title: 'Другое' },
+        ]);
     });
 });
 

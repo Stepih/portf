@@ -25,7 +25,8 @@ const Input:FC<IInputSetValue> = ({value, handleSetValue, handleSetFocusInput, i
                 className={`${s.input}${error ? ` ${s.invalid}` : ''}`}
                 type={type}
                 inputMode={type === 'tel' ? 'tel' : 'text'}
-                autoComplete={type === 'tel' ? 'tel' : 'name'}
+                // В контакт можно и ник Telegram (SALES_PLAN 4.2), но браузер подставит номер – это тоже подходит
+                autoComplete={inputKey === 'contact' ? 'tel' : 'name'}
                 maxLength={FEEDBACK_LIMITS[inputKey]}
                 value={value[inputKey]}
                 onFocus={() => handleSetFocusInput(inputKey)}

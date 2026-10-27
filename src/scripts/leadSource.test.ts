@@ -25,6 +25,10 @@ describe("leadSourceLines", () => {
         ]);
     });
 
+    it("«Другое» из чипов формы – тоже услуга", () => {
+        expect(leadSourceLines({ service: "other" })).toEqual(["Услуга: Другое"]);
+    });
+
     it("заявка из демо-чата помечается", () => {
         expect(leadSourceLines({ from: "chat" })).toEqual(["Откуда: демо-чат"]);
         expect(leadSourceLines({ from: "spam" })).toEqual([]);

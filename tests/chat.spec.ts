@@ -1,7 +1,7 @@
 import { expect, test, type Page, type Request } from '@playwright/test';
 import { chatButtonTitle, chatFabLabel, chatLeadSuccess, chatLimitText, chatPlaceholder, chatStarters, chatStartersLabel, chatSubtitle, chatTitle } from '../src/data/chat';
 import { formButton, offerTgButton } from '../src/data/offer';
-import { phoneTooShort } from '../src/data/inputsFeedBack';
+import { contactIncomplete } from '../src/data/inputsFeedBack';
 import { hiddenPages, musicPageURL } from '../src/constants/urls';
 
 // Демо-чат (CONVERSION_PLAN К3.2). /api/chat и /api/sendMessage подменены: к модели и в Telegram ничего не уходит
@@ -143,7 +143,7 @@ test('контакт из чата уходит заявкой с вопроса
     // Обрывок номера не уходит (DESIGN_FIXES_2_PLAN Д6)
     await dialog.getByRole('textbox', { name: 'Телефон' }).fill('123');
     await dialog.getByRole('button', { name: 'Отправить' }).click();
-    await expect(dialog.getByRole('alert')).toHaveText(phoneTooShort);
+    await expect(dialog.getByRole('alert')).toHaveText(contactIncomplete);
     expect(leads).toHaveLength(0);
 
     await dialog.getByRole('textbox', { name: 'Телефон' }).fill('+7 999 000-11-22');

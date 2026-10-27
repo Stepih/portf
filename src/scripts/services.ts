@@ -1,5 +1,6 @@
 import { IPortfolioWork } from "@/interfaces/portfolio";
-import { IService, ServiceId } from "@/interfaces/offer";
+import { ILeadService, IService, ServiceId } from "@/interfaces/offer";
+import { formServiceOther } from "@/data/inputsFeedBack";
 import { contactSectionId } from "@/constants/urls";
 
 // Параметр ссылки на форму с услугой: /popup?service=landing. Форма отправляет его с заявкой (4.8)
@@ -13,16 +14,10 @@ export const withService = (href: string, service: ServiceId): string =>
 export const contactHref = (service?: ServiceId): string =>
     `/${service ? `?${SERVICE_PARAM}=${service}` : ''}#${contactSectionId}`;
 
-// Строки выбранной услуги для формы: «Лендинг · от 8 000 ₽ · 3–4 дня». Считаются на сервере и уходят
-// в форму пропсом, чтобы offer.ts не попадал в клиентский бандл. Цена и срок не рвутся: пробелы неразрывные,
-// после «–» – word joiner. На телефоне строка переносится по « · », а не «3– / 4 дня»
-const keepTogether = (text: string): string => text.replace(/ /g, ' ').replace(/–/g, '–⁠');
-
-export const serviceLines = (list: Pick<IService, 'id' | 'title' | 'price' | 'term'>[]): Partial<Record<ServiceId, string>> =>
-    Object.fromEntries(list.map((service) => [
-        service.id,
-        [service.title, keepTogether(service.price), keepTogether(service.term)].join(' · ')
-    ]));
+// Типы проекта для чипов формы (SALES_PLAN 4.2): названия услуг и «Другое». Считаются на сервере и уходят
+// в форму пропсом, чтобы offer.ts не попадал в клиентский бандл
+export const leadServices = (list: Pick<IService, 'id' | 'title'>[]): ILeadService[] =>
+    [...list.map(({ id, title }) => ({ id, title })), formServiceOther];
 
 // Параметр ссылки на форму из кейса: /popup?case=icc. Форма отправляет его с заявкой (4.8)
 export const CASE_PARAM = 'case';

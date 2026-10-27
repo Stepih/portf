@@ -1,11 +1,14 @@
-import { expect, Page, test } from '@playwright/test';
+import { expect, Locator, Page, test } from '@playwright/test';
 import { ServiceId } from '../src/interfaces/offer';
 import { hiddenPages } from '../src/constants/urls';
 import { contactTitle, faqContactLink, faqTitle, formButton, heroPrice, heroTitleSlide, moreLinks, moreTitle, offerButtonsNote, offerFaq, offerReasons, offerSteps, offerTgButton, offerTitle, offerTrustLine, services, servicesTitle, stepsContactLink } from '../src/data/offer';
-import { formServiceLabel, formSuccessText, formSuccessTitle, inputsListFeedback, phoneTooShort } from '../src/data/inputsFeedBack';
+import { contactIncomplete, formSuccessText, formSuccessTitle, inputsListFeedback } from '../src/data/inputsFeedBack';
 import { chatButtonText, chatButtonTitle, chatFabLabel, chatLeadOpen, chatLeadSuccess } from '../src/data/chat';
 import { footerName, footerSince, footerTg } from '../src/data/footer';
-import { serviceLines } from '../src/scripts/services';
+
+// Выбранный чип типа проекта в форме (SALES_PLAN 4.2): услуга из ссылки «Узнать цену»
+const pickedService = (form: Locator) => form.locator('[aria-pressed=true]');
+const serviceTitle = (id: ServiceId) => services.find((service) => service.id === id)?.title ?? id;
 
 // Слайды первого экрана сменяются, а h1 с оффером в HTML один и есть всегда (SALES_PLAN 3.1.1).
 // Первым показывается слайд с h1 (CONVERSION_PLAN К1.1): проверяем по HTML с сервера, до смены слайда
@@ -42,7 +45,7 @@ for (const viewport of [{ width: 1400, height: 800 }, { width: 375, height: 667 
         const title = page.getByRole('heading', { name: contactTitle });
         await expect(title).toBeFocused();
         await expect(title).toBeInViewport();
-        await expect(page.locator('#contact')).not.toContainText(formServiceLabel);
+        await expect(pickedService(page.locator('#contact'))).toHaveCount(0);
     });
 }
 
@@ -155,7 +158,7 @@ test.describe('уменьшить движение', () => {
 });
 
 // Карточки услуг с ценой, кнопка «Узнать цену» ведёт в форму главной с услугой (SALES_PLAN 3.4, DESIGN_FIXES_3_PLAN Д13):
-// строка услуги в форме, фокус на заголовке, услуга уходит с заявкой
+// услуга выбрана в чипах формы (SALES_PLAN 4.2), фокус на заголовке, услуга уходит с заявкой
 test('услуги и цены на главной', async ({ page }) => {
     const requests: Record<string, unknown>[] = [];
     await page.route('**/api/sendMessage', route => {
@@ -175,32 +178,33 @@ test('услуги и цены на главной', async ({ page }) => {
 
     const contact = page.getByRole('region', { name: contactTitle });
     await expect(page.getByRole('heading', { name: contactTitle })).toBeFocused();
-    await expect(contact.getByText(`${formServiceLabel} ${serviceLines(services).landing}`)).toBeInViewport();
+    await expect(pickedService(contact)).toHaveText(serviceTitle('landing'));
+    await expect(pickedService(contact)).toBeInViewport();
 
     // Без перезагрузки и без прыжка сцены: позиция после перехода не меняется
     const y = await page.evaluate(() => window.scrollY);
     await page.waitForTimeout(500);
     expect(await page.evaluate(() => window.scrollY)).toBe(y);
 
-    // Другая услуга меняет строку
+    // Другая услуга меняет выбранный чип
     await section.getByRole('link', { name: 'Узнать цену: Магазин или каталог' }).click();
-    await expect(contact.getByText(`${formServiceLabel} ${serviceLines(services).shop}`)).toBeVisible();
+    await expect(pickedService(contact)).toHaveText(serviceTitle('shop'));
     await expect(page).toHaveURL(/\/\?service=shop#contact$/);
 
     await contact.getByPlaceholder('Имя *').fill('Иван');
-    await contact.getByPlaceholder('Телефон *').fill('79990001122');
+    await contact.getByPlaceholder('Телефон или Telegram *').fill('79990001122');
     await contact.getByRole('button', { name: formButton }).click();
     await expect(contact.getByRole('heading', { name: formSuccessTitle('Иван') })).toBeVisible();
     expect(requests).toHaveLength(1);
     expect(requests[0]).toMatchObject({ name: 'Иван', service: 'shop' });
 });
 
-// Ссылка с услугой из чата или мессенджера открывает главную сразу у формы со строкой услуги (Д13)
-test('прямая ссылка /?service=ai#contact – у формы со строкой услуги', async ({ page }) => {
+// Ссылка с услугой из чата или мессенджера открывает главную сразу у формы с выбранной услугой (Д13, 4.2)
+test('прямая ссылка /?service=ai#contact – у формы с выбранной услугой', async ({ page }) => {
     await page.goto('/?service=ai#contact');
 
     const contact = page.getByRole('region', { name: contactTitle });
-    await expect(contact.getByText(`${formServiceLabel} ${serviceLines(services).ai}`)).toBeVisible();
+    await expect(pickedService(contact)).toHaveText(serviceTitle('ai'));
     await expect(page.getByRole('heading', { name: contactTitle })).toBeInViewport();
 });
 
@@ -302,7 +306,7 @@ for (const { name, region, place } of [
 }
 
 // «Назад» после прыжка к форме (DESIGN_FIXES_4_PLAN Д18): прыжок – новая запись истории. «Назад» – мгновенно к месту нажатия,
-// фокус на нажатой ссылке, адрес без #contact и строка услуги по адресу; «Вперёд» – снова форма. Метрика: цели только на клик,
+// фокус на нажатой ссылке, адрес без #contact и выбранная услуга по адресу; «Вперёд» – снова форма. Метрика: цели только на клик,
 // hit – один на переход. Скрипт Метрики заблокирован, вызовы ym пишутся в window.__ym
 const backFromForm = async (page: Page, { region, name, url, service }: { region: string, name: string, url: RegExp, service?: ServiceId }) => {
     await page.route('https://mc.yandex.ru/**', (route) => route.abort());
@@ -322,11 +326,11 @@ const backFromForm = async (page: Page, { region, name, url, service }: { region
 
     const contact = page.getByRole('region', { name: contactTitle });
     const title = page.getByRole('heading', { name: contactTitle });
-    const serviceLine = contact.getByText(formServiceLabel);
+    const serviceLine = pickedService(contact);
     const atForm = async () => {
         await expect(page).toHaveURL(url);
         await expect(title).toBeInViewport();
-        if (service) await expect(serviceLine).toHaveText(`${formServiceLabel} ${serviceLines(services)[service]}`);
+        if (service) await expect(serviceLine).toHaveText(serviceTitle(service));
         else await expect(serviceLine).toHaveCount(0);
     };
 
@@ -402,7 +406,7 @@ test('«Назад» после двух прыжков к форме – по �
 
     await page.goBack();
     await expect(page).toHaveURL(/\/\?service=landing#contact$/);
-    await expect(contact.getByText(`${formServiceLabel} ${serviceLines(services).landing}`)).toBeAttached();
+    await expect(pickedService(contact)).toHaveText(serviceTitle('landing'));
     await page.waitForTimeout(500);
     await expect(shop).toBeFocused();
     expect(await page.evaluate(() => window.scrollY)).toBe(y);
@@ -597,7 +601,7 @@ test('форма заявки и Telegram на главной', async ({ page })
     // Имя с дефисом проходит (DESIGN_FIXES_3_PLAN Д14)
     await section.getByPlaceholder('Имя *').pressSequentially('Анна-Мария');
     await expect(section.getByPlaceholder('Имя *')).toHaveValue('Анна-Мария');
-    await section.getByPlaceholder('Телефон *').fill('79990001122');
+    await section.getByPlaceholder('Телефон или Telegram *').fill('79990001122');
     await section.getByRole('button', { name: formButton }).click();
 
     await expect(section.getByRole('heading', { name: formSuccessTitle('Анна-Мария') })).toBeVisible();
@@ -612,17 +616,17 @@ test('после заявки на главной – плашка «что да
 
     const section = page.getByRole('region', { name: contactTitle });
     await section.getByPlaceholder('Имя *').fill('Иван');
-    await section.getByPlaceholder('Телефон *').fill('123');
+    await section.getByPlaceholder('Телефон или Telegram *').fill('123');
     await section.getByRole('button', { name: formButton }).click();
-    await expect(page.getByText(phoneTooShort)).toBeVisible();
-    await expect(page.getByRole('alert').filter({ hasText: phoneTooShort })).toHaveCount(1);
+    await expect(page.getByText(contactIncomplete)).toBeVisible();
+    await expect(page.getByRole('alert').filter({ hasText: contactIncomplete })).toHaveCount(1);
 
-    await section.getByPlaceholder('Телефон *').fill('+7 999 123-45-67');
+    await section.getByPlaceholder('Телефон или Telegram *').fill('+7 999 123-45-67');
     await section.getByRole('button', { name: formButton }).click();
 
     await expect(section.getByRole('status')).toContainText(formSuccessText);
     await expect(section.getByRole('button', { name: formButton })).toHaveCount(0);
-    await expect(page.getByRole('alert').filter({ hasText: phoneTooShort })).toHaveCount(0);
+    await expect(page.getByRole('alert').filter({ hasText: contactIncomplete })).toHaveCount(0);
 });
 
 // Путь к заявке на телефоне (DESIGN_FIXES_2_PLAN Д7): сцена там короче, цены ближе к началу.

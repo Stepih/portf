@@ -4,13 +4,13 @@ import s from './Chat.module.scss'
 import { ralewayBold } from "@/app/fonts/fonts";
 import { GOALS } from "@/constants/analytics";
 import { chatLeadBack, chatLeadError, chatLeadRequired, chatLeadSending, chatLeadSubmit, chatLeadTitle } from "@/data/chat";
-import { inputsListFeedback, phoneTooShort } from "@/data/inputsFeedBack";
-import { FEEDBACK_LIMITS, HONEYPOT_FIELD, isNameInput, isPhoneComplete, isPhoneInput } from "@/lib/validation/feedback";
+import { contactIncomplete, inputsListFeedback } from "@/data/inputsFeedBack";
+import { FEEDBACK_LIMITS, HONEYPOT_FIELD, isContactComplete, isContactInput, isNameInput } from "@/lib/validation/feedback";
 import { chatLeadMessage } from "@/scripts/chat";
 import { LEAD_FROM_CHAT, LEAD_FROM_FIELD } from "@/scripts/leadSource";
 import { reachGoal } from "@/scripts/metrika";
 
-// Заявка прямо в чате (CONVERSION_PLAN К3.2): имя и телефон, комментарий – вопросы из диалога.
+// Заявка прямо в чате (CONVERSION_PLAN К3.2): имя и телефон или Telegram (SALES_PLAN 4.2), комментарий – вопросы из диалога.
 // Уходит через /api/sendMessage, как форма на /popup, с пометкой «демо-чат»
 interface IChatLeadForm {
     questions: string[];
@@ -30,7 +30,7 @@ const ChatLeadForm: FC<IChatLeadForm> = ({ questions, onSent, onBack }) => {
         e.preventDefault();
         if (sending) return;
         if (!name.trim() || !contact.trim()) return setError(chatLeadRequired);
-        if (!isPhoneComplete(contact)) return setError(phoneTooShort);
+        if (!isContactComplete(contact)) return setError(contactIncomplete);
 
         const honeypot = new FormData(e.currentTarget).get(HONEYPOT_FIELD);
         const page = window.location.pathname;
@@ -78,17 +78,16 @@ const ChatLeadForm: FC<IChatLeadForm> = ({ questions, onSent, onBack }) => {
             />
             <input
                 className={s.field}
-                type="tel"
                 value={contact}
                 onChange={(e) => {
-                    if (!isPhoneInput(e.target.value)) return;
+                    if (!isContactInput(e.target.value)) return;
                     setContact(e.target.value);
                     setError('');
                 }}
                 placeholder={placeholder('contact')}
                 maxLength={FEEDBACK_LIMITS.contact}
                 autoComplete="tel"
-                aria-label="Телефон"
+                aria-label="Телефон или Telegram"
             />
             {/* Ловушка для ботов: человек поле не видит */}
             <input className={s.honeypot} name={HONEYPOT_FIELD} tabIndex={-1} autoComplete="off" aria-hidden="true" />

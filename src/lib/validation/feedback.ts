@@ -2,7 +2,7 @@
 
 export const FEEDBACK_LIMITS = {
     name: 50,
-    contact: 30,
+    contact: 50,
     message: 2000,
 } as const;
 
@@ -32,7 +32,7 @@ export const validateFeedback = (body: unknown): FeedbackResult => {
 
     if (!name || !contact || message === undefined) return { ok: false, error: 'Missing required fields' };
 
-    if (!isPhoneComplete(contact)) return { ok: false, error: 'Invalid phone' };
+    if (!isContactComplete(contact)) return { ok: false, error: 'Invalid contact' };
 
     if (
         name.length > FEEDBACK_LIMITS.name ||
@@ -51,10 +51,16 @@ export const validateFeedback = (body: unknown): FeedbackResult => {
 const NAME_INPUT = new RegExp(String.raw`^[\p{L}\p{M}\s'’ʼ-]{0,${FEEDBACK_LIMITS.name}}$`, 'u');
 export const isNameInput = (text: string) => NAME_INPUT.test(text);
 
-// Что можно набрать в поле «Телефон» (CONVERSION_PLAN К1.2): цифры, «+», пробелы, скобки и дефис –
-// чтобы проходил номер в любом привычном виде, например «+7 (999) 123-45-67». Проверяется только в браузере
-export const isPhoneInput = (text: string) => /^[0-9+()\s-]{0,25}$/.test(text);
+// Что можно набрать в поле «Телефон или Telegram» (CONVERSION_PLAN К1.2, SALES_PLAN 4.2): номер в любом привычном виде,
+// например «+7 (999) 123-45-67», или ник – «@ivan_petrov», «t.me/ivan_petrov». Кириллица и эмодзи не набираются.
+// До FEEDBACK_LIMITS.contact символов. Проверяется только в браузере
+const CONTACT_INPUT = new RegExp(String.raw`^[0-9a-zA-Z+()\s@_./:-]{0,${FEEDBACK_LIMITS.contact}}$`);
+export const isContactInput = (text: string) => CONTACT_INPUT.test(text);
 
-// Номер целиком – не меньше 10 цифр, «123» не проходит (DESIGN_FIXES_2_PLAN Д6). Проверяется и в браузере, и в /api/sendMessage
+// Контакт целиком (DESIGN_FIXES_2_PLAN Д6, SALES_PLAN 4.2): номер – не меньше 10 цифр, «123» не проходит;
+// ник Telegram – 5–32 латинских буквы, цифры и «_», с буквы, можно с «@» или «t.me/». Проверяется и в браузере, и в /api/sendMessage
 export const PHONE_MIN_DIGITS = 10;
-export const isPhoneComplete = (text: string) => text.replace(/\D/g, '').length >= PHONE_MIN_DIGITS;
+const PHONE = /^[0-9+()\s-]+$/;
+const TELEGRAM = /^(?:@|(?:https?:\/\/)?t\.me\/)?[a-z][a-z0-9_]{4,31}$/i;
+export const isContactComplete = (text: string) =>
+    TELEGRAM.test(text) || (PHONE.test(text) && text.replace(/\D/g, '').length >= PHONE_MIN_DIGITS);

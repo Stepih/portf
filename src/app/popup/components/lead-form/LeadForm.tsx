@@ -1,20 +1,21 @@
 "use client"
 
 import ActionButton from "@/components/ui/buttons/button-action/ActionButton";
-import { FC, FormEventHandler, Suspense, useEffect, useRef, useState } from "react";
+import { FC, FormEventHandler, useEffect, useRef, useState } from "react";
 import ListInput, { FieldErrors } from "./input/ListInput";
 import { IInputKeyValue } from "@/interfaces/input";
 
 import s from './LeadForm.module.scss'
 import TextAreaInput from "./input/TextAreaInput";
 import ErrorMessage from "@/components/ui/errorMessage/ErrorMessage";
-import { HONEYPOT_FIELD, isNameInput, isPhoneComplete, isPhoneInput } from "@/lib/validation/feedback";
-import { leadSourceFromSearch } from "@/scripts/leadSource";
+import { HONEYPOT_FIELD, isContactComplete, isContactInput, isNameInput } from "@/lib/validation/feedback";
+import { LeadSource, leadSourceFromSearch } from "@/scripts/leadSource";
 import { reachGoal } from "@/scripts/metrika";
 import { GOALS } from "@/constants/analytics";
-import { formButton, formSuccessText, formSuccessTitle, nameEmptyError, nameFormatError, phoneEmptyError, phoneFormatError, phoneTooShort } from "@/data/inputsFeedBack";
+import { contactEmptyError, contactFormatError, contactIncomplete, formButton, formSuccessText, formSuccessTitle, nameEmptyError, nameFormatError } from "@/data/inputsFeedBack";
 import { ralewayBold } from "@/app/fonts/fonts";
-import { ServiceId } from "@/interfaces/offer";
+import { ILeadService, LeadServiceId } from "@/interfaces/offer";
+import { SERVICE_PARAM } from "@/scripts/services";
 import ServiceChoice from "./service-choice/ServiceChoice";
 
 // Порядок полей на экране: фокус уходит на первое неверное
@@ -26,17 +27,18 @@ const errorByStatus: Record<number, string> = {
 };
 
 // Форма заявки (SALES_PLAN 4.1): на /popup и в финальном блоке главной.
-// Отступы снаружи задаёт страница через className. serviceLines – строки услуг из offer.ts (serviceLines в scripts/services):
-// форма показывает ту, что в адресе (DESIGN_FIXES_3_PLAN Д13)
+// Отступы снаружи задаёт страница через className. services – типы проекта для чипов (leadServices в scripts/services):
+// услуга из адреса выбрана заранее (SALES_PLAN 4.2)
 interface ILeadForm {
     className?: string;
-    serviceLines?: Partial<Record<ServiceId, string>>;
+    services?: ILeadService[];
 }
 
-const LeadForm: FC<ILeadForm> = ({ className, serviceLines }) => {
+const LeadForm: FC<ILeadForm> = ({ className, services }) => {
     const [inputValue, setInputValue] = useState<IInputKeyValue>({name: '', contact: ''});
     const [focusInput, setFocusInput] = useState<keyof IInputKeyValue | undefined>(undefined)
     const [textAreaValue, setTextAreaValue] = useState('');
+    const [service, setService] = useState<LeadServiceId | undefined>(undefined);
     // Ошибки полей – под полями (DESIGN_FIXES_6_PLAN Д31); плашка ErrorMessage – только сеть и сервер
     const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
     const [error, setError] = useState('');
@@ -60,8 +62,8 @@ const LeadForm: FC<ILeadForm> = ({ className, serviceLines }) => {
         const contact = inputValue.contact.trim();
         const errors: FieldErrors = {};
         if (!name) errors.name = nameEmptyError;
-        if (!contact) errors.contact = phoneEmptyError;
-        else if (!isPhoneComplete(contact)) errors.contact = phoneTooShort;
+        if (!contact) errors.contact = contactEmptyError;
+        else if (!isContactComplete(contact)) errors.contact = contactIncomplete;
 
         const firstInvalid = inputsOrder.find(key => errors[key]);
         if (firstInvalid) {
@@ -72,8 +74,10 @@ const LeadForm: FC<ILeadForm> = ({ className, serviceLines }) => {
         }
 
         const honeypot = new FormData(e.currentTarget).get(HONEYPOT_FIELD);
-        // Услуга, кейс или отрасль из ссылки «Обсудить» (SALES_PLAN 4.8) уходят с заявкой; видна в форме только услуга (Д13)
-        const source = leadSourceFromSearch(window.location.search);
+        // Кейс или отрасль из ссылки «Обсудить» (SALES_PLAN 4.8) уходят с заявкой. Услуга – та, что выбрана в чипах (4.2):
+        // снятый выбор убирает и услугу из ссылки
+        const source: LeadSource = { ...leadSourceFromSearch(window.location.search), [SERVICE_PARAM]: service };
+        if (!service) delete source[SERVICE_PARAM];
 
         setIsSending(true);
         try {
@@ -102,7 +106,7 @@ const LeadForm: FC<ILeadForm> = ({ className, serviceLines }) => {
 
     // Недопустимый символ не набирается, под полем – формат. Правка поля снимает его ошибку
     const handleSetInputValue = (value:IInputKeyValue) => {
-        if (focusInput === 'contact' && !isPhoneInput(value.contact)) return setFieldError('contact', phoneFormatError)
+        if (focusInput === 'contact' && !isContactInput(value.contact)) return setFieldError('contact', contactFormatError)
         if (focusInput === 'name' && !isNameInput(value.name)) return setFieldError('name', nameFormatError)
         if (focusInput) setFieldError(focusInput, undefined);
         if (error) setError('');
@@ -139,11 +143,7 @@ const LeadForm: FC<ILeadForm> = ({ className, serviceLines }) => {
         // ym-hide-content: Вебвизор не записывает, что ввели в поля заявки (SALES_PLAN 6.2)
         <form className={`${classes} ym-hide-content`} onSubmit={onSubmit}>
             <ErrorMessage error={error} />
-            {serviceLines && (
-                <Suspense fallback={null}>
-                    <ServiceChoice lines={serviceLines} />
-                </Suspense>
-            )}
+            {services && <ServiceChoice services={services} value={service} onChange={setService} />}
             <ListInput handleSetFocusInput={handleSetFocusInput} value={inputValue} handleSetValue={handleSetInputValue} errors={fieldErrors} inputRefs={inputRefs} />
             <TextAreaInput setValue={handleSetTextAreaValue} value={textAreaValue} />
             {/* Обёртка задаёт жирный Raleway, как у остальных кнопок-действий: ActionButton общий (design-sync) */}
