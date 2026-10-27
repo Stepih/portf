@@ -82,6 +82,10 @@ const PHONE_TIMING = timing(PHONE_CHIPS_HOLD);
 
 // Сглаживание прогресса: щелчки колеса мыши не дёргают анимацию. Без перелёта, догоняет за ~0,3 с
 const SMOOTH = { stiffness: 170, damping: 30, restDelta: .0001 };
+// Потолок отставания пружины от скролла, в экранах: при рывке (ползунок, End, сильный свайп) она перескакивает до него,
+// остаток догоняет как обычно. Меньше запаса липкости (--hold в стилях, 1 экран): экран сцены отпускается, когда дыра
+// уже на весь экран, при любой скорости. Колесо и тачпад отстают на 100–300px – потолок не срабатывает (DESIGN_FIXES_6_PLAN С3)
+const LAG_CAP = .8;
 
 const ease = cubicBezier(.4, 0, .2, 1);
 const clamp01 = (v: number) => Math.min(1, Math.max(0, v));
@@ -256,6 +260,7 @@ const HeroExpand: FC<HeroExpandProps> = ({ chips, worksCount, children }) => {
     const tm = useMediaQuery(PHONE_QUERY) ? PHONE_TIMING : DESKTOP_TIMING;
 
     const scene = useRef<HTMLElement>(null);
+    const path = useRef<HTMLDivElement>(null);
     const screen = useRef<HTMLDivElement>(null);
     const card = useRef<HTMLDivElement>(null);
     const photoBox = useRef<HTMLDivElement>(null);
@@ -276,15 +281,29 @@ const HeroExpand: FC<HeroExpandProps> = ({ chips, worksCount, children }) => {
     const [waveGeom, setWaveGeom] = useState<WaveGeom>(noWave);
     const [chipGeoms, setChipGeoms] = useState<ChipGeom[]>([]);
 
-    // Прогресс – от начала сцены до места, где браузер отпускает липкий экран: путь – высота сцены без высоты экрана.
+    // Прогресс – от начала сцены до конца пути: путь – высота слоя пути (path) без высоты экрана.
+    // Сцена длиннее пути на запас липкости (--hold): экран держится, пока сглаженный прогресс догоняет скролл (DESIGN_FIXES_6_PLAN С3).
     // Не useScroll по сцене ('end end' меряет по окну): экран выше окна, пока панели браузера развёрнуты,
     // и прогресс не доходил бы до 1, когда экран уже уезжает (DESIGN_FIXES_6_PLAN С1)
     const sceneTop = useMotionValue(0);
     const sceneLen = useMotionValue(1);
+    // LAG_CAP в долях пути
+    const lagCap = useMotionValue(1);
     const { scrollY } = useScroll();
     const rawProgress = useTransform([scrollY, sceneTop, sceneLen], ([y, top, len]: number[]) => clamp01((y - top) / len));
     // Анимация идёт за сглаженным прогрессом; сам скролл страницы не трогаем
     const scrollYProgress = useSpring(rawProgress, SMOOTH);
+    // Потолок отставания: прогресс без обрезки по [0, 1] – за концом пути скролл идёт дальше, а пружина должна успеть до 1.
+    // jump останавливает пружину, set запускает её снова к цели
+    useMotionValueEvent(scrollY, 'change', (y) => {
+        const p = (y - sceneTop.get()) / sceneLen.get();
+        const v = scrollYProgress.get();
+        const lo = clamp01(p - lagCap.get());
+        const hi = clamp01(p + lagCap.get());
+        if (v >= lo && v <= hi) return;
+        scrollYProgress.jump(v < lo ? lo : hi);
+        scrollYProgress.set(clamp01(p));
+    });
     const t = useTransform(scrollYProgress, [tm.expandFrom, tm.expandTo], [0, 1], { ease, clamp: true });
 
     // Отступы карточки от краёв липкого экрана, меряются при загрузке и ресайзе
@@ -318,11 +337,13 @@ const HeroExpand: FC<HeroExpandProps> = ({ chips, worksCount, children }) => {
     useLayoutEffect(() => {
         if (!screen.current || !card.current || !photoBox.current) return;
         const measure = () => {
-            if (!screen.current || !card.current || !photoBox.current || !scene.current) return;
+            if (!screen.current || !card.current || !photoBox.current || !scene.current || !path.current) return;
             scene.current.style.setProperty('--page-w', `${document.documentElement.clientWidth}px`);
             // offsetTop, а не getBoundingClientRect: страница въезжает на 20px (template.tsx), и замер во время въезда сбивал бы путь
             sceneTop.set(offsetIn(scene.current, document.body).y);
-            sceneLen.set(Math.max(1, scene.current.offsetHeight - screen.current.offsetHeight));
+            const len = Math.max(1, path.current.offsetHeight - screen.current.offsetHeight);
+            sceneLen.set(len);
+            lagCap.set(LAG_CAP * screen.current.offsetHeight / len);
             const box = screen.current.getBoundingClientRect();
             // offsetTop/Left не видят transform, поэтому уехавшие слайды и фото не сбивают замер
             const c = card.current;
@@ -385,10 +406,10 @@ const HeroExpand: FC<HeroExpandProps> = ({ chips, worksCount, children }) => {
         measure();
         document.fonts?.ready.then(measure);
         const observer = new ResizeObserver(measure);
-        [scene.current, screen.current, card.current, photoBox.current, slot.current, root.current, lead.current]
+        [scene.current, path.current, screen.current, card.current, photoBox.current, slot.current, root.current, lead.current]
             .forEach((el) => el && observer.observe(el));
         return () => observer.disconnect();
-    }, [reduceMotion, sceneTop, sceneLen, top, right, bottom, left, photoDx, photoDy, photoScale, cx, cy, r0, diskMax, diskDy, rMax]);
+    }, [reduceMotion, sceneTop, sceneLen, lagCap, top, right, bottom, left, photoDx, photoDy, photoScale, cx, cy, r0, diskMax, diskDy, rMax]);
 
     // Тач-экран: экран сцены не ниже наибольшего innerHeight при этой ширине окна (--screen-max-h в стилях).
     // Только растёт – панели браузера сворачиваются и разворачиваются на скролле; при смене ширины (поворот) – заново.
@@ -702,9 +723,12 @@ const HeroExpand: FC<HeroExpandProps> = ({ chips, worksCount, children }) => {
                         {industries}
                     </div>
                 </motion.div>
+
+                {/* Путь анимации – сцена без запаса липкости: от него меряется прогресс */}
+                <div ref={path} className={s.path} aria-hidden="true" />
             </section>
 
-            {/* Кейсы прилипают к экрану на время портала и отпускаются вместе со сценой: --exit – путь портала.
+            {/* Кейсы прилипают к экрану на время портала и отпускаются в конце пути сцены: --exit – путь портала.
                 Липкость нативная, поэтому за скроллом блок не дёргается; сам он не масштабируется и не сдвигается.
                 До начала портала он прозрачен: иначе просвечивает под первым экраном */}
             <div

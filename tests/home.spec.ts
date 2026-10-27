@@ -733,6 +733,84 @@ for (const viewport of [{ width: 1400, height: 900 }, { width: 375, height: 667 
     });
 }
 
+// Быстрый скролл (DESIGN_FIXES_6_PLAN С3): анимация идёт за сглаженным прогрессом, и экран отпускался в конце пути,
+// пока дыра ещё не раскрыта, – снизу росла полоса с кейсами. Теперь экран держится ещё экран после конца пути,
+// а пружина отстаёт не больше чем на 0,8 экрана: в каждом кадре экран либо закрывает окно до низа, либо дыра на весь экран
+const scenePath = (page: Page) => sceneScreen(page).evaluate((el: HTMLElement) => {
+    const scene = el.parentElement!;
+    // Путь анимации – невидимый слой последним в сцене: сцена длиннее него на запас липкости
+    const path = scene.lastElementChild as HTMLElement;
+    return { top: scene.getBoundingClientRect().top + window.scrollY, len: path.offsetHeight - el.offsetHeight, screen: el.offsetHeight };
+});
+// Кадры за ms: где экран отъехал от верха или не дотянул до низа окна, а дыра не на весь экран.
+// Состояние – уже отрисованного кадра: setTimeout из rAF идёт после того, как framer-motion обновил стили
+const recordFrames = (page: Page, ms: number) => sceneScreen(page).evaluate((el, ms) => new Promise<string[]>((resolve) => {
+    const bad: string[] = [];
+    const start = performance.now();
+    const sample = () => {
+        const r = el.getBoundingClientRect();
+        const covers = r.top > -.5 && r.top < .5 && r.bottom >= window.innerHeight - 1;
+        const m = el.style.maskImage.match(/circle at ([\d.]+)px ([\d.]+)px, transparent ([\d.]+)px/);
+        const [x, y, h] = m ? m.slice(1).map(Number) : [0, 0, 0];
+        const open = h >= Math.hypot(Math.max(x, r.width - x), Math.max(y, r.height - y));
+        if (!covers && !open && r.bottom > 0) bad.push(`top ${Math.round(r.top)}, bottom ${Math.round(r.bottom)}, дыра ${Math.round(h)}`);
+        if (performance.now() - start < ms) requestAnimationFrame(() => setTimeout(sample));
+        else resolve(bad);
+    };
+    requestAnimationFrame(() => setTimeout(sample));
+}), ms);
+const scrollInstant = (page: Page, y: number) => page.evaluate((v) => window.scrollTo({ top: v, behavior: 'instant' }), y);
+
+for (const viewport of [{ width: 1400, height: 900 }, { width: 375, height: 667 }]) {
+    test.describe(`быстрый скролл за конец сцены, ${viewport.width}px`, () => {
+        test.use({ viewport });
+        // Начало портала, доля пути сцены (HeroExpand.tsx: portalFrom)
+        const portalFrom = viewport.width <= 700 ? .84 / 1.19 : .94 / 1.29;
+
+        test('прыжок за конец пути: полосы под экраном нет', async ({ page }) => {
+            await page.goto('/');
+            await page.waitForTimeout(800);
+            const path = await scenePath(page);
+            for (const k of [.3, .9, 1.5]) {
+                await scrollInstant(page, path.top + path.len * portalFrom);
+                await page.waitForTimeout(700);
+                const frames = recordFrames(page, 600);
+                await scrollInstant(page, path.top + path.len + path.screen * k);
+                expect(await frames, `прыжок на ${k} экрана за конец пути`).toEqual([]);
+            }
+        });
+
+        test('быстрые щелчки колеса: полосы под экраном нет', async ({ page }) => {
+            await page.goto('/');
+            await page.waitForTimeout(800);
+            const path = await scenePath(page);
+            await scrollInstant(page, path.top + path.len * portalFrom);
+            await page.waitForTimeout(700);
+            await page.mouse.move(viewport.width / 2, viewport.height / 2);
+            const frames = recordFrames(page, 1200);
+            for (let i = 0; i < 8; i++) await page.mouse.wheel(0, 300);
+            expect(await frames).toEqual([]);
+        });
+
+        test('скролл назад: сцена собирается обратно', async ({ page }) => {
+            await page.goto('/');
+            await page.waitForTimeout(800);
+            const path = await scenePath(page);
+            await scrollInstant(page, path.top + path.len + path.screen * 1.5);
+            await page.waitForTimeout(700);
+            // Кадр отраслей: дыры нет, чипы с подписями на местах
+            await scrollInstant(page, path.top + path.len * .6);
+            await expect.poll(() => sceneScreen(page).evaluate((el) => el.style.maskImage)).toBe('none');
+            const items = page.getByRole('region', { name: 'Каким может быть сайт для вашего бизнеса' }).getByRole('listitem');
+            await expect.poll(() => items.evaluateAll((lis) => lis.every((li) => {
+                let op = 1;
+                for (let n: Element | null = li.querySelector('a'); n; n = n.parentElement) op *= parseFloat(getComputedStyle(n).opacity);
+                return op > .98;
+            }))).toBe(true);
+        });
+    });
+}
+
 test.describe('тач-экран', () => {
     test.use({ viewport: { width: 375, height: 667 }, hasTouch: true });
 
@@ -778,11 +856,8 @@ for (const { viewport, shifted } of [
         // Середина стояния диска, доля пути сцены: начало портала + (DISK_TO + OPEN_AT) / 2 его пути (HeroExpand.tsx)
         const from = viewport.width <= 700 ? .84 / 1.19 : .94 / 1.29;
         const at = from + (1 - from) * 2 / 7;
-        await sceneScreen(page).evaluate((el: HTMLElement, k) => {
-            const scene = el.parentElement!;
-            const top = scene.getBoundingClientRect().top + window.scrollY;
-            window.scrollTo({ top: top + k * (scene.offsetHeight - el.offsetHeight), behavior: 'instant' });
-        }, at);
+        const path = await scenePath(page);
+        await scrollInstant(page, path.top + path.len * at);
 
         const radius = Math.min(150, viewport.width * .3);
         const frame = () => sceneScreen(page).evaluate((el) => {
