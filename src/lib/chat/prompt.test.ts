@@ -9,8 +9,11 @@ describe("buildSystemPrompt", () => {
     it("цены и сроки всех услуг берутся из offer.ts", () => {
         for (const s of services) {
             expect(prompt).toContain(plainText(s.title));
-            expect(prompt).toContain(plainText(s.price));
-            expect(prompt).toContain(plainText(s.term));
+            // У ИИ две ступени (SERVICES_PLAN У2): в промпте обе цены и оба срока, а не одна пара
+            for (const p of s.tiers ?? [{ price: s.price, term: s.term }]) {
+                expect(prompt).toContain(plainText(p.price));
+                expect(prompt).toContain(plainText(p.term));
+            }
             for (const e of s.examples ?? []) expect(prompt).toContain(plainText(e.text));
         }
     });

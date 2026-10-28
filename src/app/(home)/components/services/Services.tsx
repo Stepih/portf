@@ -43,9 +43,24 @@ const Services: FC = () => {
                             {service.demoChat && <ChatButton className={s.demo} />}
 
                             <div className={s.bottom}>
-                                <p className={`${ralewayBold.className} ${s.price}`}>{service.price}</p>
-                                <p className={s.term}>{service.term}</p>
-                                {service.note && <p className={s.note}>{service.note}</p>}
+                                {service.tiers ? (
+                                    // Ступени ИИ (SERVICES_PLAN У2): у каждой своя пара «цена · срок» и что видно до оплаты
+                                    <ul className={s.tiers}>
+                                        {service.tiers.map((tier) => (
+                                            <li key={tier.title} className={s.tier}>
+                                                <p className={`${ralewayBold.className} ${s.tierName}`}>{tier.title}</p>
+                                                <p className={`${ralewayBold.className} ${s.price}`}>{tier.price}</p>
+                                                <p className={s.term}>{tier.term} · <span className={s.condition}>{tier.condition}</span></p>
+                                            </li>
+                                        ))}
+                                    </ul>
+                                ) : (
+                                    <>
+                                        <p className={`${ralewayBold.className} ${s.price}`}>{service.price}</p>
+                                        <p className={s.term}>{service.term}</p>
+                                    </>
+                                )}
+                                {service.note && <p className={`${s.note} ${service.tiers ? s.tiersNote : ''}`}>{service.note}</p>}
 
                                 {cases.length > 0 && (
                                     <p className={s.cases}>

@@ -26,14 +26,20 @@ export interface IServiceExample {
     text: string
 }
 
-export interface IService {
+// Ступень цены в карточке ИИ (SERVICES_PLAN У2): «Заявки и запись – от 15 000 ₽, от 3 дней, демо бесплатно»
+export interface IServiceTier {
+    title: string,
+    price: string,
+    term: string,
+    // Что клиент видит до оплаты: демо или пилот
+    condition: string
+}
+
+interface IServiceBase {
     id: ServiceId,
     title: string,
     // Одна строка: что это за сайт
     summary: string,
-    // «от 8 000 ₽»
-    price: string,
-    term: string,
     // Уточнение к цене или сроку
     note?: string,
     // Список «Например:» под описанием; есть только у широкой карточки
@@ -45,6 +51,12 @@ export interface IService {
     // Кнопка демо-чата в карточке (CONVERSION_PLAN К3.2): чат – живой пример этой услуги
     demoChat?: boolean
 }
+
+// Одна цена со сроком («от 8 000 ₽», «3–4 дня») или ступени – не то и другое сразу
+export type IService = IServiceBase & (
+    { price: string, term: string, tiers?: never } |
+    { tiers: IServiceTier[], price?: never, term?: never }
+)
 
 // Что клиент платит на этапе (DESIGN_FIXES_2_PLAN Д5): due – здесь платёж, иначе этап бесплатный
 export interface IOfferStepPay {

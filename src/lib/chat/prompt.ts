@@ -15,7 +15,10 @@ const list = (items: string[]) => items.map((item) => `- ${item}`).join('\n');
 const servicesSection = () => list(services.map((s) => [
     `${s.title}: ${s.summary}`,
     s.examples && `Например: ${s.examples.map((e) => `${e.title.toLowerCase()} – ${e.text}`).join('; ')}`,
-    `Цена ${s.price}, срок ${s.term}`,
+    // У ИИ две ступени по задачам (SERVICES_PLAN У2): чат называет обе, а не одну цену на всё
+    s.tiers
+        ? `Цена по задачам: ${s.tiers.map((t) => `${t.title.toLowerCase()} – ${t.price}, срок ${t.term}, ${t.condition.toLowerCase()}`).join('; ')}`
+        : `Цена ${s.price}, срок ${s.term}`,
     s.note
 ].filter(Boolean).join('. ')));
 

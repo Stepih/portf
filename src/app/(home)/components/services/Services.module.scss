@@ -152,6 +152,41 @@
         font-size: 1.6rem;
     }
 
+    // Ступени ИИ: название задач – над ценой, ступени делит волосяная линия, как низ карточки – от описания
+    .tiers {
+        display: flex;
+        flex-direction: column;
+        align-self: stretch;
+
+        margin: 0;
+        padding: 0;
+
+        list-style: none;
+    }
+
+    .tier {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+
+        // `& + &` раскрылся бы в «.services .tier + .services .tier»
+        & + .tier {
+            margin-top: 12px;
+            padding-top: 12px;
+            border-top: 1px solid rgba(128, 128, 128, 0.3);
+        }
+    }
+
+    .tierName {
+        margin: 0;
+        font-size: 1.05rem;
+    }
+
+    .condition {
+        color: var(--color-text-muted);
+        transition: vars.$transition;
+    }
+
     .term,
     .note,
     .cases {
@@ -163,6 +198,11 @@
     .cases {
         color: var(--color-text-muted);
         transition: vars.$transition;
+    }
+
+    // Уточнение – ко всем ступеням, поэтому отделено от последней. После общего margin: 0 у .note
+    .tiersNote {
+        margin-top: 10px;
     }
 
     // Название клиента не рвётся на строки («ИКЦ / «Презентация»» на телефоне)

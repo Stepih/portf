@@ -24,6 +24,16 @@ describe("offer", () => {
         expect(new Set(ids).size).toBe(ids.length);
     });
 
+    // SERVICES_PLAN У2: звонки и документы не продаются по цене заявок; ступени называются по задачам (copy_choices)
+    it("у ИИ две ступени цены, без «лёгкий / простой / сложный»", () => {
+        const ai = services.find((s) => s.id === 'ai')!;
+        expect(ai.tiers).toHaveLength(2);
+        for (const tier of ai.tiers!) {
+            expect(tier.price).toMatch(/^от \d/);
+            expect(`${tier.title} ${tier.condition}`).not.toMatch(/л[её]гк|прост|сложн/i);
+        }
+    });
+
     it("строка доверия собирается из чисел портфолио", () => {
         const line = offerTrustLine({
             count: 3,

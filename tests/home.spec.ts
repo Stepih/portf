@@ -1175,7 +1175,7 @@ test('теги, подпись чата и неразрывные пары на 
 });
 
 // Карточка ИИ (DESIGN_FIXES_7_PLAN Д36): срок «от 3 дней» – один раз, уточнение – одной фразой,
-// подпись демо – про задачи из примеров, а не про ответы клиентам
+// подпись демо – про задачи из примеров, а не про ответы клиентам. С У2 (SERVICES_PLAN) – две ступени цены
 test('карточка ИИ без повторов, подпись демо про примеры', async ({ page }) => {
     await page.goto('/');
 
@@ -1189,6 +1189,37 @@ test('карточка ИИ без повторов, подпись демо п�
     await expect(card.getByText(ai.note!)).toBeVisible();
     await expect(card.getByRole('button').filter({ hasText: chatButtonText })).toBeVisible();
 });
+
+// SERVICES_PLAN У2: у каждой ступени ИИ видны название, цена, срок и что клиент видит до оплаты – по порядку
+for (const width of [1400, 375]) {
+    test(`карточка ИИ: две ступени цены, ${width}`, async ({ page }) => {
+        await page.setViewportSize({ width, height: 900 });
+        await page.goto('/');
+
+        const ai = services.find((service) => service.id === 'ai')!;
+        const card = page.getByRole('region', { name: servicesTitle }).getByRole('listitem')
+            .filter({ has: page.getByRole('heading', { name: ai.title }) });
+        const tiers = card.getByRole('list').filter({ hasText: ai.tiers![0].price }).getByRole('listitem');
+        await expect(tiers).toHaveCount(ai.tiers!.length);
+        for (const [i, tier] of ai.tiers!.entries()) {
+            const row = tiers.nth(i);
+            const text = (await row.innerText()).replace(/\s+/g, ' ');
+            expect(text).toBe(`${tier.title} ${tier.price} ${tier.term} · ${tier.condition}`);
+            await expect(row).toBeVisible();
+        }
+        // Цена ступени не шире карточки и не рвётся
+        const box = await card.boundingBox();
+        for (const price of await tiers.locator('[class*="price"]').all()) {
+            const b = (await price.boundingBox())!;
+            expect(b.x + b.width).toBeLessThanOrEqual(box!.x + box!.width);
+            expect(await price.evaluate((el) => {
+                const range = document.createRange();
+                range.selectNodeContents(el);
+                return new Set([...range.getClientRects()].map((r) => Math.round(r.top))).size;
+            })).toBe(1);
+        }
+    });
+}
 
 // Фоновые пятна приглушены по теме, чтобы приглушённый текст над ними читался (DESIGN_FIXES_5_PLAN Д25)
 for (const [theme, opacity] of [['light', '0.6'], ['dark', '0.3']] as const) {
