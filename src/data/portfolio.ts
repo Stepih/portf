@@ -48,7 +48,7 @@ export const portfolioWorks: IPortfolioWork[] = [
         id: 'icc',
         name: 'ИКЦ «Презентация»',
         year: 2026,
-        kind: 'Корпоративный',
+        kind: 'Лендинг',
         industries: ['outsourcing'],
         description: 'Сайт кировской компании: сопровождение 1С, сайты, ИТ-поддержка 24/7, бухгалтерия и юристы на одной странице',
         tags: ['Web', 'Mobile', 'B2B-услуги'],

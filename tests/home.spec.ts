@@ -1248,10 +1248,21 @@ for (const width of [1400, 375]) {
         }
         const corporate = section.getByRole('listitem').filter({ has: page.getByRole('heading', { name: serviceTitle('corporate') }) });
         await expect(corporate.getByRole('link', { name: 'Союз вокалистов' })).toHaveAttribute('href', '/portfolio/vocal');
+        // ИКЦ «Презентация» – лендинг (владелец)
+        const landing = section.getByRole('listitem').filter({ has: page.getByRole('heading', { name: serviceTitle('landing') }) });
+        await expect(landing.getByRole('link', { name: 'ИКЦ «Презентация»' })).toHaveAttribute('href', '/portfolio/icc');
+        await expect(corporate.getByRole('link', { name: 'ИКЦ «Презентация»' })).toHaveCount(0);
         await expect(section.getByRole('listitem').filter({ has: page.getByRole('heading', { name: serviceTitle('shop') }) }))
             .toContainText('Каталог без корзины – от 35 000 ₽');
     });
 }
+
+// ИКЦ «Презентация» – лендинг, а не сайт компании (владелец, SERVICES_PLAN У3)
+test('кейс ИКЦ: тип – лендинг', async ({ page }) => {
+    await page.goto('/portfolio/icc');
+    await expect(page).toHaveTitle(/лендинг – кейс/);
+    await expect(page.getByText('Лендинг', { exact: true }).first()).toBeVisible();
+});
 
 // Союз вокалистов – разработка владельца целиком, а не только дизайн (SERVICES_PLAN У3)
 test('кейс Союза вокалистов: роль – дизайн и разработка', async ({ page }) => {
