@@ -1,0 +1,30 @@
+@use '/src/styles/variables.scss' as vars;
+
+// Вопрос в пути – пузырь реплики клиента (как в чате: чернилами, текст цветом фона), на месте – строка FAQ главной
+.list {
+    overflow: visible;
+}
+
+.item {
+    position: relative;
+    transform-origin: 100% 50%;
+}
+
+.bubble {
+    position: absolute;
+    inset: 4px -14px;
+
+    background: var(--color-text-100);
+    border-radius: 13px;
+    pointer-events: none;
+    transition: vars.$transition;
+}
+
+// Текст вопроса над пузырём: пока пузырь тёмный, текст цветом фона (цвет переключает компонент)
+.question {
+    position: relative;
+}
+
+.text {
+    position: relative;
+}

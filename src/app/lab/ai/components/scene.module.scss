@@ -1,0 +1,47 @@
+// Липкая сцена черновика /lab/ai – как у первого экрана главной (HeroExpand.module.scss): экран на высоту окна (lvh),
+// сцена во всю ширину окна, путь анимации – отдельным слоем. Длину пути (--scene-h, --scene-h-phone) ставит компонент
+.scene {
+    --screen-h: 100vh;
+
+    @supports (height: 100lvh) {
+        --screen-h: 100lvh;
+    }
+
+    // Запас липкости: экран держится ещё треть экрана после конца пути, пока сглаженный прогресс догоняет скролл
+    // (больше потолка отставания LAG_CAP в scene.ts). Заодно – время спокойно задать вопрос в раскрытом чате
+    --hold: calc(var(--screen-h) * .4);
+
+    position: relative;
+    height: calc(var(--scene-h) + var(--hold));
+    // --page-w – ширина окна без полосы прокрутки, её ставит useStickyScene
+    margin-left: calc(50% - var(--page-w, 100vw) / 2);
+    margin-right: calc(50% - var(--page-w, 100vw) / 2);
+}
+
+.screen {
+    position: sticky;
+    top: 0;
+
+    height: var(--screen-h);
+    overflow: hidden;
+}
+
+.path {
+    position: absolute;
+    top: 0;
+    left: 0;
+
+    width: 0;
+    height: var(--scene-h);
+    visibility: hidden;
+}
+
+@media screen and (max-width: 700px) {
+    .scene {
+        height: calc(var(--scene-h-phone, var(--scene-h)) + var(--hold));
+    }
+
+    .path {
+        height: var(--scene-h-phone, var(--scene-h));
+    }
+}

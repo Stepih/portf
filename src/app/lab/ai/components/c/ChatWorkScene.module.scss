@@ -1,0 +1,149 @@
+@use '/src/styles/variables.scss' as vars;
+
+// Вариант C: слои сцены поверх стилей A (OrbScene.module.scss) и B (Pipeline.module.scss).
+// Снизу вверх: первый экран, агент за работой, ступени, стекло шара, свет, чат
+.scene {
+    // Сцена над разделами ниже: её последний кадр уезжает вверх целиком
+    position: relative;
+    z-index: 1;
+}
+
+.pipe {
+    pointer-events: none;
+}
+
+// Стык с AgentDeck пройден: экран прозрачен для кликов – под ним полоски слайдов. !important – у плашки чата свой auto
+.passed,
+.passed * {
+    pointer-events: none !important;
+}
+
+// Место шара сцены – меряется, сам шар рисует общая оболочка
+.ghost {
+    visibility: hidden;
+}
+
+.shell {
+    z-index: 2;
+}
+
+// Свет и звезда шара: коробка размером с шар первого экрана, сдвиг и масштаб – от компонента
+.lightBox {
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: 3;
+
+    pointer-events: none;
+}
+
+.chatLayer {
+    z-index: 4;
+}
+
+// ---------- Ступени ----------
+.tiers {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+
+    display: grid;
+    grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+    align-items: center;
+    gap: 56px;
+
+    max-width: 1156px;
+    margin: 0 auto;
+    padding: 8vh 48px;
+
+    pointer-events: none;
+}
+
+.live {
+    pointer-events: auto;
+}
+
+.side {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 14px;
+}
+
+.sideTitle {
+    margin: 0;
+
+    font-size: clamp(1.6rem, 4vw, 2.2rem);
+    line-height: 1.15;
+    text-wrap: balance;
+    color: var(--color-text-100);
+    transition: vars.$transition;
+}
+
+.sideText,
+.sideNote {
+    margin: 0;
+
+    font-size: 1.05rem;
+    line-height: 1.4;
+    color: var(--color-text-muted);
+    transition: vars.$transition;
+}
+
+.sideNote {
+    font-size: 0.95rem;
+}
+
+// Карточки лежат в одной ячейке: вторая ложится поверх первой
+.stack {
+    display: grid;
+}
+
+// position и z-index явно: без сдвига у карточки нет transform, и сдвинутая первая рисовалась бы поверх второй
+.card {
+    position: relative;
+    z-index: 1;
+    grid-area: 1 / 1;
+
+    color: var(--color-text-100);
+
+    background: var(--color-bg);
+    border-radius: 13px;
+    box-shadow: vars.$shadow;
+    transform-origin: 50% 0;
+    transition: vars.$transition;
+}
+
+.card + .card {
+    z-index: 2;
+}
+
+.cardBody {
+    height: 100%;
+}
+
+@media screen and (max-width: 900px) {
+    .tiers {
+        gap: 32px;
+        padding: 8vh 32px;
+    }
+}
+
+// Телефон: заголовок сверху, карточки под ним
+@media screen and (max-width: 700px) {
+    .tiers {
+        grid-template-columns: minmax(0, 1fr);
+        align-content: center;
+        gap: 20px;
+
+        padding: 24px 16px;
+    }
+
+    .side {
+        gap: 8px;
+    }
+
+    .sideText {
+        font-size: 0.95rem;
+    }
+}

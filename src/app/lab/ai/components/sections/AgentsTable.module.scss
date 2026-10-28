@@ -1,0 +1,90 @@
+@use '/src/styles/variables.scss' as vars;
+
+// Таблица агентов: липкая сцена колоды (scene.module.scss) или, в .flat, обычный блок
+.scene {
+    margin-top: 60px;
+}
+
+.screen {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    padding: 0 20px;
+}
+
+.wrap {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+
+    width: 100%;
+    max-width: 1060px;
+}
+
+.table {
+    position: relative;
+    width: 100%;
+    margin-top: 24px;
+}
+
+// Строка поверх своей плашки; плашка – карта колоды, тает к концу раздачи
+.row {
+    position: relative;
+    transform-origin: 20% 50%;
+
+    > span[role="cell"] {
+        position: relative;
+    }
+}
+
+.plate {
+    position: absolute;
+    inset: -8px 0;
+
+    background: color-mix(in srgb, rgb(57, 57, 57) 8%, var(--color-bg));
+    border-radius: 13px;
+    box-shadow: vars.$shadow;
+    transition: vars.$transition;
+}
+
+.rule {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+
+    height: 1.5px;
+
+    background: rgba(128, 128, 128, 0.45);
+    transform-origin: 0 50%;
+}
+
+// Без сцены: обычная высота, без липкости (два класса – сильнее стилей scene.module.scss)
+.scene.flat {
+    height: auto;
+    margin-top: 100px;
+    margin-left: auto;
+    margin-right: auto;
+
+    .screen {
+        position: static;
+        height: auto;
+        overflow: visible;
+    }
+}
+
+.hidden {
+    display: none;
+}
+
+@media screen and (max-width: 700px) {
+    .scene.flat {
+        margin-top: 70px;
+    }
+
+    .screen {
+        padding: 0;
+    }
+}

@@ -1,0 +1,68 @@
+@use '/src/styles/variables.scss' as vars;
+
+// Финал: шар в центре ряда кнопок; кнопки, пока круги, лежат под ним
+.row {
+    position: relative;
+    margin: 28px 0 12px;
+}
+
+.slot {
+    display: inline-flex;
+}
+
+.morph {
+    display: inline-flex;
+}
+
+.orb {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    z-index: 2;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    margin: -48px 0 0 -48px;
+
+    background: var(--color-orb-glass);
+    border-radius: 50%;
+    box-shadow: vars.$shadow;
+    pointer-events: none;
+    transition: vars.$transition;
+}
+
+.orbLight {
+    position: absolute;
+    inset: 28%;
+
+    background: vars.$blue-100;
+    border-radius: 50%;
+    filter: blur(14px);
+    opacity: .7;
+
+    animation: final-light 20s infinite;
+}
+
+@keyframes final-light {
+    0%, 100% { background: vars.$redPink-100; }
+    33% { background: vars.$green-100; }
+    66% { background: vars.$blue-100; }
+}
+
+.orbIcon {
+    position: relative;
+
+    width: 36%;
+    height: 36%;
+
+    fill: var(--color-text-100);
+    transition: vars.$transition;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .orbLight {
+        animation: none;
+    }
+}

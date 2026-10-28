@@ -1,0 +1,78 @@
+@use '/src/styles/variables.scss' as vars;
+
+// Брызги тем из шара: шар в центре сетки, капля летит в левый верхний угол темы и растекается в линию
+.grid {
+    position: relative;
+}
+
+.topic {
+    position: relative;
+}
+
+.line {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+
+    height: 1.5px;
+
+    background: rgba(128, 128, 128, 0.45);
+    transform-origin: 0 50%;
+}
+
+// Капля – тёмная, как кружок «10 проектов» на главной; центр – в углу темы
+.drop {
+    position: absolute;
+    top: -6px;
+    left: -6px;
+    z-index: 2;
+
+    width: 12px;
+    height: 12px;
+
+    background: var(--color-text-100);
+    border-radius: 50%;
+    transition: vars.$transition;
+}
+
+.orb {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    z-index: 3;
+
+    width: 84px;
+    height: 84px;
+    margin: -42px 0 0 -42px;
+
+    background: var(--color-orb-glass);
+    border-radius: 50%;
+    box-shadow: vars.$shadow;
+    pointer-events: none;
+    transition: vars.$transition;
+}
+
+.orbLight {
+    position: absolute;
+    inset: 28%;
+
+    background: vars.$blue-100;
+    border-radius: 50%;
+    filter: blur(12px);
+    opacity: .7;
+
+    animation: terms-light 20s infinite;
+}
+
+@keyframes terms-light {
+    0%, 100% { background: vars.$redPink-100; }
+    33% { background: vars.$green-100; }
+    66% { background: vars.$blue-100; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .orbLight {
+        animation: none;
+    }
+}

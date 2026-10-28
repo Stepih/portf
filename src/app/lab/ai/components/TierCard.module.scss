@@ -1,0 +1,131 @@
+@use '/src/styles/variables.scss' as vars;
+
+// Ступень ИИ – крупнее, чем в карточке главной: здесь это главный выбор страницы.
+// Кнопка внизу карточки при любой длине описания
+.body {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+
+    height: 100%;
+    padding: 32px 28px 28px;
+
+    color: var(--color-text-100);
+}
+
+.name {
+    margin: 0;
+
+    font-size: 1.3rem;
+    text-wrap: balance;
+}
+
+.price {
+    margin-top: 6px;
+
+    font-size: clamp(2rem, 3.4vw, 2.6rem);
+    line-height: 1.1;
+    white-space: nowrap;
+}
+
+.meta {
+    margin: 0;
+
+    font-size: 0.95rem;
+    line-height: 1.4;
+}
+
+.condition {
+    color: var(--color-text-muted);
+    transition: vars.$transition;
+}
+
+.rule {
+    height: 1px;
+    margin: 8px 0;
+
+    background: rgba(128, 128, 128, 0.3);
+    transform-origin: 0 50%;
+}
+
+.text {
+    margin: 0;
+
+    font-size: 1.05rem;
+    line-height: 1.4;
+    text-wrap: pretty;
+    color: var(--color-text-muted);
+    transition: vars.$transition;
+}
+
+.examples {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+
+    margin: 4px 0 0;
+    padding: 0;
+
+    font-size: 1rem;
+    color: var(--color-text-muted);
+    list-style: none;
+}
+
+// Маркер – внутри выезжающей строки: иначе он виден раньше текста
+.bulleted {
+    position: relative;
+    display: block;
+    padding-left: 1.1em;
+
+    &::before {
+        content: '';
+        position: absolute;
+        top: .6em;
+        left: .3em;
+
+        width: 5px;
+        height: 5px;
+
+        background: var(--color-text-50);
+        border-radius: 50%;
+    }
+}
+
+// Кнопка прижата к низу карточки, от текста – не меньше 16px
+.actions {
+    margin-top: auto;
+    padding-top: 16px;
+}
+
+// Таблетка «Узнать цену» – как в карточках главной: контур, при наведении заливка чернилами
+.button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 48px;
+    padding: 10px 26px;
+
+    font-size: 1.05rem;
+    color: var(--color-text-100);
+    text-decoration: none;
+
+    border: 1.5px solid rgba(128, 128, 128, 0.45);
+    border-radius: 24px;
+    transition: vars.$transition;
+
+    &:hover {
+        color: var(--color-bg);
+        background: var(--color-text-100);
+        border-color: var(--color-text-100);
+    }
+
+    &:focus-visible {
+        @include vars.focus-ring(2px);
+    }
+}
+
+@media screen and (max-width: 560px) {
+    .body {
+        padding: 26px 20px 22px;
+    }
+}

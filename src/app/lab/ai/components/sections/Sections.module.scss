@@ -1,0 +1,522 @@
+@use '/src/styles/variables.scss' as vars;
+
+// Разделы /ai ниже сцен (черновик): без плашек, под волосяными линиями – как «Почему я» и FAQ главной.
+// Плашки (frost) – только у чата и ступеней: глаз останавливается на них
+$line: rgba(128, 128, 128, 0.45);
+$out: cubic-bezier(.16, 1, .3, 1);
+
+.section {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+
+    max-width: 1060px;
+    margin: 100px auto 0;
+}
+
+.title {
+    margin: 0;
+
+    font-size: clamp(1.6rem, 4vw, 2.2rem);
+    text-wrap: balance;
+    text-align: center;
+    color: var(--color-text-100);
+    transition: vars.$transition;
+}
+
+.description {
+    margin: 0;
+
+    font-size: 1.05rem;
+    text-align: center;
+    text-wrap: balance;
+    color: var(--color-text-muted);
+    transition: vars.$transition;
+}
+
+.muted {
+    color: var(--color-text-muted);
+    transition: vars.$transition;
+}
+
+// ---------- Появление (Reveal) ----------
+// Линия над строкой прорисовывается слева направо, текст поднимается следом; --i – номер строки, задержка каскада
+.reveal {
+    width: 100%;
+}
+
+.line {
+    position: relative;
+
+    &::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+
+        height: 1.5px;
+        background: $line;
+        transform-origin: 0 50%;
+    }
+}
+
+.armed {
+    .line::before {
+        scale: 0 1;
+    }
+
+    .item {
+        opacity: 0;
+        translate: 0 14px;
+    }
+}
+
+.armed.shown {
+    .line::before {
+        scale: 1 1;
+        transition: scale .9s $out calc(var(--i, 0) * 70ms);
+    }
+
+    .item {
+        opacity: 1;
+        translate: 0 0;
+        transition:
+            opacity .5s ease calc(var(--i, 0) * 70ms + 160ms),
+            translate .8s $out calc(var(--i, 0) * 70ms + 160ms);
+    }
+}
+
+// ---------- Таблица агентов ----------
+.table {
+    margin-top: 24px;
+}
+
+.row {
+    display: grid;
+    grid-template-columns: minmax(0, 2.2fr) minmax(0, 1.4fr) minmax(0, 1.2fr);
+    gap: 24px;
+
+    padding: 16px 0;
+
+    font-size: 1rem;
+    line-height: 1.45;
+    color: var(--color-text-100);
+    transition: vars.$transition;
+
+    b {
+        font-weight: 700;
+    }
+}
+
+.head {
+    padding: 0 0 10px;
+
+    font-size: 0.875rem;
+    color: var(--color-text-muted);
+}
+
+.compact .row {
+    padding: 12px 0;
+}
+
+// ---------- Как работаем ----------
+.flow {
+    position: relative;
+
+    display: grid;
+    grid-template-columns: repeat(var(--count), minmax(0, 1fr));
+
+    width: 100%;
+    margin: 32px 0 0;
+    padding: 0;
+
+    list-style: none;
+}
+
+// Линия – от центра первого шага до центра последнего
+.track {
+    position: absolute;
+    top: 19px;
+    left: calc(50% / var(--count));
+    right: calc(50% / var(--count));
+
+    height: 2px;
+}
+
+// Основа линии – отдельным слоем: в сцене AgentDeck она проступает из слившихся точек, заливка и шар – над ней
+.trackBase {
+    position: absolute;
+    inset: 0;
+
+    background: $line;
+}
+
+.trackFill {
+    position: absolute;
+    inset: 0;
+
+    background: var(--color-text-100);
+    transform-origin: 0 50%;
+    transition: vars.$transition;
+}
+
+// Малый шар – тот же, что у чата: стекло, тень мастерской, свет внутри
+.rider {
+    position: absolute;
+    top: 50%;
+    left: 0;
+    z-index: 2;
+
+    width: 22px;
+    height: 22px;
+    margin: -11px 0 0 -11px;
+
+    background: var(--color-orb-glass);
+    border-radius: 50%;
+    box-shadow: vars.$shadow;
+    transition: vars.$transition;
+
+    &::before {
+        content: '';
+        position: absolute;
+        inset: 26%;
+
+        background: vars.$blue-100;
+        border-radius: 50%;
+        filter: blur(3px);
+        opacity: .8;
+
+        animation: rider-light 20s infinite;
+    }
+}
+
+@keyframes rider-light {
+    0%, 100% { background: vars.$redPink-100; }
+    33% { background: vars.$green-100; }
+    66% { background: vars.$blue-100; }
+}
+
+.step {
+    position: relative;
+    z-index: 1;
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+
+    text-align: center;
+}
+
+.stepNum {
+    position: relative;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    width: 40px;
+    height: 40px;
+
+    font-size: 1.1rem;
+    color: var(--color-text-100);
+
+    background: var(--color-bg);
+    border: 1.5px solid $line;
+    border-radius: 50%;
+    transition: vars.$transition;
+}
+
+.stepFill {
+    position: absolute;
+    inset: -1.5px;
+
+    background: var(--color-text-100);
+    border-radius: 50%;
+    transition: vars.$transition;
+}
+
+// Цифра поверх заливки: цвет переключает компонент; без движения – шаги залиты, цифра цветом фона
+.stepDigit {
+    position: relative;
+    transition: vars.$transition;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .stepDigit {
+        color: var(--color-bg);
+    }
+}
+
+.stepLabel {
+    font-size: 1.05rem;
+    color: var(--color-text-100);
+    transition: vars.$transition;
+}
+
+// ---------- Темы под линией: до оплаты / пилот / оплата, условия ----------
+.topics,
+.terms {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 32px 24px;
+
+    margin-top: 40px;
+}
+
+.terms {
+    margin-top: 24px;
+}
+
+.topic {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+
+    padding-top: 18px;
+}
+
+.topicTitle {
+    margin: 0;
+
+    font-size: 1.15rem;
+    color: var(--color-text-100);
+    transition: vars.$transition;
+}
+
+.list {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+
+    margin: 0;
+    padding: 0 0 0 1.1em;
+
+    font-size: 1rem;
+    line-height: 1.45;
+    text-wrap: pretty;
+    color: var(--color-text-muted);
+    transition: vars.$transition;
+
+    li::marker {
+        color: var(--color-text-50);
+    }
+}
+
+// Список, чьи строки выезжают из-под маски: маркер – внутри строки, иначе он виден раньше текста
+.plain {
+    padding-left: 0;
+    list-style: none;
+}
+
+.bulleted {
+    position: relative;
+    display: block;
+    padding-left: 1.1em;
+
+    &::before {
+        content: '';
+        position: absolute;
+        top: .6em;
+        left: .3em;
+
+        width: 5px;
+        height: 5px;
+
+        background: var(--color-text-50);
+        border-radius: 50%;
+    }
+}
+
+// ---------- Каждый месяц ----------
+.split {
+    display: grid;
+    grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
+    gap: 40px;
+
+    margin-top: 24px;
+}
+
+.mrow {
+    display: grid;
+    grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr) minmax(0, 1fr);
+    gap: 16px;
+
+    padding: 14px 0;
+
+    font-size: 1rem;
+    color: var(--color-text-100);
+    transition: vars.$transition;
+}
+
+.mrow.head {
+    padding: 0 0 10px;
+    font-size: 0.875rem;
+    color: var(--color-text-muted);
+}
+
+.num {
+    white-space: nowrap;
+}
+
+.notes {
+    display: flex;
+    flex-direction: column;
+
+    margin: 0;
+    padding: 30px 0 0;
+
+    font-size: 1rem;
+    line-height: 1.45;
+    color: var(--color-text-muted);
+    list-style: none;
+
+    li {
+        padding: 14px 0;
+    }
+}
+
+// ---------- Финал ----------
+.final {
+    margin-bottom: 40px;
+}
+
+.finalRow {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 12px;
+
+    margin-top: 12px;
+}
+
+.primary,
+.secondary {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+
+    min-height: 48px;
+    padding: 10px 32px;
+
+    font-size: 1.05rem;
+    text-decoration: none;
+
+    border-radius: 24px;
+    transition: vars.$transition, opacity .2s;
+
+    &:focus-visible {
+        @include vars.focus-ring(2px);
+    }
+}
+
+.primary {
+    color: var(--color-bg);
+    background: var(--color-text-100);
+
+    &:hover {
+        opacity: .85;
+    }
+}
+
+.secondary {
+    color: var(--color-text-100);
+    border: 1.5px solid $line;
+
+    &:hover {
+        color: var(--color-bg);
+        background: var(--color-text-100);
+        border-color: var(--color-text-100);
+    }
+}
+
+@media screen and (max-width: 900px) {
+    .topics,
+    .terms {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .split {
+        grid-template-columns: minmax(0, 1fr);
+        gap: 8px;
+    }
+
+    .notes {
+        padding-top: 0;
+    }
+}
+
+@media screen and (max-width: 700px) {
+    .section {
+        margin-top: 70px;
+    }
+
+    // Строка таблицы – блок: что делает, где, цена
+    .row {
+        grid-template-columns: minmax(0, 1fr);
+        gap: 4px;
+
+        padding: 14px 0;
+    }
+
+    .row.head {
+        display: none;
+    }
+
+    .topics,
+    .terms {
+        grid-template-columns: minmax(0, 1fr);
+        gap: 20px;
+    }
+
+    // Линия шагов – вертикальная, шаги – строками
+    .flow {
+        grid-template-columns: minmax(0, 1fr);
+        gap: 20px;
+
+        width: auto;
+        align-self: flex-start;
+    }
+
+    .track {
+        top: 19px;
+        bottom: 19px;
+        left: 19px;
+        right: auto;
+
+        width: 2px;
+        height: auto;
+    }
+
+    .trackFill {
+        transform-origin: 50% 0;
+    }
+
+    .rider {
+        top: 0;
+        left: 50%;
+        margin: -11px 0 0 -11px;
+    }
+
+    .step {
+        flex-direction: row;
+        gap: 16px;
+        text-align: left;
+    }
+
+    .mrow {
+        grid-template-columns: minmax(0, 1fr) auto;
+
+        span:nth-child(2) {
+            display: none;
+        }
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .rider::before {
+        animation: none;
+    }
+}

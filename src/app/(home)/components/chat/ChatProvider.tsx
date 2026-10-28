@@ -33,6 +33,22 @@ export const useOpenChat = () => {
     return open;
 };
 
+// Чат прямо на странице (SERVICES_PLAN У4, черновик /lab/ai): тот же диалог, что в окне, и Telegram для кнопки под ответом.
+// Пока встроенный чат на экране, шар в углу прячется (setInlineShown)
+interface IChatDialog {
+    chat: ReturnType<typeof useChat>;
+    tgButton: IOfferButton;
+    setInlineShown: (shown: boolean) => void;
+}
+
+const ChatDialogContext = createContext<IChatDialog | null>(null);
+
+export const useChatDialog = () => {
+    const dialog = useContext(ChatDialogContext);
+    if (!dialog) throw new Error('useChatDialog вне ChatProvider');
+    return dialog;
+};
+
 interface IChatProvider {
     tgButton: IOfferButton;
     children: ReactNode;
@@ -41,6 +57,7 @@ interface IChatProvider {
 const ChatProvider: FC<IChatProvider> = ({ tgButton, children }) => {
     const [open, setOpen] = useState(false);
     const [mounted, setMounted] = useState(false);
+    const [inlineShown, setInlineShown] = useState(false);
     const chat = useChat();
     const pathname = usePathname();
     // Куда вернуть фокус после закрытия: шар или кнопка в карточке
@@ -63,7 +80,9 @@ const ChatProvider: FC<IChatProvider> = ({ tgButton, children }) => {
 
     return (
         <ChatContext.Provider value={openChat}>
-            {children}
+            <ChatDialogContext.Provider value={{ chat, tgButton, setInlineShown }}>
+                {children}
+            </ChatDialogContext.Provider>
 
             {mounted && createPortal(
                 <>
@@ -74,9 +93,14 @@ const ChatProvider: FC<IChatProvider> = ({ tgButton, children }) => {
                                 className={s.fab}
                                 onClick={openChat}
                                 aria-haspopup="dialog"
+                                // Пока чат на странице, шар в углу гаснет на месте, без сжатия: в черновике /lab/ai (вариант C)
+                                // в угол прилетает большой шар страницы и передаёт ему место
+                                aria-hidden={inlineShown || undefined}
+                                tabIndex={inlineShown ? -1 : undefined}
+                                style={{ pointerEvents: inlineShown ? 'none' : undefined }}
                                 initial={{ opacity: 0, scale: 0 }}
                                 // Пока окно открыто, шар прячется под ним
-                                animate={open ? { opacity: 0, scale: 0.5 } : { opacity: 1, scale: 1 }}
+                                animate={open ? { opacity: 0, scale: 0.5 } : inlineShown ? { opacity: 0, scale: 1 } : { opacity: 1, scale: 1 }}
                                 exit={{ opacity: 0, scale: 0 }}
                                 transition={{ type: 'spring', stiffness: 260, damping: 18 }}
                             >

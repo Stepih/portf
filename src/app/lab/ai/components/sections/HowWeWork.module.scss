@@ -1,0 +1,29 @@
+// Куски линии шагов падают в линии над темами
+.section {
+    position: relative;
+}
+
+.topic {
+    position: relative;
+}
+
+// Линия темы: волосяная, поверх неё – чернильный слой, пока кусок летит
+.piece {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 2;
+
+    height: 2px;
+
+    background: rgba(128, 128, 128, 0.45);
+    transform-origin: 50% 50%;
+}
+
+.ink {
+    position: absolute;
+    inset: 0;
+
+    background: var(--color-text-100);
+}

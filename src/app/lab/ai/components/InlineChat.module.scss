@@ -1,0 +1,57 @@
+@use '/src/styles/variables.scss' as vars;
+
+// Чат на странице (черновик /lab/ai): плашка цвета фона, как окно чата (DESIGN.md, «Окно чата»), высоту задаёт родитель.
+// Пузыри, таблетки и поле – из Chat.module.scss
+.panel {
+    position: relative;
+
+    display: flex;
+    flex-direction: column;
+
+    height: 100%;
+    overflow: hidden;
+
+    color: var(--color-text-100);
+
+    background: var(--color-bg);
+    border-radius: 13px;
+    box-shadow: vars.$shadow;
+    transition: vars.$transition;
+}
+
+// Фон и тень рисует сцена
+.bare {
+    background: none;
+    box-shadow: none;
+}
+
+.headOrb {
+    width: 36px;
+    height: 36px;
+}
+
+// Строки ответа не длиннее ~65 знаков: панель на странице шире окна
+.messages p {
+    max-width: min(85%, 34rem);
+}
+
+.face {
+    display: flex;
+}
+
+.drops {
+    position: absolute;
+    inset: 0;
+    z-index: 2;
+
+    pointer-events: none;
+}
+
+// Капля – тёмная таблетка поверх кнопки, в полёте обрезана до точки
+.drop {
+    position: absolute;
+
+    background: var(--color-text-100);
+    border-radius: 24px;
+    transition: vars.$transition;
+}

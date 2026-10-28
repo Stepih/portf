@@ -1,0 +1,135 @@
+@use '/src/styles/variables.scss' as vars;
+
+$line: rgba(128, 128, 128, 0.45);
+
+.layout {
+    display: grid;
+    grid-template-columns: minmax(0, 2.2fr) minmax(0, 1fr);
+    gap: 48px;
+
+    width: 100%;
+    margin-top: 24px;
+}
+
+// Строка: что за агент, шкала с капсулой, сумма
+.row {
+    display: grid;
+    grid-template-columns: minmax(0, 1.1fr) minmax(0, 1.6fr) minmax(0, .9fr);
+    align-items: center;
+    gap: 20px;
+
+    padding: 16px 0;
+
+    font-size: 1rem;
+    color: var(--color-text-100);
+    border-top: 1.5px solid $line;
+    transition: vars.$transition;
+}
+
+.head {
+    padding: 0 0 12px;
+
+    font-size: 0.875rem;
+    color: var(--color-text-muted);
+    border-top: none;
+
+    > span:last-child {
+        text-align: right;
+    }
+}
+
+.scale {
+    position: relative;
+    height: 1.2em;
+}
+
+.tick {
+    position: absolute;
+    top: 0;
+
+    white-space: nowrap;
+    translate: -50% 0;
+
+    &:first-child {
+        translate: 0 0;
+    }
+}
+
+// Шкала: волосяная линия, капсула – залитая чернилами таблетка
+.track {
+    position: relative;
+
+    height: 14px;
+
+    background: linear-gradient($line, $line) 0 50% / 100% 1.5px no-repeat;
+}
+
+.capsule {
+    position: absolute;
+    top: 0;
+
+    height: 100%;
+
+    background: var(--color-text-100);
+    border-radius: 7px;
+    transform-origin: 0 50%;
+    transition: vars.$transition;
+}
+
+.value {
+    text-align: right;
+    white-space: nowrap;
+}
+
+.notes {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+
+    margin: 0;
+    padding: 30px 0 0;
+
+    list-style: none;
+}
+
+// Пояснение – малая плашка: въезжает справа
+.note {
+    padding: 14px 16px;
+
+    font-size: 1rem;
+    line-height: 1.45;
+    color: var(--color-text-muted);
+
+    background: var(--color-frost);
+    border-radius: 13px;
+    transition: vars.$transition;
+}
+
+@media screen and (max-width: 900px) {
+    .layout {
+        grid-template-columns: minmax(0, 1fr);
+        gap: 16px;
+    }
+
+    .notes {
+        padding-top: 0;
+    }
+}
+
+// Телефон: подпись и сумма строкой, шкала под ними во всю ширину
+@media screen and (max-width: 600px) {
+    .row {
+        grid-template-columns: minmax(0, 1fr) auto;
+        gap: 10px 12px;
+    }
+
+    .track,
+    .scale {
+        grid-column: 1 / -1;
+        grid-row: 2;
+    }
+
+    .head > span:not(.scale) {
+        display: none;
+    }
+}

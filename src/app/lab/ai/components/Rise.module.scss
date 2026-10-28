@@ -1,0 +1,11 @@
+// Строка выезжает снизу из-под своей маски. Запас снизу – под хвосты букв
+.mask {
+    display: block;
+    overflow: hidden;
+    padding-bottom: 0.15em;
+    margin-bottom: -0.15em;
+}
+
+.rise {
+    display: block;
+}

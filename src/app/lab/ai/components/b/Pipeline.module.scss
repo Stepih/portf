@@ -1,0 +1,609 @@
+@use '/src/styles/variables.scss' as vars;
+
+// Вариант B, сцена «агент за работой». Липкий экран и путь – scene.module.scss.
+// Слои: плашка (frost, раскрывается до краёв окна), над ней заголовок, индикаторы примеров и сцена: входы → шар → отчёт
+$hair: rgba(128, 128, 128, 0.28);
+
+.scene {
+    margin-top: 100px;
+}
+
+.bg {
+    position: absolute;
+    z-index: 0;
+
+    background: var(--color-frost);
+    box-shadow: vars.$shadow;
+    transition: vars.$transition;
+}
+
+.content {
+    position: absolute;
+    inset: 0;
+    z-index: 1;
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 28px;
+
+    padding: 7vh 48px;
+}
+
+.top {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+
+    text-align: center;
+}
+
+.title {
+    margin: 0;
+
+    font-size: clamp(1.6rem, 4vw, 2.2rem);
+    text-wrap: balance;
+    color: var(--color-text-100);
+    transition: vars.$transition;
+}
+
+.description {
+    max-width: 640px;
+    margin: 0;
+
+    font-size: 1.05rem;
+    text-wrap: balance;
+    color: var(--color-text-muted);
+    transition: vars.$transition;
+}
+
+// Черты примеров – как черты слайдов первого экрана: 40×3, заполняются по пути примера
+.indicators {
+    display: flex;
+    gap: 8px;
+
+    margin-top: 10px;
+}
+
+.indicator {
+    display: block;
+    overflow: hidden;
+
+    width: 40px;
+    height: 3px;
+
+    background: $hair;
+    border-radius: 2px;
+
+    span {
+        display: block;
+        height: 100%;
+
+        background: var(--color-text-100);
+        transform-origin: 0 50%;
+        transition: vars.$transition;
+    }
+}
+
+.labels {
+    position: relative;
+
+    width: 100%;
+    height: 1.6em;
+    overflow: hidden;
+
+    font-size: 1.15rem;
+}
+
+.label {
+    position: absolute;
+    inset: 0;
+
+    color: var(--color-text-100);
+    text-align: center;
+    transition: vars.$transition;
+}
+
+// Сцена: входы слева, шар по центру, отчёт справа. Все четыре примера лежат в одних и тех же областях
+.area {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 170px minmax(0, 1.3fr);
+    grid-template-areas: "src orb out";
+    // Строка – ровно высота области: график (SVG) не растягивает её по своим пропорциям
+    grid-template-rows: minmax(0, 1fr);
+    align-items: center;
+    column-gap: 40px;
+
+    width: 100%;
+    max-width: 1060px;
+    height: min(330px, 42vh);
+}
+
+.sources {
+    grid-area: src;
+
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 12px;
+}
+
+.output {
+    grid-area: out;
+
+    width: 100%;
+    max-width: 440px;
+    height: 100%;
+    min-height: 0;
+}
+
+// Вход: малая плашка цвета фона. В полёте – тёмная капля
+.token {
+    position: relative;
+
+    display: flex;
+    align-items: center;
+    gap: 10px;
+
+    width: 230px;
+    height: 52px;
+    padding: 0 16px;
+
+    color: var(--color-text-100);
+
+    background: var(--color-bg);
+    border-radius: 13px;
+    box-shadow: vars.$shadow;
+    transition: vars.$transition;
+}
+
+.tokenDrop {
+    position: absolute;
+    inset: 0;
+
+    background: var(--color-text-100);
+    transition: vars.$transition;
+}
+
+.icon {
+    flex-shrink: 0;
+    width: 22px;
+    height: 22px;
+}
+
+.wave {
+    display: flex;
+    flex: 1;
+    align-items: center;
+    gap: 2px;
+
+    i {
+        width: 3px;
+
+        background: currentColor;
+        border-radius: 2px;
+        opacity: .5;
+    }
+}
+
+.tokenNum {
+    font-size: 0.875rem;
+    font-variant-numeric: tabular-nums;
+    color: var(--color-text-muted);
+    transition: vars.$transition;
+}
+
+.stars {
+    display: flex;
+    gap: 2px;
+}
+
+.star {
+    width: 15px;
+    height: 15px;
+}
+
+.lines {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+// Строка-заглушка: серая полоска
+.bar {
+    display: block;
+    flex-shrink: 0;
+
+    height: 8px;
+
+    background: $hair;
+    border-radius: 4px;
+    transform-origin: 0 50%;
+}
+
+// Шар агента – тот же, что у чата, крупный
+.orb {
+    grid-area: orb;
+    justify-self: center;
+    position: relative;
+    z-index: 2;
+
+    width: 150px;
+    height: 150px;
+
+    background: var(--color-orb-glass);
+    border-radius: 50%;
+    box-shadow: vars.$shadow;
+    transition: vars.$transition;
+}
+
+.orbLight {
+    position: absolute;
+    inset: 28%;
+
+    background: vars.$blue-100;
+    border-radius: 50%;
+    filter: blur(20px);
+    opacity: .7;
+
+    animation: pipe-light 20s infinite;
+}
+
+@keyframes pipe-light {
+    0%, 100% { background: vars.$redPink-100; }
+    33% { background: vars.$green-100; }
+    66% { background: vars.$blue-100; }
+}
+
+.orbStar {
+    position: absolute;
+    inset: 0;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.orbIcon {
+    position: relative;
+
+    width: 38%;
+    height: 38%;
+
+    fill: var(--color-text-100);
+    transition: vars.$transition;
+}
+
+// Сцена без плашки (вариант C): входы и отчёт – на frost, чтобы читались на фоне страницы
+.frost .token,
+.frost .report {
+    background: var(--color-frost);
+}
+
+// ---------- Отчёт ----------
+.report {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+
+    height: 100%;
+    padding: 20px 22px;
+
+    color: var(--color-text-100);
+
+    background: var(--color-bg);
+    border-radius: 13px;
+    box-shadow: vars.$shadow;
+    transition: vars.$transition;
+}
+
+.reportHead {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.reportTitle {
+    font-size: 0.95rem;
+}
+
+.rows {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+}
+
+.callRow {
+    display: grid;
+    grid-template-columns: 10px 72px minmax(0, 1fr) 40px;
+    align-items: center;
+    gap: 12px;
+}
+
+.dot {
+    display: block;
+
+    width: 10px;
+    height: 10px;
+
+    background: var(--color-text-100);
+    border-radius: 50%;
+}
+
+.track {
+    display: block;
+    overflow: hidden;
+
+    height: 8px;
+
+    background: rgba(128, 128, 128, 0.14);
+    border-radius: 4px;
+}
+
+.fill {
+    display: block;
+    height: 100%;
+
+    background: var(--color-text-100);
+    border-radius: 4px;
+    transform-origin: 0 50%;
+}
+
+.badge {
+    display: block;
+
+    width: 40px;
+    height: 22px;
+
+    border: 1.5px solid rgba(128, 128, 128, 0.45);
+    border-radius: 11px;
+}
+
+.columns {
+    display: flex;
+    align-items: flex-end;
+    gap: 14px;
+
+    height: 180px;
+}
+
+.column {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 8px;
+
+    height: 100%;
+}
+
+.columnFill {
+    display: block;
+    width: 56%;
+
+    background: var(--color-text-100);
+    border-radius: 6px 6px 2px 2px;
+    transform-origin: 50% 100%;
+}
+
+.chart {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    gap: 14px;
+
+    min-height: 0;
+
+    svg {
+        flex: 1;
+        width: 100%;
+        min-height: 0;
+        overflow: visible;
+    }
+}
+
+.axis {
+    stroke: rgba(128, 128, 128, 0.4);
+    stroke-width: 1;
+    vector-effect: non-scaling-stroke;
+}
+
+.line {
+    fill: none;
+    stroke: var(--color-text-100);
+    stroke-width: 2.5;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+.legend {
+    display: flex;
+    gap: 10px;
+}
+
+.doc {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.docLine {
+    position: relative;
+
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+// Найденный риск: строка подсвечена тоном чернил, справа – метка
+.mark {
+    position: absolute;
+    top: -4px;
+    left: 0;
+
+    height: 16px;
+
+    background: color-mix(in srgb, var(--color-text-100) 14%, transparent);
+    border-radius: 3px;
+    transform-origin: 0 50%;
+}
+
+.flag {
+    display: block;
+    flex-shrink: 0;
+
+    width: 10px;
+    height: 10px;
+
+    background: var(--color-text-100);
+    border-radius: 50%;
+}
+
+.note {
+    margin: 0;
+
+    font-size: 0.875rem;
+    text-align: center;
+    color: var(--color-text-muted);
+    transition: vars.$transition;
+}
+
+// «Уменьшить движение»
+.static {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+
+    max-width: 1060px;
+    margin: 100px auto 0;
+    text-align: center;
+}
+
+.staticList {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 12px;
+
+    margin: 16px 0 0;
+    padding: 0;
+
+    list-style: none;
+
+    li {
+        padding: 10px 22px;
+
+        font-size: 1.05rem;
+        color: var(--color-text-100);
+
+        border: 1.5px solid rgba(128, 128, 128, 0.45);
+        border-radius: 24px;
+    }
+}
+
+@media screen and (max-width: 1000px) {
+    .area {
+        column-gap: 24px;
+        grid-template-columns: minmax(0, 1fr) 120px minmax(0, 1.2fr);
+    }
+
+    .orb {
+        width: 110px;
+        height: 110px;
+    }
+
+    .token {
+        width: 200px;
+    }
+}
+
+// Телефон: сверху входы сеткой 2×2, ниже шар, под ним отчёт
+@media screen and (max-width: 700px) {
+    .scene {
+        margin-top: 70px;
+    }
+
+    .content {
+        gap: 14px;
+        padding: 20px 14px;
+    }
+
+    .description {
+        font-size: 0.95rem;
+    }
+
+    .indicators {
+        margin-top: 4px;
+    }
+
+    .labels {
+        font-size: 1.05rem;
+    }
+
+    .area {
+        grid-template-columns: minmax(0, 1fr);
+        grid-template-areas: "src" "orb" "out";
+        grid-template-rows: auto auto auto;
+        row-gap: 18px;
+
+        height: auto;
+    }
+
+    .sources {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 8px;
+    }
+
+    .token {
+        width: auto;
+        height: 44px;
+        padding: 0 10px;
+        gap: 6px;
+    }
+
+    .tokenNum {
+        display: none;
+    }
+
+    .orb {
+        width: 80px;
+        height: 80px;
+    }
+
+    .orbLight {
+        filter: blur(12px);
+    }
+
+    .output {
+        max-width: none;
+        height: min(230px, 30vh);
+    }
+
+    .report {
+        gap: 12px;
+        padding: 14px 16px;
+    }
+
+    .rows {
+        gap: 12px;
+    }
+
+    .columns {
+        height: 110px;
+    }
+
+    .doc {
+        gap: 8px;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .orbLight {
+        animation: none;
+    }
+}
