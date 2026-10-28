@@ -1159,6 +1159,22 @@ test('теги, подпись чата и неразрывные пары на 
     expect(await services.getByText(chatButtonTitle).evaluate(linesOf, 'ИИ-\u2060ассистента')).toBe(1);
 });
 
+// Карточка ИИ (DESIGN_FIXES_7_PLAN Д36): срок «от 3 дней» – один раз, уточнение – одной фразой,
+// подпись демо – про задачи из примеров, а не про ответы клиентам
+test('карточка ИИ без повторов, подпись демо про примеры', async ({ page }) => {
+    await page.goto('/');
+
+    const ai = services.find((service) => service.id === 'ai')!;
+    const card = page.getByRole('region', { name: servicesTitle }).getByRole('listitem')
+        .filter({ has: page.getByRole('heading', { name: ai.title }) });
+    const text = (await card.innerText()).replace(/\s+/g, ' ');
+    expect(text.match(/от 3 дней/g)).toHaveLength(1);
+    expect(text).not.toContain('базе знаний');
+    expect(ai.note).not.toMatch(/[.!?]\s/);
+    await expect(card.getByText(ai.note!)).toBeVisible();
+    await expect(card.getByRole('button').filter({ hasText: chatButtonText })).toBeVisible();
+});
+
 // Фоновые пятна приглушены по теме, чтобы приглушённый текст над ними читался (DESIGN_FIXES_5_PLAN Д25)
 for (const [theme, opacity] of [['light', '0.6'], ['dark', '0.3']] as const) {
     test(`фоновые пятна приглушены, ${theme === 'light' ? 'светлая' : 'тёмная'} тема`, async ({ page }) => {
