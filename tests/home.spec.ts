@@ -1221,6 +1221,46 @@ for (const width of [1400, 375]) {
     });
 }
 
+// SERVICES_PLAN У3: у каждой карточки сайта есть уточнение (обычная сумма, число страниц, каталог дешевле),
+// заявки – в Telegram или на почту, на карточке не больше двух кейсов
+for (const width of [1400, 375]) {
+    test(`карточки сайтов: уточнения и два кейса, ${width}`, async ({ page }) => {
+        await page.setViewportSize({ width, height: 900 });
+        await page.goto('/');
+
+        const section = page.getByRole('region', { name: servicesTitle });
+        await expect(section).not.toContainText('где вам удобно');
+        for (const service of services.filter((s) => !s.wide)) {
+            const card = section.getByRole('listitem').filter({ has: page.getByRole('heading', { name: service.title }) });
+            const note = card.getByText(service.note!, { exact: true });
+            await expect(note).toBeVisible();
+            // Сумма в уточнении не рвётся между строками: «около 9 / 000 ₽» на 375
+            expect(await note.evaluate((el) => {
+                const node = el.firstChild!;
+                const match = /\d[\d\s–]*₽/.exec(node.textContent!)!;
+                const range = document.createRange();
+                range.setStart(node, match.index);
+                range.setEnd(node, match.index + match[0].length);
+                return new Set([...range.getClientRects()].map((r) => Math.round(r.top))).size;
+            })).toBe(1);
+            await expect(card.locator('a[href^="/portfolio/"]')).toHaveCount(service.caseIds.length);
+            expect(service.caseIds.length).toBeLessThanOrEqual(2);
+        }
+        const corporate = section.getByRole('listitem').filter({ has: page.getByRole('heading', { name: serviceTitle('corporate') }) });
+        await expect(corporate.getByRole('link', { name: 'Союз вокалистов' })).toHaveAttribute('href', '/portfolio/vocal');
+        await expect(section.getByRole('listitem').filter({ has: page.getByRole('heading', { name: serviceTitle('shop') }) }))
+            .toContainText('Каталог без корзины – от 35 000 ₽');
+    });
+}
+
+// Союз вокалистов – разработка владельца целиком, а не только дизайн (SERVICES_PLAN У3)
+test('кейс Союза вокалистов: роль – дизайн и разработка', async ({ page }) => {
+    await page.goto('/portfolio/vocal');
+    await expect(page.getByText('Дизайн и разработка под ключ').first()).toBeVisible();
+    await expect(page.locator('body')).not.toContainText('адаптив');
+    await expect(page.locator('meta[name="description"]')).toHaveAttribute('content', /Дизайн и разработка под ключ/);
+});
+
 // Фоновые пятна приглушены по теме, чтобы приглушённый текст над ними читался (DESIGN_FIXES_5_PLAN Д25)
 for (const [theme, opacity] of [['light', '0.6'], ['dark', '0.3']] as const) {
     test(`фоновые пятна приглушены, ${theme === 'light' ? 'светлая' : 'тёмная'} тема`, async ({ page }) => {
