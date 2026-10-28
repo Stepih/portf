@@ -27,8 +27,8 @@ export const chatClose = 'Закрыть чат'
 // После лимита – кнопки формы и Telegram под текстом
 export const chatLimitText: Record<ChatLimitReason, string> = {
     dialog: 'В демо – до 10 вопросов в одном диалоге. Остальное Степан расскажет сам на бесплатном созвоне.',
-    ip: 'Слишком много вопросов подряд. Задайте их Степану напрямую – он отвечает в течение часа.',
-    budget: 'Демо-чат на сегодня закончил работу. Задайте вопрос Степану напрямую – он отвечает в течение часа.',
+    ip: 'Слишком много вопросов подряд. Задайте их Степану напрямую – он отвечает в течение часа, пн–пт 9–18.',
+    budget: 'Демо-чат на сегодня закончил работу. Задайте вопрос Степану напрямую – он отвечает в течение часа, пн–пт 9–18.',
 }
 
 export const chatErrorText = {
@@ -42,11 +42,11 @@ export const chatErrorText = {
 // Заявка прямо в чате (решение владельца 22.10.2026): имя и телефон уходят в Telegram вместе с вопросами из чата
 // Кнопка заявки в шапке окна: видна с первого открытия (DESIGN_FIXES_2_PLAN, Д7)
 export const chatLeadOpen = 'Связаться'
-export const chatLeadTitle = 'Оставьте контакт – Степан свяжется в течение часа'
+export const chatLeadTitle = 'Оставьте контакт – Степан свяжется в течение часа, пн–пт 9–18'
 export const chatLeadSubmit = 'Отправить'
 export const chatLeadSending = 'Отправляется...'
 export const chatLeadBack = 'Вернуться к чату'
-export const chatLeadSuccess = 'Контакт отправлен. Степан свяжется с вами в течение часа.'
+export const chatLeadSuccess = 'Контакт отправлен. Степан свяжется с вами в течение часа, пн–пт 9–18.'
 export const chatLeadRequired = 'Заполните, пожалуйста, имя и телефон'
 export const chatLeadError = 'Не удалось отправить, попробуйте ещё раз или напишите в Telegram'
 export const chatLeadQuestions = 'Вопросы в чате:'

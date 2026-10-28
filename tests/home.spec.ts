@@ -565,7 +565,7 @@ test('почему я на главной', async ({ page }) => {
     const section = page.getByRole('region', { name: 'Почему я' });
     const reasons = section.getByRole('listitem');
     await expect(reasons).toHaveCount(3);
-    await expect(reasons.first().getByRole('heading', { level: 3 })).toHaveText('Договор и чек на каждую оплату');
+    await expect(reasons.first().getByRole('heading', { level: 3 })).toHaveText('Чек на каждую оплату');
     await expect(reasons.first()).toContainText(offerReasons[0].text);
     for (const repeat of ['Предоплата', 'Гарантия', 'менеджер']) await expect(section).not.toContainText(repeat);
     await expect(section.locator(':scope > p')).toHaveCount(0);
@@ -573,6 +573,20 @@ test('почему я на главной', async ({ page }) => {
     // «Гарантия от 2 недель» на странице одна – в шаге «Запуск»; в FAQ ответ про поломку
     const guarantee = await page.locator('main').evaluate((el) => (el.textContent?.match(/гарантия от\s2\sнедель/gi) ?? []).length);
     expect(guarantee).toBe(1);
+});
+
+// SERVICES_PLAN У1: неверные обещания сняты – договора пока нет, реклама есть, бесплатного адреса на Vercel нет,
+// «в течение часа» – с часами работы
+test('на главной нет снятых обещаний', async ({ page }) => {
+    await page.goto('/');
+
+    const reasons = page.getByRole('region', { name: 'Почему я' });
+    const faq = page.getByRole('region', { name: faqTitle });
+    for (const block of [reasons, faq]) await expect(block).not.toContainText(/договор/i);
+    for (const old of ['vercel.app', 'Рекламу не настраиваю', 'фиксируем на первом созвоне', 'и дольше']) await expect(faq).not.toContainText(old);
+    await expect(faq).toContainText('Яндекс Директ и VK Рекламу');
+    await expect(page.locator('#contact').getByText(offerButtonsNote)).toContainText('пн–пт');
+    await expect(page.locator('#contact')).toContainText('Платить за сайт');
 });
 
 // Планшет (DESIGN_FIXES_2_PLAN Д10): три отличия в одном ряду, а не 2 + 1, форма заявки по левому краю, как текст над ней.
@@ -1116,7 +1130,8 @@ for (const width of [375, 320]) {
         const texts = [
             page.getByRole('region', { name: faqTitle }).getByText(offerFaq[0].answer),
             page.getByText(offerSteps[0].text),
-            page.getByText(offerReasons[0].text),
+            // Тот же текст – в ответе FAQ про оплату (SERVICES_PLAN У1)
+            page.getByRole('region', { name: 'Почему я' }).getByText(offerReasons[0].text),
             contact.getByText(offerButtonsNote),
             contact.getByText(offerTrustLine()),
             page.getByRole('contentinfo'),

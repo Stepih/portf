@@ -1,6 +1,6 @@
 import { expect, test } from '@playwright/test';
 import { collectErrors } from './errors';
-import { caseCtaShort, formButton, offerTgButton } from '../src/data/offer';
+import { caseCtaShort, formButton, offerTgButton, portfolioDescription } from '../src/data/offer';
 
 // Шапка каталога: оффер и две кнопки; в подборке ?for= заголовок с отраслью, отрасль уходит в форму (SALES_PLAN 5.1)
 test('шапка портфолио с подборкой по отрасли', async ({ page }) => {
@@ -8,6 +8,8 @@ test('шапка портфолио с подборкой по отрасли', 
 
     await expect(page.locator('h1')).toHaveText('Сайты для строительных и ремонтных компаний');
     await expect(page).toHaveTitle('Сайты для строительных и ремонтных компаний – портфолио');
+    // Оплата после макета – только про сайт: у агента демо или пилот (SERVICES_PLAN У1)
+    await expect(page.getByText(portfolioDescription)).toContainText('За сайт платите');
 
     const form = page.getByRole('link', { name: formButton });
     await expect(form).toHaveAttribute('href', '/popup?for=construction');

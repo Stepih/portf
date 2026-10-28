@@ -26,7 +26,7 @@ export const formButton = 'Обсудить проект'
 // Плашка вместо формы после отправки (DESIGN_FIXES_2_PLAN Д6: скилл
 // marketing:draft-content, выбор владельца – вариант C2 и «с примером»). Про предоплату здесь не пишем (владелец)
 export const formSuccessTitle = (name: string) => `${name}, заявка отправлена`
-export const formSuccessText = 'Отвечу в течение часа и договоримся о бесплатном созвоне. На нём обсудим задачу, назову цену и срок.'
+export const formSuccessText = 'Отвечу в течение часа, пн–пт 9–18, и договоримся о бесплатном созвоне. На нём обсудим задачу, назову цену и срок.'
 // Ошибка контакта, который не похож ни на номер, ни на ник (SALES_PLAN 4.2: скилл marketing:draft-content, выбор владельца)
 export const contactIncomplete = 'Нужен номер целиком или ник, например @ivan_petrov'
 
