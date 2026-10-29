@@ -11,7 +11,7 @@ import { ralewayBold } from "@/app/fonts/fonts";
 import Rise from "../Rise";
 import { usePrefersReducedMotion } from "@/hooks/usePrefersReducedMotion";
 import { ease, easeOut, easeOutBack, span, SMOOTH } from "../scene";
-import { ph, sections } from "../../placeholders";
+import { ph, sections } from "@/data/aiPage";
 
 // Шкала финала: шар вырастает, сжимается и делится на два круга, круги разъезжаются и вытягиваются в таблетки-кнопки
 const ORB_IN = [0, .22];

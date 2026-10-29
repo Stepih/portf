@@ -10,7 +10,7 @@ import { usePrefersReducedMotion } from "@/hooks/usePrefersReducedMotion";
 import { IServiceTier } from "@/interfaces/offer";
 import TierCard from "../TierCard";
 import { easeOut, easeOutBack, span, SMOOTH } from "../scene";
-import { sections, tierText } from "../../placeholders";
+import { sections, tierText } from "@/data/aiPage";
 
 interface ITierSplit {
     tiers: IServiceTier[],

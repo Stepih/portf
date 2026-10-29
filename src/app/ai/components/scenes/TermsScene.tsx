@@ -11,7 +11,7 @@ import { ralewayBold } from "@/app/fonts/fonts";
 import Rise from "../Rise";
 import { clamp01, ease, easeOut, lerp, offsetIn, SMOOTH, span } from "../scene";
 import { FAQ_PATH, faqOn, IMonthlyEnd, monthlyGone, monthlyWipe, TERMS_PATH, termsBallTook, termsEnd, termsGone, termsWipe } from "./handoff";
-import { sections, terms } from "../../placeholders";
+import { sections, terms } from "@/data/aiPage";
 
 // ---------- Время ----------
 // В экранах скролла от кадра, где липкий экран раздела встал поверх последнего экрана «Каждый месяц», минус LEAD.

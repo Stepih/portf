@@ -11,7 +11,7 @@ import Rise from "../Rise";
 import { easeOut, flyEase, span, SMOOTH } from "../scene";
 import { IMonthlyEnd, monthlyEnd } from "../scenes/handoff";
 import TermsScene from "../scenes/TermsScene";
-import { sections, terms } from "../../placeholders";
+import { sections, terms } from "@/data/aiPage";
 
 // Шкала блока: шар появляется в центре сетки, из него по очереди вылетают капли – по одной на тему,
 // капля садится в левый верхний угол темы и растекается в линию, из-под линии выезжают заголовок и пункты

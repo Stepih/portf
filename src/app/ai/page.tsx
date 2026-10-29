@@ -12,9 +12,11 @@ import AiFaq from "./components/sections/AiFaq";
 import CtaScene from "./components/scenes/CtaScene";
 
 // Страница /ai (SERVICES_PLAN У4), раскладка «Работа → чат → цены» – выбор владельца из трёх черновиков (A и B – в истории git).
-// Тексты пока заглушки (placeholders.ts): до их утверждения страница не в поиске и не в sitemap (next-sitemap.config.js)
+// Тексты – src/data/aiPage.ts (черновик marketing:draft-content): до утверждения владельцем страница не в поиске и не в sitemap
+// (next-sitemap.config.js)
 export const metadata: Metadata = {
     title: 'ИИ-агенты для бизнеса – Степан Картузов',
+    description: 'ИИ-агенты под процесс вашего бизнеса: контроль звонков, отзывы, отчёт по маркетингу, проверка документов, заявки и запись. Демо – бесплатно, серверы в России',
     robots: { index: false, follow: false },
 };
 
@@ -22,7 +24,7 @@ export const metadata: Metadata = {
 // продолжается сценой агентов (AgentDeck: две карточки и шар между ними, слайды по два); карточки втягиваются в шар,
 // из него собирается линия шагов HowWeWork (joined). Дальше разделы связаны стыками на неподвижном экране (scenes/handoff.ts)
 const AiPage: FC = () => {
-    // Ступени, уточнение и Telegram – настоящие данные главной (offer.ts), остальное – заглушки
+    // Ступени, уточнение и Telegram – данные главной (offer.ts), остальные тексты – src/data/aiPage.ts
     const ai = services.find((service) => service.tiers);
 
     return (

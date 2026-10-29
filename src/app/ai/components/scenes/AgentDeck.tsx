@@ -13,7 +13,7 @@ import { useMediaQuery } from "@/hooks/useMediaQuery";
 import { usePrefersReducedMotion } from "@/hooks/usePrefersReducedMotion";
 import { ease, easeOut, lerp, offsetIn, SMOOTH, span, useStickyScene } from "../scene";
 import { DROP_TAIL, HowFlow } from "../sections/HowWeWork";
-import { deckAgents, deckChips, deckSlideLabel, flow, sections } from "../../placeholders";
+import { deckAgents, deckChips, deckSlideLabel, flow, sections } from "@/data/aiPage";
 import { deckTook, howJoin, howTook } from "./handoff";
 
 // Агентов на слайде – две карточки (рядом, на телефоне – одна над другой); слайды считаются от длины массива

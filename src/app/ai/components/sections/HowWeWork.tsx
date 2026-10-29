@@ -10,7 +10,7 @@ import { usePrefersReducedMotion } from "@/hooks/usePrefersReducedMotion";
 import Rise from "../Rise";
 import { clamp01, ease, easeOut, easeOutBack, span, SMOOTH } from "../scene";
 import { howJoin, howTook, howTrackEl, IHowJoin, riderLeft } from "../scenes/handoff";
-import { flow, flowText, howTopics, sections } from "../../placeholders";
+import { flow, flowText, howTopics, sections } from "@/data/aiPage";
 
 // Тело шага (вариант C), в единицах drop – доля промежутка между шагами: кусок линии падает fall, подпись выезжает
 // с label, текст – с text, каждая строка – за rise

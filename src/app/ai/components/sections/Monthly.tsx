@@ -10,7 +10,7 @@ import { usePrefersReducedMotion } from "@/hooks/usePrefersReducedMotion";
 import { easeOut, easeOutBack, span, SMOOTH } from "../scene";
 import { howJoin, howTrackEl } from "../scenes/handoff";
 import MonthlyScene, { scalePos as pos } from "../scenes/MonthlyScene";
-import { monthlyHeads, monthlyNotes, monthlyPer, monthlyRanges, monthlyRows, monthlyScale, sections } from "../../placeholders";
+import { monthlyHeads, monthlyNotes, monthlyPer, monthlyRanges, monthlyRows, monthlyScale, sections } from "@/data/aiPage";
 
 // Капсула диапазона: выезжает от начала шкалы точкой, едет и растягивается до своих границ
 const Capsule: FC<{ progress: MotionValue<number>, i: number, range: number[] }> = ({ progress, i, range }) => {

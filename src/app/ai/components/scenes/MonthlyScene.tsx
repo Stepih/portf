@@ -16,7 +16,7 @@ import { FAQ_PATH, howJoin, howTook, monthlyEnd, monthlyGone, monthlyWipe, rider
 import {
     monthlyCount, monthlyHeads, monthlyMinor, monthlyNotes, monthlyPer, monthlyRanges, monthlyRows, monthlyScale, monthlySum,
     monthlyUnit, sections
-} from "../../placeholders";
+} from "@/data/aiPage";
 
 // Шкала – логарифмическая, от 100 до 20 000 ₽ в месяц: разброс «от 200 до 2 300» и «от 2 500 до 10 600» виден глазом.
 // Неравные деления показывают мелкие насечки (monthlyMinor)

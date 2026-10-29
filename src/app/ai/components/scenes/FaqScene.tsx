@@ -12,7 +12,7 @@ import { ralewayBold, ralewayRegular } from "@/app/fonts/fonts";
 import Rise from "../Rise";
 import { ease, easeOut, easeOutBack, lerp, offsetIn, SMOOTH, span } from "../scene";
 import { FAQ_PATH, faqOn, faqRelease, ITermsEnd, termsBallTook, termsGone, termsWipe } from "./handoff";
-import { faq, sections } from "../../placeholders";
+import { faq, sections } from "@/data/aiPage";
 
 // ---------- Время ----------
 // В экранах скролла от кадра, где липкий экран FAQ встал поверх последнего кадра «Что входит», минус LEAD.

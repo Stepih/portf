@@ -22,7 +22,7 @@ import Pipeline, { Bar, FLY, flyFrom, IGeom, KINDS, Kind, Label, noGeom, Pipelin
 import TierSplit from "./TierSplit";
 import { deckTook } from "./handoff";
 import { ease, easeOut, lerp, offsetIn, span, useStickyScene } from "../scene";
-import { ph, pipelineDemo, pipelineNote, pipelineStages, sections, tierText, tierTextC2 } from "../../placeholders";
+import { ph, pipelineDemo, pipelineNote, pipelineStages, sections, tierText, tierTextC2 } from "@/data/aiPage";
 
 // Путь сцены в экранах. Одна сцена от первого экрана до ступеней цены, герой – один шар. Порядок (владелец):
 // сначала видно, что агент умеет, потом живой пример, потом цена. Шар едет в центр сцены «агент за работой» (4 примера) →

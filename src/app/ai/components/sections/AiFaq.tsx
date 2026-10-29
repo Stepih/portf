@@ -10,7 +10,7 @@ import { usePrefersReducedMotion } from "@/hooks/usePrefersReducedMotion";
 import { easeOut, easeOutBack, span, SMOOTH } from "../scene";
 import { faqLineTook, faqListEl, ITermsEnd, termsEnd } from "../scenes/handoff";
 import FaqScene from "../scenes/FaqScene";
-import { faq, sections } from "../../placeholders";
+import { faq, sections } from "@/data/aiPage";
 
 // Вопрос приходит, как сообщение в чат: таблетка въезжает справа с наклоном, распрямляется и раскрывается в строку
 const Question: FC<{ question: string, answer: string, open: boolean, still?: boolean }> = ({ question, answer, open, still }) => {

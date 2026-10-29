@@ -9,7 +9,7 @@ import { ralewayBold } from "@/app/fonts/fonts";
 import { IServiceTier } from "@/interfaces/offer";
 import Rise from "./Rise";
 import { easeOut, span } from "./scene";
-import { tierButton } from "../placeholders";
+import { tierButton } from "@/data/aiPage";
 
 interface ITierCard {
     tier: IServiceTier,

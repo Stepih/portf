@@ -11,7 +11,7 @@ import { useMediaQuery } from "@/hooks/useMediaQuery";
 import { usePrefersReducedMotion } from "@/hooks/usePrefersReducedMotion";
 import { ChartIcon, DocIcon, PhoneIcon, StarIcon } from "./PipelineIcons";
 import { ease, easeOut, easeOutBack, lerp, offsetIn, span, useStickyScene } from "../scene";
-import { pipelineDemo, pipelineNote, pipelineStages, sections } from "../../placeholders";
+import { pipelineDemo, pipelineNote, pipelineStages, sections } from "@/data/aiPage";
 
 export type Kind = 'calls' | 'reviews' | 'data' | 'docs';
 export const KINDS: Kind[] = ['calls', 'reviews', 'data', 'docs'];
