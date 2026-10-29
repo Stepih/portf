@@ -12,7 +12,10 @@ export const deckTook = motionValue(0);
 export interface IHowJoin {
     // Центр шара от верха экрана сцены и высота экрана, px
     orbY: number,
-    h: number
+    h: number,
+    // Десктоп: шаги с телом – из каждого зажжённого шага падает кусок линии, под ним подпись и текст (HowFlow, drop);
+    // темы под линией не нужны. Телефон – пока по-старому: подписи сразу, три темы падают ниже
+    steps: boolean
 }
 export const howJoin = motionValue<IHowJoin | null>(null);
 

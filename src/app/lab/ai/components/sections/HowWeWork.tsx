@@ -10,20 +10,77 @@ import { usePrefersReducedMotion } from "@/hooks/usePrefersReducedMotion";
 import Rise from "../Rise";
 import { clamp01, ease, easeOut, easeOutBack, span, SMOOTH } from "../scene";
 import { howJoin, howTook, IHowJoin } from "../c/handoff";
-import { flow, howTopics, sections } from "../../placeholders";
+import { flow, flowText, howTopics, sections } from "../../placeholders";
+
+// Тело шага (вариант C), в единицах drop – доля промежутка между шагами: кусок линии падает fall, подпись выезжает
+// с label, текст – с text, каждая строка – за rise
+export const DROP = { fall: .75, label: .6, text: .75, rise: .45 };
+// Тело шага целиком выехало – через столько после того, как шаг загорелся
+export const DROP_TAIL = DROP.text + DROP.rise;
+// Верх линии шагов в шаге (.track в Sections.module.scss): отсюда отрывается кусок
+const TRACK_Y = 19;
+
+interface IStepBody {
+    drop: MotionValue<number>,
+    i: number,
+    label: string,
+    text: string
+}
+
+// Тело шага: шаг загорелся – от линии у его кружка отрывается кусок, падает, качнувшись, и ложится под кружком
+// волосяной линией; из-под неё выезжают подпись и текст. drop – время в шагах: шаг i загорается в i
+const StepBody: FC<IStepBody> = ({ drop, i, label, text }) => {
+    const reduceMotion = usePrefersReducedMotion();
+    const body = useRef<HTMLDivElement>(null);
+    // На сколько линия шагов выше места куска – без transform
+    const [lift, setLift] = useState(0);
+    useLayoutEffect(() => {
+        if (body.current) setLift(TRACK_Y - body.current.offsetTop);
+    }, []);
+
+    const f = (v: number) => span(v, i, DROP.fall);
+    // Падение с ускорением и маленьким отскоком в конце – как у кусков над темами
+    const y = useTransform(drop, (v) => {
+        const k = f(v);
+        const fall = k < .8 ? (k / .8) ** 2 : 1 - Math.sin(Math.PI * (k - .8) / .2) * .04;
+        return lift * (1 - fall);
+    });
+    // Короткий кусок: летит меньше, лёг – чуть вытягивается до своей длины
+    const scaleX = useTransform(drop, (v) => .7 + .3 * easeOut(span(v, i + DROP.fall * .8, .3)));
+    const rotate = useTransform(drop, (v) => Math.sin(Math.PI * f(v)) * (i % 2 ? -6 : 6));
+    const shown = useTransform(drop, (v) => span(v, i + .01, .06));
+    // Пока летит – чернилами, как залитая линия; легла – волосяной
+    const ink = useTransform(drop, (v) => 1 - span(v, i + DROP.fall * .9, .2));
+
+    return (
+        <div ref={body} className={h.body}>
+            <motion.span className={`${h.piece} ${h.short}`} style={reduceMotion ? undefined : { y, scaleX, rotate, opacity: shown }} aria-hidden="true">
+                <motion.span className={h.ink} style={{ opacity: reduceMotion ? 0 : ink }} />
+            </motion.span>
+            <span className={`${ralewayBold.className} ${s.stepLabel}`}>
+                <Rise progress={drop} from={i + DROP.label} dur={DROP.rise}>{label}</Rise>
+            </span>
+            <p className={h.text}>
+                <Rise progress={drop} from={i + DROP.text} dur={DROP.rise} tag="span">{text}</Rise>
+            </p>
+        </div>
+    );
+};
 
 interface IStep {
     progress: MotionValue<number>,
     // Появление в сцене AgentDeck, 0–1: кружок вырастает из точки, подпись – следом; от середины к краям, как
     // долетают точки. Без него шаг виден сразу
     intro?: MotionValue<number>,
+    // Вариант C, десктоп: вместо подписи – тело шага (StepBody), выезжает, когда шаг загорелся
+    drop?: MotionValue<number>,
     i: number,
     count: number,
     label: string
 }
 
 // Шаг загорается, когда к нему подъехал шар
-const Step: FC<IStep> = ({ progress, intro, i, count, label }) => {
+const Step: FC<IStep> = ({ progress, intro, drop, i, count, label }) => {
     const reduceMotion = usePrefersReducedMotion();
     const at = i / (count - 1);
     const on = useTransform(progress, (v) => clamp01((v - at + .04) / .06));
@@ -42,7 +99,9 @@ const Step: FC<IStep> = ({ progress, intro, i, count, label }) => {
                 <motion.span className={s.stepFill} style={{ opacity: reduceMotion ? 1 : on }} aria-hidden="true" />
                 <motion.span className={s.stepDigit} style={{ color: reduceMotion ? undefined : color }}>{i + 1}</motion.span>
             </motion.span>
-            <motion.span className={`${ralewayBold.className} ${s.stepLabel}`} style={{ opacity: reduceMotion ? 1 : opacity }}>{label}</motion.span>
+            {drop
+                ? <StepBody drop={drop} i={i} label={label} text={flowText[i]} />
+                : <motion.span className={`${ralewayBold.className} ${s.stepLabel}`} style={{ opacity: reduceMotion ? 1 : opacity }}>{label}</motion.span>}
         </li>
     );
 };
@@ -54,6 +113,8 @@ interface IHowFlow {
     intro?: MotionValue<number>,
     base?: MotionValue<number>,
     rider?: MotionValue<number>,
+    // Вариант C, десктоп: тела шагов, время в шагах (StepBody)
+    drop?: MotionValue<number>,
     // Залитая линия гаснет, когда от неё оторвались куски
     fade?: MotionValue<number>,
     style?: MotionStyle,
@@ -62,7 +123,7 @@ interface IHowFlow {
 }
 
 // Линия шагов с малым шаром. Её же рисует сцена AgentDeck в конце (копия верха раздела): разметка и стили – одни
-export const HowFlow: FC<IHowFlow> = ({ progress, intro, base, rider, fade, style, lineRef, trackRef }) => {
+export const HowFlow: FC<IHowFlow> = ({ progress, intro, base, rider, drop, fade, style, lineRef, trackRef }) => {
     const reduceMotion = usePrefersReducedMotion();
     const own = useRef<HTMLSpanElement>(null);
     const track = trackRef ?? own;
@@ -98,7 +159,7 @@ export const HowFlow: FC<IHowFlow> = ({ progress, intro, base, rider, fade, styl
                 )}
             </span>
             {flow.map((label, i) => (
-                <Step key={label} progress={progress} intro={intro} i={i} count={flow.length} label={label} />
+                <Step key={label} progress={progress} intro={intro} drop={drop} i={i} count={flow.length} label={label} />
             ))}
         </motion.ol>
     );
@@ -167,6 +228,9 @@ const HowWeWork: FC<IHowWeWork> = ({ joined = false }) => {
     useEffect(() => { setJoin(joined ? howJoin.get() : null) }, [joined]);
     useMotionValueEvent(howJoin, 'change', (j) => setJoin(joined ? j : null));
     const linked = join !== null;
+    // Десктоп варианта C: тела шагов уже выехали в сцене AgentDeck, тем под линией нет
+    const steps = linked && join.steps;
+    const landed = useMotionValue(flow.length + DROP_TAIL);
 
     const { scrollYProgress } = useScroll({ target: line, offset: ['start 0.85', 'end 0.55'] });
     const progress = useSpring(scrollYProgress, SMOOTH);
@@ -231,9 +295,17 @@ const HowWeWork: FC<IHowWeWork> = ({ joined = false }) => {
             <motion.h2 id="how-title" className={`${ralewayBold.className} ${s.title}`} style={top}>{sections.how.title}</motion.h2>
             <motion.p className={s.description} style={top}>{sections.how.text}</motion.p>
 
-            <HowFlow progress={linked ? done : progress} fade={trackOpacity} style={top} lineRef={line} trackRef={track} />
+            <HowFlow
+                progress={linked ? done : progress}
+                drop={steps ? landed : undefined}
+                fade={steps ? undefined : trackOpacity}
+                style={top}
+                lineRef={line}
+                trackRef={track}
+            />
 
-            <div ref={grid} className={s.topics}>
+            {/* Темы скрыты стилем, а не убраны: по блоку считается скролл падения */}
+            <div ref={grid} className={s.topics} style={steps ? { display: 'none' } : undefined}>
                 {howTopics.map((topic, i) => (
                     <Topic
                         key={topic.title}

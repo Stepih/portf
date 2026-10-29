@@ -1,4 +1,6 @@
-// Куски линии шагов падают в линии над темами
+@use '/src/styles/variables.scss' as vars;
+
+// Куски линии шагов падают в линии над темами (вариант C на десктопе – под шагами)
 .section {
     position: relative;
 }
@@ -19,6 +21,38 @@
 
     background: rgba(128, 128, 128, 0.45);
     transform-origin: 50% 50%;
+}
+
+// Тело шага (вариант C): кусок линии ложится сверху, под ним – подпись и текст
+.body {
+    position: relative;
+
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+
+    width: calc(100% - 24px);
+    padding-top: 16px;
+}
+
+// Кусок под шагом – короткий, по центру; отрывается из-за кружка (у .stepNum z-index 1)
+.piece.short {
+    left: 50%;
+    right: auto;
+    z-index: 0;
+
+    width: 56px;
+    margin-left: -28px;
+}
+
+.text {
+    margin: 0;
+
+    font-size: 0.95rem;
+    line-height: 1.45;
+    text-wrap: pretty;
+    color: var(--color-text-muted);
+    transition: vars.$transition;
 }
 
 .ink {

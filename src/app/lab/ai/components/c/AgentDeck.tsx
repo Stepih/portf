@@ -12,7 +12,7 @@ import { ralewayBold } from "@/app/fonts/fonts";
 import { useMediaQuery } from "@/hooks/useMediaQuery";
 import { usePrefersReducedMotion } from "@/hooks/usePrefersReducedMotion";
 import { ease, easeOut, lerp, offsetIn, SMOOTH, span, useStickyScene } from "../scene";
-import { HowFlow } from "../sections/HowWeWork";
+import { DROP_TAIL, HowFlow } from "../sections/HowWeWork";
 import { deckAgents, deckChips, deckSlideLabel, flow, sections } from "../../placeholders";
 import { deckTook, howJoin, howTook } from "./handoff";
 
@@ -76,6 +76,8 @@ const shownAt = (j: number) => inFrom(j) + T.col + (ROWS - 1) * T.step + T.row;
 // уменьшается до малого шарика, становится им и проезжает линию, зажигая шаги. Экран отпускает скролл – верх
 // дальше рисует сам HowWeWork (handoff.ts)
 const SUCK = shownAt(SLIDES - 1) + .45;
+// Проезд шарика по линии, в экранах
+const RIDE = 1.6;
 const END = {
     // Гаснут заголовок сцены и полоски слайдов (текст карточек не гаснет – уходит в шар вместе с листом)
     fade: [SUCK, SUCK + .15],
@@ -100,10 +102,12 @@ const END = {
     // Шар уменьшается до шарика и едет к шагу 1, звезда гаснет; в конце его сменяет шарик линии
     star: [SUCK + 1.39, SUCK + 1.59],
     become: [SUCK + 1.39, SUCK + 1.84],
-    // Шарик проезжает линию
-    ride: [SUCK + 1.89, SUCK + 2.79],
+    // Шарик проезжает линию. Десктоп: каждый шаг, загоревшись, роняет кусок линии, под ним выезжают подпись и текст
+    // (StepBody); шаг – раз в RIDE / (шагов − 1) экрана, хвост – пока выезжает тело последнего
+    ride: [SUCK + 1.89, SUCK + 1.89 + RIDE],
 };
-const PATH = SUCK + 2.84;
+const STEP_LEN = RIDE / (flow.length - 1);
+const PATH = END.ride[1] + DROP_TAIL * STEP_LEN + .1;
 // На сколько экранов сцена заходит под конец пути ChatWorkScene: PATH − handoff[0] там
 const OVER = .3;
 
@@ -423,7 +427,7 @@ const AgentDeck: FC = () => {
         }
 
         setG({ card, tier, left, right, orb, track, vertical, how: { x, y, w } });
-        howJoin.set(sticky ? { orbY: orb.y, h: root.offsetHeight } : null);
+        howJoin.set(sticky ? { orbY: orb.y, h: root.offsetHeight, steps: stitched } : null);
     }, [sceneY, sticky, stitched]);
 
     const { progress, measure, scrollToProgress } = useStickyScene({ scene, path, screen }, onMeasure);
@@ -546,6 +550,8 @@ const AgentDeck: FC = () => {
     const ride = useTransform(progress, (v) => v < f(END.ride[0])
         ? lerp(-.07, 0, k(v, [END.become[1] - .1, END.become[1]]))
         : k(v, END.ride));
+    // Время в шагах для тел шагов: шаг i загорается в i
+    const drop = useTransform(progress, (v) => (v * PATH - END.ride[0]) / STEP_LEN);
     const ghostOpacity = useTransform(howTook, (took) => 1 - took);
 
     // Клик по полоске – плавно к кадру, где слайд целиком въехал
@@ -610,7 +616,7 @@ const AgentDeck: FC = () => {
                         >
                             <motion.h2 className={`${ralewayBold.className} ${t.title}`} style={{ opacity: howHead, y: howHeadY }}>{sections.how.title}</motion.h2>
                             <motion.p className={t.description} style={{ opacity: howHead, y: howHeadY }}>{sections.how.text}</motion.p>
-                            <HowFlow progress={ride} intro={stepsIntro} base={base} rider={rider} trackRef={ghostTrack} />
+                            <HowFlow progress={ride} intro={stepsIntro} base={base} rider={rider} drop={stitched ? drop : undefined} trackRef={ghostTrack} />
                         </motion.div>
 
                         <div className={s.sparks} aria-hidden="true">
