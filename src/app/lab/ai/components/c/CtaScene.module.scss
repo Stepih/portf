@@ -1,0 +1,50 @@
+@use '/src/styles/variables.scss' as vars;
+
+// Финал, десктоп варианта C: липкая сцена заходит на FAQ – экран встаёт в кадре, где экраны FAQ отпускают скролл
+// (отрицательный верхний отступ ставит компонент). Экран прозрачный и пропускает клики к FAQ
+.scene {
+    z-index: 4;
+}
+
+.screen {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    pointer-events: none;
+
+    & > section {
+        margin: 0 auto;
+    }
+}
+
+// Подписи кнопок проявились – кнопки нажимаются
+.live a {
+    pointer-events: auto;
+}
+
+.line {
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: 1;
+
+    height: 1.5px;
+
+    background: rgba(128, 128, 128, 0.45);
+}
+
+// Оторвавшаяся линия – чернилами (толщину удваивает компонент)
+.ink {
+    position: absolute;
+    inset: 0;
+
+    background: var(--color-text-100);
+    transition: vars.$transition;
+}
+
+span.ball {
+    top: 0;
+    left: 0;
+    z-index: 3;
+}

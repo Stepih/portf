@@ -1,0 +1,100 @@
+@use '/src/styles/variables.scss' as vars;
+
+// FAQ, десктоп варианта C: липкий экран лежит поверх хвоста «Что входит» (его экран держится ещё FAQ_PATH) – низ к
+// низу, все экраны отпускают скролл вместе
+.scene {
+    z-index: 3;
+
+    margin-top: calc(-1 * (var(--scene-h) + var(--hold)));
+    pointer-events: none;
+}
+
+// Копия – у верха экрана: список с раскрытым первым вопросом выше, чем «Что входит»
+$top: 70px;
+
+div.frame {
+    margin-top: $top;
+}
+
+// Настоящий FAQ – под копией точь-в-точь: его верх на $top ниже верха экрана в кадре отпускания
+.real {
+    --screen-h: 100vh;
+
+    @supports (height: 100lvh) {
+        --screen-h: 100lvh;
+    }
+
+    position: relative;
+    z-index: 3;
+
+    margin-top: calc(#{$top} - var(--screen-h));
+
+    & > section {
+        margin-top: 0;
+    }
+}
+
+// Линии копии рисует компонент: у строк остаются прозрачные рамки той же толщины, чтобы высоты совпали с настоящим
+// (селекторы сильнее, чем .faq .list / .faq .item в Faq.module.scss)
+div.list.list {
+    position: relative;
+
+    border-bottom-color: transparent;
+}
+
+div.list > div.item {
+    border-top-color: transparent;
+}
+
+.line {
+    position: absolute;
+    top: -1.5px;
+    left: 0;
+    z-index: 1;
+
+    height: 1.5px;
+
+    background: rgba(128, 128, 128, 0.45);
+}
+
+// Пока линия поднимается и стирает темы – чернилами (толщину удваивает компонент)
+.ink {
+    position: absolute;
+    inset: 0;
+
+    background: var(--color-text-100);
+    transition: vars.$transition;
+}
+
+span.ball {
+    top: 0;
+    left: 0;
+    z-index: 3;
+}
+
+// Значок вместо ::after строки FAQ: на первый вопрос его ставит шарик
+div.question::after {
+    display: none;
+}
+
+.icon {
+    position: absolute;
+    top: 50%;
+    right: 4px;
+
+    width: 14px;
+    height: 14px;
+    margin-top: -7px;
+
+    background:
+        linear-gradient(currentColor, currentColor) center / 100% 2px no-repeat,
+        linear-gradient(currentColor, currentColor) center / 2px 100% no-repeat;
+}
+
+// Второй ответ, пока агент его печатает, лежит под вопросом поверх строк ниже – они съезжают на его высоту сами
+p.floating {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+}

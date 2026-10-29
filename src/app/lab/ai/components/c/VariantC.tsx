@@ -7,7 +7,7 @@ import HowWeWork from "../sections/HowWeWork";
 import Monthly from "../sections/Monthly";
 import Terms from "../sections/Terms";
 import AiFaq from "../sections/AiFaq";
-import FinalCta from "../sections/FinalCta";
+import CtaScene from "./CtaScene";
 
 interface IVariant {
     tiers: IServiceTier[],
@@ -27,7 +27,7 @@ const VariantC: FC<IVariant> = ({ tiers, note, tgHref }) => (
         <Monthly />
         <Terms />
         <AiFaq />
-        <FinalCta tgHref={tgHref} />
+        <CtaScene tgHref={tgHref} />
     </>
 );
 

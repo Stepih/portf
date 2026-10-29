@@ -12,7 +12,7 @@ import OrbStar from "@/app/(home)/components/chat/OrbStar";
 import { allerta, ralewayBold, ralewayRegular } from "@/app/fonts/fonts";
 import Rise from "../Rise";
 import { ease, easeOut, lerp, offsetIn, SMOOTH, span } from "../scene";
-import { howJoin, howTook, monthlyEnd, monthlyGone, monthlyWipe, riderLeft, TERMS_PATH } from "./handoff";
+import { FAQ_PATH, howJoin, howTook, monthlyEnd, monthlyGone, monthlyWipe, riderLeft, TERMS_PATH } from "./handoff";
 import {
     monthlyCount, monthlyHeads, monthlyMinor, monthlyNotes, monthlyPer, monthlyRanges, monthlyRows, monthlyScale, monthlySum,
     monthlyUnit, sections
@@ -372,7 +372,7 @@ const MonthlyScene: FC<IMonthlyScene> = ({ rider }) => {
     const layoutTop = useMotionValue(0);
     const wipe = useTransform([monthlyWipe, layoutTop], ([w, top]: number[]) =>
         w < 0 ? 'none' : `inset(${Math.max(0, w - top)}px -60px -60px -60px)`);
-    // Экран держится и на время «Что входит» (TERMS_PATH): заголовок гаснет, когда выезжает заголовок Terms
+    // Экран держится и на время «Что входит» и FAQ (TERMS_PATH + FAQ_PATH): заголовок гаснет, когда выезжает заголовок Terms
     const titleOn = useTransform(monthlyGone, (v) => 1 - v);
 
     // Время сцены – от скролла, сглаженное пружиной; при рывке (ползунок, End) пружина перескакивает к потолку отставания
@@ -561,7 +561,7 @@ const MonthlyScene: FC<IMonthlyScene> = ({ rider }) => {
         <section
             ref={scene}
             className={`${sc.scene} ${s.scene}`}
-            style={{ '--scene-h': `calc(var(--screen-h) + ${(PATH + TERMS_PATH) * 100}vh)` } as CSSProperties}
+            style={{ '--scene-h': `calc(var(--screen-h) + ${(PATH + TERMS_PATH + FAQ_PATH) * 100}vh)` } as CSSProperties}
             aria-labelledby="monthly-title"
         >
             <div ref={screen} className={`${sc.screen} ${s.screen}`}>

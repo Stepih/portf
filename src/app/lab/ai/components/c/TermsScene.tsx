@@ -10,7 +10,7 @@ import ts from './TermsScene.module.scss'
 import { ralewayBold } from "@/app/fonts/fonts";
 import Rise from "../Rise";
 import { clamp01, ease, easeOut, lerp, offsetIn, SMOOTH, span } from "../scene";
-import { IMonthlyEnd, monthlyGone, monthlyWipe, TERMS_PATH } from "./handoff";
+import { FAQ_PATH, faqOn, IMonthlyEnd, monthlyGone, monthlyWipe, TERMS_PATH, termsBallTook, termsEnd, termsGone, termsWipe } from "./handoff";
 import { sections, terms } from "../../placeholders";
 
 // ---------- Время ----------
@@ -95,7 +95,8 @@ const ballAt = (v: number, g: IGeo) => {
         p = { x: rollX(v, g, r), y: row.y };
         if (v < from + DROP + ROLL) return { ...p, scale };
     }
-    scale *= 1 - ease(span(v, dropAt(g.rows.length - 1) + DROP + ROLL, OUT));
+    // Дальше шарик везёт FaqScene – здесь он не гаснет
+    if (!faqOn.get()) scale *= 1 - ease(span(v, dropAt(g.rows.length - 1) + DROP + ROLL, OUT));
     return { ...p, scale };
 };
 
@@ -214,6 +215,11 @@ const TermsScene: FC<{ end: IMonthlyEnd }> = ({ end }) => {
                 row.right = Math.max(row.right, b.x + b.w);
             } else rows.push({ y: b.y, left: b.x, right: b.x + b.w, items: [i] });
         });
+        const last = rows.length - 1;
+        termsEnd.set(rows.length > 1 ? {
+            ball: { x: at.x + toX(rows[last], last), y: at.y + rows[last].y },
+            left: at.x + rows[0].left, right: at.x + rows[0].right, bottom: at.y + gr.offsetHeight
+        } : null);
         setG({
             line: { x: end.x - at.x, y: end.y - at.y, w: end.w }, wide: { x: end.wide.x - at.x, w: end.wide.w },
             bottom: end.bottom - at.y, topics: boxes, rows, top: at.y
@@ -234,6 +240,7 @@ const TermsScene: FC<{ end: IMonthlyEnd }> = ({ end }) => {
             window.removeEventListener('resize', measure);
         };
     }, [measure]);
+    useEffect(() => () => termsEnd.set(null), []);
 
     // Линия оторвалась – «Каждый месяц» прячет свою и обрезает над ней таблицу; заголовок гаснет вместе с выездом
     // заголовка раздела
@@ -256,26 +263,30 @@ const TermsScene: FC<{ end: IMonthlyEnd }> = ({ end }) => {
     const ballScale = useTransform(ball, (b) => b.scale);
 
     const first = g.rows[0]?.items ?? [];
+    // Стык с FAQ: поднимающаяся линия обрезает экран под собой, заголовок гаснет, шарик уходит в FaqScene
+    const wipe = useTransform(termsWipe, (w) => w >= 0 ? `inset(0 0 calc(100% - ${w}px) 0)` : 'none');
+    const titleOn = useTransform(termsGone, (v) => 1 - v);
+    const ballOn = useTransform(termsBallTook, (v) => 1 - v);
 
     return (
         <section
             ref={scene}
             className={`${sc.scene} ${ts.scene}`}
-            style={{ '--scene-h': `calc(var(--screen-h) + ${TERMS_PATH * 100}vh)` } as CSSProperties}
+            style={{ '--scene-h': `calc(var(--screen-h) + ${(TERMS_PATH + FAQ_PATH) * 100}vh)` } as CSSProperties}
             aria-labelledby="terms-title"
         >
-            <div ref={screen} className={sc.screen}>
+            <motion.div ref={screen} className={sc.screen} style={{ clipPath: wipe }}>
                 <div className={`${s.section} ${ts.frame}`}>
-                    <h2 id="terms-title" className={`${ralewayBold.className} ${s.title}`}>
+                    <motion.h2 id="terms-title" className={`${ralewayBold.className} ${s.title}`} style={{ opacity: titleOn }}>
                         <Rise progress={time} from={TITLE} dur={.14}>{sections.terms.title}</Rise>
-                    </h2>
-                    <p className={s.description}>
+                    </motion.h2>
+                    <motion.p className={s.description} style={{ opacity: titleOn }}>
                         <Rise progress={time} from={TITLE + .04} dur={.14}>{sections.terms.text}</Rise>
-                    </p>
+                    </motion.p>
 
                     <div ref={grid} className={`${s.terms} ${t.grid}`}>
                         {first.map((_, j) => <Piece key={j} time={time} g={g} j={j} n={first.length} />)}
-                        <motion.span className={`${s.rider} ${ts.ball}`} style={{ x: ballX, y: ballY, scale: ballScale }} aria-hidden="true" />
+                        <motion.span className={`${s.rider} ${ts.ball}`} style={{ x: ballX, y: ballY, scale: ballScale, opacity: ballOn }} aria-hidden="true" />
                         {terms.map((topic, i) => (
                             <Topic
                                 key={topic.title}
@@ -289,7 +300,7 @@ const TermsScene: FC<{ end: IMonthlyEnd }> = ({ end }) => {
                         ))}
                     </div>
                 </div>
-            </div>
+            </motion.div>
         </section>
     );
 };

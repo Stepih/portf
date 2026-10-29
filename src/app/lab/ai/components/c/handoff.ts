@@ -49,3 +49,34 @@ export const monthlyEnd = motionValue<IMonthlyEnd | null>(null);
 export const monthlyWipe = motionValue(-1);
 // 0–1: заголовок «Каждый месяц» гаснет, когда выезжает заголовок «Что входит». Ставит Terms
 export const monthlyGone = motionValue(0);
+
+// Стык Terms → FAQ (десктоп варианта C), тем же приёмом: экраны «Каждый месяц» и «Что входит» держатся ещё FAQ_PATH,
+// поверх ложится липкий экран FaqScene. Шарик, доехавший до конца сетки тем, спускается под неё и тянет чернильную
+// линию; линия поднимается и стирает темы снизу вверх, на её месте агент отвечает на вопросы в аккордеоне
+export const FAQ_PATH = 1.75;
+// Ставит TermsScene: где погас бы шарик и края сетки в последнем кадре, от левого верха экрана. null – сцены нет
+export interface ITermsEnd {
+    ball: { x: number, y: number },
+    left: number,
+    right: number,
+    bottom: number
+}
+export const termsEnd = motionValue<ITermsEnd | null>(null);
+// Где сейчас поднимающаяся линия (от верха экрана): TermsScene обрезает под ней свой экран. −1 – стирания нет.
+// Ставит FaqScene по своему времени
+export const termsWipe = motionValue(-1);
+// 0–1: заголовок «Что входит» гаснет, когда выезжает заголовок FAQ. Ставит FaqScene
+export const termsGone = motionValue(0);
+// 1 – шарик рисует FaqScene, в TermsScene он прячется (и на конце ряда не гаснет, пока сцена FAQ есть)
+export const termsBallTook = motionValue(0);
+export const faqOn = motionValue(false);
+
+// Стык FAQ → финал (десктоп варианта C): настоящий FAQ уезжает вверх как обычно, а липкий экран финала ложится поверх
+// его низа. В кадре, где экран встал, нижняя линия списка отрывается и остаётся на экране: чернеет, стягивается
+// в шарик, шарик поднимается к ряду кнопок и растёт в шар финала – дальше прежняя анимация FinalCta, но по скроллу.
+// Список настоящего FAQ (от его низа отрывается линия); ставит AiFaq, пока сцена FaqScene есть
+export const faqListEl = motionValue<HTMLElement | null>(null);
+// 1 – линию рисует CtaScene, у списка нижняя рамка прячется. Ставит CtaScene по скроллу
+export const faqLineTook = motionValue(0);
+// Скролл, на котором экраны FAQ отпускают скролл (там же встаёт экран финала). Ставит FaqScene
+export const faqRelease = motionValue(0);
