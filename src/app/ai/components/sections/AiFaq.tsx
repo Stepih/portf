@@ -8,8 +8,8 @@ import q from './AiFaq.module.scss'
 import { ralewayBold, ralewayRegular } from "@/app/fonts/fonts";
 import { usePrefersReducedMotion } from "@/hooks/usePrefersReducedMotion";
 import { easeOut, easeOutBack, span, SMOOTH } from "../scene";
-import { faqLineTook, faqListEl, ITermsEnd, termsEnd } from "../c/handoff";
-import FaqScene from "../c/FaqScene";
+import { faqLineTook, faqListEl, ITermsEnd, termsEnd } from "../scenes/handoff";
+import FaqScene from "../scenes/FaqScene";
 import { faq, sections } from "../../placeholders";
 
 // Вопрос приходит, как сообщение в чат: таблетка въезжает справа с наклоном, распрямляется и раскрывается в строку

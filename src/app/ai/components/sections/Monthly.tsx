@@ -8,8 +8,8 @@ import m from './Monthly.module.scss'
 import { ralewayBold, ralewayRegular } from "@/app/fonts/fonts";
 import { usePrefersReducedMotion } from "@/hooks/usePrefersReducedMotion";
 import { easeOut, easeOutBack, span, SMOOTH } from "../scene";
-import { howJoin, howTrackEl } from "../c/handoff";
-import MonthlyScene, { scalePos as pos } from "../c/MonthlyScene";
+import { howJoin, howTrackEl } from "../scenes/handoff";
+import MonthlyScene, { scalePos as pos } from "../scenes/MonthlyScene";
 import { monthlyHeads, monthlyNotes, monthlyPer, monthlyRanges, monthlyRows, monthlyScale, sections } from "../../placeholders";
 
 // Капсула диапазона: выезжает от начала шкалы точкой, едет и растягивается до своих границ

@@ -4,7 +4,7 @@ import { CSSProperties, FC, useCallback, useEffect, useLayoutEffect, useRef, use
 import { motion, MotionValue, useMotionValue, useMotionValueEvent, useScroll, useSpring, useTransform } from "framer-motion";
 
 import sc from '../scene.module.scss'
-import o from '../a/OrbScene.module.scss'
+import o from './OrbScene.module.scss'
 import t from '../sections/Sections.module.scss'
 import m from '../sections/Monthly.module.scss'
 import s from './MonthlyScene.module.scss'

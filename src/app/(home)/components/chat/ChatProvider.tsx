@@ -33,7 +33,7 @@ export const useOpenChat = () => {
     return open;
 };
 
-// Чат прямо на странице (SERVICES_PLAN У4, черновик /lab/ai): тот же диалог, что в окне, и Telegram для кнопки под ответом.
+// Чат прямо на странице (SERVICES_PLAN У4, страница /ai): тот же диалог, что в окне, и Telegram для кнопки под ответом.
 // Пока встроенный чат на экране, шар в углу прячется (setInlineShown)
 interface IChatDialog {
     chat: ReturnType<typeof useChat>;
@@ -93,7 +93,7 @@ const ChatProvider: FC<IChatProvider> = ({ tgButton, children }) => {
                                 className={s.fab}
                                 onClick={openChat}
                                 aria-haspopup="dialog"
-                                // Пока чат на странице, шар в углу гаснет на месте, без сжатия: в черновике /lab/ai (вариант C)
+                                // Пока чат на странице, шар в углу гаснет на месте, без сжатия: на странице /ai
                                 // в угол прилетает большой шар страницы и передаёт ему место
                                 aria-hidden={inlineShown || undefined}
                                 tabIndex={inlineShown ? -1 : undefined}

@@ -9,7 +9,7 @@ import { allerta, ralewayBold } from "@/app/fonts/fonts";
 import { usePrefersReducedMotion } from "@/hooks/usePrefersReducedMotion";
 import Rise from "../Rise";
 import { clamp01, ease, easeOut, easeOutBack, span, SMOOTH } from "../scene";
-import { howJoin, howTook, howTrackEl, IHowJoin, riderLeft } from "../c/handoff";
+import { howJoin, howTook, howTrackEl, IHowJoin, riderLeft } from "../scenes/handoff";
 import { flow, flowText, howTopics, sections } from "../../placeholders";
 
 // Тело шага (вариант C), в единицах drop – доля промежутка между шагами: кусок линии падает fall, подпись выезжает

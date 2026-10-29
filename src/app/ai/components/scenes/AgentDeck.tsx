@@ -4,7 +4,7 @@ import { CSSProperties, FC, ReactNode, useCallback, useEffect, useLayoutEffect, 
 import { animate, motion, MotionValue, useMotionValue, useMotionValueEvent, useScroll, useSpring, useTransform } from "framer-motion";
 
 import sc from '../scene.module.scss'
-import o from '../a/OrbScene.module.scss'
+import o from './OrbScene.module.scss'
 import t from '../sections/Sections.module.scss'
 import s from './AgentDeck.module.scss'
 import OrbStar from "@/app/(home)/components/chat/OrbStar";

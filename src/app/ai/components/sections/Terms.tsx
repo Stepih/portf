@@ -9,8 +9,8 @@ import { ralewayBold } from "@/app/fonts/fonts";
 import { usePrefersReducedMotion } from "@/hooks/usePrefersReducedMotion";
 import Rise from "../Rise";
 import { easeOut, flyEase, span, SMOOTH } from "../scene";
-import { IMonthlyEnd, monthlyEnd } from "../c/handoff";
-import TermsScene from "../c/TermsScene";
+import { IMonthlyEnd, monthlyEnd } from "../scenes/handoff";
+import TermsScene from "../scenes/TermsScene";
 import { sections, terms } from "../../placeholders";
 
 // Шкала блока: шар появляется в центре сетки, из него по очереди вылетают капли – по одной на тему,

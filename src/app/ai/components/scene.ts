@@ -3,7 +3,7 @@
 import { RefObject, useCallback, useLayoutEffect } from "react";
 import { cubicBezier, useMotionValue, useMotionValueEvent, useScroll, useSpring, useTransform } from "framer-motion";
 
-// Черновик /lab/ai (SERVICES_PLAN У4): общее для сцен обоих вариантов. Приёмы – как у сцены первого экрана главной
+// Страница /ai (SERVICES_PLAN У4): общее для сцен обоих вариантов. Приёмы – как у сцены первого экрана главной
 // (HeroExpand): липкий экран, прогресс от скролла, сглаженный пружиной, потолок отставания, замеры без transform
 
 // Сглаживание: щелчки колеса не дёргают анимацию, без перелёта, догоняет за ~0,3 с (как SMOOTH в HeroExpand)

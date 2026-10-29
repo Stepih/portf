@@ -141,7 +141,7 @@ const FirstLine: FC<{ time: MotionValue<number>, g: IGeo }> = ({ time, g }) => {
     const y = useTransform(time, (v) => firstY(v, g));
     const ink = useTransform(time, (v) => 1 - span(v, INK_OFF[0], INK_OFF[1]));
     const thick = useTransform(ink, (k) => 1 + k);
-    const opacity = useTransform(time, (v) => v >= DRAW[0] ? 1 : 0);
+    const opacity = useTransform(time, (v): number => v >= DRAW[0] ? 1 : 0);
     return <Line x={x} y={y} width={width} opacity={opacity} ink={ink} thick={thick} />;
 };
 
@@ -158,7 +158,7 @@ const RowLine: FC<{ time: MotionValue<number>, g: IGeo, i: number }> = ({ time, 
         const fall = k < .85 ? (k / .85) ** 2 : 1 - Math.sin(Math.PI * (k - .85) / .15) * .03;
         return lerp(lineYOf(v, g, 2), lineYOf(v, g, i), fall);
     });
-    const opacity = useTransform(time, (v) => v >= (drawn ? drawn[0] + drawn[1] : FAN[0]) ? 1 : 0);
+    const opacity = useTransform(time, (v): number => v >= (drawn ? drawn[0] + drawn[1] : FAN[0]) ? 1 : 0);
     return <Line x={x} y={y} width={width} opacity={opacity} />;
 };
 

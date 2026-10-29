@@ -4,8 +4,8 @@ import { CSSProperties, FC, useCallback, useEffect, useRef, useState } from "rea
 import { animate, motion, MotionValue, useMotionValue, useMotionValueEvent, useTransform } from "framer-motion";
 
 import sc from '../scene.module.scss'
-import o from '../a/OrbScene.module.scss'
-import p from '../b/Pipeline.module.scss'
+import o from './OrbScene.module.scss'
+import p from './Pipeline.module.scss'
 import s from './ChatWorkScene.module.scss'
 import OrbStar from "@/app/(home)/components/chat/OrbStar";
 import { useChatDialog } from "@/app/(home)/components/chat/ChatProvider";
@@ -18,8 +18,8 @@ import { isTouchDevice } from "@/scripts/typeDevice";
 import InlineChat from "../InlineChat";
 import Rise from "../Rise";
 import TierCard from "../TierCard";
-import Pipeline, { Bar, FLY, flyFrom, IGeom, KINDS, Kind, Label, noGeom, PipelineStage, TOKENS } from "../b/Pipeline";
-import TierSplit from "../b/TierSplit";
+import Pipeline, { Bar, FLY, flyFrom, IGeom, KINDS, Kind, Label, noGeom, PipelineStage, TOKENS } from "./Pipeline";
+import TierSplit from "./TierSplit";
 import { deckTook } from "./handoff";
 import { ease, easeOut, lerp, offsetIn, span, useStickyScene } from "../scene";
 import { ph, pipelineDemo, pipelineNote, pipelineStages, sections, tierText, tierTextC2 } from "../../placeholders";
