@@ -14,7 +14,8 @@ import { flow, howTopics, sections } from "../../placeholders";
 
 interface IStep {
     progress: MotionValue<number>,
-    // Появление в сцене AgentDeck, 0–1: кружок вырастает из точки, подпись – следом. Без него шаг виден сразу
+    // Появление в сцене AgentDeck, 0–1: кружок вырастает из точки, подпись – следом; от середины к краям, как
+    // долетают точки. Без него шаг виден сразу
     intro?: MotionValue<number>,
     i: number,
     count: number,
@@ -27,7 +28,7 @@ const Step: FC<IStep> = ({ progress, intro, i, count, label }) => {
     const at = i / (count - 1);
     const on = useTransform(progress, (v) => clamp01((v - at + .04) / .06));
     // Без intro – постоянные 1: источник тот же прогресс, чтобы хуки не зависели от пропа
-    const from = i * .12;
+    const from = Math.abs(i - (count - 1) / 2) / ((count - 1) / 2) * .3;
     const pop = useTransform(intro ?? progress, (v) => intro ? easeOutBack(span(v, from, .45)) : 1);
     const popOpacity = useTransform(intro ?? progress, (v) => intro ? span(v, from, .15) : 1);
     const labelIn = useTransform(intro ?? progress, (v) => intro ? easeOut(span(v, from + .2, .4)) : 1);
@@ -49,7 +50,7 @@ const Step: FC<IStep> = ({ progress, intro, i, count, label }) => {
 interface IHowFlow {
     // Где шар на линии, 0–1: зажигает шаги и заливает линию
     progress: MotionValue<number>,
-    // Только в копии AgentDeck: появление шагов, линия-основа (из слившихся точек) и шарик (из большого шара)
+    // Только в копии AgentDeck: появление шагов, линия-основа (прорисовывается от середины, 0–1) и шарик (из большого шара)
     intro?: MotionValue<number>,
     base?: MotionValue<number>,
     rider?: MotionValue<number>,
@@ -88,7 +89,7 @@ export const HowFlow: FC<IHowFlow> = ({ progress, intro, base, rider, fade, styl
     return (
         <motion.ol ref={lineRef} className={s.flow} style={{ ...style, '--count': flow.length } as MotionStyle}>
             <span ref={track} className={s.track} aria-hidden="true">
-                <motion.span className={s.trackBase} style={base ? { opacity: base } : undefined} />
+                <motion.span className={s.trackBase} style={base ? (vertical ? { scaleY: base } : { scaleX: base }) : undefined} />
                 {!reduceMotion && (
                     <>
                         <motion.span className={s.trackFill} style={{ scaleX: fillX, scaleY: fillY, opacity: fade }} />

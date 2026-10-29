@@ -76,7 +76,12 @@ export const deckAgents = [
         ...deckTier,
     },
 ];
-export const deckWhere = 'Где работает:';
+// Плашки «где работает» в карточке агента (тестовые надписи), в конце сцены улетают в шар; на телефоне – меньше
+export const deckChips = {
+    labels: ['Звонки', 'CRM', 'Telegram', 'Отчёт', 'Таблицы', 'от 50 000 ₽'],
+    desk: 5,
+    phone: 4,
+};
 export const deckSlideLabel = (n: number, total: number) => `Слайд ${n} из ${total}`;
 
 export const flow = ['Шаг 1', 'Шаг 2', 'Шаг 3', 'Шаг 4', 'Шаг 5'];

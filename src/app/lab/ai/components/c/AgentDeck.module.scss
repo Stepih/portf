@@ -244,6 +244,11 @@ $inner: 44px;
     pointer-events: none;
 }
 
+.orbBody {
+    position: absolute;
+    inset: 0;
+}
+
 .orbShell {
     inset: 0;
     border-radius: 50%;
@@ -254,6 +259,30 @@ $inner: 44px;
     position: absolute;
     inset: 0;
     z-index: 3;
+}
+
+// Плашки «где работает» в карточке; в конце сцены уходят в шар вместе с карточкой (лист целиком)
+.chipRow {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+
+    margin: 4px 0 2px;
+}
+
+// Как кнопки сайта: скругление, тонкая рамка цвета линий, фон темы, без тени
+.chip {
+    padding: 6px 12px;
+
+    font-size: 0.85rem;
+    line-height: 1;
+    white-space: nowrap;
+    color: var(--color-text-100);
+
+    background: var(--color-bg);
+    border: 1px solid var(--color-text-50);
+    border-radius: 999px;
+    transition: vars.$transition;
 }
 
 .sparks {

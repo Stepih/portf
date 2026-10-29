@@ -13,7 +13,7 @@ import { useMediaQuery } from "@/hooks/useMediaQuery";
 import { usePrefersReducedMotion } from "@/hooks/usePrefersReducedMotion";
 import { ease, easeOut, lerp, offsetIn, SMOOTH, span, useStickyScene } from "../scene";
 import { HowFlow } from "../sections/HowWeWork";
-import { deckAgents, deckSlideLabel, deckWhere, flow, sections } from "../../placeholders";
+import { deckAgents, deckChips, deckSlideLabel, flow, sections } from "../../placeholders";
 import { deckTook, howJoin, howTook } from "./handoff";
 
 // Агентов на слайде – две карточки (рядом, на телефоне – одна над другой); слайды считаются от длины массива
@@ -34,12 +34,15 @@ const T = {
     swap: .25,
     // Телефон: карточка проявляется посередине
     rise: [0, .3],
-    // Левая (верхняя) карточка – с места ступени на своё место, правая (нижняя) выезжает из-за неё чуть позже
+    // Левая (верхняя) карточка – с места ступени на своё место, правая (нижняя) выезжает из-за неё чуть позже.
+    // Из ступени по высоте карточка садится быстрее (drop), чем едет вбок: высокая ступень закрывает место заголовка
     split: [.25, .75],
+    drop: [.25, .5],
     emerge: [.3, .8],
     // Тон карточки – из цвета ступени в матовое стекло карточки агента
     frost: [.4, .75],
-    head: [.3, .7],
+    // Заголовок – когда карточка уже села ниже него
+    head: [.48, .8],
     bars: [.45, .75],
     // Шар и вырезы под него
     orb: [.6, .95],
@@ -64,46 +67,49 @@ const outFrom = (j: number) => slideAt(j + 1) - T.outLead;
 // Слайд целиком въехал – сюда ведёт клик по полоске
 const shownAt = (j: number) => inFrom(j) + T.col + (ROWS - 1) * T.step + T.row;
 
-// Конец сцены – от начала втягивания (полэкрана после того, как въехал последний слайд), в экранах. Карточки
-// втягиваются в шар, он вспыхивает; без паузы из него вылетают точки, встают пунктиром на место линии шагов
-// HowWeWork и сливаются в неё, пять точек вырастают в кружки шагов, проступает заголовок «Как работаем». Шар
+// Конец сцены – от начала втягивания (полэкрана после того, как въехал последний слайд), в экранах. Вариант 2
+// «лист целиком»: карточка вместе со всем содержимым (фон, текст, плашки) уходит в шар одним движением, как плоский
+// лист – равномерно уменьшается к центру шара с ускорением и закручивается потоком, у шара гаснет; правая (нижняя)
+// чуть отстаёт. Шар по ходу растёт. Вход → выход: удар, как только ушёл последний лист, – шар сжимается, и из него
+// вылетают пять точек – по точке на место шага линии HowWeWork, центральная первой. Долетев, точка вырастает в
+// кружок с номером, между кружками от середины прорисовывается линия, проступает заголовок «Как работаем». Шар
 // уменьшается до малого шарика, становится им и проезжает линию, зажигая шаги. Экран отпускает скролл – верх
 // дальше рисует сам HowWeWork (handoff.ts)
 const SUCK = shownAt(SLIDES - 1) + .45;
 const END = {
-    // Карточка втягивается suckLen экрана, правая (нижняя) – на lag позже
-    suckLen: .45,
-    lag: .05,
-    // Гаснут текст карточек, заголовок и полоски
-    fade: [SUCK, SUCK + .22],
-    // Вспышка шара в момент поглощения
-    flare: [SUCK + .35, SUCK + .7],
-    // Точки: первая вылетает в sparks, крайние – на spread позже, полёт – flight
-    sparks: SUCK + .45,
-    spread: .2,
-    flight: .32,
-    howHead: [SUCK + .55, SUCK + 1],
-    // Точки тянутся в штрихи, штрихи сливаются в линию, основа линии проступает, точки гаснут
-    dash: [SUCK + .95, SUCK + 1.1],
-    merge: [SUCK + 1.1, SUCK + 1.25],
-    base: [SUCK + 1.15, SUCK + 1.3],
-    sparkOut: [SUCK + 1.2, SUCK + 1.35],
-    // Кружки шагов вырастают из своих точек
-    steps: [SUCK + 1.05, SUCK + 1.45],
+    // Гаснут заголовок сцены и полоски слайдов (текст карточек не гаснет – уходит в шар вместе с листом)
+    fade: [SUCK, SUCK + .15],
+    // Лист уходит в шар с suck за suckLen экрана, правый (нижний) – на lag позже
+    suck: SUCK + .05,
+    suckLen: .35,
+    lag: .04,
+    // Шар растёт, пока в него уходят листы; удар – сразу, как ушёл последний (suck + lag + suckLen): сжимается
+    // чуть меньше обычного и отходит обратно
+    grow: [SUCK + .05, SUCK + .44],
+    beat: [SUCK + .44, SUCK + .64],
+    recoil: [SUCK + .64, SUCK + .84],
+    // Точки: центральная вылетает в sparks, крайние – на spread позже, полёт – flight
+    sparks: SUCK + .61,
+    spread: .12,
+    flight: .3,
+    howHead: [SUCK + .74, SUCK + 1.14],
+    // Кружки шагов вырастают из своих точек: начало – посадка центральной (sparks + flight)
+    steps: [SUCK + .91, SUCK + 1.31],
+    // Линия между кружками – от середины к краям
+    base: [SUCK + .99, SUCK + 1.34],
     // Шар уменьшается до шарика и едет к шагу 1, звезда гаснет; в конце его сменяет шарик линии
-    star: [SUCK + 1.35, SUCK + 1.55],
-    become: [SUCK + 1.35, SUCK + 1.8],
+    star: [SUCK + 1.39, SUCK + 1.59],
+    become: [SUCK + 1.39, SUCK + 1.84],
     // Шарик проезжает линию
-    ride: [SUCK + 1.85, SUCK + 2.75],
+    ride: [SUCK + 1.89, SUCK + 2.79],
 };
-const PATH = SUCK + 2.8;
+const PATH = SUCK + 2.84;
 // На сколько экранов сцена заходит под конец пути ChatWorkScene: PATH − handoff[0] там
 const OVER = .3;
 
 // Доли пути
 const f = (v: number) => v / PATH;
 const k = (v: number, [a, b]: number[]) => span(v, f(a), f(b) - f(a));
-const bump = (v: number, range: number[]) => Math.sin(Math.PI * k(v, range));
 
 // Строка r карточки i: въезд и уход 0–1. У последнего слайда ухода нет – его карточки втягиваются в шар
 const rowIn = (v: number, i: number, r: number) => {
@@ -124,22 +130,24 @@ const slideOf = (v: number) => Math.min(SLIDES - 1, Math.max(0, Math.floor((v * 
 const ORB = { desk: { d: 88, ring: 10, blur: 12 }, phone: { d: 60, ring: 8, blur: 8 } };
 // Малый шар линии шагов (.rider в Sections.module.scss): 22px, размытие света 3px
 const RIDER = { d: 22, blur: 3 };
-// Точек на шаг линии: пять из них – места шагов
-const SPARKS_PER_STEP = { desk: 6, phone: 3 };
-// Точка, px
-const SPARK = 5;
 
 interface IBox { x: number, y: number, w: number, h: number }
 interface IPoint { x: number, y: number }
-// card – откуда выходят карточки (вторая ступень ChatWorkScene; на телефоне – середина между местами), left / right –
-// места карточек агентов, orb – центр шара, track – линия шагов копии HowWeWork, how – сама копия (левый верх, ширина)
-interface IGeo { card: IBox, left: IBox, right: IBox, orb: IPoint, track: IBox, vertical: boolean, how: IPoint & { w: number } }
+// card – откуда выходят карточки (вторая ступень ChatWorkScene; на телефоне – середина между местами), tier – выходят
+// из ступени, left / right – места карточек агентов, orb – центр шара, track – линия шагов копии HowWeWork, how – сама
+// копия (левый верх, ширина)
+interface IGeo { card: IBox, tier: boolean, left: IBox, right: IBox, orb: IPoint, track: IBox, vertical: boolean, how: IPoint & { w: number } }
 const noBox: IBox = { x: 0, y: 0, w: 0, h: 0 };
-const noGeo: IGeo = { card: noBox, left: noBox, right: noBox, orb: { x: 0, y: 0 }, track: noBox, vertical: false, how: { x: 0, y: 0, w: 0 } };
+const noGeo: IGeo = { card: noBox, tier: false, left: noBox, right: noBox, orb: { x: 0, y: 0 }, track: noBox, vertical: false, how: { x: 0, y: 0, w: 0 } };
 const mix = (a: IBox, b: IBox, m: number): IBox => ({ x: lerp(a.x, b.x, m), y: lerp(a.y, b.y, m), w: lerp(a.w, b.w, m), h: lerp(a.h, b.h, m) });
 
-// Левая карточка: с места ступени на своё место, по пути принимает его размер
-const leftAt = (v: number, g: IGeo) => mix(g.card, g.left, ease(k(v, T.split)));
+// Левая карточка: с места ступени на своё место, по пути принимает его размер. Из ступени – по высоте быстрее
+const leftAt = (v: number, g: IGeo): IBox => {
+    const b = mix(g.card, g.left, ease(k(v, T.split)));
+    if (!g.tier) return b;
+    const d = easeOut(k(v, T.drop));
+    return { ...b, y: lerp(g.card.y, g.left.y, d), h: lerp(g.card.h, g.left.h, d) };
+};
 // Правая – того же размера, что левая, выезжает из-под неё: сдвиг от левой растёт до расстояния между местами
 const rightAt = (v: number, g: IGeo): IBox => {
     const b = leftAt(v, g);
@@ -153,28 +161,29 @@ const trackStart = (g: IGeo): IPoint => g.vertical
     : { x: g.track.x, y: g.track.y + g.track.h / 2 };
 
 interface ISuck {
-    scaleX: MotionValue<number>,
-    scaleY: MotionValue<number>,
-    // Доля втягивания 0–1
+    // Доля ухода 0–1
     u: MotionValue<number>,
-    // Точка шара в координатах карточки: к ней карточка сжимается
+    // Одно преобразование листа – и для фона (Shell), и для содержимого (li агента): масштаб, поворот, прозрачность
+    scale: MotionValue<number>,
+    rotate: MotionValue<number>,
+    opacity: MotionValue<number>,
+    // Центр шара в координатах ячейки карточки – transform-origin. Коробка Shell к концу сцены совпадает с ячейкой
+    // (leftAt / rightAt приехали на место), li агента и есть ячейка – origin у обоих слоёв один
     origin: string
 }
 
-// Втягивание карточки side в шар, как в воронку: поперёк – быстро сужается в полоску, вдоль – сжимается с ускорением,
-// к шару (transform-origin – центр шара). Вдоль – по горизонтали, на телефоне – по вертикали
-const useSuck = (e: MotionValue<number>, side: number, g: IGeo, vertical: boolean): ISuck => {
-    const from = SUCK + side * END.lag;
+// Уход карточки side в шар плоским листом. Масштаб строго равномерный (текст не искажается), к центру шара, с
+// ускорением; поворот потоком растёт вместе с ним, у левой и правой – в разные стороны. У шара лист гаснет
+const useSuck = (e: MotionValue<number>, side: number, g: IGeo): ISuck => {
+    const from = END.suck + side * END.lag;
     const u = useTransform(e, (v) => k(v, [from, from + END.suckLen]));
-    const along = useTransform(u, (x) => 1 - x ** 1.6);
-    const across = useTransform(u, (x) => lerp(1, .12, easeOut(span(x, 0, .75))));
+    const m = useTransform(u, (x) => x ** 2.2);
+    const scale = useTransform(m, (x) => lerp(1, .03, x));
+    const rotate = useTransform(m, (x) => x * (side ? -13 : 13));
+    const opacity = useTransform(u, (x) => 1 - span(x, .7, .3));
     const cell = side ? g.right : g.left;
-    return {
-        scaleX: vertical ? across : along,
-        scaleY: vertical ? along : across,
-        u,
-        origin: `${g.orb.x - cell.x}px ${g.orb.y - cell.y}px`,
-    };
+    const origin = `${g.orb.x - cell.x}px ${g.orb.y - cell.y}px`;
+    return { u, scale, rotate, opacity, origin };
 };
 
 interface IShell {
@@ -187,20 +196,21 @@ interface IShell {
 }
 
 // Фон карточки – как у ступени (цвет страницы, скругление, тень); на месте тон становится матовым стеклом.
-// Вырез под шар – маской на лице карточки, тень – drop-shadow на обёртке: повторяет форму выреза.
-// Содержимое лежит отдельно, в сетке мест (.pair): фон едет, строки стоят
+// Вырез под шар – маской на лице карточки, тень – drop-shadow на обёртке: повторяет вырез. Содержимое лежит
+// отдельно, в сетке мест (.pair): фон едет, строки стоят. В конце фон уходит в шар тем же преобразованием, что и
+// содержимое (suck)
 const Shell: FC<IShell> = ({ box, frost, opacity, mask, suck, z }) => {
     const top = useTransform(box, (b) => b.y);
     const left = useTransform(box, (b) => b.x);
     const width = useTransform(box, (b) => b.w);
     const height = useTransform(box, (b) => b.h);
-    // Тень – как vars.$shadow, гаснет в начале втягивания
-    const filter = useTransform(suck.u, (u) => `drop-shadow(0 4px 48px rgba(0, 0, 0, ${(.25 * (1 - span(u, 0, .5))).toFixed(3)}))`);
+    // Тень – как vars.$shadow, гаснет в начале ухода в шар
+    const filter = useTransform(suck.u, (u) => `drop-shadow(0 4px 48px rgba(0, 0, 0, ${(.25 * (1 - span(u, 0, .15))).toFixed(3)}))`);
 
     return (
         <motion.div
             className={s.shell}
-            style={{ top, left, width, height, opacity, filter, zIndex: z, scaleX: suck.scaleX, scaleY: suck.scaleY, transformOrigin: suck.origin }}
+            style={{ top, left, width, height, opacity, filter, zIndex: z, scale: suck.scale, rotate: suck.rotate, transformOrigin: suck.origin }}
             aria-hidden="true"
         >
             <motion.span className={s.shellFace} style={{ maskImage: mask, WebkitMaskImage: mask }}>
@@ -238,30 +248,33 @@ interface IAgent {
     sticky: boolean,
     animated: boolean,
     i: number,
-    // В сцене: место в сетке (на телефоне – строка) и втягивание его стороны
+    // В сцене: место в сетке (на телефоне – строка) и уход в шар листом (только у карточек последнего слайда)
     vertical?: boolean,
     suck?: ISuck,
-    fade?: MotionValue<number>,
-    cellRef?: (el: HTMLLIElement | null) => void
+    cellRef?: (el: HTMLLIElement | null) => void,
+    // Плашек «где работает»
+    chipCount: number
 }
 
 // Агент. В сцене фон рисует его Shell, а карточки слайдов лежат в одной ячейке сетки друг на друге; без сцены – обычная карточка
-const Agent: FC<IAgent> = ({ e, sticky, animated, i, vertical, suck, fade, cellRef }) => {
+const Agent: FC<IAgent> = ({ e, sticky, animated, i, vertical, suck, cellRef, chipCount }) => {
     const agent = deckAgents[i];
     const ref = useRef<HTMLLIElement | null>(null);
     const { scrollYProgress } = useScroll({ target: ref, offset: ['start end', 'start 0.7'] });
     const own = useSpring(scrollYProgress, SMOOTH);
     const line = { e, own, sticky, animated, i };
     const side = i % PER;
-    // Текст втягивается вместе с фоном и гаснет
-    const style = sticky && suck ? {
-        gridColumn: vertical ? 1 : side + 1,
-        gridRow: vertical ? side + 1 : 1,
-        scaleX: suck.scaleX,
-        scaleY: suck.scaleY,
-        transformOrigin: suck.origin,
-        opacity: fade,
-    } : undefined;
+    // В сцене – своё место сетки; у последнего слайда – то же преобразование листа, что у его Shell
+    const style = sticky
+        ? {
+            gridColumn: vertical ? 1 : side + 1,
+            gridRow: vertical ? side + 1 : 1,
+            ...(suck ? { scale: suck.scale, rotate: suck.rotate, opacity: suck.opacity, transformOrigin: suck.origin } : {}),
+        }
+        : undefined;
+    // Тестовые надписи плашек, у каждого агента – со своего места списка
+    const labels = deckChips.labels;
+    const chips = Array.from({ length: chipCount }, (_, j) => labels[(i + j) % labels.length]);
 
     return (
         <motion.li
@@ -272,7 +285,9 @@ const Agent: FC<IAgent> = ({ e, sticky, animated, i, vertical, suck, fade, cellR
             <Line {...line} r={0} className={`${ralewayBold.className} ${s.num}`}>{String(i + 1).padStart(2, '0')}</Line>
             <Line {...line} r={1}><h3 className={`${ralewayBold.className} ${s.name}`}>{agent.title}</h3></Line>
             <Line {...line} r={2}><p className={s.text}>{agent.text}</p></Line>
-            <Line {...line} r={3}><p className={s.where}>{deckWhere} {agent.where}</p></Line>
+            <Line {...line} r={3} className={s.chipRow}>
+                {chips.map((label, j) => <span key={j} className={s.chip}>{label}</span>)}
+            </Line>
             <Line {...line} r={4} className={s.priceRow}>
                 <p className={s.price}><b className={ralewayBold.className}>{agent.price}</b> · {agent.term} · {agent.condition}</p>
             </Line>
@@ -313,38 +328,22 @@ interface ISpark {
     g: IGeo
 }
 
-// Светящаяся точка: вылетает из шара на своё место линии шагов (центральные – первыми), тянется в штрих,
-// штрихи сливаются в сплошную линию и гаснут над её проступившей основой
+// Светящаяся точка: вылетает из шара на место своего шага (центральная – первой) и гаснет под кружком шага,
+// который из неё вырастает
 const Spark: FC<ISpark> = ({ e, i, n, g }) => {
     const c = (n - 1) / 2;
     const from = END.sparks + Math.abs(i - c) / c * END.spread;
-    const len = g.vertical ? g.track.h : g.track.w;
-    const gap = len / (n - 1);
+    const land = from + END.flight;
+    const at = (g.vertical ? g.track.h : g.track.w) / (n - 1) * i;
     const to: IPoint = g.vertical
-        ? { x: g.track.x + g.track.w / 2, y: g.track.y + gap * i }
-        : { x: g.track.x + gap * i, y: g.track.y + g.track.h / 2 };
-    const st = useTransform(e, (v) => {
-        const u = easeOut(k(v, [from, from + END.flight]));
-        const a = ease(k(v, END.dash));
-        const b = ease(k(v, END.merge));
-        // Длина: точка → штрих в полшага → весь шаг (соседние сходятся); толщина – до толщины линии (2px)
-        const along = Math.max(.2, (SPARK + (gap * .5 - SPARK) * a + (gap * .5 + 1) * b) / SPARK);
-        const across = (SPARK - 3 * a) / SPARK;
-        return {
-            x: (to.x - g.orb.x) * u,
-            y: (to.y - g.orb.y) * u,
-            along,
-            across,
-            opacity: k(v, [from, from + .05]) * (1 - k(v, END.sparkOut)),
-        };
-    });
-    const x = useTransform(st, (p) => p.x);
-    const y = useTransform(st, (p) => p.y);
-    const scaleX = useTransform(st, (p) => g.vertical ? p.across : p.along);
-    const scaleY = useTransform(st, (p) => g.vertical ? p.along : p.across);
-    const opacity = useTransform(st, (p) => p.opacity);
+        ? { x: g.track.x + g.track.w / 2, y: g.track.y + at }
+        : { x: g.track.x + at, y: g.track.y + g.track.h / 2 };
+    const u = useTransform(e, (v) => easeOut(k(v, [from, land])));
+    const x = useTransform(u, (m) => (to.x - g.orb.x) * m);
+    const y = useTransform(u, (m) => (to.y - g.orb.y) * m);
+    const opacity = useTransform(e, (v) => k(v, [from, from + .04]) * (1 - k(v, [land, land + .1])));
 
-    return <motion.span className={s.spark} style={{ left: g.orb.x, top: g.orb.y, x, y, scaleX, scaleY, opacity }} />;
+    return <motion.span className={s.spark} style={{ left: g.orb.x, top: g.orb.y, x, y, opacity }} />;
 };
 
 // Вариант C: какие агенты делаю. Продолжает последний кадр ChatWorkScene: пустая карточка второй ступени едет влево,
@@ -361,7 +360,6 @@ const AgentDeck: FC = () => {
     const stitched = sticky && desk;
     const phone = sticky && !desk;
     const size = phone ? ORB.phone : ORB.desk;
-    const sparks = (flow.length - 1) * (phone ? SPARKS_PER_STEP.phone : SPARKS_PER_STEP.desk) + 1;
 
     const scene = useRef<HTMLElement>(null);
     const path = useRef<HTMLDivElement>(null);
@@ -397,11 +395,13 @@ const AgentDeck: FC = () => {
         // Откуда выходят карточки: на десктопе – карточка второй ступени ChatWorkScene (её экран в стыке совпадает
         // с экраном этой сцены), на телефоне – середина между местами
         let card = { ...left, y: (left.y + right.y) / 2 };
+        let tier = false;
         const el = stitched ? document.querySelector<HTMLElement>('[data-deck-from]') : null;
         const elScreen = el?.closest<HTMLElement>(`.${sc.screen}`);
         if (el && elScreen) {
             const p = offsetIn(el, elScreen);
             card = { x: p.x, y: p.y, w: el.offsetWidth, h: el.offsetHeight };
+            tier = true;
         } else if (stitched) {
             card = left;
         }
@@ -422,7 +422,7 @@ const AgentDeck: FC = () => {
             track = { x: x + p.x, y: y + p.y, w: gt.offsetWidth, h: gt.offsetHeight };
         }
 
-        setG({ card, left, right, orb, track, vertical, how: { x, y, w } });
+        setG({ card, tier, left, right, orb, track, vertical, how: { x, y, w } });
         howJoin.set(sticky ? { orbY: orb.y, h: root.offsetHeight } : null);
     }, [sceneY, sticky, stitched]);
 
@@ -436,6 +436,10 @@ const AgentDeck: FC = () => {
         observer.observe(el);
         return () => observer.disconnect();
     }, [measure, sticky]);
+
+    const chipCount = phone ? deckChips.phone : deckChips.desk;
+    // В шар уходят карточки последнего слайда: агенты с lastFirst
+    const lastFirst = (SLIDES - 1) * PER;
 
     // Экран сцены стоит – карточки видно. До этого он въезжает снизу под ChatWorkScene
     const shown = useTransform([scrollY, sceneY], ([y, top]: number[]): number => y >= top - 1 ? 1 : 0);
@@ -479,13 +483,13 @@ const AgentDeck: FC = () => {
     const leftBox = useTransform(progress, (v) => leftAt(v, g));
     const rightBox = useTransform(progress, (v) => rightAt(v, g));
     const frost = useTransform(progress, (v) => ease(k(v, T.frost)));
-    const leftSuck = useSuck(progress, 0, g, phone);
-    const rightSuck = useSuck(progress, 1, g, phone);
-    // Десктоп – экран встал под ChatWorkScene; телефон – карточка проявляется посередине. Втянулась – гаснет
+    const leftSuck = useSuck(progress, 0, g);
+    const rightSuck = useSuck(progress, 1, g);
+    // Десктоп – экран встал под ChatWorkScene; телефон – карточка проявляется посередине. У шара лист гаснет
     const shellIn = useTransform([progress, shown], ([v, sh]: number[]) => phone ? ease(k(v, T.rise)) : sh);
-    const leftShown = useTransform([shellIn, leftSuck.u], ([sh, u]: number[]) => sh * (1 - span(u, .7, .3)));
+    const leftShown = useTransform([shellIn, leftSuck.opacity], ([sh, op]: number[]) => sh * op);
     // Правая до выезда лежит ровно под левой – прячется, чтобы тень не темнела вдвое
-    const rightShown = useTransform([progress, shellIn, rightSuck.u], ([v, sh, u]: number[]) => v > f(T.emerge[0]) ? sh * (1 - span(u, .7, .3)) : 0);
+    const rightShown = useTransform([progress, shellIn, rightSuck.opacity], ([v, sh, op]: number[]) => v > f(T.emerge[0]) ? sh * op : 0);
     // Вырез: круг вокруг центра шара (ring от его края), радиус растёт вместе с появлением шара
     const notch = (b: IBox, v: number) => {
         const r = (size.d / 2 + size.ring) * ease(k(v, T.orb));
@@ -493,27 +497,33 @@ const AgentDeck: FC = () => {
     };
     const leftMask = useTransform(progress, (v) => notch(leftAt(v, g), v));
     const rightMask = useTransform(progress, (v) => notch(rightAt(v, g), v));
-    const textFade = useTransform(progress, (v) => 1 - ease(k(v, END.fade)));
 
     const head = useTransform(progress, (v) => easeOut(k(v, T.head)) * (1 - ease(k(v, END.fade))));
     const headY = useTransform(progress, (v) => 14 * (1 - easeOut(k(v, T.head))));
     const bars = useTransform(progress, (v) => easeOut(k(v, T.bars)) * (1 - ease(k(v, END.fade))));
     const barsY = useTransform(progress, (v) => 10 * (1 - easeOut(k(v, T.bars))));
 
-    // Шар: проявляется в зазоре, вздрагивает при смене слайда, вспыхивает, поглотив карточки, потом уменьшается
-    // до шарика линии и едет к шагу 1; там его сменяет шарик копии HowWeWork
+    // Шар: проявляется в зазоре, вздрагивает при смене слайда, растёт, поглощая листы, с ударом сжимается (в этот
+    // момент вылетают точки) и отходит, потом уменьшается до шарика линии и едет к шагу 1; там его сменяет шарик
+    // копии HowWeWork
     const orbState = useTransform([progress, kick], ([v, kk]: number[]) => {
         const into = ease(k(v, END.become));
         const end = trackStart(g);
         const d = lerp(size.d, RIDER.d, into);
-        const flare = bump(v, END.flare);
+        const grow = ease(k(v, END.grow));
+        const beat = ease(k(v, END.beat));
+        // Ушёл левый лист – короткий глоток (правый уходит прямо в удар)
+        const gone = END.suck + END.suckLen;
+        const gulp = Math.sin(Math.PI * k(v, [gone - .03, gone + .07]));
+        const full = 1 + .2 * grow + .05 * gulp;
+        const pulse = v < f(END.beat[1]) ? lerp(full, .92, beat) : lerp(.92, 1, easeOut(k(v, END.recoil)));
         return {
             x: lerp(g.orb.x, end.x, into) - d / 2,
             y: lerp(g.orb.y, end.y, into) - d / 2,
             d,
-            scale: lerp(.6, 1, easeOut(k(v, T.orb))) * (1 + .1 * kk) * (1 + .18 * flare),
+            scale: lerp(.6, 1, easeOut(k(v, T.orb))) * (1 + .1 * kk) * pulse,
             opacity: v >= f(END.become[1]) ? 0 : ease(k(v, T.orb)),
-            light: lerp(Math.min(1, .7 + .25 * kk + .3 * flare), .8, into),
+            light: lerp(Math.min(1, .7 + .25 * kk + .3 * Math.max(grow, gulp) * (1 - beat)), .8, into),
             blur: lerp(size.blur, RIDER.blur, into),
         };
     });
@@ -573,9 +583,9 @@ const AgentDeck: FC = () => {
                                 animated={!reduceMotion}
                                 i={i}
                                 vertical={phone}
-                                suck={i % PER ? rightSuck : leftSuck}
-                                fade={textFade}
                                 cellRef={i < PER ? (el) => { cells.current[i] = el } : undefined}
+                                suck={sticky && i >= lastFirst ? (i % PER ? rightSuck : leftSuck) : undefined}
+                                chipCount={chipCount}
                             />
                         ))}
                     </ul>
@@ -604,21 +614,24 @@ const AgentDeck: FC = () => {
                         </motion.div>
 
                         <div className={s.sparks} aria-hidden="true">
-                            {Array.from({ length: sparks }, (_, i) => <Spark key={i} e={progress} i={i} n={sparks} g={g} />)}
+                            {flow.map((label, i) => <Spark key={label} e={progress} i={i} n={flow.length} g={g} />)}
                         </div>
 
                         {/* Шар агента – как в ChatWorkScene: стекло, свет, звезда; в покое дышит */}
                         <motion.div
-                            className={`${s.orb} ${rest ? o.breathe : ''}`}
+                            className={s.orb}
                             style={{ x: orbX, y: orbY, width: orbD, height: orbD, scale: orbScale, opacity: orbOpacity }}
                             aria-hidden="true"
                         >
-                            <span className={`${o.shell} ${s.orbShell}`}><span className={o.glass} /></span>
-                            <span className={s.orbLight}>
-                                <motion.span className={o.light} style={{ opacity: lightOpacity, filter: lightBlur }} />
-                                <motion.span className={o.star} style={{ opacity: starOpacity }}>
-                                    <OrbStar className={o.starIcon} />
-                                </motion.span>
+                            {/* Дыхание – на вложенном слое: свойство scale на самом шаре масштабирует и его сдвиг x / y, шар качается */}
+                            <span className={`${s.orbBody} ${rest ? o.breathe : ''}`}>
+                                <span className={`${o.shell} ${s.orbShell}`}><span className={o.glass} /></span>
+                                <span className={s.orbLight}>
+                                    <motion.span className={o.light} style={{ opacity: lightOpacity, filter: lightBlur }} />
+                                    <motion.span className={o.star} style={{ opacity: starOpacity }}>
+                                        <OrbStar className={o.starIcon} />
+                                    </motion.span>
+                                </span>
                             </span>
                         </motion.div>
                     </>
