@@ -109,6 +109,14 @@ export const monthlyRub = (v: number) => `${v.toLocaleString('ru-RU')} ₽`;
 export const monthlySum = ([a, b]: number[]) => `${a.toLocaleString('ru-RU')}–${monthlyRub(b)}`;
 export const monthlyRows = monthlyRanges.map((range) => ['Агент и поток', 'объём', monthlySum(range)]);
 export const monthlyScale = [100, 1000, 10000];
+// Мелкие насечки логарифмической шкалы (без подписей): на глаз видно, что деления неравные. 20 000 – правый край
+export const monthlyMinor = [200, 500, 2000, 5000, 20000];
+// Единица у суммы – вторым цветом, везде, где есть сумма в месяц
+export const monthlyPer = '/мес';
+// Подпись единицы у крупной шкалы (десктоп варианта C) – заглушка, текст утвердит владелец
+export const monthlyUnit = '₽ в месяц';
+// Номер строки у крупной подписи (десктоп варианта C) – заглушка формата
+export const monthlyCount = (i: number, n: number) => `${i} из ${n}`;
 export const monthlyNotes = ['Пояснение – от чего зависит сумма', 'Пояснение – кто и кому платит', 'Пояснение – одна строка'];
 
 export const terms = [

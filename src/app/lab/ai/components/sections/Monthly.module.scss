@@ -81,6 +81,13 @@ $line: rgba(128, 128, 128, 0.45);
     white-space: nowrap;
 }
 
+// «/мес» у суммы – вторым цветом; что это «в месяц», для чтения с экрана говорит шапка столбца
+.unit {
+    font-size: 0.875rem;
+    color: var(--color-text-muted);
+    transition: vars.$transition;
+}
+
 .notes {
     display: flex;
     flex-direction: column;

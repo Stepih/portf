@@ -1,8 +1,11 @@
 @use '/src/styles/variables.scss' as vars;
 
 // «Каждый месяц», десктоп варианта C: липкая сцена (scene.module.scss). Вверху экрана – заголовок и компактная таблица
-// (её строки встают по очереди), ниже – крупная сцена: подпись и сумма строки, шкала с капсулой, пояснение
+// (с первого кадра – пустой каркас: шапка-ось и три полосы с номерами), ниже – крупная сцена: подпись и сумма строки,
+// шкала с капсулой, пояснение. Строки собираются под шкалой и уезжают в свои полосы
 $line: rgba(128, 128, 128, 0.45);
+// Поле слева в строках таблицы – под номер полосы
+$num: 40px;
 
 // Отступ от HowWeWork – как у разделов (100px), с учётом верхнего поля экрана. Снизу «Что входит» подтягивается
 // под таблицу на свободное место экрана (--pull ставит компонент)
@@ -27,22 +30,71 @@ $line: rgba(128, 128, 128, 0.45);
     align-items: center;
     gap: 12px;
 
-    max-width: 1060px;
+    // Шире разделов (1060): таблица здесь – итог сцены, крупнее обычной
+    max-width: 1180px;
     margin: 0 auto;
     padding-top: 56px;
 }
 
 // ---------- Компактная таблица ----------
-// Шапка без линии; над каждой строкой – своя линия, прорисовывается, пока строка уезжает в таблицу
-.head {
-    border-top: none;
-}
-
+// Крупнее, чем на телефоне и в A/B: это итог сцены (строки 1.05rem, суммы 1.35rem, шапка 1rem)
 .row {
     position: relative;
+    // Столбец суммы – постоянной ширины: у каждой строки своя сетка, а шкалы строк должны стоять под осью шапки
+    grid-template-columns: minmax(0, .85fr) minmax(0, 1.35fr) 12.5rem;
+    gap: 24px;
+
+    padding: 18px 0 18px $num;
+
+    font-size: 1.05rem;
     border-top-color: transparent;
 }
 
+// Шапка – ось таблицы с первого кадра: отметки шкалы цветом текста, насечки под ними
+.head {
+    padding: 0 0 16px $num;
+
+    font-size: 1rem;
+}
+
+.tick {
+    line-height: 1.25;
+    color: var(--color-text-100);
+    transition: vars.$transition;
+}
+
+.headMark {
+    position: absolute;
+    top: calc(100% + 5px);
+
+    width: 1.5px;
+    height: 7px;
+
+    background: $line;
+    translate: -50% 0;
+
+    &.minor {
+        top: calc(100% + 7px);
+        width: 1px;
+        height: 5px;
+    }
+}
+
+// Номер полосы – трафаретом, вторым цветом: видно, сколько строк и сколько ещё сядет
+.num {
+    position: absolute;
+    top: 50%;
+    left: 4px;
+
+    font-size: 1.05rem;
+    line-height: 1;
+    color: var(--color-text-muted);
+    translate: 0 -50%;
+    transition: vars.$transition;
+}
+
+// Пустая полоса – пунктирная волосяная линия; после посадки строки её закрывает сплошная
+.ghost,
 .rowLine {
     position: absolute;
     top: -1.5px;
@@ -50,17 +102,34 @@ $line: rgba(128, 128, 128, 0.45);
     right: 0;
 
     height: 1.5px;
+}
 
+.ghost {
+    background: linear-gradient(to right, $line 0 4px, transparent 4px 9px) 0 0 / 9px 100% repeat-x;
+}
+
+.rowLine {
     background: $line;
     transform-origin: 0 50%;
+}
+
+.rowTrack {
+    height: 16px;
+}
+
+.capsule {
+    border-radius: 8px;
 }
 
 // Высота строки – доля шрифта, как у крупных подписей: смена крупной строки на компактную не сдвигает текст
 .who,
 .bigLabel,
-.tick,
 .bigTick {
     line-height: 1.25;
+}
+
+.who {
+    white-space: nowrap;
 }
 
 .value,
@@ -69,8 +138,29 @@ $line: rgba(128, 128, 128, 0.45);
     font-variant-numeric: tabular-nums;
 }
 
+.value {
+    font-size: 1.35rem;
+}
+
+// «/мес» – вторым цветом, в той же доле от суммы и в крупной строке, и в таблице: сжатие не меняет раскладку
+.unit {
+    margin-left: 0.08em;
+
+    font-size: 0.68em;
+    color: var(--color-text-muted);
+    transition: vars.$transition;
+}
+
+.note {
+    padding: 0.875em 1em;
+
+    font-size: 1.05rem;
+    border-radius: 0.8125em;
+}
+
 // ---------- Крупная сцена ----------
-// Место по высоте (top) ставит компонент: под таблицей, посередине свободного места
+// Место по высоте (top) ставит компонент: под таблицей, посередине свободного места. Основа – ось (отметки, линия,
+// насечки, единица), поверх неё – по блоку на строку той же раскладки
 .stage {
     position: absolute;
     top: 0;
@@ -83,7 +173,15 @@ $line: rgba(128, 128, 128, 0.45);
     pointer-events: none;
 }
 
-// Подпись слева, сумма справа – по одной для всех строк, лежат друг на друге
+.block {
+    position: absolute;
+    inset: 0;
+
+    display: flex;
+    flex-direction: column;
+}
+
+// Подпись слева, сумма справа; над подписью – номер строки
 .bigHead {
     position: relative;
 
@@ -91,6 +189,17 @@ $line: rgba(128, 128, 128, 0.45);
     margin-bottom: 30px;
 
     font-size: clamp(2.6rem, 5vw, 4.75rem);
+}
+
+.count {
+    position: absolute;
+    top: 0;
+    left: 0;
+
+    font-size: 1.05rem;
+    line-height: 1.25;
+    color: var(--color-text-muted);
+    transition: vars.$transition;
 }
 
 .bigLabel {
@@ -105,6 +214,7 @@ $line: rgba(128, 128, 128, 0.45);
     transition: vars.$transition;
 }
 
+// Сумма – Raleway Bold, как цены в карточках услуг и суммы таблицы: при сжатии в таблицу не меняется гарнитура
 .bigSum {
     position: absolute;
     top: 0;
@@ -116,7 +226,7 @@ $line: rgba(128, 128, 128, 0.45);
     transition: vars.$transition;
 }
 
-// Отметки – размером с заголовок раздела; загоревшаяся – чернилами поверх серой
+// Отметки – размером с заголовок раздела, вторым цветом
 .bigScale {
     position: relative;
 
@@ -133,21 +243,11 @@ $line: rgba(128, 128, 128, 0.45);
     white-space: nowrap;
     color: var(--color-text-muted);
     translate: -50% 0;
-    transform-origin: 50% 0;
     transition: vars.$transition;
 
     &:first-child {
         translate: 0 0;
-        transform-origin: 0 0;
     }
-}
-
-.tickInk {
-    position: absolute;
-    inset: 0;
-
-    color: var(--color-text-100);
-    transition: vars.$transition;
 }
 
 // Шкала: волосяная линия с насечками, капсула толщиной с катящийся шар
@@ -156,6 +256,11 @@ $line: rgba(128, 128, 128, 0.45);
 
     height: 44px;
     margin-bottom: 28px;
+}
+
+.axis {
+    position: absolute;
+    inset: 0;
 }
 
 .line {
@@ -179,6 +284,38 @@ $line: rgba(128, 128, 128, 0.45);
     margin-left: -0.75px;
 
     background: $line;
+
+    // Мелкая насечка – без подписи: показывает, что деления логарифмические
+    &.minor {
+        top: 16px;
+        height: 12px;
+        width: 1px;
+        margin-left: -0.5px;
+    }
+}
+
+// Единица шкалы – под её началом
+.unitLabel {
+    position: absolute;
+    top: calc(100% + 2px);
+    left: 0;
+
+    font-size: 0.95rem;
+    line-height: 1.25;
+    white-space: nowrap;
+    color: var(--color-text-muted);
+    transition: vars.$transition;
+}
+
+// Волосяная линия строки таблицы – проявляется под капсулой, пока строка собирается
+.track {
+    position: absolute;
+    top: -0.75px;
+    left: 0;
+
+    height: 1.5px;
+
+    background: $line;
 }
 
 .bigCap {
@@ -190,7 +327,7 @@ $line: rgba(128, 128, 128, 0.45);
     transition: vars.$transition;
 }
 
-// Пояснение – та же плашка, что в таблице, крупнее в 1,35 раза (поля – в em): уезжает в неё без перестройки строк
+// Пояснение – та же плашка, что в таблице, крупнее (поля – в em): сжимается в неё без перестройки строк
 .noteSlot {
     position: relative;
 
@@ -208,7 +345,6 @@ $line: rgba(128, 128, 128, 0.45);
 
     font-size: 1em;
     line-height: 1.45;
-    white-space: nowrap;
     color: var(--color-text-muted);
 
     background: var(--color-frost);
@@ -237,4 +373,45 @@ $line: rgba(128, 128, 128, 0.45);
     position: absolute;
     inset: 0;
     z-index: 3;
+}
+
+// Узкий десктоп: подпись строки должна уместиться в одну строку, как у крупной (иначе при посадке строка прыгнет)
+@media screen and (max-width: 1200px) {
+    .row {
+        grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr) 11.5rem;
+        gap: 16px;
+
+        padding-left: 32px;
+    }
+
+    .head {
+        padding-left: 32px;
+    }
+}
+
+// Низкий экран: таблица и крупная сцена плотнее – крупная строка не доходит до переключателя лабы внизу
+@media screen and (max-height: 850px) {
+    .frame {
+        padding-top: 40px;
+    }
+
+    .row {
+        padding-top: 13px;
+        padding-bottom: 13px;
+    }
+
+    .head {
+        padding-top: 0;
+        padding-bottom: 14px;
+    }
+
+    .bigHead {
+        margin-bottom: 16px;
+
+        font-size: clamp(2.4rem, 4.4vw, 4.75rem);
+    }
+
+    .rail {
+        margin-bottom: 20px;
+    }
 }

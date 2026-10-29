@@ -5,12 +5,12 @@ import { motion, MotionValue, useMotionValueEvent, useScroll, useSpring, useTran
 
 import s from './Sections.module.scss'
 import m from './Monthly.module.scss'
-import { ralewayBold } from "@/app/fonts/fonts";
+import { ralewayBold, ralewayRegular } from "@/app/fonts/fonts";
 import { usePrefersReducedMotion } from "@/hooks/usePrefersReducedMotion";
 import { easeOut, easeOutBack, span, SMOOTH } from "../scene";
 import { howJoin, howTrackEl } from "../c/handoff";
 import MonthlyScene, { scalePos as pos } from "../c/MonthlyScene";
-import { monthlyHeads, monthlyNotes, monthlyRanges, monthlyRows, monthlyScale, sections } from "../../placeholders";
+import { monthlyHeads, monthlyNotes, monthlyPer, monthlyRanges, monthlyRows, monthlyScale, sections } from "../../placeholders";
 
 // Капсула диапазона: выезжает от начала шкалы точкой, едет и растягивается до своих границ
 const Capsule: FC<{ progress: MotionValue<number>, i: number, range: number[] }> = ({ progress, i, range }) => {
@@ -79,7 +79,9 @@ const Monthly: FC = () => {
                             <span className={m.track} role="presentation">
                                 <Capsule progress={progress} i={i} range={monthlyRanges[i]} />
                             </span>
-                            <b className={`${ralewayBold.className} ${m.value}`} role="cell">{row[2]}</b>
+                            <b className={`${ralewayBold.className} ${m.value}`} role="cell">
+                                {row[2]}<span className={`${ralewayRegular.className} ${m.unit}`} aria-hidden="true">{monthlyPer}</span>
+                            </b>
                         </div>
                     ))}
                 </div>
