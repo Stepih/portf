@@ -12,7 +12,7 @@ import OrbStar from "@/app/(home)/components/chat/OrbStar";
 import { allerta, ralewayBold, ralewayRegular } from "@/app/fonts/fonts";
 import Rise from "../Rise";
 import { ease, easeOut, lerp, offsetIn, SMOOTH, span } from "../scene";
-import { howJoin, howTook, riderLeft } from "./handoff";
+import { howJoin, howTook, monthlyEnd, riderLeft } from "./handoff";
 import {
     monthlyCount, monthlyHeads, monthlyMinor, monthlyNotes, monthlyPer, monthlyRanges, monthlyRows, monthlyScale, monthlySum,
     monthlyUnit, sections
@@ -484,6 +484,15 @@ const MonthlyScene: FC<IMonthlyScene> = ({ rider }) => {
         pinY.set(scenePos.y);
         screenH.set(H);
         pre.set((joinFrom - scenePos.y) / H);
+
+        // Низ таблицы там, где экран сцены отпускает скролл (экран – у низа раздела, таблица опущена на shift): оттуда
+        // Terms прорисовывает нижнюю линию таблицы и роняет её на темы
+        const lastRow = c[LAST].row;
+        if (lastRow) {
+            const release = scenePos.y + sec.offsetHeight - H;
+            const p = at(lastRow);
+            monthlyEnd.set({ x: scenePos.x + p.x, y: release + p.y + lastRow.offsetHeight + shift, w: lastRow.offsetWidth, release });
+        }
     }, [rider, pinY, screenH, pre]);
 
     useLayoutEffect(() => {
@@ -500,6 +509,7 @@ const MonthlyScene: FC<IMonthlyScene> = ({ rider }) => {
             observer.disconnect();
             window.removeEventListener('resize', measure);
             off();
+            monthlyEnd.set(null);
         };
     }, [rider, measure]);
 

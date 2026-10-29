@@ -1,7 +1,7 @@
 "use client";
 
-import { FC, useLayoutEffect, useRef, useState } from "react";
-import { easeIn, motion, MotionValue, useScroll, useSpring, useTransform } from "framer-motion";
+import { FC, useEffect, useLayoutEffect, useRef, useState } from "react";
+import { easeIn, motion, MotionValue, useMotionValueEvent, useScroll, useSpring, useTransform } from "framer-motion";
 
 import s from './Sections.module.scss'
 import t from './Terms.module.scss'
@@ -9,6 +9,8 @@ import { ralewayBold } from "@/app/fonts/fonts";
 import { usePrefersReducedMotion } from "@/hooks/usePrefersReducedMotion";
 import Rise from "../Rise";
 import { easeOut, flyEase, span, SMOOTH } from "../scene";
+import { IMonthlyEnd, monthlyEnd } from "../c/handoff";
+import TermsScene from "../c/TermsScene";
 import { sections, terms } from "../../placeholders";
 
 // Шкала блока: шар появляется в центре сетки, из него по очереди вылетают капли – по одной на тему,
@@ -54,7 +56,7 @@ const Topic: FC<{ progress: MotionValue<number>, i: number, geom: IGeom, title: 
 
 // Что входит и что остаётся вам (макет page_C_ai): шесть тем без плашек. Появляются брызгами из шара – как отрасли
 // на первом экране главной, только капля растекается не в таблетку, а в линию над темой
-const Terms: FC = () => {
+const TermsDrops: FC = () => {
     const reduceMotion = usePrefersReducedMotion();
     const grid = useRef<HTMLDivElement>(null);
     const topics = useRef<(HTMLDivElement | null)[]>([]);
@@ -114,6 +116,16 @@ const Terms: FC = () => {
             </div>
         </section>
     );
+};
+
+// Десктоп варианта C – продолжение сцены «Каждый месяц» (TermsScene): на темы падает нижняя линия её таблицы
+const Terms: FC = () => {
+    const reduceMotion = usePrefersReducedMotion();
+    const [end, setEnd] = useState<IMonthlyEnd | null>(null);
+    useEffect(() => { setEnd(monthlyEnd.get()) }, []);
+    useMotionValueEvent(monthlyEnd, 'change', setEnd);
+
+    return end && !reduceMotion ? <TermsScene end={end} /> : <TermsDrops />;
 };
 
 export default Terms;

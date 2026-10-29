@@ -28,3 +28,14 @@ export const howTook = motionValue(0);
 export const howTrackEl = motionValue<HTMLElement | null>(null);
 // 1 – копию шарика рисует Monthly, настоящий в HowWeWork прячется в тот же кадр. Ставит Monthly по своему прогрессу
 export const riderLeft = motionValue(0);
+
+// Стык Monthly → Terms (десктоп варианта C): под таблицей «Каждый месяц» прорисовывается нижняя линия, отрывается
+// и падает на темы. Ставит MonthlyScene: где низ таблицы, когда экран сцены отпустит скролл (координаты страницы),
+// и сам этот скролл (release). null – сцены нет: Terms живёт сам по себе
+export interface IMonthlyEnd {
+    x: number,
+    y: number,
+    w: number,
+    release: number
+}
+export const monthlyEnd = motionValue<IMonthlyEnd | null>(null);
