@@ -7,7 +7,7 @@ import s from './Sections.module.scss'
 import m from './Monthly.module.scss'
 import { ralewayBold, ralewayRegular } from "@/app/fonts/fonts";
 import { usePrefersReducedMotion } from "@/hooks/usePrefersReducedMotion";
-import { easeOut, easeOutBack, span, SMOOTH } from "../scene";
+import { move, span, SMOOTH } from "../scene";
 import { howJoin, howTrackEl } from "../scenes/handoff";
 import MonthlyScene, { scalePos as pos } from "../scenes/MonthlyScene";
 import { monthlyHeads, monthlyNotes, monthlyPer, monthlyRanges, monthlyRows, monthlyScale, sections } from "@/data/aiPage";
@@ -18,8 +18,9 @@ const Capsule: FC<{ progress: MotionValue<number>, i: number, range: number[] }>
     const [a, b] = range.map(pos);
     const ratio = a / (b - a);
     const k = (v: number) => span(v, .1 + i * .12, .45);
-    const x = useTransform(progress, (v) => `${-ratio * (1 - easeOutBack(k(v))) * 100}%`);
-    const scaleX = useTransform(progress, (v) => .08 + .92 * easeOut(span(k(v), .2, .8)));
+    // Единая скорость (speed.ts): без перелёта, наклон ограничен
+    const x = useTransform(progress, (v) => `${-ratio * (1 - move(k(v))) * 100}%`);
+    const scaleX = useTransform(progress, (v) => .08 + .92 * move(span(k(v), .2, .8)));
     const opacity = useTransform(progress, (v) => span(k(v), 0, .15));
 
     return (
@@ -35,7 +36,7 @@ const Capsule: FC<{ progress: MotionValue<number>, i: number, range: number[] }>
 const Note: FC<{ progress: MotionValue<number>, i: number, text: string }> = ({ progress, i, text }) => {
     const reduceMotion = usePrefersReducedMotion();
     const k = (v: number) => span(v, .35 + i * .12, .35);
-    const x = useTransform(progress, (v) => 60 * (1 - easeOut(k(v))));
+    const x = useTransform(progress, (v) => 60 * (1 - move(k(v))));
     const opacity = useTransform(progress, (v) => k(v));
     return <motion.li className={m.note} style={reduceMotion ? { x: 0, opacity: 1 } : { x, opacity }}>{text}</motion.li>;
 };
@@ -49,11 +50,11 @@ const Monthly: FC = () => {
     const { scrollYProgress } = useScroll({ target: table, offset: ['start 0.9', 'start 0.3'] });
     const progress = useSpring(scrollYProgress, SMOOTH);
 
-    // Сцена – только на десктопе варианта C: там у шагов HowWeWork тела и он отдаёт свою дорожку
+    // Сцена – только на десктопе варианта C: там HowWeWork отдаёт дорожку линии шагов (стык monthly)
     const [rider, setRider] = useState<HTMLElement | null>(null);
-    useEffect(() => { setRider(howJoin.get()?.steps ? howTrackEl.get() : null) }, []);
-    useMotionValueEvent(howTrackEl, 'change', (el) => setRider(howJoin.get()?.steps ? el : null));
-    useMotionValueEvent(howJoin, 'change', (j) => setRider(j?.steps ? howTrackEl.get() : null));
+    useEffect(() => { setRider(howJoin.get()?.monthly ? howTrackEl.get() : null) }, []);
+    useMotionValueEvent(howTrackEl, 'change', (el) => setRider(howJoin.get()?.monthly ? el : null));
+    useMotionValueEvent(howJoin, 'change', (j) => setRider(j?.monthly ? howTrackEl.get() : null));
 
     if (rider && !reduceMotion) return <MonthlyScene rider={rider} />;
 

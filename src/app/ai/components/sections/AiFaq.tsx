@@ -7,7 +7,7 @@ import f from '@/app/(home)/components/faq/Faq.module.scss'
 import q from './AiFaq.module.scss'
 import { ralewayBold, ralewayRegular } from "@/app/fonts/fonts";
 import { usePrefersReducedMotion } from "@/hooks/usePrefersReducedMotion";
-import { easeOut, easeOutBack, span, SMOOTH } from "../scene";
+import { easeOut, move, span, SMOOTH } from "../scene";
 import { faqLineTook, faqListEl, ITermsEnd, termsEnd } from "../scenes/handoff";
 import FaqScene from "../scenes/FaqScene";
 import { faq, sections } from "@/data/aiPage";
@@ -16,10 +16,11 @@ import { faq, sections } from "@/data/aiPage";
 const Question: FC<{ question: string, answer: string, open: boolean, still?: boolean }> = ({ question, answer, open, still }) => {
     const reduceMotion = usePrefersReducedMotion() || !!still;
     const ref = useRef<HTMLDetailsElement>(null);
-    const { scrollYProgress } = useScroll({ target: ref, offset: ['start end', 'start 0.7'] });
+    // Единая скорость (speed.ts): пузырь проезжает 45% ширины строки за 0,7 от 0,45 экрана, без перелёта
+    const { scrollYProgress } = useScroll({ target: ref, offset: ['start end', 'start 0.55'] });
     const p = useSpring(scrollYProgress, SMOOTH);
-    const x = useTransform(p, (v) => `${(1 - easeOutBack(span(v, 0, .7))) * 45}%`);
-    const rotate = useTransform(p, (v) => (1 - easeOutBack(span(v, 0, .7))) * 4);
+    const x = useTransform(p, (v) => `${(1 - move(span(v, 0, .7))) * 45}%`);
+    const rotate = useTransform(p, (v) => (1 - move(span(v, 0, .7))) * 4);
     const opacity = useTransform(p, (v) => span(v, 0, .3));
     // В пути вопрос – тёмный пузырь реплики, на месте пузырь тает в строку
     const bubble = useTransform(p, (v) => 1 - easeOut(span(v, .6, .35)));
@@ -30,11 +31,11 @@ const Question: FC<{ question: string, answer: string, open: boolean, still?: bo
             ref={ref}
             className={`${f.item} ${q.item}`}
             open={open}
-            style={reduceMotion ? undefined : { x, rotate, opacity }}
+            style={reduceMotion ? { x: '0%', rotate: 0, opacity: 1 } : { x, rotate, opacity }}
         >
             <summary className={`${ralewayBold.className} ${f.question} ${q.question}`}>
                 {!reduceMotion && <motion.span className={q.bubble} style={{ opacity: bubble }} aria-hidden="true" />}
-                <motion.span className={q.text} style={reduceMotion ? undefined : { color }}>{question}</motion.span>
+                <motion.span className={q.text} style={{ color: reduceMotion ? 'var(--color-text-100)' : color }}>{question}</motion.span>
             </summary>
             <p className={f.answer}>{answer}</p>
         </motion.details>
@@ -62,7 +63,8 @@ const FaqList: FC<{ still?: boolean }> = ({ still }) => {
             <motion.div
                 ref={list}
                 className={`${f.list} ${q.list}`}
-                style={still ? { borderBottomColor: border } : undefined}
+                // Вопрос въезжает справа из-за края экрана: список по ширине обрезает его, иначе у страницы прокрутка вбок
+                style={still ? { borderBottomColor: border } : { overflowX: 'clip' }}
             >
                 {faq.map((item, i) => (
                     <Question key={item.question} question={item.question} answer={item.answer} open={i === 0} still={still} />

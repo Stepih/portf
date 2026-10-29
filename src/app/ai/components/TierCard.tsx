@@ -8,7 +8,7 @@ import ContactLink from "@/app/(home)/components/contact-link/ContactLink";
 import { ralewayBold } from "@/app/fonts/fonts";
 import { IServiceTier } from "@/interfaces/offer";
 import Rise from "./Rise";
-import { easeOut, span } from "./scene";
+import { move, span } from "./scene";
 import { tierButton } from "@/data/aiPage";
 
 interface ITierCard {
@@ -25,13 +25,14 @@ interface ITierCard {
 }
 
 const LINE_STEP = .05;
-const LINE_DUR = .3;
+const LINE_DUR = .4;
 
 // Ступень ИИ на странице /ai (черновик): название, цена, срок и условие – из offer.ts (как в карточке главной),
 // описание и примеры – заглушки. Строки выезжают из-под масок по прогрессу родителя
 const TierCard: FC<ITierCard> = ({ tier, text, examples, progress, textFrom, price, reveal }) => {
     const at = (n: number) => textFrom + n * LINE_STEP;
-    const rule = useTransform(progress, (v) => reveal ? easeOut(span(v, at(2.5), LINE_DUR)) : 1);
+    // Линия – во всю ширину карточки: тянется до конца шкалы, равномерно (единая скорость; длину шкалы считает сцена)
+    const rule = useTransform(progress, (v) => reveal ? move(span(v, at(2.5), 1 - at(2.5))) : 1);
     const button = <ContactLink className={`${ralewayBold.className} ${s.button}`}>{tierButton}</ContactLink>;
 
     return (

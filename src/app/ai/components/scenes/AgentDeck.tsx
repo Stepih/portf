@@ -5,14 +5,14 @@ import { animate, motion, MotionValue, useMotionValue, useMotionValueEvent, useS
 
 import sc from '../scene.module.scss'
 import o from './OrbScene.module.scss'
-import t from '../sections/Sections.module.scss'
+import sx from '../sections/Sections.module.scss'
 import s from './AgentDeck.module.scss'
 import OrbStar from "@/app/(home)/components/chat/OrbStar";
 import { ralewayBold } from "@/app/fonts/fonts";
 import { useMediaQuery } from "@/hooks/useMediaQuery";
 import { usePrefersReducedMotion } from "@/hooks/usePrefersReducedMotion";
-import { ease, easeOut, lerp, offsetIn, SMOOTH, span, useStickyScene } from "../scene";
-import { DROP_TAIL, HowFlow } from "../sections/HowWeWork";
+import { drop as dropCurve, durFor, easeOut, fadeFor, lerp, move, offsetIn, rise, SMOOTH, span, useStickyScene } from "../scene";
+import { DROP_TAIL, HowFlow, PAST } from "../sections/HowWeWork";
 import { deckAgents, deckChips, deckSlideLabel, flow, sections } from "@/data/aiPage";
 import { deckTook, howJoin, howTook } from "./handoff";
 
@@ -27,142 +27,149 @@ const ROWS = 5;
 // карточку ступени сменяет левая карточка сцены и едет влево, из-за неё вправо выезжает правая такого же размера.
 // На телефоне стыка нет: карточка проявляется посередине и раскрывается на верхнюю и нижнюю. Карточки разъехались –
 // в зазоре проявляется шар агента, вырезы под него раскрываются вместе с ним. Дальше – слайд на экран: полоска
-// заполняется, в конце слайда строки уходят вверх, снизу входят следующие, шар вздрагивает. Пауз нет: каждое
-// движение начинается до конца предыдущего
-const T = {
-    // Текст ступени растаял: дальше карточку рисует эта сцена. Конец handoff ChatWorkScene (6.8) − её 6.55
-    swap: .25,
-    // Телефон: карточка проявляется посередине
-    rise: [0, .3],
-    // Левая (верхняя) карточка – с места ступени на своё место, правая (нижняя) выезжает из-за неё чуть позже.
-    // Из ступени по высоте карточка садится быстрее (drop), чем едет вбок: высокая ступень закрывает место заголовка
-    split: [.25, .75],
-    drop: [.25, .5],
-    emerge: [.3, .8],
-    // Тон карточки – из цвета ступени в матовое стекло карточки агента
-    frost: [.4, .75],
-    // Заголовок – когда карточка уже села ниже него
-    head: [.48, .8],
-    bars: [.45, .75],
-    // Шар и вырезы под него
-    orb: [.6, .95],
-    // Начало первого слайда (с него заполняется первая полоска) и длина слайда
-    first: .62,
-    slide: 1,
-    // Строка въезжает row экрана, следующая – через step; правая карточка – на col позже левой
-    row: .28,
-    step: .06,
-    col: .06,
-    // Уход: начинается за outLead до конца слайда, строка – outRow, следующая – через outStep; вход следующего – через inLag
-    outLead: .12,
-    outRow: .22,
-    outStep: .045,
-    inLag: .08,
-};
-const slideAt = (j: number) => T.first + j * T.slide;
-
-// Когда въезжает и уходит первая строка слайда j
-const inFrom = (j: number) => j === 0 ? T.first : slideAt(j) + T.inLag;
-const outFrom = (j: number) => slideAt(j + 1) - T.outLead;
-// Слайд целиком въехал – сюда ведёт клик по полоске
-const shownAt = (j: number) => inFrom(j) + T.col + (ROWS - 1) * T.step + T.row;
-
-// Конец сцены – от начала втягивания (полэкрана после того, как въехал последний слайд), в экранах. Вариант 2
-// «лист целиком»: карточка вместе со всем содержимым (фон, текст, плашки) уходит в шар одним движением, как плоский
+// заполняется, в конце слайда строки уходят вверх, снизу входят следующие, шар вздрагивает.
+// Конец сцены (вариант 2 «лист целиком»): карточка вместе со всем содержимым уходит в шар одним движением, как плоский
 // лист – равномерно уменьшается к центру шара с ускорением и закручивается потоком, у шара гаснет; правая (нижняя)
-// чуть отстаёт. Шар по ходу растёт. Вход → выход: удар, как только ушёл последний лист, – шар сжимается, и из него
-// вылетают пять точек – по точке на место шага линии HowWeWork, центральная первой. Долетев, точка вырастает в
-// кружок с номером, между кружками от середины прорисовывается линия, проступает заголовок «Как работаем». Шар
-// уменьшается до малого шарика, становится им и проезжает линию, зажигая шаги. Экран отпускает скролл – верх
-// дальше рисует сам HowWeWork (handoff.ts)
-const SUCK = shownAt(SLIDES - 1) + .45;
-// Проезд шарика по линии, в экранах
-const RIDE = 1.6;
-const END = {
-    // Гаснут заголовок сцены и полоски слайдов (текст карточек не гаснет – уходит в шар вместе с листом)
-    fade: [SUCK, SUCK + .15],
-    // Лист уходит в шар с suck за suckLen экрана, правый (нижний) – на lag позже
-    suck: SUCK + .05,
-    suckLen: .35,
-    lag: .04,
-    // Шар растёт, пока в него уходят листы; удар – сразу, как ушёл последний (suck + lag + suckLen): сжимается
-    // чуть меньше обычного и отходит обратно
-    grow: [SUCK + .05, SUCK + .44],
-    beat: [SUCK + .44, SUCK + .64],
-    recoil: [SUCK + .64, SUCK + .84],
-    // Точки: центральная вылетает в sparks, крайние – на spread позже, полёт – flight
-    sparks: SUCK + .61,
-    spread: .12,
-    flight: .3,
-    howHead: [SUCK + .74, SUCK + 1.14],
-    // Кружки шагов вырастают из своих точек: начало – посадка центральной (sparks + flight)
-    steps: [SUCK + .91, SUCK + 1.31],
-    // Линия между кружками – от середины к краям
-    base: [SUCK + .99, SUCK + 1.34],
-    // Шар уменьшается до шарика и едет к шагу 1, звезда гаснет; в конце его сменяет шарик линии
-    star: [SUCK + 1.39, SUCK + 1.59],
-    become: [SUCK + 1.39, SUCK + 1.84],
-    // Шарик проезжает линию. Десктоп: каждый шаг, загоревшись, роняет кусок линии, под ним выезжают подпись и текст
-    // (StepBody); шаг – раз в RIDE / (шагов − 1) экрана, хвост – пока выезжает тело последнего
-    ride: [SUCK + 1.89, SUCK + 1.89 + RIDE],
-};
-const STEP_LEN = RIDE / (flow.length - 1);
-const PATH = END.ride[1] + DROP_TAIL * STEP_LEN + .1;
-// На сколько экранов сцена заходит под конец пути ChatWorkScene: PATH − handoff[0] там
+// чуть отстаёт. Шар по ходу растёт. Удар, как только ушёл последний лист, – шар сжимается, и из него вылетают пять
+// точек – по точке на место шага линии HowWeWork, центральная первой. Долетев, точка вырастает в кружок с номером,
+// между кружками от середины прорисовывается линия, проступает заголовок «Как работаем». Шар уменьшается до малого
+// шарика, становится им и проезжает линию, зажигая шаги; каждый шаг роняет кусок линии, под ним выезжают подпись и
+// текст (StepBody). Экран отпускает скролл – верх дальше рисует сам HowWeWork (handoff.ts).
+// Единая скорость (speed.ts): окна движений – от их путей (timesFor, по замерам onMeasure); слайд – время чтения,
+// экран на слайд
 const OVER = .3;
-
-// Доли пути
-const f = (v: number) => v / PATH;
-const k = (v: number, [a, b]: number[]) => span(v, f(a), f(b) - f(a));
-
-// Строка r карточки i: въезд и уход 0–1. У последнего слайда ухода нет – его карточки втягиваются в шар
-const rowIn = (v: number, i: number, r: number) => {
-    const from = inFrom(Math.floor(i / PER)) + (i % PER) * T.col + r * T.step;
-    return easeOut(k(v, [from, from + T.row]));
-};
-const rowOut = (v: number, i: number, r: number) => {
-    const j = Math.floor(i / PER);
-    if (j >= SLIDES - 1) return 0;
-    const from = outFrom(j) + (i % PER) * T.col * .5 + r * T.outStep;
-    return ease(k(v, [from, from + T.outRow]));
-};
-// Активный слайд: меняется на границе слайдов, вместе со сменой строк
-const slideOf = (v: number) => Math.min(SLIDES - 1, Math.max(0, Math.floor((v * PATH - T.first) / T.slide)));
+// Строк в слайде и шаги между ними – см. rowIn / rowOut
+interface ITimes {
+    swap: number, rise: number[], split: number[], drop: number[], emerge: number[], frost: number[], head: number[],
+    bars: number[], orb: number[], first: number, slide: number, row: number, step: number, col: number,
+    outLead: number, outRow: number, outStep: number, inLag: number,
+    suck: number, suckLen: number, lag: number, fade: number[], grow: number[], beat: number[], recoil: number[],
+    sparks: number, spread: number, flight: number, howHead: number[], steps: number[], base: number[],
+    star: number[], become: number[], ride: number[], past: number[], stepLen: number, path: number
+}
 
 // Шар: диаметр, зазор между ним и краем выреза, размытие света (как у шара первого экрана: 28px на 200px).
 // Зазор между карточками – в AgentDeck.module.scss (.pair): шар заходит в каждую карточку на радиус + ring − зазор / 2
 const ORB = { desk: { d: 88, ring: 10, blur: 12 }, phone: { d: 60, ring: 8, blur: 8 } };
 // Малый шар линии шагов (.rider в Sections.module.scss): 22px, размытие света 3px
 const RIDER = { d: 22, blur: 3 };
+// Телефон: копия верха HowWeWork с телами шагов – от верха экрана, px
+const PHONE_TOP = 24;
 
 interface IBox { x: number, y: number, w: number, h: number }
 interface IPoint { x: number, y: number }
 // card – откуда выходят карточки (вторая ступень ChatWorkScene; на телефоне – середина между местами), tier – выходят
 // из ступени, left / right – места карточек агентов, orb – центр шара, track – линия шагов копии HowWeWork, how – сама
 // копия (левый верх, ширина)
-interface IGeo { card: IBox, tier: boolean, left: IBox, right: IBox, orb: IPoint, track: IBox, vertical: boolean, how: IPoint & { w: number } }
+interface IGeo { card: IBox, tier: boolean, left: IBox, right: IBox, orb: IPoint, track: IBox, vertical: boolean, how: IPoint & { w: number }, t: ITimes }
 const noBox: IBox = { x: 0, y: 0, w: 0, h: 0 };
-const noGeo: IGeo = { card: noBox, tier: false, left: noBox, right: noBox, orb: { x: 0, y: 0 }, track: noBox, vertical: false, how: { x: 0, y: 0, w: 0 } };
+const geo0: Omit<IGeo, 't'> = {
+    card: noBox, tier: false, left: { x: 0, y: 200, w: 500, h: 400 }, right: { x: 560, y: 200, w: 500, h: 400 }, orb: { x: 530, y: 400 },
+    track: { x: 0, y: 400, w: 850, h: 2 }, vertical: false, how: { x: 0, y: 0, w: 0 }
+};
 const mix = (a: IBox, b: IBox, m: number): IBox => ({ x: lerp(a.x, b.x, m), y: lerp(a.y, b.y, m), w: lerp(a.w, b.w, m), h: lerp(a.h, b.h, m) });
 
 // Левая карточка: с места ступени на своё место, по пути принимает его размер. Из ступени – по высоте быстрее
 const leftAt = (v: number, g: IGeo): IBox => {
-    const b = mix(g.card, g.left, ease(k(v, T.split)));
+    const b = mix(g.card, g.left, move(k(g.t, v, g.t.split)));
     if (!g.tier) return b;
-    const d = easeOut(k(v, T.drop));
+    const d = move(k(g.t, v, g.t.drop));
     return { ...b, y: lerp(g.card.y, g.left.y, d), h: lerp(g.card.h, g.left.h, d) };
 };
 // Правая – того же размера, что левая, выезжает из-под неё: сдвиг от левой растёт до расстояния между местами
 const rightAt = (v: number, g: IGeo): IBox => {
     const b = leftAt(v, g);
-    const u = ease(k(v, T.emerge));
+    const u = move(k(g.t, v, g.t.emerge));
     return { ...b, x: b.x + (g.right.x - g.left.x) * u, y: b.y + (g.right.y - g.left.y) * u };
 };
 
 // Начало линии шагов – там шарик линии в начале проезда
-const trackStart = (g: IGeo): IPoint => g.vertical
+const trackStart = (g: Omit<IGeo, 't'>): IPoint => g.vertical
     ? { x: g.track.x + g.track.w / 2, y: g.track.y }
     : { x: g.track.x, y: g.track.y + g.track.h / 2 };
+
+// Окна сцены: [от, до] в экранах. Движения – по путям из замеров, по порядку; проявления – не короче fadeFor
+const timesFor = (g: Omit<IGeo, 't'>, h: number, orb: number): ITimes => {
+    const d = (px: number) => durFor(px, h);
+    const fade = fadeFor(h);
+    const at = (from: number, dur: number) => [from, from + dur];
+    const swap = .25;
+    const move2 = (a: IBox, b: IBox) => Math.max(Math.hypot(b.x - a.x, b.y - a.y), Math.abs(b.w - a.w), Math.abs(b.h - a.h));
+    const split = at(swap, Math.max(fade, d(move2(g.card, g.left))));
+    const drop = at(swap, Math.max(fade, d(Math.max(Math.abs(g.left.y - g.card.y), Math.abs(g.left.h - g.card.h)))));
+    const emerge = at(swap + .05, Math.max(fade, d(Math.hypot(g.right.x - g.left.x, g.right.y - g.left.y))));
+    const mid = (split[0] + split[1]) / 2;
+    const placed = Math.max(split[1], emerge[1]);
+    const orbW = at(placed - fade, Math.max(fade * 2, d(orb)));
+    const first = orbW[0] + .02;
+    const t0 = {
+        swap, rise: [0, Math.max(fade, .3)], split, drop, emerge, frost: at(mid, fade * 2), head: at(mid, fade * 2),
+        bars: at(mid + fade, fade * 2), orb: orbW, first, slide: 1, row: fade * 1.5, step: .06, col: .06,
+        outLead: .12, outRow: fade * 1.3, outStep: .045, inLag: .08
+    };
+    // Слайд целиком въехал: первая строка левой карточки + сдвиг правой + шаги строк + въезд строки
+    const shown = (j: number) => (j === 0 ? first : first + j * t0.slide + t0.inLag) + t0.col + (ROWS - 1) * t0.step + t0.row;
+    const SUCK = shown(SLIDES - 1) + .45;
+    // Лист уходит в шар: путь – от центра карточки до шара, размер – до 3%
+    const sheet = Math.max(g.left.w, g.left.h, Math.hypot(g.orb.x - (g.left.x + g.left.w / 2), g.orb.y - (g.left.y + g.left.h / 2)));
+    // Лист и уменьшается, и едет к шару – с запасом на сложение движений
+    const suckLen = Math.max(fade * 2, d(sheet * 1.3));
+    const lag = .04;
+    const gone = SUCK + .05 + lag + suckLen;
+    const beat = at(gone, .2);
+    const recoil = at(beat[1], .2);
+    const sparks = gone + .17;
+    const spread = .12;
+    // Точки: самая дальняя – до крайнего шага
+    const n = flow.length;
+    const far = Math.max(...flow.map((_, i) => {
+        const p = (g.vertical ? g.track.h : g.track.w) / (n - 1) * i;
+        const to = g.vertical ? { x: g.track.x + g.track.w / 2, y: g.track.y + p } : { x: g.track.x + p, y: g.track.y + g.track.h / 2 };
+        return Math.hypot(to.x - g.orb.x, to.y - g.orb.y);
+    }));
+    const flight = Math.max(fade * 2, d(far));
+    const steps = at(sparks + flight, .4);
+    const len = g.vertical ? g.track.h : g.track.w;
+    // Линия между кружками прорисовывается от середины к краям: путь – половина
+    const base = at(steps[0] + .08, Math.max(fade * 2, d(len / 2)));
+    const star = at(Math.max(base[1], steps[1]) + .05, fade * 2);
+    const start = trackStart(g);
+    const become = at(star[0], Math.max(fade * 2, d(Math.hypot(start.x - g.orb.x, start.y - g.orb.y))));
+    const ride = at(become[1] + .05, Math.max(fade * 2, d(len)));
+    const stepLen = (ride[1] - ride[0]) / (n - 1);
+    // Шарик откатывается за шаг 5 (стык с Monthly, десктоп)
+    const past = at(ride[1], Math.max(fade, d(PAST)));
+    const path = Math.max(ride[1] + DROP_TAIL * stepLen, past[1]) + .1;
+    return {
+        ...t0, suck: SUCK + .05, suckLen, lag, fade: at(SUCK, .15), grow: [SUCK + .05, gone], beat, recoil,
+        sparks, spread, flight, howHead: at(sparks + .13, .4), steps, base, star, become, ride, past, stepLen, path
+    };
+};
+
+// Доли пути
+const f = (t: ITimes, v: number) => v / t.path;
+const k = (t: ITimes, v: number, [a, b]: number[]) => span(v, a / t.path, (b - a) / t.path);
+const slideAt = (t: ITimes, j: number) => t.first + j * t.slide;
+// Когда въезжает и уходит первая строка слайда j
+const inFrom = (t: ITimes, j: number) => j === 0 ? t.first : slideAt(t, j) + t.inLag;
+const outFrom = (t: ITimes, j: number) => slideAt(t, j + 1) - t.outLead;
+// Слайд целиком въехал – сюда ведёт клик по полоске
+const shownAt = (t: ITimes, j: number) => inFrom(t, j) + t.col + (ROWS - 1) * t.step + t.row;
+// Строка r карточки i: въезд и уход 0–1. У последнего слайда ухода нет – его карточки втягиваются в шар
+const rowIn = (t: ITimes, v: number, i: number, r: number) => {
+    const from = inFrom(t, Math.floor(i / PER)) + (i % PER) * t.col + r * t.step;
+    return k(t, v, [from, from + t.row]);
+};
+const rowOut = (t: ITimes, v: number, i: number, r: number) => {
+    const j = Math.floor(i / PER);
+    if (j >= SLIDES - 1) return 0;
+    const from = outFrom(t, j) + (i % PER) * t.col * .5 + r * t.outStep;
+    return k(t, v, [from, from + t.outRow]);
+};
+// Активный слайд: меняется на границе слайдов, вместе со сменой строк
+const slideOf = (t: ITimes, v: number) => Math.min(SLIDES - 1, Math.max(0, Math.floor((v * t.path - t.first) / t.slide)));
+
+const noGeo: IGeo = { ...geo0, t: timesFor(geo0, 900, ORB.desk.d) };
 
 interface ISuck {
     // Доля ухода 0–1
@@ -179,9 +186,11 @@ interface ISuck {
 // Уход карточки side в шар плоским листом. Масштаб строго равномерный (текст не искажается), к центру шара, с
 // ускорением; поворот потоком растёт вместе с ним, у левой и правой – в разные стороны. У шара лист гаснет
 const useSuck = (e: MotionValue<number>, side: number, g: IGeo): ISuck => {
-    const from = END.suck + side * END.lag;
-    const u = useTransform(e, (v) => k(v, [from, from + END.suckLen]));
-    const m = useTransform(u, (x) => x ** 2.2);
+    const t = g.t;
+    const from = t.suck + side * t.lag;
+    const u = useTransform(e, (v) => k(t, v, [from, from + t.suckLen]));
+    // С ускорением (как падение): наклон ограничен, без рывка в конце
+    const m = useTransform(u, dropCurve);
     const scale = useTransform(m, (x) => lerp(1, .03, x));
     const rotate = useTransform(m, (x) => x * (side ? -13 : 13));
     const opacity = useTransform(u, (x) => 1 - span(x, .7, .3));
@@ -227,6 +236,7 @@ const Shell: FC<IShell> = ({ box, frost, opacity, mask, suck, z }) => {
 interface ILine {
     // Прогресс сцены (липкая) или своя доля скролла карточки (список)
     e: MotionValue<number>,
+    t: ITimes,
     own: MotionValue<number>,
     sticky: boolean,
     animated: boolean,
@@ -237,18 +247,19 @@ interface ILine {
 }
 
 // Строка карточки: въезжает снизу с проявлением, уходит вверх, тая. Без сцены – только въезд по своему скроллу
-const Line: FC<ILine> = ({ e, own, sticky, animated, i, r, className, children }) => {
+const Line: FC<ILine> = ({ e, t, own, sticky, animated, i, r, className, children }) => {
     const state = useTransform([e, own], ([v, u]: number[]) => sticky
-        ? { in: rowIn(v, i, r), out: rowOut(v, i, r) }
-        : { in: easeOut(span(u, r * .12, .52)), out: 0 });
-    const opacity = useTransform(state, (st) => st.in * (1 - st.out));
-    const y = useTransform(state, (st) => 18 * (1 - st.in) - 18 * st.out);
+        ? { in: rowIn(t, v, i, r), out: rowOut(t, v, i, r) }
+        : { in: span(u, r * .12, .52), out: 0 });
+    const opacity = useTransform(state, (st) => easeOut(st.in) * (1 - st.out));
+    const y = useTransform(state, (st) => 18 * (1 - rise(st.in)) - 18 * move(st.out));
 
-    return <motion.div className={className} style={animated ? { opacity, y } : undefined}>{children}</motion.div>;
+    return <motion.div className={className} style={animated ? { opacity, y } : { opacity: 1, y: 0 }}>{children}</motion.div>;
 };
 
 interface IAgent {
     e: MotionValue<number>,
+    t: ITimes,
     sticky: boolean,
     animated: boolean,
     i: number,
@@ -261,12 +272,12 @@ interface IAgent {
 }
 
 // Агент. В сцене фон рисует его Shell, а карточки слайдов лежат в одной ячейке сетки друг на друге; без сцены – обычная карточка
-const Agent: FC<IAgent> = ({ e, sticky, animated, i, vertical, suck, cellRef, chipCount }) => {
+const Agent: FC<IAgent> = ({ e, t, sticky, animated, i, vertical, suck, cellRef, chipCount }) => {
     const agent = deckAgents[i];
     const ref = useRef<HTMLLIElement | null>(null);
     const { scrollYProgress } = useScroll({ target: ref, offset: ['start end', 'start 0.7'] });
     const own = useSpring(scrollYProgress, SMOOTH);
-    const line = { e, own, sticky, animated, i };
+    const line = { e, t, own, sticky, animated, i };
     const side = i % PER;
     // В сцене – своё место сетки; у последнего слайда – то же преобразование листа, что у его Shell
     const style = sticky
@@ -301,6 +312,7 @@ const Agent: FC<IAgent> = ({ e, sticky, animated, i, vertical, suck, cellRef, ch
 
 interface IDot {
     e: MotionValue<number>,
+    t: ITimes,
     j: number,
     active: boolean,
     live: boolean,
@@ -308,8 +320,8 @@ interface IDot {
 }
 
 // Полоска слайда: тонкая видимая линия в кнопке высотой 32px, заполняется по ходу своего слайда
-const Dot: FC<IDot> = ({ e, j, active, live, onPick }) => {
-    const fill = useTransform(e, (v) => k(v, [slideAt(j), slideAt(j + 1)]));
+const Dot: FC<IDot> = ({ e, t, j, active, live, onPick }) => {
+    const fill = useTransform(e, (v) => k(t, v, [slideAt(t, j), slideAt(t, j + 1)]));
 
     return (
         <button
@@ -336,16 +348,17 @@ interface ISpark {
 // который из неё вырастает
 const Spark: FC<ISpark> = ({ e, i, n, g }) => {
     const c = (n - 1) / 2;
-    const from = END.sparks + Math.abs(i - c) / c * END.spread;
-    const land = from + END.flight;
+    const t = g.t;
+    const from = t.sparks + Math.abs(i - c) / c * t.spread;
+    const land = from + t.flight;
     const at = (g.vertical ? g.track.h : g.track.w) / (n - 1) * i;
     const to: IPoint = g.vertical
         ? { x: g.track.x + g.track.w / 2, y: g.track.y + at }
         : { x: g.track.x + at, y: g.track.y + g.track.h / 2 };
-    const u = useTransform(e, (v) => easeOut(k(v, [from, land])));
+    const u = useTransform(e, (v) => move(k(t, v, [from, land])));
     const x = useTransform(u, (m) => (to.x - g.orb.x) * m);
     const y = useTransform(u, (m) => (to.y - g.orb.y) * m);
-    const opacity = useTransform(e, (v) => k(v, [from, from + .04]) * (1 - k(v, [land, land + .1])));
+    const opacity = useTransform(e, (v) => k(t, v, [from, from + .04]) * (1 - k(t, v, [land, land + .1])));
 
     return <motion.span className={s.spark} style={{ left: g.orb.x, top: g.orb.y, x, y, opacity }} />;
 };
@@ -421,14 +434,17 @@ const AgentDeck: FC = () => {
         const gw = ghost.current;
         if (gt && gw) {
             const p = offsetIn(gt, gw);
-            y = orb.y - (p.y + gt.offsetHeight / 2);
             vertical = gt.offsetHeight > gt.offsetWidth;
+            // Десктоп: линия – на высоте шара. Телефон: линия с телами шагов высокая – копия стоит от верха экрана
+            y = vertical ? PHONE_TOP : orb.y - (p.y + gt.offsetHeight / 2);
             track = { x: x + p.x, y: y + p.y, w: gt.offsetWidth, h: gt.offsetHeight };
         }
 
-        setG({ card, tier, left, right, orb, track, vertical, how: { x, y, w } });
-        howJoin.set(sticky ? { orbY: orb.y, h: root.offsetHeight, steps: stitched } : null);
-    }, [sceneY, sticky, stitched]);
+        const geo = { card, tier, left, right, orb, track, vertical, how: { x, y, w } };
+        setG({ ...geo, t: timesFor(geo, root.offsetHeight, size.d) });
+        // HowWeWork встаёт так, чтобы его линия совпала с линией копии в кадре отпускания
+        howJoin.set(sticky ? { orbY: track.y + track.h / 2, h: root.offsetHeight, steps: true, monthly: stitched } : null);
+    }, [sceneY, sticky, stitched, size.d]);
 
     const { progress, measure, scrollToProgress } = useStickyScene({ scene, path, screen }, onMeasure);
 
@@ -450,17 +466,18 @@ const AgentDeck: FC = () => {
 
     // Текст ступени растаял – ChatWorkScene прячет свою пустую карточку, под ней такая же левая этой сцены
     const syncTook = useCallback(() => {
-        deckTook.set(stitched && shown.get() && progress.get() >= f(T.swap) ? 1 : 0);
-    }, [stitched, shown, progress]);
+        deckTook.set(stitched && shown.get() && progress.get() >= f(g.t, g.t.swap) ? 1 : 0);
+    }, [stitched, shown, progress, g]);
     // Экран отпустил скролл – верх рисует HowWeWork
     const syncHow = useCallback(() => {
         howTook.set(sticky && scrollY.get() >= unpinY.current - 1 ? 1 : 0);
     }, [sticky, scrollY]);
     useMotionValueEvent(progress, 'change', (v) => {
         syncTook();
-        setActive(slideOf(v));
-        setBarsLive(v >= f(T.bars[0]) && v < f(SUCK));
-        setRest(v >= f(T.orb[1]) && v < f(SUCK));
+        const t = g.t;
+        setActive(slideOf(t, v));
+        setBarsLive(v >= f(t, t.bars[0]) && v < f(t, t.fade[0]));
+        setRest(v >= f(t, t.orb[1]) && v < f(t, t.fade[0]));
     });
     useMotionValueEvent(shown, 'change', syncTook);
     useMotionValueEvent(scrollY, 'change', syncHow);
@@ -486,47 +503,48 @@ const AgentDeck: FC = () => {
 
     const leftBox = useTransform(progress, (v) => leftAt(v, g));
     const rightBox = useTransform(progress, (v) => rightAt(v, g));
-    const frost = useTransform(progress, (v) => ease(k(v, T.frost)));
+    const t = g.t;
+    const frost = useTransform(progress, (v) => k(t, v, t.frost));
     const leftSuck = useSuck(progress, 0, g);
     const rightSuck = useSuck(progress, 1, g);
     // Десктоп – экран встал под ChatWorkScene; телефон – карточка проявляется посередине. У шара лист гаснет
-    const shellIn = useTransform([progress, shown], ([v, sh]: number[]) => phone ? ease(k(v, T.rise)) : sh);
+    const shellIn = useTransform([progress, shown], ([v, sh]: number[]) => phone ? k(t, v, t.rise) : sh);
     const leftShown = useTransform([shellIn, leftSuck.opacity], ([sh, op]: number[]) => sh * op);
     // Правая до выезда лежит ровно под левой – прячется, чтобы тень не темнела вдвое
-    const rightShown = useTransform([progress, shellIn, rightSuck.opacity], ([v, sh, op]: number[]) => v > f(T.emerge[0]) ? sh * op : 0);
+    const rightShown = useTransform([progress, shellIn, rightSuck.opacity], ([v, sh, op]: number[]) => v > f(t, t.emerge[0]) ? sh * op : 0);
     // Вырез: круг вокруг центра шара (ring от его края), радиус растёт вместе с появлением шара
     const notch = (b: IBox, v: number) => {
-        const r = (size.d / 2 + size.ring) * ease(k(v, T.orb));
+        const r = (size.d / 2 + size.ring) * move(k(t, v, t.orb));
         return r < .5 ? 'none' : `radial-gradient(circle at ${g.orb.x - b.x}px ${g.orb.y - b.y}px, transparent ${r.toFixed(2)}px, #000 ${(r + 1).toFixed(2)}px)`;
     };
     const leftMask = useTransform(progress, (v) => notch(leftAt(v, g), v));
     const rightMask = useTransform(progress, (v) => notch(rightAt(v, g), v));
 
-    const head = useTransform(progress, (v) => easeOut(k(v, T.head)) * (1 - ease(k(v, END.fade))));
-    const headY = useTransform(progress, (v) => 14 * (1 - easeOut(k(v, T.head))));
-    const bars = useTransform(progress, (v) => easeOut(k(v, T.bars)) * (1 - ease(k(v, END.fade))));
-    const barsY = useTransform(progress, (v) => 10 * (1 - easeOut(k(v, T.bars))));
+    const head = useTransform(progress, (v) => easeOut(k(t, v, t.head)) * (1 - k(t, v, t.fade)));
+    const headY = useTransform(progress, (v) => 14 * (1 - rise(k(t, v, t.head))));
+    const bars = useTransform(progress, (v) => easeOut(k(t, v, t.bars)) * (1 - k(t, v, t.fade)));
+    const barsY = useTransform(progress, (v) => 10 * (1 - rise(k(t, v, t.bars))));
 
     // Шар: проявляется в зазоре, вздрагивает при смене слайда, растёт, поглощая листы, с ударом сжимается (в этот
     // момент вылетают точки) и отходит, потом уменьшается до шарика линии и едет к шагу 1; там его сменяет шарик
     // копии HowWeWork
     const orbState = useTransform([progress, kick], ([v, kk]: number[]) => {
-        const into = ease(k(v, END.become));
+        const into = move(k(t, v, t.become));
         const end = trackStart(g);
         const d = lerp(size.d, RIDER.d, into);
-        const grow = ease(k(v, END.grow));
-        const beat = ease(k(v, END.beat));
+        const grow = move(k(t, v, t.grow));
+        const beat = move(k(t, v, t.beat));
         // Ушёл левый лист – короткий глоток (правый уходит прямо в удар)
-        const gone = END.suck + END.suckLen;
-        const gulp = Math.sin(Math.PI * k(v, [gone - .03, gone + .07]));
+        const gone = t.suck + t.suckLen;
+        const gulp = Math.sin(Math.PI * k(t, v, [gone - .03, gone + .07]));
         const full = 1 + .2 * grow + .05 * gulp;
-        const pulse = v < f(END.beat[1]) ? lerp(full, .92, beat) : lerp(.92, 1, easeOut(k(v, END.recoil)));
+        const pulse = v < f(t, t.beat[1]) ? lerp(full, .92, beat) : lerp(.92, 1, move(k(t, v, t.recoil)));
         return {
             x: lerp(g.orb.x, end.x, into) - d / 2,
             y: lerp(g.orb.y, end.y, into) - d / 2,
             d,
-            scale: lerp(.6, 1, easeOut(k(v, T.orb))) * (1 + .1 * kk) * pulse,
-            opacity: v >= f(END.become[1]) ? 0 : ease(k(v, T.orb)),
+            scale: lerp(.6, 1, move(k(t, v, t.orb))) * (1 + .1 * kk) * pulse,
+            opacity: v >= f(t, t.become[1]) ? 0 : k(t, v, t.orb),
             light: lerp(Math.min(1, .7 + .25 * kk + .3 * Math.max(grow, gulp) * (1 - beat)), .8, into),
             blur: lerp(size.blur, RIDER.blur, into),
         };
@@ -538,24 +556,26 @@ const AgentDeck: FC = () => {
     const orbOpacity = useTransform(orbState, (st) => st.opacity);
     const lightOpacity = useTransform(orbState, (st) => st.light);
     const lightBlur = useTransform(orbState, (st) => `blur(${st.blur.toFixed(2)}px)`);
-    const starOpacity = useTransform(progress, (v) => 1 - ease(k(v, END.star)));
+    const starOpacity = useTransform(progress, (v) => 1 - k(t, v, t.star));
 
     // Копия верха HowWeWork
-    const howHead = useTransform(progress, (v) => easeOut(k(v, END.howHead)));
-    const howHeadY = useTransform(howHead, (h) => 14 * (1 - h));
-    const stepsIntro = useTransform(progress, (v) => k(v, END.steps));
-    const base = useTransform(progress, (v) => ease(k(v, END.base)));
-    const rider = useTransform(progress, (v): number => v >= f(END.become[1]) ? 1 : 0);
-    // До прихода шара шаг 1 не горит (прогресс чуть ниже нуля), с его приходом – как у HowWeWork в начале
-    const ride = useTransform(progress, (v) => v < f(END.ride[0])
-        ? lerp(-.07, 0, k(v, [END.become[1] - .1, END.become[1]]))
-        : k(v, END.ride));
+    const howHead = useTransform(progress, (v) => k(t, v, t.howHead));
+    const howHeadY = useTransform(howHead, (h) => 14 * (1 - rise(h)));
+    const stepsIntro = useTransform(progress, (v) => k(t, v, t.steps));
+    const base = useTransform(progress, (v) => move(k(t, v, t.base)));
+    const rider = useTransform(progress, (v): number => v >= f(t, t.become[1]) ? 1 : 0);
+    // До прихода шара шаг 1 не горит (прогресс чуть ниже нуля), с его приходом – как у HowWeWork в начале.
+    // Шарик едет равномерно, со скоростью SPEED
+    const ride = useTransform(progress, (v) => v < f(t, t.ride[0])
+        ? lerp(-.07, 0, k(t, v, [t.become[1] - .1, t.become[1]]))
+        : k(t, v, t.ride));
+    const past = useTransform(progress, (v) => k(t, v, t.past));
     // Время в шагах для тел шагов: шаг i загорается в i
-    const drop = useTransform(progress, (v) => (v * PATH - END.ride[0]) / STEP_LEN);
+    const drop = useTransform(progress, (v) => (v * t.path - t.ride[0]) / t.stepLen);
     const ghostOpacity = useTransform(howTook, (took) => 1 - took);
 
     // Клик по полоске – плавно к кадру, где слайд целиком въехал
-    const onPick = useCallback((j: number) => scrollToProgress(f(shownAt(j))), [scrollToProgress]);
+    const onPick = useCallback((j: number) => scrollToProgress(f(g.t, shownAt(g.t, j))), [scrollToProgress, g]);
 
     const flat = !sticky;
     const mode = flat ? s.flat : stitched ? s.sticky : s.phone;
@@ -564,7 +584,7 @@ const AgentDeck: FC = () => {
         <section
             ref={scene}
             className={`${sc.scene} ${s.scene} ${mode}`}
-            style={{ '--scene-h': `calc(var(--screen-h) + ${PATH * 100}vh)`, '--over': `${OVER * 100}vh` } as CSSProperties}
+            style={{ '--scene-h': `calc(var(--screen-h) + ${t.path * 100}vh)`, '--over': `${OVER * 100}vh` } as CSSProperties}
             aria-labelledby="agents-title"
         >
             <div ref={screen} className={`${sc.screen} ${s.screen}`}>
@@ -575,9 +595,9 @@ const AgentDeck: FC = () => {
                     </>
                 )}
                 <div className={s.wrap}>
-                    <motion.div className={s.head} style={sticky ? { opacity: head, y: headY } : undefined}>
-                        <h2 id="agents-title" className={`${ralewayBold.className} ${t.title}`}>{sections.agents.title}</h2>
-                        <p className={t.description}>{sections.agents.text}</p>
+                    <motion.div className={s.head} style={sticky ? { opacity: head, y: headY } : { opacity: 1, y: 0 }}>
+                        <h2 id="agents-title" className={`${ralewayBold.className} ${sx.title}`}>{sections.agents.title}</h2>
+                        <p className={sx.description}>{sections.agents.text}</p>
                     </motion.div>
 
                     <ul className={sticky ? s.pair : s.list}>
@@ -585,6 +605,7 @@ const AgentDeck: FC = () => {
                             <Agent
                                 key={agent.title}
                                 e={progress}
+                                t={t}
                                 sticky={sticky}
                                 animated={!reduceMotion}
                                 i={i}
@@ -599,7 +620,7 @@ const AgentDeck: FC = () => {
                     {sticky && (
                         <motion.div className={s.dots} style={{ opacity: bars, y: barsY }} aria-hidden={barsLive ? undefined : true}>
                             {Array.from({ length: SLIDES }, (_, j) => (
-                                <Dot key={j} e={progress} j={j} active={j === active} live={barsLive} onPick={onPick} />
+                                <Dot key={j} e={progress} t={t} j={j} active={j === active} live={barsLive} onPick={onPick} />
                             ))}
                         </motion.div>
                     )}
@@ -610,13 +631,13 @@ const AgentDeck: FC = () => {
                         {/* Копия верха HowWeWork: те же классы и ширина, линия – на высоте шара */}
                         <motion.div
                             ref={ghost}
-                            className={`${t.section} ${s.ghost}`}
+                            className={`${sx.section} ${s.ghost}`}
                             style={{ left: g.how.x, top: g.how.y, width: g.how.w || undefined, opacity: ghostOpacity }}
                             aria-hidden="true"
                         >
-                            <motion.h2 className={`${ralewayBold.className} ${t.title}`} style={{ opacity: howHead, y: howHeadY }}>{sections.how.title}</motion.h2>
-                            <motion.p className={t.description} style={{ opacity: howHead, y: howHeadY }}>{sections.how.text}</motion.p>
-                            <HowFlow progress={ride} intro={stepsIntro} base={base} rider={rider} drop={stitched ? drop : undefined} trackRef={ghostTrack} />
+                            <motion.h2 className={`${ralewayBold.className} ${sx.title}`} style={{ opacity: howHead, y: howHeadY }}>{sections.how.title}</motion.h2>
+                            <motion.p className={sx.description} style={{ opacity: howHead, y: howHeadY }}>{sections.how.text}</motion.p>
+                            <HowFlow progress={ride} intro={stepsIntro} base={base} rider={rider} past={stitched ? past : undefined} drop={drop} trackRef={ghostTrack} />
                         </motion.div>
 
                         <div className={s.sparks} aria-hidden="true">

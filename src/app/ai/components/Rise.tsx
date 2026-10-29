@@ -5,7 +5,7 @@ import { motion, MotionValue, useTransform } from "framer-motion";
 
 import s from './Rise.module.scss'
 import { usePrefersReducedMotion } from "@/hooks/usePrefersReducedMotion";
-import { easeOut, span } from "./scene";
+import { rise, span } from "./scene";
 
 interface IRise {
     progress: MotionValue<number>,
@@ -17,10 +17,11 @@ interface IRise {
     children: ReactNode
 }
 
-// Строка выезжает снизу из-под своей маски по прогрессу – как текст карточек «Избранных кейсов» (CaseCard, Rise)
+// Строка выезжает снизу из-под своей маски по прогрессу – как текст карточек «Избранных кейсов» (CaseCard, Rise).
+// Кривая rise – с ограниченным наклоном (единая скорость, speed.ts)
 const Rise: FC<IRise> = ({ progress, from, dur, tag = 'span', className, children }) => {
     const reduceMotion = usePrefersReducedMotion();
-    const y = useTransform(progress, (v) => `${((1 - easeOut(span(v, from, dur))) * 110).toFixed(2)}%`);
+    const y = useTransform(progress, (v) => `${((1 - rise(span(v, from, dur))) * 110).toFixed(2)}%`);
     const Mask = tag;
     const Inner = tag === 'span' ? motion.span : motion.div;
 

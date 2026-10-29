@@ -10,7 +10,7 @@ import OrbStar from "@/app/(home)/components/chat/OrbStar";
 import { ralewayBold } from "@/app/fonts/fonts";
 import Rise from "../Rise";
 import { usePrefersReducedMotion } from "@/hooks/usePrefersReducedMotion";
-import { ease, easeOut, easeOutBack, span, SMOOTH } from "../scene";
+import { move, span, SMOOTH } from "../scene";
 import { ph, sections } from "@/data/aiPage";
 
 // Шкала финала: шар вырастает, сжимается и делится на два круга, круги разъезжаются и вытягиваются в таблетки-кнопки
@@ -30,11 +30,12 @@ interface IGeom { dx: number, w: number, h: number }
 
 // Кнопка, пока она – круг: сдвинута к центру ряда и обрезана до круга своей высоты
 const Morph: FC<{ progress: MotionValue<number>, geom: IGeom, children: ReactNode }> = ({ progress, geom, children }) => {
-    const x = useTransform(progress, (v) => geom.dx * (1 - easeOutBack(k(v, APART))));
-    const scale = useTransform(progress, (v) => .6 + .4 * easeOut(k(v, SPLIT)));
+    // Единая скорость (speed.ts): без перелёта, наклон ограничен
+    const x = useTransform(progress, (v) => geom.dx * (1 - move(k(v, APART))));
+    const scale = useTransform(progress, (v) => .6 + .4 * move(k(v, SPLIT)));
     const opacity = useTransform(progress, (v) => k(v, SPLIT));
     const clipPath = useTransform(progress, (v) => {
-        const o = ease(k(v, STRETCH));
+        const o = move(k(v, STRETCH));
         return `inset(0 ${(geom.w - geom.h) / 2 * (1 - o)}px round 24px)`;
     });
     return (
@@ -58,7 +59,8 @@ const FinalCta: FC<IFinalCta> = ({ tgHref, staged, rowRef }) => {
     const row = useRef<HTMLDivElement>(null);
     const buttons = useRef<(HTMLSpanElement | null)[]>([]);
     const [geoms, setGeoms] = useState<IGeom[]>([]);
-    const { scrollYProgress } = useScroll({ target: row, offset: ['start 1', 'start 0.72'] });
+    // 0,6 экрана: кнопки разъезжаются (самое длинное движение) не быстрее единой скорости
+    const { scrollYProgress } = useScroll({ target: row, offset: ['start 1', 'start 0.4'] });
     const own = useSpring(scrollYProgress, SMOOTH);
     const progress = staged ?? own;
 
@@ -78,7 +80,7 @@ const FinalCta: FC<IFinalCta> = ({ tgHref, staged, rowRef }) => {
         return () => observer.disconnect();
     }, []);
 
-    const orbScale = useTransform(progress, (v) => (.3 + .7 * easeOut(k(v, ORB_IN))) * (1 - .5 * ease(k(v, SPLIT))));
+    const orbScale = useTransform(progress, (v) => (.3 + .7 * move(k(v, ORB_IN))) * (1 - .5 * move(k(v, SPLIT))));
     // На сцене шар сменяет шарик в кадре прогресса 0 – без проявления
     const orbOpacity = useTransform(progress, (v) => (staged ? (v > 0 ? 1 : 0) : k(v, [0, .08])) * (1 - k(v, SPLIT)));
     // Подпись проявляется, когда круг вытянулся в таблетку

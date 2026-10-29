@@ -61,3 +61,33 @@
 
     background: var(--color-text-100);
 }
+
+// Телефон: шаг строкой (кружок слева) – тело справа от кружка, кусок ложится над подписью. Строки линии – одной
+// высоты (по самой высокой): шаги на линии через равные доли, как у шарика и точек сцены AgentDeck
+@media screen and (max-width: 700px) {
+    .bodies {
+        grid-auto-rows: 1fr;
+    }
+
+    // Линия – от центра первого кружка до центра последнего: последний кружок – вверху своей строки
+    .bodies > span:first-child {
+        bottom: calc((100% - (var(--count) - 1) * 20px) / var(--count) - 21px);
+    }
+
+    .withBody {
+        align-items: flex-start;
+    }
+
+    .body {
+        flex: 1;
+        min-width: 0;
+        width: auto;
+        padding-top: 12px;
+    }
+
+    .piece.short {
+        left: 0;
+        width: 40px;
+        margin-left: 0;
+    }
+}

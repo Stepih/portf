@@ -1,21 +1,8 @@
 @use '/src/styles/variables.scss' as vars;
 
-// Вариант B, сцена «агент за работой». Липкий экран и путь – scene.module.scss.
-// Слои: плашка (frost, раскрывается до краёв окна), над ней заголовок, индикаторы примеров и сцена: входы → шар → отчёт
+// «Агент за работой»: части примеров для ChatWorkScene (заголовок, индикаторы примеров, входы → шар → отчёт) и список
+// без движения (.static)
 $hair: rgba(128, 128, 128, 0.28);
-
-.scene {
-    margin-top: 100px;
-}
-
-.bg {
-    position: absolute;
-    z-index: 0;
-
-    background: var(--color-frost);
-    box-shadow: vars.$shadow;
-    transition: vars.$transition;
-}
 
 .content {
     position: absolute;
@@ -523,10 +510,6 @@ $hair: rgba(128, 128, 128, 0.28);
 
 // Телефон: сверху входы сеткой 2×2, ниже шар, под ним отчёт
 @media screen and (max-width: 700px) {
-    .scene {
-        margin-top: 70px;
-    }
-
     .content {
         gap: 14px;
         padding: 20px 14px;

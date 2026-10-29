@@ -1,14 +1,14 @@
 "use client";
 
 import { FC, useEffect, useLayoutEffect, useRef, useState } from "react";
-import { easeIn, motion, MotionValue, useMotionValueEvent, useScroll, useSpring, useTransform } from "framer-motion";
+import { motion, MotionValue, useMotionValueEvent, useScroll, useSpring, useTransform } from "framer-motion";
 
 import s from './Sections.module.scss'
 import t from './Terms.module.scss'
 import { ralewayBold } from "@/app/fonts/fonts";
 import { usePrefersReducedMotion } from "@/hooks/usePrefersReducedMotion";
 import Rise from "../Rise";
-import { easeOut, flyEase, span, SMOOTH } from "../scene";
+import { drop, easeOut, move, span, SMOOTH } from "../scene";
 import { IMonthlyEnd, monthlyEnd } from "../scenes/handoff";
 import TermsScene from "../scenes/TermsScene";
 import { sections, terms } from "@/data/aiPage";
@@ -17,8 +17,10 @@ import { sections, terms } from "@/data/aiPage";
 // капля садится в левый верхний угол темы и растекается в линию, из-под линии выезжают заголовок и пункты
 const ORB_IN = [0, .1];
 const ORB_OUT = [.7, .85];
-const dropFrom = (i: number) => .08 + i * .055;
-const FLIGHT = .22;
+// Единая скорость (speed.ts): шкала – 1,2 экрана, капля летит 0,36 шкалы, линия растекается за 0,24
+const dropFrom = (i: number) => .05 + i * .035;
+const FLIGHT = .36;
+const LINE = .24;
 const LIFT = 70;
 
 const k = (v: number, [from, to]: number[]) => span(v, from, to - from);
@@ -30,18 +32,19 @@ const Topic: FC<{ progress: MotionValue<number>, i: number, geom: IGeom, title: 
     const reduceMotion = usePrefersReducedMotion();
     const d = dropFrom(i);
     const land = d + FLIGHT;
-    const x = useTransform(progress, (v) => geom.dx * (1 - flyEase(span(v, d, FLIGHT))));
+    const x = useTransform(progress, (v) => geom.dx * (1 - move(span(v, d, FLIGHT))));
+    // По дуге: подскакивает на LIFT и падает в угол темы
     const y = useTransform(progress, (v) => {
         const f = span(v, d, FLIGHT);
-        return f < .35 ? geom.dy - LIFT * easeOut(f / .35) : (geom.dy - LIFT) * (1 - easeIn((f - .35) / .65));
+        return geom.dy * (1 - drop(f)) - LIFT * Math.sin(Math.PI * f);
     });
     const dropOpacity = useTransform(progress, (v) => v < d ? 0 : 1 - span(v, land, .04));
-    const line = useTransform(progress, (v) => easeOut(span(v, land - .01, .12)));
+    const line = useTransform(progress, (v) => move(span(v, land - .01, LINE)));
 
     return (
         <div ref={topicRef} className={`${s.topic} ${t.topic}`}>
             {!reduceMotion && <motion.span className={t.drop} style={{ x, y, opacity: dropOpacity }} aria-hidden="true" />}
-            <motion.span className={t.line} style={reduceMotion ? undefined : { scaleX: line }} aria-hidden="true" />
+            <motion.span className={t.line} style={{ scaleX: reduceMotion ? 1 : line }} aria-hidden="true" />
             <h3 className={`${ralewayBold.className} ${s.topicTitle}`}>
                 <Rise progress={progress} from={land + .03} dur={.14}>{title}</Rise>
             </h3>
@@ -61,7 +64,7 @@ const TermsDrops: FC = () => {
     const grid = useRef<HTMLDivElement>(null);
     const topics = useRef<(HTMLDivElement | null)[]>([]);
     const [geoms, setGeoms] = useState<IGeom[]>([]);
-    const { scrollYProgress } = useScroll({ target: grid, offset: ['start 0.9', 'start 0.15'] });
+    const { scrollYProgress } = useScroll({ target: grid, offset: ['start 0.9', 'start -0.3'] });
     const progress = useSpring(scrollYProgress, SMOOTH);
 
     // Центр сетки и углы тем – без transform

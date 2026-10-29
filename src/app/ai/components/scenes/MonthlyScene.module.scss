@@ -18,9 +18,11 @@ $num: 40px;
     --gutter: max(40px, 4vw);
 }
 
-// Шарик влетает в экран сверху, ещё до того, как экран встал, – экран его не обрезает
+// Шарик влетает в экран сверху, ещё до того, как экран встал, – экран его не обрезает по высоте. По ширине –
+// обрезает: пояснение до выезда стоит правее экрана (без этого у страницы появлялась прокрутка вбок)
 .scene .screen {
     overflow: visible;
+    overflow-x: clip;
 }
 
 .frame {
@@ -40,8 +42,9 @@ $num: 40px;
 .row {
     position: relative;
     // Столбец суммы – постоянной ширины: у каждой строки своя сетка, а шкалы строк должны стоять под осью шапки
-    grid-template-columns: minmax(0, .85fr) minmax(0, 1.35fr) 12.5rem;
-    gap: 24px;
+    // Подписи – шире шкалы: название и объём (второй строкой) не заходят под капсулу
+    grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr) 11.5rem;
+    gap: 20px;
 
     padding: 18px 0 18px $num;
 
@@ -127,8 +130,15 @@ $num: 40px;
     line-height: 1.25;
 }
 
-.who {
-    white-space: nowrap;
+
+// Объём – второй строкой под названием, вторым цветом (владелец: в одну строку с названием залезал под капсулу
+// шкалы). Та же доля шрифта в крупной подписи и в таблице: сжатие в ячейку не меняет раскладку
+.vol {
+    display: block;
+
+    font-size: 0.8em;
+    color: var(--color-text-muted);
+    transition: vars.$transition;
 }
 
 .value,
@@ -184,8 +194,11 @@ $num: 40px;
 .bigHead {
     position: relative;
 
-    height: 1.2em;
-    margin-bottom: 30px;
+    // Подпись – под номером «1 из 3»: название и объём второй строкой (высота самой высокой – --label-h от
+    // компонента, без неё – две строки); сумма – справа сверху
+    --label: clamp(1.6rem, 2.8vw, 2.5rem);
+    height: max(1.2em, calc(var(--label-h, calc(2.25 * var(--label))) + 1.6rem));
+    margin-bottom: 20px;
 
     font-size: clamp(2.6rem, 5vw, 4.75rem);
 }
@@ -203,11 +216,11 @@ $num: 40px;
 
 .bigLabel {
     position: absolute;
+    top: 1.6rem;
     left: 0;
-    bottom: 0.12em;
 
-    font-size: clamp(1.6rem, 2.8vw, 2.5rem);
-    white-space: nowrap;
+    // Ширину ставит компонент: переносы – как в ячейке таблицы
+    font-size: var(--label);
     color: var(--color-text-100);
     transform-origin: 0 0;
     transition: vars.$transition;
@@ -330,6 +343,9 @@ $num: 40px;
 .noteSlot {
     position: relative;
 
+    // Справа – место под плавающий шар чата (60px в 24px от края экрана): пояснение под него не заходит
+    margin-right: 76px;
+
     height: calc(1.45em + 1.75em);
 
     font-size: 1.35rem;
@@ -374,10 +390,10 @@ $num: 40px;
     z-index: 3;
 }
 
-// Узкий десктоп: подпись строки должна уместиться в одну строку, как у крупной (иначе при посадке строка прыгнет)
+// Узкий десктоп: колонки плотнее; подпись переносится так же, как крупная (ширину крупной ставит компонент)
 @media screen and (max-width: 1200px) {
     .row {
-        grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr) 11.5rem;
+        grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr) 10.5rem;
         gap: 16px;
 
         padding-left: 32px;

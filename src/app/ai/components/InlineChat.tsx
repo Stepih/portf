@@ -1,7 +1,7 @@
 "use client"
 
 import { FC, FormEventHandler, KeyboardEventHandler, ReactNode, RefObject, useEffect, useId, useLayoutEffect, useRef, useState } from "react";
-import { easeIn, motion, MotionValue, useMotionValue, useTransform } from "framer-motion";
+import { motion, MotionValue, useMotionValue, useTransform } from "framer-motion";
 
 import c from '@/app/(home)/components/chat/Chat.module.scss'
 import s from './InlineChat.module.scss'
@@ -13,13 +13,14 @@ import { formButton } from "@/data/inputsFeedBack";
 import { CHAT_LIMITS } from "@/lib/chat/request";
 import { HONEYPOT_FIELD } from "@/lib/validation/feedback";
 import { chatQuestions } from "@/scripts/chat";
-import { easeOut, flyEase, offsetIn, span, spreadEase } from "./scene";
+import { drop, easeOut, move, offsetIn, span } from "./scene";
 
 // Шкала появления (intro, 0–1): приветствие, капли готовых вопросов из шара в шапке, поле ввода снизу.
 // Капли – как брызги отраслей на главной: тёмная точка летит по дуге, растекается в таблетку и растворяется в кнопку
-const dropFrom = (i: number) => .2 + i * .09;
-const FLIGHT = .3;
-const SPREAD = .08;
+// Единая скорость (speed.ts): капли летят половину появления (ChatWorkScene считает его длину от пути капли)
+const dropFrom = (i: number) => .15 + i * .05;
+const FLIGHT = .5;
+const SPREAD = .12;
 const FADE = .1;
 const DROP = 10;
 const LIFT = 36;
@@ -36,13 +37,14 @@ interface IDropGeom {
 
 const Drop: FC<{ intro: MotionValue<number>, i: number, geom: IDropGeom }> = ({ intro, i, geom }) => {
     const d = dropFrom(i);
-    const x = useTransform(intro, (v) => geom.dx * (1 - flyEase(span(v, d, FLIGHT))));
+    const x = useTransform(intro, (v) => geom.dx * (1 - move(span(v, d, FLIGHT))));
+    // По дуге: подскакивает на LIFT и падает на место
     const y = useTransform(intro, (v) => {
         const f = span(v, d, FLIGHT);
-        return f < .4 ? geom.dy - LIFT * easeOut(f / .4) : (geom.dy - LIFT) * (1 - easeIn((f - .4) / .6));
+        return geom.dy * (1 - drop(f)) - LIFT * Math.sin(Math.PI * f);
     });
     const clipPath = useTransform(intro, (v) => {
-        const k = spreadEase(span(v, d + FLIGHT - .02, SPREAD));
+        const k = move(span(v, d + FLIGHT - .02, SPREAD));
         return `inset(${(geom.h - DROP) / 2 * (1 - k)}px ${(geom.w - DROP) / 2 * (1 - k)}px round 24px)`;
     });
     const opacity = useTransform(intro, (v) => v < d ? 0 : 1 - span(v, d + FLIGHT + SPREAD, FADE));

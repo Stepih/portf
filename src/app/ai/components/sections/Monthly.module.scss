@@ -89,6 +89,9 @@ $line: rgba(128, 128, 128, 0.45);
 }
 
 .notes {
+    // Пояснение въезжает справа: по ширине обрезается, иначе на телефоне у страницы прокрутка вбок
+    overflow-x: clip;
+
     display: flex;
     flex-direction: column;
     gap: 14px;
