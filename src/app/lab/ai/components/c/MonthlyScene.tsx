@@ -12,7 +12,7 @@ import OrbStar from "@/app/(home)/components/chat/OrbStar";
 import { allerta, ralewayBold, ralewayRegular } from "@/app/fonts/fonts";
 import Rise from "../Rise";
 import { ease, easeOut, lerp, offsetIn, SMOOTH, span } from "../scene";
-import { howJoin, howTook, monthlyEnd, riderLeft } from "./handoff";
+import { howJoin, howTook, monthlyEnd, monthlyGone, monthlyWipe, riderLeft, TERMS_PATH } from "./handoff";
 import {
     monthlyCount, monthlyHeads, monthlyMinor, monthlyNotes, monthlyPer, monthlyRanges, monthlyRows, monthlyScale, monthlySum,
     monthlyUnit, sections
@@ -302,7 +302,8 @@ interface IRowRefs {
     row: (el: HTMLDivElement | null) => void,
     label: (el: HTMLSpanElement | null) => void,
     track: (el: HTMLSpanElement | null) => void,
-    sum: (el: HTMLElement | null) => void
+    sum: (el: HTMLElement | null) => void,
+    line: (el: HTMLSpanElement | null) => void
 }
 const Row: FC<{ time: MotionValue<number>, i: number, refs: IRowRefs, frame: MotionValue<number> }> = ({ time, i, refs, frame }) => {
     const [a, b] = monthlyRanges[i].map(scalePos);
@@ -310,12 +311,14 @@ const Row: FC<{ time: MotionValue<number>, i: number, refs: IRowRefs, frame: Mot
     // Линия строки – после посадки; пунктир пустой полосы гаснет под ней
     const line = useTransform(time, (v) => ease(k(v, landAt(i), [0, R.line[1]])));
     const ghost = useTransform([frame, line], ([f, l]: number[]) => f * (1 - l));
+    // Линия под шапкой отрывается и падает на темы «Что входит» – дальше её рисует Terms
+    const lineOn = useTransform(monthlyWipe, (w) => !i && w >= 0 ? 0 : 1);
     const row = monthlyRows[i];
     return (
         <div ref={refs.row} className={`${m.row} ${s.row}`} role="row">
             <motion.span className={`${allerta.className} ${s.num}`} style={{ opacity: frame }} aria-hidden="true">{i + 1}</motion.span>
             <motion.span className={s.ghost} style={{ opacity: ghost }} aria-hidden="true" />
-            <motion.span className={s.rowLine} style={{ scaleX: line }} aria-hidden="true" />
+            <motion.span ref={refs.line} className={s.rowLine} style={{ scaleX: line, opacity: lineOn }} aria-hidden="true" />
             <motion.span ref={refs.label} className={s.who} role="cell" style={{ opacity: landed }}>
                 {row[0]}<span className={t.muted}> · {row[1]}</span>
             </motion.span>
@@ -360,10 +363,17 @@ const MonthlyScene: FC<IMonthlyScene> = ({ rider }) => {
     const bigLabel = useRef<HTMLSpanElement | null>(null);
     const bigSum = useRef<HTMLElement | null>(null);
     const cells = useRef(monthlyRows.map(() => ({
-        row: null as HTMLDivElement | null, label: null as HTMLSpanElement | null, track: null as HTMLSpanElement | null, sum: null as HTMLElement | null
+        row: null as HTMLDivElement | null, label: null as HTMLSpanElement | null, track: null as HTMLSpanElement | null, sum: null as HTMLElement | null,
+        line: null as HTMLSpanElement | null
     })));
     const notes = useRef<(HTMLLIElement | null)[]>([]);
     const [g, setG] = useState<IGeo>(noGeo);
+    // Верх таблицы с пояснениями после отпускания экрана: над падающей линией Terms таблица обрезается
+    const layoutTop = useMotionValue(0);
+    const wipe = useTransform([monthlyWipe, layoutTop], ([w, top]: number[]) =>
+        w < 0 ? 'none' : `inset(${Math.max(0, w - top)}px -60px -60px -60px)`);
+    // Экран держится и на время «Что входит» (TERMS_PATH): заголовок гаснет, когда выезжает заголовок Terms
+    const titleOn = useTransform(monthlyGone, (v) => 1 - v);
 
     // Время сцены – от скролла, сглаженное пружиной; при рывке (ползунок, End) пружина перескакивает к потолку отставания
     const { scrollY } = useScroll();
@@ -405,8 +415,6 @@ const MonthlyScene: FC<IMonthlyScene> = ({ rider }) => {
         // В конце заголовок с таблицей встают в середину экрана (над переключателем лабы)
         const top = at(fr).y + parseFloat(getComputedStyle(fr).paddingTop);
         const shift = Math.max(0, (floor - (bottom - top)) / 2 - top);
-        // Раздел отпускает экран с таблицей посередине – «Что входит» подтягивается под неё на свободное место
-        sec.style.setProperty('--pull', `${Math.max(0, Math.min(H - bottom - shift - 10, .5 * H))}px`);
 
         const font = (el: Element) => parseFloat(getComputedStyle(el).fontSize) || 1;
         const railBox = box(rl);
@@ -485,15 +493,18 @@ const MonthlyScene: FC<IMonthlyScene> = ({ rider }) => {
         screenH.set(H);
         pre.set((joinFrom - scenePos.y) / H);
 
-        // Низ таблицы там, где экран сцены отпускает скролл (экран – у низа раздела, таблица опущена на shift): оттуда
-        // Terms прорисовывает нижнюю линию таблицы и роняет её на темы
-        const lastRow = c[LAST].row;
-        if (lastRow) {
-            const release = scenePos.y + sec.offsetHeight - H;
-            const p = at(lastRow);
-            monthlyEnd.set({ x: scenePos.x + p.x, y: release + p.y + lastRow.offsetHeight + shift, w: lastRow.offsetWidth, release });
+        // Линия под шапкой и таблица с пояснениями в последнем кадре (таблица опущена на shift), от верха экрана:
+        // Terms на том же экране роняет эту линию на темы, она стирает над собой таблицу
+        const headLine = c[0].line;
+        layoutTop.set(tableBox.y + shift);
+        if (headLine) {
+            const p = at(headLine);
+            monthlyEnd.set({
+                x: p.x, y: p.y + shift, w: headLine.offsetWidth,
+                wide: { x: tableBox.x, w: tableBox.w }, bottom: tableBox.y + tableBox.h + shift
+            });
         }
-    }, [rider, pinY, screenH, pre]);
+    }, [rider, pinY, screenH, pre, layoutTop]);
 
     useLayoutEffect(() => {
         measure();
@@ -542,26 +553,27 @@ const MonthlyScene: FC<IMonthlyScene> = ({ rider }) => {
         row: (el) => { cells.current[i].row = el },
         label: (el) => { cells.current[i].label = el },
         track: (el) => { cells.current[i].track = el },
-        sum: (el) => { cells.current[i].sum = el }
+        sum: (el) => { cells.current[i].sum = el },
+        line: (el) => { cells.current[i].line = el }
     });
 
     return (
         <section
             ref={scene}
             className={`${sc.scene} ${s.scene}`}
-            style={{ '--scene-h': `calc(var(--screen-h) + ${PATH * 100}vh)` } as CSSProperties}
+            style={{ '--scene-h': `calc(var(--screen-h) + ${(PATH + TERMS_PATH) * 100}vh)` } as CSSProperties}
             aria-labelledby="monthly-title"
         >
             <div ref={screen} className={`${sc.screen} ${s.screen}`}>
                 <motion.div ref={frameEl} className={s.frame} style={{ y: frameY }}>
-                    <h2 id="monthly-title" className={`${ralewayBold.className} ${t.title}`}>
+                    <motion.h2 id="monthly-title" className={`${ralewayBold.className} ${t.title}`} style={{ opacity: titleOn }}>
                         <Rise progress={time} from={-.6} dur={.2}>{sections.monthly.title}</Rise>
-                    </h2>
-                    <p className={t.description}>
+                    </motion.h2>
+                    <motion.p className={t.description} style={{ opacity: titleOn }}>
                         <Rise progress={time} from={-.54} dur={.2}>{sections.monthly.text}</Rise>
-                    </p>
+                    </motion.p>
 
-                    <div ref={layout} className={m.layout}>
+                    <motion.div ref={layout} className={m.layout} style={{ clipPath: wipe }}>
                         <div role="table" aria-labelledby="monthly-title" className={m.table}>
                             <motion.div className={`${m.row} ${m.head} ${s.row} ${s.head}`} role="row" style={{ opacity: frame }}>
                                 <span role="columnheader">{monthlyHeads[0]}</span>
@@ -580,7 +592,7 @@ const MonthlyScene: FC<IMonthlyScene> = ({ rider }) => {
                         <ul className={m.notes}>
                             {monthlyNotes.map((_, i) => <Note key={i} time={time} i={i} noteRef={(el) => { notes.current[i] = el }} />)}
                         </ul>
-                    </div>
+                    </motion.div>
                 </motion.div>
 
                 {/* Крупная сцена – дубль строк для глаза; читается таблица выше */}

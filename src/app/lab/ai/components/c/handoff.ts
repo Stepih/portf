@@ -29,13 +29,23 @@ export const howTrackEl = motionValue<HTMLElement | null>(null);
 // 1 – копию шарика рисует Monthly, настоящий в HowWeWork прячется в тот же кадр. Ставит Monthly по своему прогрессу
 export const riderLeft = motionValue(0);
 
-// Стык Monthly → Terms (десктоп варианта C): под таблицей «Каждый месяц» прорисовывается нижняя линия, отрывается
-// и падает на темы. Ставит MonthlyScene: где низ таблицы, когда экран сцены отпустит скролл (координаты страницы),
-// и сам этот скролл (release). null – сцены нет: Terms живёт сам по себе
+// Стык Monthly → Terms (десктоп варианта C), на одном неподвижном экране: экран «Каждый месяц» держится ещё
+// TERMS_PATH экранов скролла, а липкий экран TermsScene лежит поверх него точь-в-точь. Линия под шапкой таблицы
+// чернеет, отрывается и падает на темы, стирая над собой таблицу и пояснения; на её месте собирается «Что входит».
+// Отпускают скролл оба экрана вместе
+export const TERMS_PATH = 1.15;
+// Ставит MonthlyScene: линия под шапкой, таблица с пояснениями (wide, низ – bottom) в последнем кадре, от верха экрана.
+// null – сцены нет: Terms живёт сам по себе
 export interface IMonthlyEnd {
     x: number,
     y: number,
     w: number,
-    release: number
+    wide: { x: number, w: number },
+    bottom: number
 }
 export const monthlyEnd = motionValue<IMonthlyEnd | null>(null);
+// Где сейчас падающая линия (от верха экрана): MonthlyScene обрезает над ней таблицу и прячет свою линию.
+// −1 – линия на месте. Ставит Terms по своему времени
+export const monthlyWipe = motionValue(-1);
+// 0–1: заголовок «Каждый месяц» гаснет, когда выезжает заголовок «Что входит». Ставит Terms
+export const monthlyGone = motionValue(0);
