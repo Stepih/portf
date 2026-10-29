@@ -9,7 +9,7 @@ import { allerta, ralewayBold } from "@/app/fonts/fonts";
 import { usePrefersReducedMotion } from "@/hooks/usePrefersReducedMotion";
 import Rise from "../Rise";
 import { clamp01, ease, easeOut, easeOutBack, span, SMOOTH } from "../scene";
-import { howJoin, howTook, IHowJoin } from "../c/handoff";
+import { howJoin, howTook, howTrackEl, IHowJoin, riderLeft } from "../c/handoff";
 import { flow, flowText, howTopics, sections } from "../../placeholders";
 
 // Тело шага (вариант C), в единицах drop – доля промежутка между шагами: кусок линии падает fall, подпись выезжает
@@ -83,7 +83,8 @@ interface IStep {
 const Step: FC<IStep> = ({ progress, intro, drop, i, count, label }) => {
     const reduceMotion = usePrefersReducedMotion();
     const at = i / (count - 1);
-    const on = useTransform(progress, (v) => clamp01((v - at + .04) / .06));
+    // Последний шаг – чуть раньше конца, чтобы в конце линии он горел целиком (шарик с него уезжает в Monthly)
+    const on = useTransform(progress, (v) => clamp01((v - Math.min(at, .98) + .04) / .06));
     // Без intro – постоянные 1: источник тот же прогресс, чтобы хуки не зависели от пропа
     const from = Math.abs(i - (count - 1) / 2) / ((count - 1) / 2) * .3;
     const pop = useTransform(intro ?? progress, (v) => intro ? easeOutBack(span(v, from, .45)) : 1);
@@ -112,6 +113,7 @@ interface IHowFlow {
     // Только в копии AgentDeck: появление шагов, линия-основа (прорисовывается от середины, 0–1) и шарик (из большого шара)
     intro?: MotionValue<number>,
     base?: MotionValue<number>,
+    // (в разделе варианта C – прозрачность шарика: прячется, когда его копия падает в шкалу Monthly)
     rider?: MotionValue<number>,
     // Вариант C, десктоп: тела шагов, время в шагах (StepBody)
     drop?: MotionValue<number>,
@@ -231,6 +233,13 @@ const HowWeWork: FC<IHowWeWork> = ({ joined = false }) => {
     // Десктоп варианта C: тела шагов уже выехали в сцене AgentDeck, тем под линией нет
     const steps = linked && join.steps;
     const landed = useMotionValue(flow.length + DROP_TAIL);
+    // Шарик с конца линии падает в шкалу Monthly: Monthly берёт дорожку для замера и рисует копию, свой шарик прячется
+    const riderOn = useTransform(riderLeft, (v) => 1 - v);
+    useLayoutEffect(() => {
+        if (!steps) return;
+        howTrackEl.set(track.current);
+        return () => howTrackEl.set(null);
+    }, [steps]);
 
     const { scrollYProgress } = useScroll({ target: line, offset: ['start 0.85', 'end 0.55'] });
     const progress = useSpring(scrollYProgress, SMOOTH);
@@ -298,6 +307,7 @@ const HowWeWork: FC<IHowWeWork> = ({ joined = false }) => {
             <HowFlow
                 progress={linked ? done : progress}
                 drop={steps ? landed : undefined}
+                rider={steps ? riderOn : undefined}
                 fade={steps ? undefined : trackOpacity}
                 style={top}
                 lineRef={line}

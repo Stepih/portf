@@ -22,3 +22,9 @@ export const howJoin = motionValue<IHowJoin | null>(null);
 // 1 – экран AgentDeck отпустил скролл: дальше верх рисует сам HowWeWork, копия сцены прячется. Ставит AgentDeck по
 // скроллу (не по сглаженному прогрессу): с этого кадра оба едут вместе со страницей, и смена не видна
 export const howTook = motionValue(0);
+
+// Стык HowWeWork → Monthly (десктоп варианта C): малый шарик с конца линии шагов падает в начало шкалы «Каждый месяц».
+// Дорожка линии шагов HowWeWork – от её конца стартует копия шарика; ставит HowWeWork, пока у шагов есть тела (steps)
+export const howTrackEl = motionValue<HTMLElement | null>(null);
+// 1 – копию шарика рисует Monthly, настоящий в HowWeWork прячется в тот же кадр. Ставит Monthly по своему прогрессу
+export const riderLeft = motionValue(0);

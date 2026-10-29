@@ -2,6 +2,31 @@
 
 $line: rgba(128, 128, 128, 0.45);
 
+// Копия малого шарика (десктоп варианта C) летит от линии шагов HowWeWork – от верха раздела вверх
+.section {
+    position: relative;
+}
+
+// Шарик – .rider из Sections.module.scss, но в своём слое: место задаёт transform, над текстом обоих разделов
+.section .ball {
+    top: 0;
+    left: 0;
+    z-index: 3;
+
+    margin: 0;
+    pointer-events: none;
+}
+
+// Сел – заливается чернилами, как капсула шкалы
+.ballInk {
+    position: absolute;
+    inset: 0;
+
+    background: var(--color-text-100);
+    border-radius: 50%;
+    transition: vars.$transition;
+}
+
 .layout {
     display: grid;
     grid-template-columns: minmax(0, 2.2fr) minmax(0, 1fr);
