@@ -101,13 +101,13 @@ export const howTopics = [
 ];
 
 export const monthlyHeads = ['Агент', 'Объём в месяц', 'В месяц'];
-export const monthlyRows = [
-    ['Агент и поток', 'объём', '000–0 000 ₽'],
-    ['Агент и поток', 'объём', '0 000–00 000 ₽'],
-    ['Агент и поток', 'объём', '0 000–00 000 ₽'],
-];
-// Где капсула диапазона лежит на шкале (₽ в месяц) – ориентиры из макета page_C_ai, подписи пока заглушки
+// Где капсула диапазона лежит на шкале (₽ в месяц) – ориентиры из макета page_C_ai, не прайс
 export const monthlyRanges = [[200, 2300], [1700, 13400], [2500, 10600]];
+// Сумма строки – подпись той же капсулы: на десктопе варианта C её набегает счётчик, и итог счётчика совпадает с
+// таблицей. Заменить вместе с monthlyRanges, когда будут цены. Неразрывные пробелы – в суммах, как в offer.ts
+export const monthlyRub = (v: number) => `${v.toLocaleString('ru-RU')} ₽`;
+export const monthlySum = ([a, b]: number[]) => `${a.toLocaleString('ru-RU')}–${monthlyRub(b)}`;
+export const monthlyRows = monthlyRanges.map((range) => ['Агент и поток', 'объём', monthlySum(range)]);
 export const monthlyScale = [100, 1000, 10000];
 export const monthlyNotes = ['Пояснение – от чего зависит сумма', 'Пояснение – кто и кому платит', 'Пояснение – одна строка'];
 

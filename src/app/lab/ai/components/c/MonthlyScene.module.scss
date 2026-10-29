@@ -1,0 +1,240 @@
+@use '/src/styles/variables.scss' as vars;
+
+// «Каждый месяц», десктоп варианта C: липкая сцена (scene.module.scss). Вверху экрана – заголовок и компактная таблица
+// (её строки встают по очереди), ниже – крупная сцена: подпись и сумма строки, шкала с капсулой, пояснение
+$line: rgba(128, 128, 128, 0.45);
+
+// Отступ от HowWeWork – как у разделов (100px), с учётом верхнего поля экрана. Снизу «Что входит» подтягивается
+// под таблицу на свободное место экрана (--pull ставит компонент)
+.scene {
+    z-index: 1;
+
+    margin-top: 44px;
+    margin-bottom: calc(-1 * var(--pull, 0px));
+
+    // Поля крупной сцены
+    --gutter: max(40px, 4vw);
+}
+
+// Шарик влетает в экран сверху, ещё до того, как экран встал, – экран его не обрезает
+.scene .screen {
+    overflow: visible;
+}
+
+.frame {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+
+    max-width: 1060px;
+    margin: 0 auto;
+    padding-top: 56px;
+}
+
+// ---------- Компактная таблица ----------
+// Шапка без линии; над каждой строкой – своя линия, прорисовывается, пока строка уезжает в таблицу
+.head {
+    border-top: none;
+}
+
+.row {
+    position: relative;
+    border-top-color: transparent;
+}
+
+.rowLine {
+    position: absolute;
+    top: -1.5px;
+    left: 0;
+    right: 0;
+
+    height: 1.5px;
+
+    background: $line;
+    transform-origin: 0 50%;
+}
+
+// Высота строки – доля шрифта, как у крупных подписей: смена крупной строки на компактную не сдвигает текст
+.who,
+.bigLabel,
+.tick,
+.bigTick {
+    line-height: 1.25;
+}
+
+.value,
+.bigSum {
+    line-height: 1.2;
+    font-variant-numeric: tabular-nums;
+}
+
+// ---------- Крупная сцена ----------
+// Место по высоте (top) ставит компонент: под таблицей, посередине свободного места
+.stage {
+    position: absolute;
+    top: 0;
+    left: var(--gutter);
+    right: var(--gutter);
+
+    display: flex;
+    flex-direction: column;
+
+    pointer-events: none;
+}
+
+// Подпись слева, сумма справа – по одной для всех строк, лежат друг на друге
+.bigHead {
+    position: relative;
+
+    height: 1.2em;
+    margin-bottom: 30px;
+
+    font-size: clamp(2.6rem, 5vw, 4.75rem);
+}
+
+.bigLabel {
+    position: absolute;
+    left: 0;
+    bottom: 0.12em;
+
+    font-size: clamp(1.6rem, 2.8vw, 2.5rem);
+    white-space: nowrap;
+    color: var(--color-text-100);
+    transform-origin: 0 0;
+    transition: vars.$transition;
+}
+
+.bigSum {
+    position: absolute;
+    top: 0;
+    right: 0;
+
+    white-space: nowrap;
+    color: var(--color-text-100);
+    transform-origin: 100% 0;
+    transition: vars.$transition;
+}
+
+// Отметки – размером с заголовок раздела; загоревшаяся – чернилами поверх серой
+.bigScale {
+    position: relative;
+
+    height: 1.25em;
+    margin-bottom: 12px;
+
+    font-size: clamp(1.6rem, 2.8vw, 2.4rem);
+}
+
+.bigTick {
+    position: absolute;
+    top: 0;
+
+    white-space: nowrap;
+    color: var(--color-text-muted);
+    translate: -50% 0;
+    transform-origin: 50% 0;
+    transition: vars.$transition;
+
+    &:first-child {
+        translate: 0 0;
+        transform-origin: 0 0;
+    }
+}
+
+.tickInk {
+    position: absolute;
+    inset: 0;
+
+    color: var(--color-text-100);
+    transition: vars.$transition;
+}
+
+// Шкала: волосяная линия с насечками, капсула толщиной с катящийся шар
+.rail {
+    position: relative;
+
+    height: 44px;
+    margin-bottom: 28px;
+}
+
+.line {
+    position: absolute;
+    top: 21px;
+    left: 0;
+
+    width: 100%;
+    height: 2px;
+
+    background: $line;
+    transform-origin: 0 0;
+}
+
+.mark {
+    position: absolute;
+    top: 12px;
+
+    width: 1.5px;
+    height: 20px;
+    margin-left: -0.75px;
+
+    background: $line;
+}
+
+.bigCap {
+    position: absolute;
+    top: 0;
+    left: 0;
+
+    background: var(--color-text-100);
+    transition: vars.$transition;
+}
+
+// Пояснение – та же плашка, что в таблице, крупнее в 1,35 раза (поля – в em): уезжает в неё без перестройки строк
+.noteSlot {
+    position: relative;
+
+    height: calc(1.45em + 1.75em);
+
+    font-size: 1.35rem;
+}
+
+.bigNote {
+    position: absolute;
+    top: 0;
+    right: 0;
+
+    padding: 0.875em 1em;
+
+    font-size: 1em;
+    line-height: 1.45;
+    white-space: nowrap;
+    color: var(--color-text-muted);
+
+    background: var(--color-frost);
+    border-radius: 0.8125em;
+    transform-origin: 0 0;
+    transition: vars.$transition;
+}
+
+// ---------- Шар ----------
+// Как шар AgentDeck: размер – от компонента, место – через x / y, слои – из OrbScene.module.scss
+.ball {
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: 5;
+
+    pointer-events: none;
+}
+
+.ballShell {
+    inset: 0;
+    border-radius: 50%;
+}
+
+.ballLight {
+    position: absolute;
+    inset: 0;
+    z-index: 3;
+}
