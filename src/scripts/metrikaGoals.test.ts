@@ -33,6 +33,13 @@ describe("linkGoal", () => {
         });
     });
 
+    it("«Что входит →» из карточки – services_more с услугой (SERVICES_PLAN У4)", () => {
+        expect(linkGoal({ href: `${origin}/ai`, origin, page: "/", goal: "services_more", id: "ai" })).toEqual({
+            goal: "services_more",
+            params: { page: "/", id: "ai" },
+        });
+    });
+
     it("обычные ссылки и неизвестные цели не считаются", () => {
         expect(linkGoal({ href: `${origin}/music`, origin, page: "/" })).toBeNull();
         expect(linkGoal({ href: `${origin}/music`, origin, page: "/", goal: "Музыкальное творчество" })).toBeNull();

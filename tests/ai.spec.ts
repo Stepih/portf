@@ -95,6 +95,18 @@ test('/ai: после прыжка за стык «Каждый месяц» →
     await expect.poll(hidden, { timeout: 5000 }).toBe(true);
 });
 
+// SERVICES_PLAN У4: у /ai своя картинка-превью, а не общая картинка сайта
+test('/ai: своё превью ссылки (Open Graph)', async ({ page }) => {
+    await page.goto('/ai');
+    const image = await page.locator('meta[property="og:image"]').getAttribute('content');
+    expect(new URL(image!).pathname).toBe('/ai/opengraph-image');
+    await expect(page.locator('meta[property="og:title"]')).toHaveAttribute('content', /ИИ-агенты/);
+
+    const response = await page.request.get(new URL(image!).pathname);
+    expect(response.status()).toBe(200);
+    expect(response.headers()['content-type']).toBe('image/png');
+});
+
 test.describe('уменьшить движение', () => {
     test.use({ reducedMotion: 'reduce' });
 

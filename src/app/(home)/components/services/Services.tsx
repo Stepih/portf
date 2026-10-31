@@ -4,15 +4,19 @@ import Link from "next/link";
 import s from './Services.module.scss'
 import { ralewayBold, ralewayRegular } from "@/app/fonts/fonts";
 import { portfolioPageURL } from "@/constants/urls";
+import { GOALS } from "@/constants/analytics";
+import Arrow from '@/assets/_img/icons/arrow-s-right.svg'
+
 import ChatButton from "../chat/ChatButton";
-import { services, servicesButton, servicesCasesLabel, servicesCommon, servicesDescription, servicesExamplesLabel, servicesTitle } from "@/data/offer";
+import { services, servicesButton, servicesCasesLabel, servicesCommon, servicesDescription, servicesExamplesLabel, servicesMoreLabel, servicesTitle } from "@/data/offer";
 import { portfolioWorks } from "@/data/portfolio";
 import { portfolioCases } from "@/data/portfolioCases";
 import { serviceCases } from "@/scripts/services";
 import ContactLink from "../contact-link/ContactLink";
 
 // «Услуги и цены» (SALES_PLAN 3.4): три вида сайтов в ряд, ИИ – широкой карточкой под ними.
-// Карточки из offer.ts, кейс-пример и кнопка в форму главной с услугой (Д13); в карточке ИИ – примеры задач и кнопка демо-чата (К3.2).
+// Карточки из offer.ts, кейс-пример и кнопка в форму главной с услугой (Д13); в карточке ИИ – примеры задач и кнопка демо-чата (К3.2),
+// ссылка «Что входит →» на страницу услуги.
 // Серверный: тексты кейсов в клиентский бандл не попадают
 const Services: FC = () => {
     return (
@@ -72,6 +76,20 @@ const Services: FC = () => {
                                             </span>
                                         ))}
                                     </p>
+                                )}
+
+                                {/* Состав, условия и FAQ – на странице услуги (SERVICES_PLAN, раскладка C) */}
+                                {service.more && (
+                                    <Link
+                                        href={service.more}
+                                        className={`${ralewayBold.className} ${s.more}`}
+                                        data-goal={GOALS.servicesMore}
+                                        data-goal-id={service.id}
+                                        aria-label={`${servicesMoreLabel}: ${service.title}`}
+                                    >
+                                        {servicesMoreLabel}
+                                        <Arrow className={s.moreArrow} aria-hidden="true" />
+                                    </Link>
                                 )}
                             </div>
 

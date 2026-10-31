@@ -221,6 +221,50 @@
         }
     }
 
+    // «Что входит →» – последней строкой низа карточки: строка текста, а цель касания – 44px за счёт ::before
+    .more {
+        position: relative;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+
+        margin-top: 10px;
+
+        font-size: 1rem;
+        color: var(--color-text-100);
+        @include vars.hover-underline;
+
+        &::before {
+            content: "";
+            position: absolute;
+            inset: -13px -8px;
+        }
+
+        &:hover {
+            text-decoration-color: currentColor;
+        }
+
+        &:focus-visible {
+            @include vars.focus-ring(2px);
+        }
+    }
+
+    .moreArrow {
+        flex: none;
+        width: 6px;
+        height: auto;
+        transition: transform 0.3s ease-out;
+
+        path {
+            stroke: var(--color-text-100);
+            transition: vars.$transition;
+        }
+    }
+
+    .more:hover .moreArrow {
+        transform: translateX(3px);
+    }
+
     .button {
         display: flex;
         align-items: center;
@@ -277,6 +321,12 @@
 @media screen and (max-width: 600px) {
     .services {
         margin-top: 70px;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .services .more:hover .moreArrow {
+        transform: none;
     }
 }
 

@@ -1,7 +1,7 @@
 import { expect, Locator, Page, test } from '@playwright/test';
 import { ServiceId } from '../src/interfaces/offer';
 import { hiddenPages } from '../src/constants/urls';
-import { contactTitle, faqContactLink, industriesOtherQuestion, industryChipCount, faqTitle, formButton, heroPrice, heroTitleSlide, moreLinks, moreTitle, offerButtonsNote, offerFaq, offerReasons, offerSteps, offerTgButton, offerTitle, offerTrustLine, services, servicesTitle, stepsContactLink } from '../src/data/offer';
+import { contactTitle, faqContactLink, industriesOtherQuestion, industryChipCount, faqTitle, formButton, heroPrice, heroTitleSlide, moreLinks, moreTitle, offerButtonsNote, offerFaq, offerReasons, offerSteps, offerTgButton, offerTitle, offerTrustLine, services, servicesMoreLabel, servicesTitle, stepsContactLink } from '../src/data/offer';
 import { contactIncomplete, formSuccessText, formSuccessTitle, inputsListFeedback } from '../src/data/inputsFeedBack';
 import { chatButtonText, chatButtonTitle, chatFabLabel, chatLeadOpen, chatLeadSuccess } from '../src/data/chat';
 import { footerName, footerSince, footerTg } from '../src/data/footer';
@@ -1218,6 +1218,34 @@ for (const width of [1400, 375]) {
                 return new Set([...range.getClientRects()].map((r) => Math.round(r.top))).size;
             })).toBe(1);
         }
+    });
+}
+
+// SERVICES_PLAN У4: «Что входит →» – только в карточке ИИ (у сайтов – с /sites в У5), ведёт на /ai, цель Метрики
+// services_more; строка текста, но цель касания не меньше 44px
+for (const width of [1400, 375]) {
+    test(`карточка ИИ: «Что входит» ведёт на /ai, ${width}`, async ({ page }) => {
+        await page.setViewportSize({ width, height: 900 });
+        await page.goto('/');
+
+        const region = page.getByRole('region', { name: servicesTitle });
+        await expect(region.getByRole('link', { name: new RegExp(`^${servicesMoreLabel}:`) })).toHaveCount(1);
+        const ai = services.find((service) => service.id === 'ai')!;
+        const link = region.getByRole('link', { name: `${servicesMoreLabel}: ${ai.title}` });
+        await expect(link).toHaveAttribute('href', '/ai');
+        await expect(link).toHaveAttribute('data-goal', 'services_more');
+        await expect(link).toHaveAttribute('data-goal-id', 'ai');
+
+        await link.scrollIntoViewIfNeeded();
+        const target = await link.evaluate((el) => {
+            const box = el.getBoundingClientRect();
+            const before = getComputedStyle(el, '::before');
+            return box.height - parseFloat(before.top) - parseFloat(before.bottom);
+        });
+        expect(target).toBeGreaterThanOrEqual(44);
+
+        await link.click();
+        await expect(page).toHaveURL(/\/ai$/);
     });
 }
 

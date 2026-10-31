@@ -4,7 +4,7 @@
 
 import { IFaqItem, IHeroSlide, IMoreLink, IOfferButton, IOfferReason, IOfferStep, IService } from "@/interfaces/offer"
 import { PortfolioIndustry } from "@/interfaces/portfolio"
-import { hiddenPages, mediaPageURL, musicPageURL, myTg, portfolioTg } from "@/constants/urls"
+import { aiPageURL, hiddenPages, mediaPageURL, musicPageURL, myTg, portfolioTg } from "@/constants/urls"
 import { plural, portfolioStats, yearsRange } from "@/scripts/portfolioStats"
 
 // h1 главной. «⁠» после дефиса не даёт строке разорваться на «ИИ-» (на телефоне)
@@ -105,6 +105,8 @@ export const servicesCommon = 'В каждом сайте: дизайн под �
 export const servicesCasesLabel = 'Так уже сделано:'
 export const servicesButton = 'Узнать цену'
 export const servicesExamplesLabel = 'Например:'
+// Ссылка на страницу услуги (SERVICES_PLAN, раскладка C): состав, условия и FAQ – там, на главной – лицо карточки
+export const servicesMoreLabel = 'Что входит'
 
 export const services: IService[] = [
     {
@@ -163,6 +165,8 @@ export const services: IService[] = [
         // Сумма – только в подробностях: у звонков она в разы выше, чем у заявок (copy_choices)
         note: 'Модель и сервер – отдельно, каждый месяц',
         caseIds: ['legiscan'],
+        // У сайтов ссылка появится вместе со страницей /sites (У5)
+        more: aiPageURL,
         wide: true,
         demoChat: true
     }

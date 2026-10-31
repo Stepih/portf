@@ -9,6 +9,8 @@ export const GOALS = {
     ctaClick: 'cta_click',
     industryClick: 'industry_click',
     serviceClick: 'service_click',
+    // «Что входит →» из карточки услуги на главной – на страницу услуги (SERVICES_PLAN У4)
+    servicesMore: 'services_more',
     moreClick: 'more_click',
     // Демо-чат (CONVERSION_PLAN К3.2): окно открыто, вопрос задан, контакт оставлен в чате
     chatOpen: 'chat_open',
