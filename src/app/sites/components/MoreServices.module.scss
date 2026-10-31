@@ -17,6 +17,10 @@
 }
 
 .list {
+    margin: 0;
+    padding: 0;
+
+    list-style: none;
     columns: 2;
     column-gap: 40px;
 

@@ -45,3 +45,17 @@ export interface ISitesTopic {
     // Доли платежей для шкал «Оплаты», по пункту на шкалу (У5а)
     splits?: number[][]
 }
+
+// Сцена сборки (У5а): выноски состава группами по шагам окна. at – номер шага (Mocks.tsx), at = steps – после сборки;
+// label – подпись группы («Каталог без корзины»)
+export interface IBuildCallouts {
+    at: number,
+    label?: string,
+    items: string[]
+}
+
+export interface IBuild {
+    // Шагов сборки в окне
+    steps: number,
+    callouts: IBuildCallouts[]
+}

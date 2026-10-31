@@ -47,7 +47,13 @@ describe("sitesPage", () => {
     // У5а: у каждого вида сайта – выноски сцены сборки; путь проекта начинается с бесплатных шагов подряд
     it("сцена сборки и путь проекта", () => {
         expect(Object.keys(build)).toEqual(Object.keys(sitesDetails));
-        for (const item of Object.values(build)) expect(item.callouts.length).toBeGreaterThanOrEqual(3);
+        for (const item of Object.values(build)) {
+            expect(item.callouts.length).toBeGreaterThanOrEqual(3);
+            // Группа – на шаге окна или сразу после сборки, шаги по порядку
+            const steps = item.callouts.map((group) => group.at);
+            expect(steps).toEqual([...steps].sort((a, b) => a - b));
+            expect(Math.max(...steps)).toBeLessThanOrEqual(item.steps);
+        }
         const free = projectPath.steps.map((step) => !!step.free);
         expect(free[0]).toBe(true);
         expect(free.indexOf(false)).toBe(free.lastIndexOf(true) + 1);
@@ -55,7 +61,7 @@ describe("sitesPage", () => {
 
     // V6: перед тире в подписях сцены – неразрывный пробел, тире не уходит в начало строки
     it("в выносках и шагах перед тире – неразрывный пробел", () => {
-        const lines = [head.hint, ...Object.values(build).flatMap((item) => item.callouts), ...projectPath.steps.map((step) => step.text)];
+        const lines = [head.hint, ...Object.values(build).flatMap((item) => item.callouts.flatMap((group) => group.items)), ...projectPath.steps.map((step) => step.text)];
         for (const line of lines) expect(line).not.toMatch(/ –/);
     });
 

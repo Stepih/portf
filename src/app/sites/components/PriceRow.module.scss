@@ -1,0 +1,52 @@
+@use '/src/styles/variables.scss' as vars;
+
+// Строка прайса «Ещё делаю» (и опций сцены сборки): волосяная линия сверху, цена справа в одну строку
+.row {
+    display: flex;
+    align-items: baseline;
+    gap: 16px;
+
+    padding: 14px 0;
+
+    font-size: 1.05rem;
+    line-height: 1.35;
+
+    border-top: 1px solid rgba(128, 128, 128, 0.3);
+}
+
+.name {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    gap: 3px;
+    min-width: 0;
+
+    text-wrap: pretty;
+}
+
+.tail {
+    font-size: 0.95rem;
+    color: var(--color-text-muted);
+    transition: vars.$transition;
+}
+
+.cost {
+    flex: none;
+
+    font-size: 1.25rem;
+    white-space: nowrap;
+}
+
+.plain .name {
+    color: var(--color-text-muted);
+}
+
+@media screen and (max-width: 600px) {
+    .row {
+        font-size: 1rem;
+    }
+
+    .cost {
+        font-size: 1.05rem;
+    }
+}

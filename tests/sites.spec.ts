@@ -38,13 +38,14 @@ test('/sites: разделы сайтов – цена, срок и кнопка
         const text = norm(await section.textContent());
         expect(text).toContain(norm(service.price));
         expect(text).toContain(norm(service.term));
+        // Фазы сцены: заголовки есть все, видна – текущая
         for (const label of [columns.included, columns.options, columns.excluded, columns.payment]) {
-            await expect(section.getByRole('heading', { level: 3, name: label })).toBeVisible();
+            await expect(section.getByRole('heading', { level: 3, name: label, includeHidden: true })).toHaveCount(1);
         }
         const button = section.getByRole('link', { name: `${servicesButton}: ${service.title}` });
         await expect(button).toHaveAttribute('href', contactHref(service.id));
         await expect(button).toHaveAttribute('data-goal', 'service_click');
-        await expect(section.getByRole('link', { name: columns.common }).first()).toHaveAttribute('href', `#${commonId}`);
+        await expect(section.locator(`a[href="#${commonId}"]`).first()).toHaveAttribute('href', `#${commonId}`);
     }
 });
 
@@ -98,46 +99,58 @@ test('/sites: FAQ без сумм, первый вопрос раскрыт; ф�
     await expect(tg).toHaveAttribute('target', '_blank');
 });
 
-// У5а: сцена сборки липкая, по скроллу в окне складывается сайт – выноски появляются по шагам, в конце пути
-// магазина заказ оплачен
-test('/sites: сцена сборки – выноски по шагам, заказ оплачен в конце пути магазина', async ({ page }) => {
+// У5а: одна липкая сцена на вид – окно собирается, колонка у окна сменяется по фазам: состав → опции → «Не входит» →
+// оплата; на оплате встают кейсы, в окне – заказ оплачен и пунктирные опции
+test('/sites: сцена сборки – фазы по скроллу, в конце оплата, кейсы и заказ оплачен', async ({ page }) => {
     await page.setViewportSize({ width: 1400, height: 900 });
     await page.goto('/sites');
 
     const shop = page.locator('section#shop');
-    const callouts = shop.getByRole('list', { name: columns.included }).first().getByRole('listitem');
-    await expect(callouts).toHaveCount(build.shop.callouts.length);
+    const phase = (label: string) => shop.locator(`section[aria-label="${label}"]`);
+    const { top, len } = await shop.evaluate((el) => {
+        const scene = el.firstElementChild as HTMLElement;
+        const path = scene.firstElementChild as HTMLElement;
+        return { top: scene.getBoundingClientRect().top + window.scrollY, len: path.offsetHeight - window.innerHeight };
+    });
 
-    const top = await shop.evaluate((el) => el.getBoundingClientRect().top + window.scrollY);
     await page.evaluate((y) => window.scrollTo(0, y), top);
-    await page.waitForTimeout(800);
-    // В начале пути – собран только первый шаг
-    await expect(callouts.first()).toHaveCSS('opacity', '1');
-    await expect(callouts.last()).toHaveCSS('opacity', '0');
+    await page.waitForTimeout(900);
+    await expect(phase(columns.included)).toHaveCSS('opacity', '1');
+    await expect(phase(columns.payment)).toHaveCSS('opacity', '0');
+    await expect(shop.getByText(build.shop.callouts[0].items[0])).toBeVisible();
 
-    // Конец пути: 2,5 экрана – окно на месте, все выноски видны, оплата прошла
-    await page.evaluate((y) => window.scrollTo(0, y + 900 * 2.3), top);
+    // Фаза опций: строки с ценой и пунктирные блоки в окне
+    await page.evaluate((y) => window.scrollTo(0, y), top + len * .7);
     await page.waitForTimeout(1200);
-    await expect(callouts.last()).toHaveCSS('opacity', '1');
+    await expect(phase(columns.options)).toHaveCSS('opacity', '1');
+    await expect(phase(columns.included)).toHaveCSS('opacity', '0');
+
+    // Конец пути: оплата, кейсы, заказ оплачен
+    await page.evaluate((y) => window.scrollTo(0, y), top + len * .97);
+    await page.waitForTimeout(1200);
+    await expect(phase(columns.payment)).toHaveCSS('opacity', '1');
+    await expect(shop.getByText(columns.cases)).toBeVisible();
     await expect(shop.getByText(buildUi.paid)).toHaveCSS('opacity', '1');
     await expect(shop.locator('figure')).toBeInViewport();
 });
 
-test('/sites: без движения – сцены обычными блоками, сайт собран, все выноски видны', async ({ page }) => {
+test('/sites: без движения – сцены обычными блоками, сайт собран, все фазы видны', async ({ page }) => {
     await page.emulateMedia({ reducedMotion: 'reduce' });
     await page.setViewportSize({ width: 1400, height: 900 });
     await page.goto('/sites');
 
     for (const id of ['landing', 'corporate', 'shop'] as const) {
         const section = page.locator(`section#${id}`);
-        const callouts = section.getByRole('list', { name: columns.included }).first().getByRole('listitem');
-        for (const item of await callouts.all()) await expect(item).toHaveCSS('opacity', '1');
+        for (const label of [columns.included, columns.options, columns.excluded, columns.payment]) {
+            await expect(section.locator(`section[aria-label="${label}"]`)).toHaveCSS('opacity', '1');
+        }
+        await expect(section.getByText(columns.cases)).toBeVisible();
     }
     await expect(page.locator('section#landing').getByText(buildUi.lead)).toHaveCSS('opacity', '1');
-    // Сцена не липкая: окно уходит вверх вместе со страницей
-    const figure = page.locator('section#landing figure');
-    const before = (await figure.boundingBox())!.y;
+    // Сцена не липкая: колонка уходит вверх вместе со страницей
+    const heading = page.locator('section#landing h2');
+    const before = (await heading.boundingBox())!.y;
     await page.mouse.wheel(0, 600);
     await page.waitForTimeout(400);
-    expect((await figure.boundingBox())!.y).toBeLessThan(before - 400);
+    expect((await heading.boundingBox())!.y).toBeLessThan(before - 400);
 });

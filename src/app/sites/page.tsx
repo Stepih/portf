@@ -13,15 +13,14 @@ import { serviceCases } from "@/scripts/services";
 import SitesHead from "./components/SitesHead";
 import SitesNav from "./components/SitesNav";
 import BuildScene from "./components/build/BuildScene";
-import SiteDetails from "./components/SiteDetails";
 import CommonTerms from "./components/CommonTerms";
 import MoreServices from "./components/MoreServices";
 import SitesFaq from "./components/SitesFaq";
 import SitesCta from "./components/SitesCta";
 
-// Страница /sites (SERVICES_PLAN У5, раскладка – У5а): по аналогии с /ai. Каждый вид сайта – сцена «Сайт собирается
-// на глазах» (окно браузера по скроллу, цена и «Узнать цену» рядом – лицо карточки главной, offer.ts), под ней – прайс
-// опций, состав и кейсы. Дальше путь проекта и темы «Для всех сайтов», «Ещё делаю», FAQ, финал.
+// Страница /sites (SERVICES_PLAN У5, раскладка – У5а): по аналогии с /ai. Каждый вид сайта – одна сцена «Сайт
+// собирается на глазах» (окно браузера по скроллу, рядом – состав, опции, «Не входит» и оплата по фазам; цена и
+// «Узнать цену» – лицо карточки главной, offer.ts; в конце – кейсы). Дальше путь проекта и темы «Для всех сайтов», «Ещё делаю», FAQ, финал.
 // Тексты – src/data/sitesPage.ts (marketing:draft-content). Не в поиске и не в sitemap (next-sitemap.config.js) –
 // до команды владельца после финальной проверки
 const title = 'Сайты под ключ: лендинг, сайт компании, магазин – Степан Картузов';
@@ -57,11 +56,10 @@ const SitesPage: FC = () => {
                     cover: portfolioWorks.find((w) => w.id === work.id)?.cover ?? '',
                     text: details.cases.find((c) => c.id === work.id)?.text,
                 }));
-                // Секция с якорем (/sites#corporate из карточки главной) – от начала сцены до кейсов
+                // Секция с якорем (/sites#corporate из карточки главной) – сцена целиком
                 return (
                     <section key={service.id} id={service.id} className={s.site} aria-labelledby={`${service.id}-title`}>
-                        <BuildScene service={{ ...service, id: service.id }} callouts={build[service.id].callouts} />
-                        <SiteDetails details={details} cases={cases} />
+                        <BuildScene service={{ ...service, id: service.id }} build={build[service.id]} details={details} cases={cases} />
                     </section>
                 );
             })}

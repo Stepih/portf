@@ -1,8 +1,9 @@
 @use '/src/styles/variables.scss' as vars;
 
 // Сцена «Сайт собирается на глазах» (У5а). Липкий экран и путь – scene.module.scss страницы /ai; здесь раскладка:
-// выноски | окно браузера | цена. Сверху экрана – место под липкую навигацию разделов (SitesNav, 12px + 56px)
+// колонка фаз | окно браузера | цена и кейсы. Сверху экрана – место под липкую навигацию разделов (SitesNav)
 $hairline: rgba(128, 128, 128, 0.3);
+$appear: opacity .45s ease-out, transform .45s ease-out;
 
 .scene {
     scroll-margin-top: 0;
@@ -19,7 +20,7 @@ $hairline: rgba(128, 128, 128, 0.3);
     pointer-events: none;
 }
 
-.callouts,
+.column,
 .window,
 .side {
     pointer-events: auto;
@@ -27,9 +28,9 @@ $hairline: rgba(128, 128, 128, 0.3);
 
 .stage {
     display: grid;
-    grid-template-columns: minmax(200px, 240px) minmax(0, 780px) minmax(240px, 290px);
+    grid-template-columns: minmax(250px, 300px) minmax(0, 760px) minmax(240px, 280px);
     align-items: center;
-    gap: 48px;
+    gap: 44px;
 
     width: 100%;
     max-width: 1440px;
@@ -37,48 +38,53 @@ $hairline: rgba(128, 128, 128, 0.3);
     color: var(--color-text-100);
 }
 
-// ---------- Выноски ----------
-.callouts {
+// ---------- Колонка фаз: одна фаза на экране, строки открываются по скроллу ----------
+.column {
+    position: relative;
+
+    display: grid;
+    align-self: stretch;
+}
+
+.phase {
+    grid-area: 1 / 1;
+
     display: flex;
     flex-direction: column;
-    gap: 22px;
+    justify-content: center;
+
+    opacity: 0;
+    transform: translateY(16px);
+    visibility: hidden;
+    transition: $appear, visibility 0s .45s;
+}
+
+.on {
+    opacity: 1;
+    transform: none;
+    visibility: visible;
+    transition: $appear, visibility 0s;
+}
+
+.heading {
+    margin: 0 0 16px;
+    font-size: 1.15rem;
+}
+
+.list {
+    display: flex;
+    flex-direction: column;
 
     margin: 0;
     padding: 0;
 
     list-style: none;
-    text-align: right;
 }
 
-.callout {
-    position: relative;
-
-    padding-right: 44px;
-
-    font-size: 1.05rem;
-    line-height: 1.35;
-    color: var(--color-text-muted);
-    text-wrap: balance;
-
+.row {
     opacity: 0;
     transform: translateY(10px);
-    transition: opacity .45s ease-out, transform .45s ease-out, color vars.$transition;
-
-    // Нить к окну
-    &::after {
-        content: '';
-
-        position: absolute;
-        top: .7em;
-        right: 0;
-
-        width: 28px;
-        height: 1px;
-
-        background: var(--color-text-50);
-        transform-origin: right center;
-        transition: transform .45s ease-out, background vars.$transition;
-    }
+    transition: $appear, color vars.$transition;
 }
 
 .shown {
@@ -86,13 +92,205 @@ $hairline: rgba(128, 128, 128, 0.3);
     transform: none;
 }
 
-// Шаг, который сейчас собирается: текст и нить – чернилами, нить длиннее
-.current {
-    color: var(--color-text-100);
+// Состав: группы стоят в одной клетке – на экране текущая группа шага сборки
+.group {
+    grid-area: 1 / 1;
 
-    &::after {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+
+    &.shown:not(.current) {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+}
+
+ol.list:has(.group) {
+    display: grid;
+}
+
+.item {
+    position: relative;
+
+    padding-left: 18px;
+
+    font-size: 1.15rem;
+    line-height: 1.35;
+    text-wrap: balance;
+
+    // Нить к окну – у пункта состава
+    &::before {
+        content: '';
+
+        position: absolute;
+        top: .7em;
+        left: 0;
+
+        width: 8px;
+        height: 1px;
+
         background: var(--color-text-100);
-        transform: scaleX(1.3);
+        transition: background vars.$transition;
+    }
+}
+
+.groupLabel {
+    font-size: 1rem;
+    color: var(--color-text-muted);
+    transition: vars.$transition;
+}
+
+.chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+
+    margin: 4px 0 0;
+    padding: 0;
+
+    list-style: none;
+
+    li {
+        padding: 5px 11px;
+
+        font-size: 0.875rem;
+        line-height: 1.25;
+
+        border: 1.5px solid rgba(128, 128, 128, 0.45);
+        border-radius: 24px;
+    }
+}
+
+.common {
+    align-self: flex-start;
+    margin-top: 22px;
+    font-size: 0.95rem;
+}
+
+// Опции: название слева, цена справа, по строке
+.option {
+    display: flex;
+    align-items: baseline;
+    gap: 14px;
+
+    padding: 10px 0;
+
+    font-size: 0.95rem;
+    line-height: 1.3;
+
+    border-top: 1px solid $hairline;
+}
+
+.name {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+
+    text-wrap: pretty;
+}
+
+.tail {
+    font-size: 0.875rem;
+    color: var(--color-text-muted);
+    transition: vars.$transition;
+}
+
+.cost {
+    flex: none;
+
+    font-size: 1.05rem;
+    white-space: nowrap;
+}
+
+.plain .name {
+    color: var(--color-text-muted);
+}
+
+.example {
+    display: block;
+
+    padding: 12px 0 0;
+
+    font-size: 0.95rem;
+    line-height: 1.4;
+    border-top: 1px solid $hairline;
+}
+
+.total {
+    display: block;
+    margin-top: 4px;
+    font-size: 1.6rem;
+}
+
+.onCall {
+    display: block;
+
+    padding-top: 12px;
+
+    font-size: 0.875rem;
+    line-height: 1.4;
+    color: var(--color-text-muted);
+    transition: vars.$transition;
+}
+
+// Не входит – тихие строки со знаком минус
+.no {
+    display: grid;
+    grid-template-columns: 16px 1fr;
+    gap: 10px;
+
+    padding: 8px 0;
+
+    font-size: 1rem;
+    line-height: 1.4;
+    color: var(--color-text-muted);
+    text-wrap: pretty;
+}
+
+.minus {
+    width: 16px;
+    height: 16px;
+    margin-top: 3px;
+
+    path {
+        fill: none;
+        stroke: var(--color-text-muted);
+        stroke-width: 1.6;
+        stroke-linecap: round;
+        transition: vars.$transition;
+    }
+}
+
+// Оплата – шкала долей над порогом
+.pay {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+
+    padding: 10px 0;
+
+    font-size: 1rem;
+    line-height: 1.4;
+    text-wrap: pretty;
+}
+
+.split {
+    display: flex;
+    gap: 3px;
+
+    i {
+        height: 8px;
+
+        background: var(--color-text-100);
+        border-radius: 7px;
+        transition: background vars.$transition;
+
+        &:first-child {
+            opacity: .35;
+        }
     }
 }
 
@@ -155,6 +353,61 @@ $hairline: rgba(128, 128, 128, 0.3);
     border-radius: 0 0 13px 13px;
 }
 
+// После сборки сайт в окне приглушён – в фокусе опции «+». filter, а не opacity: у заготовок прозрачность в style
+.view > :not(.plus),
+.window > :not(.bar):not(.view) {
+    transition: filter .45s ease-out;
+}
+
+.after .view > :not(.plus),
+.after > :not(.bar):not(.view) {
+    filter: opacity(.3);
+}
+
+// Опции «+» – пунктирные блоки поверх собранного сайта, сверху окна (снизу – панель и заявка)
+.plus {
+    position: absolute;
+    top: 14px;
+    right: 14px;
+    left: 14px;
+    z-index: 4;
+
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+
+    margin: 0;
+    padding: 0;
+
+    list-style: none;
+
+    li {
+        display: none;
+
+        padding: 8px 14px;
+
+        font-size: 0.875rem;
+        color: var(--color-text-100);
+
+        background: color-mix(in srgb, var(--color-bg) 88%, transparent);
+        border: 1.5px dashed var(--color-text-100);
+        border-radius: 9px;
+        transition: background vars.$transition, color vars.$transition;
+    }
+
+    li.shown {
+        display: block;
+        animation: plusIn .45s ease-out both;
+    }
+}
+
+@keyframes plusIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px) scale(.96);
+    }
+}
+
 .caption {
     position: absolute;
     width: 1px;
@@ -164,7 +417,7 @@ $hairline: rgba(128, 128, 128, 0.3);
     white-space: nowrap;
 }
 
-// ---------- Цена ----------
+// ---------- Цена и кейсы ----------
 .side {
     display: flex;
     flex-direction: column;
@@ -190,7 +443,7 @@ $hairline: rgba(128, 128, 128, 0.3);
 }
 
 .price {
-    margin: 26px 0 0;
+    margin: 22px 0 0;
 
     font-size: 2.5rem;
     line-height: 1.05;
@@ -213,13 +466,99 @@ $hairline: rgba(128, 128, 128, 0.3);
 }
 
 .button {
+    margin-top: 22px;
+}
+
+// Кейсы встают на фазе оплаты; место под ними занято всегда – колонка не прыгает
+.cases {
+    width: 100%;
     margin-top: 24px;
+
+    opacity: 0;
+    transform: translateY(12px);
+    visibility: hidden;
+    transition: $appear, visibility 0s .45s;
+
+    &.on {
+        opacity: 1;
+        transform: none;
+        visibility: visible;
+        transition: $appear, visibility 0s;
+    }
+
+    ul {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+
+        margin: 0;
+        padding: 0;
+
+        list-style: none;
+    }
+}
+
+.casesTitle {
+    margin: 0 0 10px;
+    font-size: 0.95rem;
+    color: var(--color-text-muted);
+    transition: vars.$transition;
+}
+
+.case {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+
+    font-size: 0.95rem;
+    line-height: 1.25;
+    color: var(--color-text-100);
+    text-decoration: none;
+    border-radius: 7px;
+
+    &:hover .caseInfo > :first-child {
+        @include vars.hover-underline;
+    }
+
+    &:focus-visible {
+        @include vars.focus-ring(4px);
+    }
+}
+
+.thumb {
+    position: relative;
+    flex: none;
+
+    width: 64px;
+    height: 40px;
+    overflow: hidden;
+
+    background: var(--color-frost);
+    border-radius: 7px;
+    box-shadow: vars.$shadow;
+
+    img {
+        object-fit: cover;
+        object-position: top;
+    }
+}
+
+.caseInfo {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.caseText {
+    font-size: 0.875rem;
+    color: var(--color-text-muted);
+    transition: vars.$transition;
 }
 
 @media screen and (max-width: 1200px) {
     .stage {
-        grid-template-columns: minmax(150px, 190px) minmax(0, 1fr) minmax(220px, 250px);
-        gap: 32px;
+        grid-template-columns: minmax(220px, 260px) minmax(0, 1fr) minmax(210px, 240px);
+        gap: 28px;
     }
 
     .screen {
@@ -228,7 +567,7 @@ $hairline: rgba(128, 128, 128, 0.3);
     }
 }
 
-// Телефон и планшет: цена сверху, окно, под ним – текущая выноска одной строкой
+// Телефон и планшет: цена сверху, окно, под ним – текущая строка фазы
 @media screen and (max-width: 900px) {
     .screen {
         align-items: stretch;
@@ -263,6 +602,11 @@ $hairline: rgba(128, 128, 128, 0.3);
         grid-column: 1 / -1;
         margin-top: 6px;
         font-size: 0.95rem;
+
+        // Низкий телефон: место – окну и строке фазы
+        @media (max-height: 760px) {
+            display: none;
+        }
     }
 
     .price {
@@ -286,10 +630,35 @@ $hairline: rgba(128, 128, 128, 0.3);
         margin-top: 8px;
     }
 
+    // Кейсы на телефоне – строкой имён на фазе оплаты, без превью
+    .cases {
+        display: none;
+        grid-column: 1 / -1;
+        margin-top: 10px;
+
+        &.on {
+            display: block;
+        }
+
+        ul {
+            flex-flow: row wrap;
+            gap: 6px 14px;
+        }
+    }
+
+    .casesTitle {
+        margin-bottom: 4px;
+    }
+
+    .thumb,
+    .caseText {
+        display: none;
+    }
+
     .window {
         flex: 1 1 auto;
         height: auto;
-        min-height: 220px;
+        min-height: 230px;
     }
 
     .bar {
@@ -298,37 +667,61 @@ $hairline: rgba(128, 128, 128, 0.3);
         padding: 0 12px;
     }
 
-    .callouts {
-        position: relative;
+    // Колонка фаз – под окном: заголовок фазы и одна текущая строка. Остальные фазы и строки не занимают места –
+    // высота колонки по текущей строке, окно забирает остальное
+    .column {
         order: 1;
-
-        min-height: 2.9em;
+        display: block;
+        min-height: 4.5em;
         // Справа – место под шар чата
-        padding-right: 64px;
-        text-align: left;
+        padding-right: 56px;
     }
 
-    .callout {
-        position: absolute;
-        right: 64px;
-        bottom: 0;
-        left: 0;
+    .phase:not(.on),
+    .row:not(.current) {
+        display: none;
+    }
 
-        padding: 0;
+    .phase {
+        justify-content: flex-end;
+    }
 
+    .row.current {
+        animation: plusIn .45s ease-out both;
+    }
+
+    .heading {
+        margin-bottom: 6px;
+        font-size: 0.95rem;
+        color: var(--color-text-muted);
+    }
+
+    .item {
         font-size: 1rem;
-
-        &::after {
-            display: none;
-        }
     }
 
-    .shown:not(.current) {
-        opacity: 0;
+    .option,
+    .example {
+        border-top: none;
+    }
+
+    .common {
+        display: none;
+    }
+
+    .plus {
+        top: 8px;
+        right: 8px;
+        left: 8px;
+        gap: 6px;
+
+        li {
+            padding: 5px 10px;
+        }
     }
 }
 
-// ---------- Без движения: обычный блок с собранным сайтом ----------
+// ---------- Без движения: обычный блок, сайт собран, все фазы списком ----------
 .scene.still {
     height: auto;
 
@@ -339,36 +732,69 @@ $hairline: rgba(128, 128, 128, 0.3);
         padding-top: 40px;
     }
 
-    .path {
-        display: none;
+    .stage {
+        align-items: start;
+    }
+
+    .column {
+        display: flex;
+        flex-direction: column;
+        gap: 36px;
+    }
+
+    .phase,
+    .row,
+    .cases {
+        opacity: 1;
+        transform: none;
+        visibility: visible;
+        transition: none;
+    }
+
+    ol.list:has(.group) {
+        display: flex;
+        gap: 14px;
+    }
+
+    .group {
+        grid-area: auto;
     }
 
     .window {
+        position: sticky;
+        top: 96px;
         height: 540px;
     }
 
-    .callout {
-        transition: none;
+    .plus li {
+        animation: none;
     }
 
     @media screen and (max-width: 900px) {
         .window {
+            position: relative;
+            top: 0;
             flex: none;
             height: 380px;
         }
 
-        .callouts {
+        .column {
             display: flex;
-            gap: 8px;
             min-height: 0;
+            padding-right: 0;
         }
 
-        .callout {
-            position: static;
+        .phase:not(.on),
+        .row:not(.current) {
+            display: flex;
         }
 
-        .shown:not(.current) {
-            opacity: 1;
+        .row:not(.current).no {
+            display: grid;
+        }
+
+        .cases {
+            display: block;
         }
     }
 }
