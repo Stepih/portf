@@ -1,0 +1,630 @@
+@use '/src/styles/variables.scss' as vars;
+
+// Сцена «окно-герой» /sites (У5б, этап 1). Липкий экран и путь – scene.module.scss страницы /ai; здесь раскладка:
+// одно окно браузера по центру, под ним одна строка. На первом экране окно меньше и ниже – под заголовком
+$hairline: rgba(128, 128, 128, 0.3);
+$appear: opacity .45s ease-out, transform .45s ease-out;
+// Ширина окна и строки под ним
+$width: 860px;
+
+.scene {
+    position: relative;
+}
+
+// Метка якоря: начало сборки вида на пути сцены (--at – в экранах, timeline.ts; ANCHOR_AFTER – с запасом на
+// округление скролла)
+.anchor {
+    position: absolute;
+    top: calc(var(--screen-h) * var(--at));
+    left: 0;
+
+    width: 1px;
+    height: 1px;
+
+    pointer-events: none;
+}
+
+.stage {
+    position: relative;
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    // Панель и счётчик выступают из окна на 28px – строка под окном начинается ниже них
+    gap: 44px;
+
+    height: 100%;
+    padding: 24px 32px;
+
+    color: var(--color-text-100);
+}
+
+// ---------- Первый экран ----------
+.intro {
+    position: absolute;
+    top: clamp(24px, 8vh, 88px);
+    right: 16px;
+    left: 16px;
+    z-index: 2;
+}
+
+.introGone {
+    pointer-events: none;
+}
+
+// ---------- Окно ----------
+.window {
+    position: relative;
+    z-index: 1;
+
+    display: flex;
+    flex: none;
+    flex-direction: column;
+
+    width: min(#{$width}, 100%);
+    height: min(600px, calc(var(--screen-h) - 270px));
+    margin: 0;
+
+    background: var(--color-frost);
+    border-radius: 13px;
+    box-shadow: vars.$shadow;
+    transform-origin: 50% 0;
+    transition: background vars.$transition;
+}
+
+// Строка вкладок: точки окна и вкладки видов сайта, как вкладки браузера над строкой адреса
+.strip {
+    display: flex;
+    flex: none;
+    align-items: flex-end;
+    gap: 16px;
+
+    height: 44px;
+    padding: 0 12px 0 16px;
+}
+
+.dots {
+    display: flex;
+    flex: none;
+    align-self: center;
+    gap: 7px;
+
+    i {
+        width: 10px;
+        height: 10px;
+
+        background: color-mix(in srgb, var(--color-text-100) 22%, transparent);
+        border-radius: 50%;
+    }
+}
+
+.tabs {
+    display: flex;
+    min-width: 0;
+    gap: 2px;
+}
+
+.tab {
+    position: relative;
+
+    display: flex;
+    flex: 0 1 auto;
+    align-items: center;
+
+    min-width: 0;
+    height: 36px;
+    padding: 0 16px;
+
+    font-size: 0.95rem;
+    color: var(--color-text-muted);
+    text-decoration: none;
+
+    border-radius: 7px 7px 0 0;
+    transition: color vars.$transition, background vars.$transition;
+
+    &:hover {
+        color: var(--color-text-100);
+    }
+
+    &:focus-visible {
+        @include vars.focus-ring(-2px);
+    }
+}
+
+// Текущий вид – вкладка залита тоном строки адреса и сливается с ней
+.tabOn {
+    flex-shrink: 0;
+
+    color: var(--color-text-100);
+    background: color-mix(in srgb, var(--color-text-100) 6%, transparent);
+}
+
+.tabLabel {
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+.toolbar {
+    position: relative;
+    flex: none;
+
+    height: 46px;
+
+    background: color-mix(in srgb, var(--color-text-100) 6%, transparent);
+    border-bottom: 1px solid $hairline;
+    transition: background vars.$transition;
+}
+
+.toolLayer {
+    position: absolute;
+    inset: 0;
+
+    display: flex;
+    align-items: center;
+    gap: 14px;
+
+    padding: 0 16px;
+}
+
+.address {
+    flex: 1;
+    max-width: 300px;
+    height: 24px;
+
+    background: color-mix(in srgb, var(--color-bg) 70%, transparent);
+    border-radius: 24px;
+    transition: background vars.$transition;
+}
+
+.view {
+    position: relative;
+    flex: 1;
+
+    overflow: hidden;
+    border-radius: 0 0 13px 13px;
+}
+
+.viewLayer,
+.overLayer {
+    position: absolute;
+    inset: 0;
+}
+
+.overLayer {
+    pointer-events: none;
+}
+
+// Опции – таблетками поверх собранного сайта: «+ имя · цена», контур пунктиром – то, что можно добавить
+.pills {
+    position: absolute;
+    top: 14px;
+    right: 14px;
+    left: 14px;
+    z-index: 4;
+
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+
+    margin: 0;
+    padding: 0;
+
+    list-style: none;
+}
+
+.pill {
+    padding: 7px 14px;
+
+    font-size: 0.95rem;
+    line-height: 1.25;
+    color: var(--color-text-100);
+    white-space: nowrap;
+
+    background: var(--color-bg);
+    border: 1.5px dashed var(--color-text-100);
+    border-radius: 24px;
+
+    opacity: 0;
+    transform: translateY(10px) scale(.96);
+    visibility: hidden;
+    transition: $appear, background vars.$transition, color vars.$transition, visibility 0s .45s;
+
+    &.shown {
+        opacity: 1;
+        transform: none;
+        visibility: visible;
+        transition: $appear, background vars.$transition, color vars.$transition, visibility 0s;
+    }
+
+    b {
+        font-weight: inherit;
+    }
+}
+
+// Счётчик суммы сайта компании – плашка у левого края окна, как панель у правого
+.sum {
+    position: absolute;
+    bottom: -28px;
+    left: -44px;
+    z-index: 5;
+
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+
+    width: 360px;
+    padding: 16px 18px;
+
+    color: var(--color-text-100);
+
+    background: var(--color-orb-glass);
+    border-radius: 13px;
+    box-shadow: vars.$shadow;
+
+    opacity: 0;
+    transform: translateY(14px);
+    visibility: hidden;
+    transition: $appear, background vars.$transition, color vars.$transition, visibility 0s .45s;
+
+    &.on {
+        opacity: 1;
+        transform: none;
+        visibility: visible;
+        transition: $appear, background vars.$transition, color vars.$transition, visibility 0s;
+    }
+
+    p {
+        margin: 0;
+    }
+}
+
+.sumCaption {
+    font-size: 0.875rem;
+    line-height: 1.35;
+    color: var(--color-text-muted);
+    transition: color vars.$transition;
+}
+
+.terms {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px 12px;
+
+    font-size: 1.05rem;
+}
+
+.term {
+    display: flex;
+    flex-direction: column;
+
+    opacity: 0;
+    transform: translateY(8px);
+    transition: $appear;
+
+    &.shown {
+        opacity: 1;
+        transform: none;
+    }
+}
+
+.termLabel {
+    font-size: 0.875rem;
+    color: var(--color-text-muted);
+    transition: color vars.$transition;
+}
+
+.total {
+    padding-top: 8px;
+
+    font-size: 1.6rem;
+    line-height: 1.1;
+    white-space: nowrap;
+
+    border-top: 1px solid $hairline;
+}
+
+.caption {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+}
+
+// ---------- Под окном: одна строка ----------
+.under {
+    position: relative;
+
+    display: grid;
+    flex: none;
+
+    width: min(#{$width}, 100%);
+    height: 132px;
+}
+
+// Строки сменяют друг друга по очереди: старая гаснет за 0,2 с, новая встаёт снизу после неё – без наложения
+.cell {
+    grid-area: 1 / 1;
+    align-self: start;
+
+    opacity: 0;
+    transform: translateY(10px);
+    visibility: hidden;
+    transition: opacity .2s ease-in, transform .2s ease-in, visibility 0s .2s;
+
+    &.on {
+        opacity: 1;
+        transform: none;
+        visibility: visible;
+        transition: opacity .4s ease-out .2s, transform .4s ease-out .2s, visibility 0s .2s;
+    }
+}
+
+.step {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+
+    text-align: center;
+
+    p {
+        margin: 0;
+    }
+}
+
+.line {
+    font-size: 1.25rem;
+    line-height: 1.35;
+    text-wrap: balance;
+}
+
+.groupLabel {
+    font-size: 0.95rem;
+    color: var(--color-text-muted);
+    transition: color vars.$transition;
+}
+
+.optionsLabel {
+    font-size: 1.25rem;
+}
+
+.quiet {
+    max-width: 70ch;
+
+    font-size: 0.95rem;
+    line-height: 1.4;
+    color: var(--color-text-muted);
+    text-wrap: pretty;
+    transition: color vars.$transition;
+}
+
+// Цена вида: слева название, цена и срок, уточнение; справа «Узнать цену»
+.price {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 40px;
+
+    p,
+    h2 {
+        margin: 0;
+    }
+}
+
+.priceText {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+}
+
+.kindTitle {
+    font-size: 1.15rem;
+}
+
+.priceLine {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 4px 14px;
+}
+
+.cost {
+    font-size: 2.5rem;
+    line-height: 1.1;
+    white-space: nowrap;
+}
+
+.termText {
+    font-size: 1.25rem;
+}
+
+.note {
+    font-size: 0.95rem;
+    color: var(--color-text-muted);
+    transition: color vars.$transition;
+}
+
+.button {
+    flex: none;
+}
+
+// ---------- Телефон и планшет ----------
+@media screen and (max-width: 900px) {
+    .sum {
+        bottom: 8px;
+        left: 8px;
+        width: min(360px, calc(100% - 16px));
+    }
+}
+
+@media screen and (max-width: 700px) {
+    // Путь на телефоне короче (--scene-h-phone) – и метки якорей свои
+    .anchor {
+        top: calc(var(--screen-h) * var(--at-phone));
+    }
+
+    .stage {
+        justify-content: flex-start;
+        gap: 14px;
+        padding: 16px 16px 12px;
+    }
+
+    .window {
+        height: max(280px, calc(var(--screen-h) - 290px));
+    }
+
+    .strip {
+        gap: 10px;
+        height: 40px;
+        padding: 0 6px 0 12px;
+    }
+
+    .dots i {
+        width: 8px;
+        height: 8px;
+    }
+
+    .tab {
+        height: 34px;
+        padding: 0 10px;
+        font-size: 0.875rem;
+    }
+
+    .toolbar {
+        height: 40px;
+    }
+
+    .toolLayer {
+        gap: 10px;
+        padding: 0 12px;
+    }
+
+    .pills {
+        top: 8px;
+        right: 8px;
+        left: 8px;
+        gap: 6px;
+    }
+
+    .pill {
+        padding: 5px 10px;
+        font-size: 0.875rem;
+        white-space: normal;
+    }
+
+    // Строка под окном – слева, справа место под шар чата
+    .under {
+        flex: 1 1 auto;
+        height: auto;
+        min-height: 150px;
+        padding-right: 60px;
+    }
+
+    .step {
+        align-items: flex-start;
+        text-align: left;
+    }
+
+    .line,
+    .optionsLabel {
+        font-size: 1.05rem;
+    }
+
+    .quiet {
+        font-size: 0.875rem;
+    }
+
+    .price {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+    }
+
+    .cost {
+        font-size: 1.6rem;
+    }
+
+    .termText {
+        font-size: 1.05rem;
+    }
+}
+
+// ---------- Без движения: по каждому виду – окно, цена, состав и опции ----------
+.static {
+    display: flex;
+    flex-direction: column;
+    gap: 96px;
+
+    .window {
+        width: 100%;
+        max-width: $width;
+        height: 520px;
+    }
+
+    .pill,
+    .sum,
+    .term {
+        opacity: 1;
+        transform: none;
+        visibility: visible;
+        transition: none;
+    }
+
+    @media screen and (max-width: 700px) {
+        gap: 64px;
+
+        .window {
+            height: 380px;
+        }
+    }
+}
+
+.staticKind {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 28px;
+
+    color: var(--color-text-100);
+
+    .price {
+        width: 100%;
+        max-width: $width;
+    }
+}
+
+.staticText {
+    width: 100%;
+    max-width: $width;
+}
+
+.staticLabel {
+    margin: 24px 0 10px;
+    font-size: 1.15rem;
+}
+
+.staticList {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+
+    margin: 0 0 12px;
+    padding: 0;
+
+    font-size: 1.05rem;
+    line-height: 1.4;
+    list-style: none;
+
+    b {
+        font-weight: inherit;
+    }
+
+    .groupLabel {
+        margin-top: 10px;
+    }
+}

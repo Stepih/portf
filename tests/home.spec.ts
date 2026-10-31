@@ -1248,7 +1248,10 @@ for (const width of [1400, 375]) {
 
         await region.getByRole('link', { name: `${servicesMoreLabel}: ${services[1].title}` }).click();
         await expect(page).toHaveURL(/\/sites#corporate$/);
-        await expect(page.getByRole('heading', { level: 2, name: services[1].title })).toBeInViewport();
+        // У5б: виды сайтов – вкладки окна-героя; якорь открывает начало сборки сайта компании
+        const tab = page.getByRole('navigation', { name: 'Виды сайтов' }).getByRole('link', { name: services[1].title });
+        await expect(tab).toHaveAttribute('aria-current', 'location');
+        await expect(page.locator('figure')).toBeInViewport();
     });
 }
 

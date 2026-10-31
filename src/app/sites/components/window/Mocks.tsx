@@ -10,11 +10,11 @@ import { ralewayBold } from "@/app/fonts/fonts";
 import { buildUi } from "@/data/sitesPage";
 import { ease, lerp, move, rise, span } from "@/app/ai/components/scene";
 
-// Нарисованные сайты в окне сцены (У5а): блоки-заготовки тонами чернил, без цвета и без чужих скриншотов.
-// Всё движется от прогресса сцены p (0–1): шаг i начинается в stepAt(i, n), появление – окно STEP. Первый шаг
-// уже собран, когда сцена встаёт: окно не пустое. Последний с доводкой (заявка, панель) заканчивается к ~0,8 –
-// дальше пауза чтения.
-// Сдвиги не больше 40px за окно в 0,1 сцены (~0,25 экрана) – далеко ниже предела скорости 2 px/px (speed.ts)
+// Нарисованные сайты в окне сцены (У5а; с У5б – одно окно на три вида, WindowScene): блоки-заготовки тонами чернил,
+// без цвета и без чужих скриншотов. Всё движется от прогресса вида p (timeline.ts, mockP): шаг i начинается
+// в stepAt(i, n), появление – окно STEP; при p = −STEP окно пустое. Последний шаг с доводкой (заявка, панель)
+// заканчивается к ~0,8 – дальше пауза чтения. Сдвиги появления – до 40px за окно STEP (~0,1 экрана) – далеко ниже
+// предела скорости 2 px/px (speed.ts)
 export const STEP = .1;
 export const stepAt = (i: number, n: number) => -STEP + i * .8 / n;
 
@@ -212,12 +212,13 @@ export const ShopMock: FC<IMock> = ({ p }) => {
     const t = (i: number) => stepAt(i, n);
     const pick = useTransform(p, (v) => 1 + .06 * rise(span(v, t(2), STEP)));
     const dim = useTransform(p, (v) => 1 - .55 * rise(span(v, t(2) + .03, STEP)));
-    // Самые длинные проезды сцены (каталог ~210px, оформление до ~340px) – кривой move с ограниченным наклоном
-    // и окном в 1,3 шага: пик не выше 2 px/px и на телефоне (speed.ts)
+    // Самые длинные проезды сцены (каталог ~230px, оформление до ~390px) – кривой move с ограниченным наклоном:
+    // каталог – за 1,3 шага, оформление – за 2 шага, оплата – сразу после него (У5б: сборка магазина – 1,7 экрана,
+    // timeline.ts). Замер: пик 1,7–1,8 px/px на экране 1400×800, 1,5 – на телефоне (speed.ts – не выше 2)
     const shift = useTransform(p, (v) => `${lerp(0, 28, move(span(v, t(1), STEP * 1.3)))}%`);
-    const checkout = useTransform(p, (v) => move(span(v, t(2) + .06, STEP * 1.3)));
+    const checkout = useTransform(p, (v) => move(span(v, t(2), STEP * 2)));
     const sheetX = useTransform(checkout, (v) => `${lerp(104, 0, v)}%`);
-    const paid = useTransform(p, (v) => ease(span(v, t(3), STEP)));
+    const paid = useTransform(p, (v) => ease(span(v, t(2) + STEP * 2, STEP)));
     const unpaid = useTransform(paid, (v) => 1 - v);
     return (
         <div className={`${s.page} ${s.shop}`}>

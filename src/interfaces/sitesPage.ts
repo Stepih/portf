@@ -54,8 +54,25 @@ export interface IBuildCallouts {
     items: string[]
 }
 
+// Опция таблеткой в окне (У5б): номер опции в sitesDetails[вид].options (цена – оттуда) и короткое имя
+export interface IBuildPill {
+    option: number,
+    label: string
+}
+
+// Счётчик суммы сайта компании (У5б): слагаемые по очереди, под каждым – что это; итог – из sitesDetails.example
+export interface IBuildSum {
+    caption: string,
+    terms: { value: string, label: string }[],
+    // Нарастающий итог после каждого слагаемого, ₽
+    totals: number[]
+}
+
 export interface IBuild {
     // Шагов сборки в окне
     steps: number,
-    callouts: IBuildCallouts[]
+    callouts: IBuildCallouts[],
+    // Опции с ценой – таблетками в окне, до 5; остальные – тихой строкой под окном
+    pills: IBuildPill[],
+    sum?: IBuildSum
 }

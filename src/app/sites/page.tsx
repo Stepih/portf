@@ -4,23 +4,24 @@ import { Metadata } from "next";
 import s from './page.module.scss'
 import { offerTgButton, services } from "@/data/offer";
 import { baseOpenGraph } from "@/data/metadata";
-import { build, nav, sitesDetails } from "@/data/sitesPage";
+import { build, columns, sitesDetails } from "@/data/sitesPage";
 import { portfolioWorks } from "@/data/portfolio";
 import { portfolioCases } from "@/data/portfolioCases";
 import { ogSize } from "@/lib/og";
 import { sitesPageURL } from "@/constants/urls";
 import { serviceCases } from "@/scripts/services";
 import SitesHead from "./components/SitesHead";
-import SitesNav from "./components/SitesNav";
-import BuildScene from "./components/build/BuildScene";
+import WindowScene, { IWindowKind } from "./components/window/WindowScene";
+import SitesCases from "./components/SitesCases";
 import CommonTerms from "./components/CommonTerms";
 import MoreServices from "./components/MoreServices";
 import SitesFaq from "./components/SitesFaq";
 import SitesCta from "./components/SitesCta";
 
-// Страница /sites (SERVICES_PLAN У5, раскладка – У5а): по аналогии с /ai. Каждый вид сайта – одна сцена «Сайт
-// собирается на глазах» (окно браузера по скроллу, рядом – состав, опции, «Не входит» и оплата по фазам; цена и
-// «Узнать цену» – лицо карточки главной, offer.ts; в конце – кейсы). Дальше путь проекта и темы «Для всех сайтов», «Ещё делаю», FAQ, финал.
+// Страница /sites (SERVICES_PLAN У5, раскладка – У5а, окно-герой – У5б). Первый экран и три вида сайта – одна сцена
+// «окно-герой»: пустое окно браузера встаёт по центру, в нём по очереди собираются лендинг, сайт компании и магазин;
+// виды – вкладки окна, под окном – одна строка шага, в конце вида – цена и «Узнать цену» (лицо карточки главной,
+// offer.ts). Дальше кейсы (временно списком – до колоды этапа 2), «Для всех сайтов», «Ещё делаю», FAQ, финал.
 // Тексты – src/data/sitesPage.ts (marketing:draft-content). Не в поиске и не в sitemap (next-sitemap.config.js) –
 // до команды владельца после финальной проверки
 const title = 'Сайты под ключ: лендинг, сайт компании, магазин – Степан Картузов';
@@ -41,28 +42,25 @@ export const metadata: Metadata = {
 
 const SitesPage: FC = () => {
     // Три вида сайтов – в порядке карточек главной
-    const sites = services.filter((service) => service.id !== 'ai');
+    const kinds: IWindowKind[] = services.flatMap((service) => service.id === 'ai' ? [] : [{
+        service: { ...service, id: service.id },
+        build: build[service.id],
+        details: sitesDetails[service.id],
+    }]);
+    const caseGroups = kinds.map(({ service, details }) => ({
+        id: service.id,
+        title: service.title,
+        cases: serviceCases(details.cases.map((c) => c.id), portfolioWorks, portfolioCases).map((work) => ({
+            ...work,
+            cover: portfolioWorks.find((w) => w.id === work.id)?.cover ?? '',
+            text: details.cases.find((c) => c.id === work.id)?.text,
+        })),
+    }));
 
     return (
         <div className={s.page}>
-            <SitesHead tgHref={offerTgButton.href} />
-            <SitesNav items={nav} />
-            {sites.map((service) => {
-                if (service.id === 'ai') return null;
-                const details = sitesDetails[service.id];
-                const works = serviceCases(details.cases.map((c) => c.id), portfolioWorks, portfolioCases);
-                const cases = works.map((work) => ({
-                    ...work,
-                    cover: portfolioWorks.find((w) => w.id === work.id)?.cover ?? '',
-                    text: details.cases.find((c) => c.id === work.id)?.text,
-                }));
-                // Секция с якорем (/sites#corporate из карточки главной) – сцена целиком
-                return (
-                    <section key={service.id} id={service.id} className={s.site} aria-labelledby={`${service.id}-title`}>
-                        <BuildScene service={{ ...service, id: service.id }} build={build[service.id]} details={details} cases={cases} />
-                    </section>
-                );
-            })}
+            <WindowScene head={<SitesHead tgHref={offerTgButton.href} />} kinds={kinds} />
+            <SitesCases title={columns.cases.replace(/:$/, '')} groups={caseGroups} />
             <CommonTerms />
             <MoreServices />
             <SitesFaq />

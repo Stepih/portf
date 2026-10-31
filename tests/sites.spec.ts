@@ -1,13 +1,28 @@
-import { expect, test } from '@playwright/test';
+import { expect, Page, test } from '@playwright/test';
 import { collectErrors } from './errors';
-import { build, buildUi, columns, commonId, faq, head, nav, sections } from '../src/data/sitesPage';
+import { build, buildUi, columns, faq, head, sections, sitesDetails } from '../src/data/sitesPage';
 import { offerTgButton, services, servicesButton } from '../src/data/offer';
 import { contactHref } from '../src/scripts/services';
+import { planFor } from '../src/app/sites/components/window/timeline';
 
-// Страница /sites (SERVICES_PLAN У5, раскладка и сцены сборки – У5а)
-const sites = services.filter((service) => service.id !== 'ai');
+// Страница /sites (SERVICES_PLAN У5, сцены сборки – У5а, окно-герой – У5б)
+type SiteId = keyof typeof build;
+const sites = services.filter((service): service is typeof service & { id: SiteId } => service.id !== 'ai');
+// Подпись таблетки как в разметке: после дефиса может стоять сцепка U+2060
+const label = (text: string) => new RegExp(norm(text).replace(/[.*+?^${}()|[\]\\]/g, '\\$&').replace(/-/g, '-\\u2060?'));
 // Неразрывные пробелы и сцепки в текстах – обычными пробелами
-const norm = (text?: string | null) => (text ?? '').replace(/\u2060/g, '').replace(/\s+/g, ' ');
+const norm = (text?: string | null) => (text ?? '').replace(/⁠/g, '').replace(/\s+/g, ' ');
+
+// Скролл к моменту t сцены (в экранах, timeline.ts): метка #landing стоит в начале лендинга
+const scrollToTime = async (page: Page, t: number, phone = false) => {
+    const plan = planFor(phone);
+    const y = await page.evaluate(() => document.getElementById('landing')!.getBoundingClientRect().top + window.scrollY);
+    const h = await page.evaluate(() => window.innerHeight);
+    await page.evaluate((top) => window.scrollTo(0, top), y + (t - plan.kinds[0].from) * h);
+    await page.waitForTimeout(1300);
+};
+
+const tabs = (page: Page) => page.getByRole('navigation', { name: buildUi.tabs });
 
 test('/sites отвечает 200, закрыта от поиска, своё превью и без ошибок в консоли', async ({ page, request }) => {
     const errors = collectErrors(page);
@@ -28,61 +43,109 @@ test('/sites отвечает 200, закрыта от поиска, своё п
     expect(errors).toEqual([]);
 });
 
-// Три раздела в порядке карточек главной: цена, срок, «Узнать цену» в форму с услугой, ссылка на «Для всех сайтов»
-test('/sites: разделы сайтов – цена, срок и кнопка в форму с услугой', async ({ page }) => {
+// Цена – в конце сборки вида: название, цена, срок, уточнение и «Узнать цену» в форму с услугой и целью Метрики
+test('/sites: в конце каждого вида – цена, срок и кнопка в форму с услугой', async ({ page }) => {
+    await page.setViewportSize({ width: 1400, height: 900 });
     await page.goto('/sites');
+    const plan = planFor(false);
 
     for (const service of sites) {
-        const section = page.locator(`section#${service.id}`);
-        await expect(section.getByRole('heading', { level: 2 })).toHaveText(service.title);
-        const text = norm(await section.textContent());
-        expect(text).toContain(norm(service.price));
-        expect(text).toContain(norm(service.term));
-        // Фазы сцены: заголовки есть все, видна – текущая
-        for (const label of [columns.included, columns.options, columns.excluded, columns.payment]) {
-            await expect(section.getByRole('heading', { level: 3, name: label, includeHidden: true })).toHaveCount(1);
-        }
-        const button = section.getByRole('link', { name: `${servicesButton}: ${service.title}` });
+        const k = plan.kinds.find((item) => item.kind === service.id)!;
+        await scrollToTime(page, (k.priced + k.to) / 2);
+        const price = page.locator(`section[aria-labelledby="${service.id}-title"]`);
+        await expect(price.getByRole('heading', { level: 2 })).toHaveText(service.title);
+        await expect(price.getByRole('heading', { level: 2 })).toBeInViewport();
+        const text = norm(await price.textContent());
+        for (const part of [service.price, service.term, service.note ?? '']) expect(text).toContain(norm(part));
+        const button = price.getByRole('link', { name: `${servicesButton}: ${service.title}` });
+        await expect(button).toBeVisible();
         await expect(button).toHaveAttribute('href', contactHref(service.id));
         await expect(button).toHaveAttribute('data-goal', 'service_click');
-        await expect(section.locator(`a[href="#${commonId}"]`).first()).toHaveAttribute('href', `#${commonId}`);
+        await expect(button).toHaveAttribute('data-goal-id', service.id);
+        // Окно не приглушено, все таблетки опций стоят
+        await expect(page.locator('figure')).toBeInViewport();
+        for (const pill of build[service.id].pills) await expect(page.locator('figure li', { hasText: label(pill.label) }).first()).toBeVisible();
     }
 });
 
-test('/sites: кейсы ведут на страницы кейсов', async ({ page }) => {
+// Под окном – одна строка: состав группами по очереди, потом опции тихой строкой
+test('/sites: под окном одна строка шага – состав по очереди, потом опции', async ({ page }) => {
+    await page.setViewportSize({ width: 1400, height: 900 });
     await page.goto('/sites');
-    const links = page.locator('section#shop a[href^="/portfolio/"]');
-    await expect(links).toHaveCount(5);
-    const href = await links.first().getAttribute('href');
-    const response = await page.request.get(href!);
-    expect(response.status()).toBe(200);
+    const shop = planFor(false).kinds[2];
+
+    await scrollToTime(page, shop.from + .05);
+    await expect(page.getByText(build.shop.callouts[0].items[0], { exact: true })).toBeVisible();
+    await expect(page.getByText(build.shop.callouts[1].items[0], { exact: true })).toBeHidden();
+    await expect(tabs(page).getByRole('link', { name: 'Магазин или каталог' })).toHaveAttribute('aria-current', 'location');
+
+    // Конец сборки: заказ оплачен, последняя группа – «Каталог без корзины»
+    await scrollToTime(page, shop.built - .03);
+    await expect(page.getByText(build.shop.callouts.at(-1)!.label!, { exact: true })).toBeVisible();
+    await expect(page.getByText(build.shop.callouts[0].items[0], { exact: true })).toBeHidden();
+    await expect(page.getByText(buildUi.paid)).toHaveCSS('opacity', '1');
+
+    // Опции: подпись и тихая строка «Цену назову на созвоне»
+    await scrollToTime(page, (shop.built + shop.priced) / 2);
+    await expect(page.getByText(`${columns.onCall} ${sitesDetails.shop.onCall}`)).toBeVisible();
 });
 
-// Навигация: якорь ведёт к разделу, заголовок не под липкой строкой, залита таблетка текущего раздела
+// Сайт компании: сумма собирается на глазах до итога примера расчёта
+test('/sites: у сайта компании счётчик суммы доходит до итога примера', async ({ page }) => {
+    await page.setViewportSize({ width: 1400, height: 900 });
+    await page.goto('/sites');
+    const corp = planFor(false).kinds[1];
+
+    await scrollToTime(page, corp.built + .02);
+    await expect(page.getByText(build.corporate.sum!.caption)).toBeHidden();
+    await scrollToTime(page, corp.priced - .02);
+    await expect(page.getByText(build.corporate.sum!.caption)).toBeVisible();
+    await expect(page.locator('figure').getByText(norm(sitesDetails.corporate.example!.total))).toBeVisible();
+});
+
+// Вкладки видов в окне: клик прокручивает к началу вида, якорь в адресе, вкладка подсвечена, без прокрутки вбок
 for (const width of [1400, 375]) {
-    test(`/sites: навигация по разделам, ${width}`, async ({ page }) => {
-        await page.setViewportSize({ width, height: 850 });
+    test(`/sites: вкладки видов в окне, ${width}`, async ({ page }) => {
+        await page.setViewportSize({ width, height: width > 700 ? 900 : 812 });
         await page.goto('/sites');
 
-        const bar = page.getByRole('navigation', { name: 'Разделы страницы' });
-        await expect(bar.getByRole('link')).toHaveText(nav.map((item) => item.label));
+        await expect(tabs(page).getByRole('link')).toHaveText(sites.map((service) => service.title));
+        await expect(tabs(page).getByRole('link', { name: 'Лендинг' })).toHaveAttribute('aria-current', 'location');
 
-        await bar.getByRole('link', { name: sections.common.title }).click();
-        await expect(page).toHaveURL(/#common$/);
-        const title = page.getByRole('heading', { level: 2, name: sections.common.title });
-        await expect(title).toBeInViewport();
-        await expect(bar.getByRole('link', { name: sections.common.title })).toHaveAttribute('aria-current', 'location');
-
-        // Строка навигации прилипла к верху и не закрывает заголовок
-        const barBox = (await bar.boundingBox())!;
-        const titleBox = (await title.boundingBox())!;
-        expect(barBox.y).toBeLessThan(20);
-        expect(titleBox.y).toBeGreaterThan(barBox.y + barBox.height);
+        await tabs(page).getByRole('link', { name: 'Сайт компании' }).click();
+        await expect(page).toHaveURL(/#corporate$/);
+        await expect(tabs(page).getByRole('link', { name: 'Сайт компании' })).toHaveAttribute('aria-current', 'location', { timeout: 10000 });
+        await page.waitForTimeout(1500);
+        await expect(page.getByText(build.corporate.callouts[0].items[0])).toBeVisible();
+        await expect(page.locator('figure')).toBeInViewport({ ratio: .9 });
 
         const scrollWidth = await page.evaluate(() => document.documentElement.scrollWidth);
         expect(scrollWidth).toBeLessThanOrEqual(width);
     });
 }
+
+// Ссылки «Что входит →» с карточек главной: /sites#shop открывает начало сборки магазина
+for (const width of [1400, 375]) {
+    test(`/sites#shop с главной – начало магазина, ${width}`, async ({ page }) => {
+        await page.setViewportSize({ width, height: width > 700 ? 900 : 812 });
+        await page.goto('/sites#shop');
+        await page.waitForTimeout(1500);
+        await expect(tabs(page).getByRole('link', { name: 'Магазин или каталог' })).toHaveAttribute('aria-current', 'location');
+        await expect(page.getByText(build.shop.callouts[0].items[0], { exact: true })).toBeVisible();
+        await expect(page.locator('figure')).toBeInViewport({ ratio: .9 });
+    });
+}
+
+test('/sites: кейсы ведут на страницы кейсов', async ({ page }) => {
+    await page.goto('/sites');
+    const list = page.getByRole('region', { name: columns.cases.replace(/:$/, '') });
+    const links = list.locator('a[href^="/portfolio/"]');
+    const count = Object.values(sitesDetails).reduce((n, item) => n + item.cases.length, 0);
+    await expect(links).toHaveCount(count);
+    const href = await links.first().getAttribute('href');
+    const response = await page.request.get(href!);
+    expect(response.status()).toBe(200);
+});
 
 test('/sites: FAQ без сумм, первый вопрос раскрыт; финал – форма и Telegram в новой вкладке', async ({ page }) => {
     await page.goto('/sites');
@@ -99,55 +162,21 @@ test('/sites: FAQ без сумм, первый вопрос раскрыт; ф�
     await expect(tg).toHaveAttribute('target', '_blank');
 });
 
-// У5а: одна липкая сцена на вид – окно собирается, колонка у окна сменяется по фазам: состав → опции → «Не входит» →
-// оплата; на оплате встают кейсы, в окне – заказ оплачен и пунктирные опции
-test('/sites: сцена сборки – фазы по скроллу, в конце оплата, кейсы и заказ оплачен', async ({ page }) => {
-    await page.setViewportSize({ width: 1400, height: 900 });
-    await page.goto('/sites');
-
-    const shop = page.locator('section#shop');
-    const phase = (label: string) => shop.locator(`section[aria-label="${label}"]`);
-    const { top, len } = await shop.evaluate((el) => {
-        const scene = el.firstElementChild as HTMLElement;
-        const path = scene.firstElementChild as HTMLElement;
-        return { top: scene.getBoundingClientRect().top + window.scrollY, len: path.offsetHeight - window.innerHeight };
-    });
-
-    await page.evaluate((y) => window.scrollTo(0, y), top);
-    await page.waitForTimeout(900);
-    await expect(phase(columns.included)).toHaveCSS('opacity', '1');
-    await expect(phase(columns.payment)).toHaveCSS('opacity', '0');
-    await expect(shop.getByText(build.shop.callouts[0].items[0])).toBeVisible();
-
-    // Фаза опций: строки с ценой и пунктирные блоки в окне
-    await page.evaluate((y) => window.scrollTo(0, y), top + len * .7);
-    await page.waitForTimeout(1200);
-    await expect(phase(columns.options)).toHaveCSS('opacity', '1');
-    await expect(phase(columns.included)).toHaveCSS('opacity', '0');
-
-    // Конец пути: оплата, кейсы, заказ оплачен
-    await page.evaluate((y) => window.scrollTo(0, y), top + len * .97);
-    await page.waitForTimeout(1200);
-    await expect(phase(columns.payment)).toHaveCSS('opacity', '1');
-    await expect(shop.getByText(columns.cases)).toBeVisible();
-    await expect(shop.getByText(buildUi.paid)).toHaveCSS('opacity', '1');
-    await expect(shop.locator('figure')).toBeInViewport();
-});
-
-test('/sites: без движения – сцены обычными блоками, сайт собран, все фазы видны', async ({ page }) => {
+test('/sites: без движения – по каждому виду собранное окно, состав, опции и цена', async ({ page }) => {
     await page.emulateMedia({ reducedMotion: 'reduce' });
     await page.setViewportSize({ width: 1400, height: 900 });
     await page.goto('/sites');
 
-    for (const id of ['landing', 'corporate', 'shop'] as const) {
-        const section = page.locator(`section#${id}`);
-        for (const label of [columns.included, columns.options, columns.excluded, columns.payment]) {
-            await expect(section.locator(`section[aria-label="${label}"]`)).toHaveCSS('opacity', '1');
-        }
-        await expect(section.getByText(columns.cases)).toBeVisible();
+    for (const service of sites) {
+        const section = page.locator(`section#${service.id}`);
+        await expect(section.getByRole('heading', { level: 2 })).toHaveText(service.title);
+        await expect(section.getByRole('heading', { level: 3, name: columns.included })).toBeVisible();
+        await expect(section.getByRole('heading', { level: 3, name: columns.options })).toBeVisible();
+        expect(norm(await section.textContent())).toContain(norm(service.price));
+        for (const pill of build[service.id].pills) await expect(section.locator('figure li', { hasText: label(pill.label) })).toBeVisible();
     }
     await expect(page.locator('section#landing').getByText(buildUi.lead)).toHaveCSS('opacity', '1');
-    // Сцена не липкая: колонка уходит вверх вместе со страницей
+    // Не липкая сцена: окно уходит вверх вместе со страницей
     const heading = page.locator('section#landing h2');
     const before = (await heading.boundingBox())!.y;
     await page.mouse.wheel(0, 600);

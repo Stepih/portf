@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { build, buildUi, commonTopics, faq, head, moreOptions, nav, projectPath, sitesDetails } from "./sitesPage";
+import { build, buildUi, commonTopics, faq, head, moreOptions, projectPath, sitesDetails } from "./sitesPage";
 import { services } from "./offer";
 import { portfolioWorks } from "./portfolio";
 import { portfolioCases } from "./portfolioCases";
@@ -36,12 +36,35 @@ describe("sitesPage", () => {
         }
     });
 
-    it("разделы сайтов – те же услуги, что карточки сайтов на главной, и все в навигации", () => {
-        const sites = services.filter((service) => service.id !== 'ai').map((service) => service.id);
-        expect(Object.keys(sitesDetails)).toEqual(sites);
-        const anchors = nav.map((item) => item.id);
-        for (const id of sites) expect(anchors).toContain(id);
-        expect(new Set(anchors).size).toBe(anchors.length);
+    it("виды сайтов – те же услуги, что карточки сайтов на главной, и ссылки «Что входит →» ведут на их якоря", () => {
+        const sites = services.filter((service) => service.id !== 'ai');
+        expect(Object.keys(sitesDetails)).toEqual(sites.map((service) => service.id));
+        for (const service of sites) expect(service.more).toMatch(new RegExp(`/sites#${service.id}$`));
+    });
+
+    // У5б: опции таблетками в окне – до 5, только с ценой и без повторов; остальные – тихой строкой
+    it("таблетки опций: до 5 на вид, у каждой есть цена", () => {
+        for (const [id, item] of Object.entries(build)) {
+            const options = sitesDetails[id as keyof typeof sitesDetails].options;
+            expect(item.pills.length).toBeGreaterThan(0);
+            expect(item.pills.length).toBeLessThanOrEqual(5);
+            const ids = item.pills.map((pill) => pill.option);
+            expect(new Set(ids).size).toBe(ids.length);
+            for (const pill of item.pills) expect(options[pill.option]?.price).toBeTruthy();
+        }
+    });
+
+    // Счётчик сайта компании сходится с примером расчёта: 30 000 + 9 000 + 4 × 2 000 = от 47 000 ₽
+    it("счётчик суммы сходится с примером расчёта", () => {
+        const sum = build.corporate.sum!;
+        const value = (text: string) => text.replace(/\s/g, '').split('×').map(Number).reduce((a, b) => a * b, 1);
+        let total = 0;
+        sum.terms.forEach((term, i) => {
+            total += value(term.value);
+            expect(sum.totals[i]).toBe(total);
+        });
+        const example = sitesDetails.corporate.example!.total.replace(/\D/g, '');
+        expect(String(total)).toBe(example);
     });
 
     // У5а: у каждого вида сайта – выноски сцены сборки; путь проекта начинается с бесплатных шагов подряд
