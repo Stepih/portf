@@ -1,22 +1,41 @@
-// Ширина – как у /portfolio; плашки разделов идут одна за другой с промежутком сетки
+// Ширина – как у /portfolio. Сцены сборки сами выходят на всю ширину окна (--page-w), остальные разделы – в колонке.
+// Ритм: сцена → прайс под ней → большой отступ до следующего вида
 .page {
     display: flex;
     flex-direction: column;
-    gap: 24px;
+    gap: 140px;
 
     max-width: 1160px;
     margin: 0 auto;
     padding: 0 0 120px;
 }
 
-// Первый экран отделён от навигации и плашек
+// Шапка и липкая навигация – вплотную к первой сцене; пустой верх её экрана заходит под шапку на 150px, чтобы окно
+// сборки было видно на первом экране
 .page > header {
-    margin-bottom: 24px;
+    margin-bottom: -124px;
+}
+
+.page > nav {
+    margin-bottom: -320px;
+}
+
+.site {
+    display: flex;
+    flex-direction: column;
 }
 
 @media screen and (max-width: 600px) {
     .page {
-        gap: 16px;
+        gap: 96px;
         padding-bottom: 90px;
+    }
+
+    .page > header {
+        margin-bottom: -80px;
+    }
+
+    .page > nav {
+        margin-bottom: -96px;
     }
 }

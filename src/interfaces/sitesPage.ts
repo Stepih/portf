@@ -39,5 +39,9 @@ export interface ISitesDetails {
 export interface ISitesTopic {
     title: string,
     items: string[],
-    notes?: string[]
+    notes?: string[],
+    // Крупная цифра темы (У5а): «от 300 ₽/мес», «1 500 ₽/час»
+    figure?: string,
+    // Доли платежей для шкал «Оплаты», по пункту на шкалу (У5а)
+    splits?: number[][]
 }

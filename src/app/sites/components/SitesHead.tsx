@@ -13,8 +13,8 @@ interface IProps {
     tgHref: string
 }
 
-// Первый экран /sites: крошки, заголовок, подпись и два действия – форма главной (залита) и Telegram,
-// как шапка /portfolio
+// Первый экран /sites: крошки, заголовок, подпись и два действия – форма главной (залита) и Telegram.
+// По центру, как первый экран /ai (У5а); под кнопками – подсказка «листайте», ниже сразу начинается сцена сборки
 const SitesHead: FC<IProps> = ({ tgHref }) => {
     return (
         <header className={s.head}>
@@ -33,6 +33,7 @@ const SitesHead: FC<IProps> = ({ tgHref }) => {
                     {head.tg}
                 </a>
             </div>
+            <p className={s.hint}>{head.hint}</p>
         </header>
     )
 }

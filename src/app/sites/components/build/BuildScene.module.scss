@@ -1,0 +1,374 @@
+@use '/src/styles/variables.scss' as vars;
+
+// Сцена «Сайт собирается на глазах» (У5а). Липкий экран и путь – scene.module.scss страницы /ai; здесь раскладка:
+// выноски | окно браузера | цена. Сверху экрана – место под липкую навигацию разделов (SitesNav, 12px + 56px)
+$hairline: rgba(128, 128, 128, 0.3);
+
+.scene {
+    scroll-margin-top: 0;
+}
+
+.screen {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    padding: 84px 32px 28px;
+
+    // Первая сцена заходит под шапку страницы (page.module.scss): пустой экран пропускает клики к ней
+    pointer-events: none;
+}
+
+.callouts,
+.window,
+.side {
+    pointer-events: auto;
+}
+
+.stage {
+    display: grid;
+    grid-template-columns: minmax(200px, 240px) minmax(0, 780px) minmax(240px, 290px);
+    align-items: center;
+    gap: 48px;
+
+    width: 100%;
+    max-width: 1440px;
+
+    color: var(--color-text-100);
+}
+
+// ---------- Выноски ----------
+.callouts {
+    display: flex;
+    flex-direction: column;
+    gap: 22px;
+
+    margin: 0;
+    padding: 0;
+
+    list-style: none;
+    text-align: right;
+}
+
+.callout {
+    position: relative;
+
+    padding-right: 44px;
+
+    font-size: 1.05rem;
+    line-height: 1.35;
+    color: var(--color-text-muted);
+    text-wrap: balance;
+
+    opacity: 0;
+    transform: translateY(10px);
+    transition: opacity .45s ease-out, transform .45s ease-out, color vars.$transition;
+
+    // Нить к окну
+    &::after {
+        content: '';
+
+        position: absolute;
+        top: .7em;
+        right: 0;
+
+        width: 28px;
+        height: 1px;
+
+        background: var(--color-text-50);
+        transform-origin: right center;
+        transition: transform .45s ease-out, background vars.$transition;
+    }
+}
+
+.shown {
+    opacity: 1;
+    transform: none;
+}
+
+// Шаг, который сейчас собирается: текст и нить – чернилами, нить длиннее
+.current {
+    color: var(--color-text-100);
+
+    &::after {
+        background: var(--color-text-100);
+        transform: scaleX(1.3);
+    }
+}
+
+// ---------- Окно ----------
+.window {
+    position: relative;
+
+    display: flex;
+    flex-direction: column;
+
+    height: min(580px, calc(var(--screen-h) - 150px));
+    margin: 0;
+
+    background: var(--color-frost);
+    border-radius: 13px;
+    box-shadow: vars.$shadow;
+    transition: background vars.$transition;
+}
+
+.bar {
+    display: flex;
+    flex: none;
+    align-items: center;
+    gap: 14px;
+
+    height: 46px;
+    padding: 0 16px;
+
+    border-bottom: 1px solid $hairline;
+}
+
+.dots {
+    display: flex;
+    flex: none;
+    gap: 7px;
+
+    i {
+        width: 10px;
+        height: 10px;
+
+        background: color-mix(in srgb, var(--color-text-100) 22%, transparent);
+        border-radius: 50%;
+    }
+}
+
+.address {
+    flex: 1;
+    max-width: 300px;
+    height: 22px;
+
+    background: color-mix(in srgb, var(--color-text-100) 7%, transparent);
+    border-radius: 11px;
+}
+
+.view {
+    position: relative;
+    flex: 1;
+
+    overflow: hidden;
+    border-radius: 0 0 13px 13px;
+}
+
+.caption {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+}
+
+// ---------- Цена ----------
+.side {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+}
+
+.title {
+    margin: 0;
+
+    font-size: clamp(1.6rem, 2.6vw, 2.2rem);
+    line-height: 1.15;
+    text-wrap: balance;
+}
+
+.summary {
+    margin: 10px 0 0;
+
+    font-size: 1.05rem;
+    line-height: 1.4;
+    color: var(--color-text-muted);
+    text-wrap: pretty;
+    transition: vars.$transition;
+}
+
+.price {
+    margin: 26px 0 0;
+
+    font-size: 2.5rem;
+    line-height: 1.05;
+    white-space: nowrap;
+}
+
+.term {
+    margin: 8px 0 0;
+    font-size: 1.05rem;
+}
+
+.note {
+    margin: 6px 0 0;
+
+    font-size: 0.95rem;
+    line-height: 1.35;
+    color: var(--color-text-muted);
+    text-wrap: pretty;
+    transition: vars.$transition;
+}
+
+.button {
+    margin-top: 24px;
+}
+
+@media screen and (max-width: 1200px) {
+    .stage {
+        grid-template-columns: minmax(150px, 190px) minmax(0, 1fr) minmax(220px, 250px);
+        gap: 32px;
+    }
+
+    .screen {
+        padding-right: 24px;
+        padding-left: 24px;
+    }
+}
+
+// Телефон и планшет: цена сверху, окно, под ним – текущая выноска одной строкой
+@media screen and (max-width: 900px) {
+    .screen {
+        align-items: stretch;
+        padding: 72px 16px 16px;
+    }
+
+    .stage {
+        display: flex;
+        flex-direction: column;
+        align-items: stretch;
+        gap: 14px;
+
+        max-width: 640px;
+        margin: 0 auto;
+    }
+
+    .side {
+        order: -1;
+
+        display: grid;
+        grid-template-columns: 1fr auto;
+        align-items: center;
+        column-gap: 16px;
+    }
+
+    .title {
+        grid-column: 1 / -1;
+        font-size: 1.5rem;
+    }
+
+    .summary {
+        grid-column: 1 / -1;
+        margin-top: 6px;
+        font-size: 0.95rem;
+    }
+
+    .price {
+        margin-top: 12px;
+        font-size: 1.6rem;
+    }
+
+    .term {
+        grid-column: 1;
+        margin-top: 2px;
+        font-size: 0.95rem;
+    }
+
+    .note {
+        display: none;
+    }
+
+    .button {
+        grid-column: 2;
+        grid-row: 3 / span 2;
+        margin-top: 8px;
+    }
+
+    .window {
+        flex: 1 1 auto;
+        height: auto;
+        min-height: 220px;
+    }
+
+    .bar {
+        height: 38px;
+        gap: 10px;
+        padding: 0 12px;
+    }
+
+    .callouts {
+        position: relative;
+        order: 1;
+
+        min-height: 2.9em;
+        // Справа – место под шар чата
+        padding-right: 64px;
+        text-align: left;
+    }
+
+    .callout {
+        position: absolute;
+        right: 64px;
+        bottom: 0;
+        left: 0;
+
+        padding: 0;
+
+        font-size: 1rem;
+
+        &::after {
+            display: none;
+        }
+    }
+
+    .shown:not(.current) {
+        opacity: 0;
+    }
+}
+
+// ---------- Без движения: обычный блок с собранным сайтом ----------
+.scene.still {
+    height: auto;
+
+    .screen {
+        position: relative;
+        height: auto;
+        overflow: visible;
+        padding-top: 40px;
+    }
+
+    .path {
+        display: none;
+    }
+
+    .window {
+        height: 540px;
+    }
+
+    .callout {
+        transition: none;
+    }
+
+    @media screen and (max-width: 900px) {
+        .window {
+            flex: none;
+            height: 380px;
+        }
+
+        .callouts {
+            display: flex;
+            gap: 8px;
+            min-height: 0;
+        }
+
+        .callout {
+            position: static;
+        }
+
+        .shown:not(.current) {
+            opacity: 1;
+        }
+    }
+}

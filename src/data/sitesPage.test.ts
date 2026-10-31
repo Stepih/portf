@@ -1,11 +1,11 @@
 import { describe, expect, it } from "vitest";
-import { commonTopics, faq, moreOptions, nav, sitesDetails } from "./sitesPage";
+import { build, buildUi, commonTopics, faq, head, moreOptions, nav, projectPath, sitesDetails } from "./sitesPage";
 import { services } from "./offer";
 import { portfolioWorks } from "./portfolio";
 import { portfolioCases } from "./portfolioCases";
 
 // Все клиентские строки страницы /sites одной строкой – для проверок по тексту
-const allText = (): string => JSON.stringify({ sitesDetails, commonTopics, moreOptions, faq });
+const allText = (): string => JSON.stringify({ head, sitesDetails, build, buildUi, projectPath, commonTopics, moreOptions, faq });
 
 describe("sitesPage", () => {
     it("в FAQ нет сумм, вопросы не повторяются (SALES_PLAN 3.8)", () => {
@@ -42,5 +42,26 @@ describe("sitesPage", () => {
         const anchors = nav.map((item) => item.id);
         for (const id of sites) expect(anchors).toContain(id);
         expect(new Set(anchors).size).toBe(anchors.length);
+    });
+
+    // У5а: у каждого вида сайта – выноски сцены сборки; путь проекта начинается с бесплатных шагов подряд
+    it("сцена сборки и путь проекта", () => {
+        expect(Object.keys(build)).toEqual(Object.keys(sitesDetails));
+        for (const item of Object.values(build)) expect(item.callouts.length).toBeGreaterThanOrEqual(3);
+        const free = projectPath.steps.map((step) => !!step.free);
+        expect(free[0]).toBe(true);
+        expect(free.indexOf(false)).toBe(free.lastIndexOf(true) + 1);
+    });
+
+    // V6: перед тире в подписях сцены – неразрывный пробел, тире не уходит в начало строки
+    it("в выносках и шагах перед тире – неразрывный пробел", () => {
+        const lines = [head.hint, ...Object.values(build).flatMap((item) => item.callouts), ...projectPath.steps.map((step) => step.text)];
+        for (const line of lines) expect(line).not.toMatch(/ –/);
+    });
+
+    it("шкалы оплаты – по 100%", () => {
+        for (const topic of commonTopics) {
+            for (const split of topic.splits ?? []) expect(split.reduce((a, b) => a + b, 0)).toBe(100);
+        }
     });
 });

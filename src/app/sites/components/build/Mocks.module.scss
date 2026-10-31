@@ -1,0 +1,768 @@
+@use '/src/styles/variables.scss' as vars;
+
+// Нарисованные сайты в окне сцены (У5а). Только тона чернил от переменных темы – в тёмной теме всё меняется само.
+// Блок – 7% чернил, строка текста – 22%, заголовок – 55%, тёмные блоки – чернила
+$block: color-mix(in srgb, var(--color-text-100) 7%, transparent);
+$text: color-mix(in srgb, var(--color-text-100) 22%, transparent);
+$strong: color-mix(in srgb, var(--color-text-100) 55%, transparent);
+$hairline: rgba(128, 128, 128, 0.3);
+
+.page {
+    position: absolute;
+    inset: 0;
+
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+
+    padding: 16px;
+}
+
+.block {
+    position: relative;
+
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+
+    padding: 14px;
+
+    background: $block;
+    border-radius: 9px;
+    transition: background vars.$transition;
+}
+
+.line {
+    display: block;
+    flex: none;
+
+    height: 7px;
+
+    background: $text;
+    border-radius: 4px;
+    transform-origin: left center;
+}
+
+.strong {
+    height: 10px;
+    background: $strong;
+}
+
+// Первый экран – тёмный блок, строки цветом фона
+.hero {
+    flex: 1.5 1 0;
+    justify-content: center;
+    gap: 10px;
+    padding: 6% 7%;
+
+    background: var(--color-text-100);
+
+    .line {
+        background: color-mix(in srgb, var(--color-bg) 45%, transparent);
+    }
+
+    .strong {
+        height: 16px;
+        background: var(--color-bg);
+    }
+}
+
+.heroShort {
+    flex: 1.2 1 0;
+}
+
+.heroButton {
+    width: 22%;
+    height: 26px;
+    margin-top: 8px;
+
+    background: var(--color-bg);
+    border-radius: 7px;
+}
+
+.row3 {
+    flex: 1 1 0;
+
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+
+    & > * {
+        min-height: 0;
+    }
+}
+
+.icon {
+    width: 22px;
+    height: 22px;
+    margin-bottom: 4px;
+
+    background: $text;
+    border-radius: 50%;
+}
+
+.wide {
+    flex: .55 1 0;
+    justify-content: center;
+}
+
+.form {
+    flex: .9 1 0;
+    flex-direction: row;
+    align-items: center;
+    gap: 10px;
+
+    background: transparent;
+    border: 1.5px solid $hairline;
+}
+
+.formTall {
+    flex: 1;
+    flex-direction: column;
+    align-items: stretch;
+    justify-content: center;
+}
+
+.field {
+    flex: 1;
+    min-height: 26px;
+
+    background: $block;
+    border-radius: 7px;
+}
+
+.formButton {
+    display: flex;
+    flex: none;
+    align-items: center;
+    justify-content: center;
+
+    min-width: 22%;
+    min-height: 26px;
+    padding: 0 12px;
+
+    font-size: 0.875rem;
+    color: var(--color-bg);
+
+    background: var(--color-text-100);
+    border-radius: 7px;
+    transition: vars.$transition;
+}
+
+// Заявка в Telegram – плашка у правого края окна
+.toast {
+    position: absolute;
+    right: 16px;
+    bottom: 16px;
+    z-index: 3;
+
+    display: flex;
+    align-items: center;
+    gap: 10px;
+
+    padding: 10px 16px 10px 10px;
+
+    font-size: 0.95rem;
+    color: var(--color-bg);
+    white-space: nowrap;
+
+    // Залита чернилами, как первый экран в окне: видна на окне в обеих темах
+    background: var(--color-text-100);
+    border-radius: 13px;
+    box-shadow: vars.$shadow;
+    transition: background vars.$transition, color vars.$transition;
+}
+
+.tg {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    width: 32px;
+    height: 32px;
+
+    background: var(--color-bg);
+    border-radius: 50%;
+
+    svg {
+        width: 16px;
+        height: auto;
+    }
+
+    path {
+        fill: var(--color-text-100);
+    }
+}
+
+// ---------- Сайт компании ----------
+.pages {
+    padding: 0;
+}
+
+.layer {
+    position: absolute;
+    inset: 0;
+
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+
+    padding: 16px;
+}
+
+.on {
+    transform: none;
+}
+
+.listRow {
+    flex: 1 1 0;
+    flex-direction: row;
+    align-items: center;
+    gap: 14px;
+}
+
+.thumb {
+    flex: none;
+    width: 52px;
+    height: 52px;
+
+    background: $text;
+    border-radius: 7px;
+}
+
+.stack {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    gap: 8px;
+    min-width: 0;
+}
+
+.about {
+    flex: 1;
+
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    align-items: center;
+    gap: 18px;
+}
+
+.photo,
+.map {
+    height: 100%;
+    min-height: 120px;
+}
+
+.map {
+    position: relative;
+    overflow: hidden;
+
+    svg {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+    }
+
+    .road {
+        fill: none;
+        stroke: $text;
+        stroke-width: 6;
+        stroke-linecap: round;
+    }
+
+    .street {
+        fill: none;
+        stroke: $text;
+        stroke-width: 2.5;
+    }
+
+    .pin {
+        fill: var(--color-text-100);
+        transition: fill vars.$transition;
+    }
+
+    .pinDot {
+        fill: var(--color-bg);
+        transition: fill vars.$transition;
+    }
+}
+
+.tabs {
+    display: flex;
+    gap: 6px;
+    min-width: 0;
+}
+
+.tab {
+    position: relative;
+
+    display: flex;
+    align-items: center;
+
+    min-height: 26px;
+    padding: 0 12px;
+
+    font-size: 0.875rem;
+    color: var(--color-text-100);
+    white-space: nowrap;
+
+    border: 1px solid $hairline;
+    border-radius: 13px;
+    transition: color vars.$transition;
+}
+
+.tabFill {
+    position: absolute;
+    inset: -1px;
+
+    background: var(--color-text-100);
+    border-radius: 13px;
+    transition: background vars.$transition;
+
+    & + .tabLabel {
+        position: relative;
+    }
+}
+
+.ghost {
+    width: 34px;
+    padding: 0;
+    border-style: dashed;
+}
+
+// ---------- Панель управления ----------
+.panel {
+    position: absolute;
+    right: -44px;
+    bottom: -28px;
+    z-index: 3;
+
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+
+    width: 230px;
+    padding: 16px;
+
+    color: var(--color-text-100);
+
+    background: var(--color-orb-glass);
+    border-radius: 13px;
+    box-shadow: vars.$shadow;
+    transition: background vars.$transition, color vars.$transition;
+}
+
+.panelTitle {
+    margin: 0 0 4px;
+    font-size: 0.95rem;
+}
+
+.panelLabel {
+    font-size: 0.875rem;
+    color: var(--color-text-muted);
+    transition: vars.$transition;
+}
+
+.input {
+    display: flex;
+    align-items: center;
+
+    height: 30px;
+    padding: 0 10px;
+
+    background: $block;
+    border: 1.5px solid var(--color-text-100);
+    border-radius: 7px;
+}
+
+.typed {
+    width: 46%;
+    height: 8px;
+
+    background: $strong;
+    border-radius: 4px;
+    transform-origin: left center;
+}
+
+.save {
+    align-self: flex-start;
+
+    padding: 7px 14px;
+
+    font-size: 0.875rem;
+    color: var(--color-bg);
+
+    background: var(--color-text-100);
+    border-radius: 7px;
+    transition: vars.$transition;
+}
+
+.order {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+
+    padding: 6px 0;
+    border-bottom: 1px solid $hairline;
+}
+
+.status {
+    width: 46px;
+    height: 16px;
+
+    border: 1.5px solid $strong;
+    border-radius: 8px;
+}
+
+// ---------- Магазин ----------
+.shop {
+    flex-direction: row;
+    gap: 0;
+    overflow: hidden;
+}
+
+.filters {
+    position: absolute;
+    top: 16px;
+    bottom: 16px;
+    left: 16px;
+
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+
+    width: 24%;
+    padding: 14px;
+
+    background: $block;
+    border-radius: 9px;
+}
+
+.filtersTitle {
+    margin: 0 0 2px;
+    font-size: 0.875rem;
+    color: var(--color-text-100);
+}
+
+.check {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.box {
+    flex: none;
+    width: 12px;
+    height: 12px;
+
+    border: 1.5px solid $strong;
+    border-radius: 3px;
+}
+
+.boxOn {
+    background: var(--color-text-100);
+    border-color: var(--color-text-100);
+}
+
+.catalog {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    gap: 10px;
+    min-width: 0;
+}
+
+.chips {
+    display: flex;
+    gap: 6px;
+}
+
+.chip {
+    width: 64px;
+    height: 22px;
+
+    border: 1px solid $hairline;
+    border-radius: 11px;
+}
+
+.chipOn {
+    background: var(--color-text-100);
+    border-color: var(--color-text-100);
+}
+
+.grid {
+    flex: 1;
+
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    grid-template-rows: 1fr 1fr;
+    gap: 10px;
+    min-height: 0;
+}
+
+.cardWrap {
+    min-height: 0;
+}
+
+.product {
+    position: relative;
+
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+
+    height: 100%;
+    padding: 8px;
+
+    background: $block;
+    border-radius: 9px;
+    transform-origin: center;
+}
+
+.productImg {
+    flex: 1;
+    min-height: 0;
+
+    background: $text;
+    border-radius: 6px;
+}
+
+.toCart {
+    position: absolute;
+    right: 8px;
+    bottom: 8px;
+
+    padding: 5px 10px;
+
+    font-size: 0.875rem;
+    color: var(--color-bg);
+
+    background: var(--color-text-100);
+    border-radius: 7px;
+    transition: vars.$transition;
+}
+
+// Оформление заказа выезжает справа поверх каталога
+.sheet {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 2;
+
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+
+    width: 44%;
+    padding: 20px 16px;
+
+    background: var(--color-orb-glass);
+    box-shadow: vars.$shadow;
+    transition: background vars.$transition;
+
+    .field {
+        flex: none;
+        height: 30px;
+    }
+}
+
+.methods {
+    display: flex;
+    gap: 8px;
+}
+
+.method {
+    flex: 1;
+    height: 34px;
+
+    border: 1.5px solid $hairline;
+    border-radius: 7px;
+}
+
+.methodOn {
+    border-color: var(--color-text-100);
+}
+
+.pay {
+    position: relative;
+    min-height: 40px;
+    margin-top: 6px;
+}
+
+// Строки заказа над формой
+.item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+
+    padding-bottom: 10px;
+    border-bottom: 1px solid $hairline;
+}
+
+.payButton {
+    position: absolute;
+    inset: 0;
+    min-height: 40px;
+    font-size: 0.875rem;
+}
+
+.paid {
+    position: absolute;
+    inset: 0;
+
+    display: flex;
+    align-items: center;
+    gap: 8px;
+
+    font-size: 0.875rem;
+    line-height: 1.2;
+    color: var(--color-text-100);
+
+    svg {
+        flex: none;
+        width: 22px;
+        height: 22px;
+        padding: 3px;
+
+        background: var(--color-text-100);
+        border-radius: 50%;
+    }
+
+    path {
+        fill: none;
+        stroke: var(--color-bg);
+        stroke-width: 2;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+    }
+}
+
+.shopBar {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.search {
+    display: flex;
+    align-items: center;
+
+    width: 130px;
+    min-height: 26px;
+    padding: 0 12px;
+
+    font-size: 0.875rem;
+    color: var(--color-text-muted);
+
+    border: 1px solid $hairline;
+    border-radius: 13px;
+}
+
+.cart {
+    position: relative;
+
+    display: flex;
+
+    svg {
+        width: 22px;
+        height: 22px;
+    }
+
+    path {
+        fill: none;
+        stroke: var(--color-text-100);
+        stroke-width: 1.6;
+        stroke-linejoin: round;
+        transition: vars.$transition;
+    }
+
+    circle {
+        fill: var(--color-text-100);
+        transition: vars.$transition;
+    }
+}
+
+.badge {
+    position: absolute;
+    top: -6px;
+    right: -8px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    width: 16px;
+    height: 16px;
+
+    font-size: 0.65rem;
+    color: var(--color-bg);
+
+    background: var(--color-text-100);
+    border-radius: 50%;
+}
+
+@media screen and (max-width: 900px) {
+    .page,
+    .layer {
+        gap: 8px;
+        padding: 10px;
+    }
+
+    .block {
+        padding: 10px;
+    }
+
+    .toast {
+        right: 8px;
+        bottom: 10px;
+        font-size: 0.875rem;
+    }
+
+    .panel {
+        right: 8px;
+        bottom: 8px;
+        width: 190px;
+        padding: 12px;
+    }
+
+    .tab {
+        padding: 0 8px;
+        font-size: 0.875rem;
+    }
+
+    .ghost {
+        width: 20px;
+    }
+}
+
+@media screen and (max-width: 560px) {
+    .row3 {
+        grid-template-columns: repeat(2, 1fr);
+
+        & > :last-child {
+            display: none;
+        }
+    }
+
+    .grid {
+        grid-template-columns: repeat(2, 1fr);
+        grid-template-rows: repeat(3, 1fr);
+    }
+
+    .tabs .tab:not(.ghost) {
+        font-size: 0;
+        width: 22px;
+        padding: 0;
+    }
+
+    .search {
+        width: 70px;
+    }
+
+    .sheet {
+        width: 70%;
+    }
+}
