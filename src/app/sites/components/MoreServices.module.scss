@@ -1,0 +1,17 @@
+// Две колонки: flex списка из Plate заменён на колонки, пункт не рвётся между ними
+.list {
+    display: block;
+    columns: 2;
+    column-gap: 40px;
+
+    li {
+        margin-bottom: 8px;
+        break-inside: avoid;
+    }
+}
+
+@media screen and (max-width: 700px) {
+    .list {
+        columns: 1;
+    }
+}

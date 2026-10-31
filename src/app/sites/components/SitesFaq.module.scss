@@ -1,0 +1,13 @@
+// Отступ сверху – свой, а не 100px FAQ главной (section – чтобы перебить её класс); липкая навигация не закрывает заголовок
+section.faq {
+    width: 100%;
+    margin: 76px auto 0;
+
+    scroll-margin-top: 88px;
+}
+
+@media screen and (max-width: 600px) {
+    section.faq {
+        margin-top: 46px;
+    }
+}

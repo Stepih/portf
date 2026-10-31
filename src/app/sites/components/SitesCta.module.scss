@@ -1,0 +1,42 @@
+@use '/src/styles/variables.scss' as vars;
+
+.cta {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+
+    margin-top: 76px;
+
+    color: var(--color-text-100);
+    text-align: center;
+}
+
+.buttons {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 10px;
+}
+
+.note {
+    margin: 0;
+
+    font-size: 0.95rem;
+    color: var(--color-text-muted);
+    transition: vars.$transition;
+}
+
+@media screen and (max-width: 600px) {
+    .cta {
+        margin-top: 46px;
+    }
+
+    .buttons {
+        align-self: stretch;
+
+        > * {
+            flex: 1 1 100%;
+        }
+    }
+}

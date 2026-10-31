@@ -7,6 +7,7 @@ export const popupPageURL = "/popup"
 export const mediaPageURL = "/media"
 export const portfolioPageURL = "/portfolio"
 export const aiPageURL = "/ai"
+export const sitesPageURL = "/sites"
 
 // Форма заявки на главной (DESIGN_FIXES_3_PLAN Д13): призывы главной ведут сюда, а не на /popup
 export const contactSectionId = "contact"

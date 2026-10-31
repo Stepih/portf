@@ -1221,31 +1221,34 @@ for (const width of [1400, 375]) {
     });
 }
 
-// SERVICES_PLAN У4: «Что входит →» – только в карточке ИИ (у сайтов – с /sites в У5), ведёт на /ai, цель Метрики
-// services_more; строка текста, но цель касания не меньше 44px
+// SERVICES_PLAN У4, У5: «Что входит →» в каждой карточке – у ИИ на /ai, у сайтов на свой раздел /sites; цель Метрики
+// services_more с id услуги; строка текста, но цель касания не меньше 44px
+const moreHref: Record<string, string> = { landing: '/sites#landing', corporate: '/sites#corporate', shop: '/sites#shop', ai: '/ai' };
 for (const width of [1400, 375]) {
-    test(`карточка ИИ: «Что входит» ведёт на /ai, ${width}`, async ({ page }) => {
+    test(`карточки: «Что входит» ведёт на страницу услуги, ${width}`, async ({ page }) => {
         await page.setViewportSize({ width, height: 900 });
         await page.goto('/');
 
         const region = page.getByRole('region', { name: servicesTitle });
-        await expect(region.getByRole('link', { name: new RegExp(`^${servicesMoreLabel}:`) })).toHaveCount(1);
-        const ai = services.find((service) => service.id === 'ai')!;
-        const link = region.getByRole('link', { name: `${servicesMoreLabel}: ${ai.title}` });
-        await expect(link).toHaveAttribute('href', '/ai');
-        await expect(link).toHaveAttribute('data-goal', 'services_more');
-        await expect(link).toHaveAttribute('data-goal-id', 'ai');
+        await expect(region.getByRole('link', { name: new RegExp(`^${servicesMoreLabel}:`) })).toHaveCount(services.length);
+        for (const service of services) {
+            const link = region.getByRole('link', { name: `${servicesMoreLabel}: ${service.title}` });
+            await expect(link).toHaveAttribute('href', moreHref[service.id]);
+            await expect(link).toHaveAttribute('data-goal', 'services_more');
+            await expect(link).toHaveAttribute('data-goal-id', service.id);
 
-        await link.scrollIntoViewIfNeeded();
-        const target = await link.evaluate((el) => {
-            const box = el.getBoundingClientRect();
-            const before = getComputedStyle(el, '::before');
-            return box.height - parseFloat(before.top) - parseFloat(before.bottom);
-        });
-        expect(target).toBeGreaterThanOrEqual(44);
+            await link.scrollIntoViewIfNeeded();
+            const target = await link.evaluate((el) => {
+                const box = el.getBoundingClientRect();
+                const before = getComputedStyle(el, '::before');
+                return box.height - parseFloat(before.top) - parseFloat(before.bottom);
+            });
+            expect(target).toBeGreaterThanOrEqual(44);
+        }
 
-        await link.click();
-        await expect(page).toHaveURL(/\/ai$/);
+        await region.getByRole('link', { name: `${servicesMoreLabel}: ${services[1].title}` }).click();
+        await expect(page).toHaveURL(/\/sites#corporate$/);
+        await expect(page.getByRole('heading', { level: 2, name: services[1].title })).toBeInViewport();
     });
 }
 

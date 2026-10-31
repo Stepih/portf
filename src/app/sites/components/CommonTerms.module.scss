@@ -1,0 +1,27 @@
+// Темы – колонками без сетки строк: высота тем разная (10 пунктов у «Входит в каждый сайт», 2 у «На чём делаю»),
+// в сетке короткие темы оставляли бы дыры
+.grid {
+    columns: 3;
+    column-gap: 40px;
+}
+
+.topic {
+    margin-bottom: 32px;
+    break-inside: avoid;
+}
+
+@media screen and (max-width: 1100px) {
+    .grid {
+        columns: 2;
+    }
+}
+
+@media screen and (max-width: 700px) {
+    .grid {
+        columns: 1;
+    }
+
+    .topic {
+        margin-bottom: 28px;
+    }
+}

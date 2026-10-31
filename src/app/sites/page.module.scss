@@ -1,0 +1,22 @@
+// Ширина – как у /portfolio; плашки разделов идут одна за другой с промежутком сетки
+.page {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+
+    max-width: 1160px;
+    margin: 0 auto;
+    padding: 0 0 120px;
+}
+
+// Первый экран отделён от навигации и плашек
+.page > header {
+    margin-bottom: 24px;
+}
+
+@media screen and (max-width: 600px) {
+    .page {
+        gap: 16px;
+        padding-bottom: 90px;
+    }
+}

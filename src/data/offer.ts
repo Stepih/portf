@@ -4,7 +4,7 @@
 
 import { IFaqItem, IHeroSlide, IMoreLink, IOfferButton, IOfferReason, IOfferStep, IService } from "@/interfaces/offer"
 import { PortfolioIndustry } from "@/interfaces/portfolio"
-import { aiPageURL, hiddenPages, mediaPageURL, musicPageURL, myTg, portfolioTg } from "@/constants/urls"
+import { aiPageURL, hiddenPages, sitesPageURL, mediaPageURL, musicPageURL, myTg, portfolioTg } from "@/constants/urls"
 import { plural, portfolioStats, yearsRange } from "@/scripts/portfolioStats"
 
 // h1 главной. «⁠» после дефиса не даёт строке разорваться на «ИИ-» (на телефоне)
@@ -119,7 +119,9 @@ export const services: IService[] = [
         term: '3–4 дня',
         note: 'Обычно 8 000–20 000 ₽ с опциями',
         // KEYSTONE – одна страница до заявки (К2.4). ИКЦ «Презентация» – лендинг (владелец, У3)
-        caseIds: ['keystone', 'icc']
+        caseIds: ['keystone', 'icc'],
+        // Раздел страницы /sites (SERVICES_PLAN У5)
+        more: `${sitesPageURL}#landing`
     },
     {
         id: 'corporate',
@@ -130,7 +132,9 @@ export const services: IService[] = [
         term: '1–2 недели',
         note: '4 страницы, следующая – около 9 000 ₽',
         // Один кейс на карточке (владелец, У3), остальные – на /sites. Союз вокалистов – разработка владельца целиком
-        caseIds: ['vocal']
+        caseIds: ['vocal'],
+        // Раздел страницы /sites (SERVICES_PLAN У5)
+        more: `${sitesPageURL}#corporate`
     },
     {
         id: 'shop',
@@ -140,7 +144,9 @@ export const services: IService[] = [
         price: 'от 50 000 ₽',
         term: '2–3 недели',
         note: 'Каталог без корзины – от 35 000 ₽',
-        caseIds: ['onkel', 'ptmix']
+        caseIds: ['onkel', 'ptmix'],
+        // Раздел страницы /sites (SERVICES_PLAN У5)
+        more: `${sitesPageURL}#shop`
     },
     {
         id: 'ai',
@@ -165,7 +171,6 @@ export const services: IService[] = [
         // Сумма – только в подробностях: у звонков она в разы выше, чем у заявок (copy_choices)
         note: 'Модель и сервер – отдельно, каждый месяц',
         caseIds: ['legiscan'],
-        // У сайтов ссылка появится вместе со страницей /sites (У5)
         more: aiPageURL,
         wide: true,
         demoChat: true
