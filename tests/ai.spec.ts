@@ -64,15 +64,35 @@ test('/ai: вопрос во встроенном чате уходит в /api/
     expect(JSON.parse(requests[0]).messages).toEqual([{ role: 'user', content: 'Что агент сделает со звонками?' }]);
 });
 
-// Сейчас не проходит: в покое панель чата (OrbScene .panel) лежит поверх кнопки шара и перехватывает клик
-// (1400, 1280, 1100, 820). Снять fixme после правки
-test.fixme('/ai: клик по шару докручивает до чата', async ({ page }) => {
+// Б1: в покое панель чата лежала поверх кнопки шара и перехватывала клик
+test('/ai: клик по шару докручивает до чата', async ({ page }) => {
     await page.goto('/ai');
     const box = await page.getByRole('button', { name: ph.orbLabel }).boundingBox();
     expect(box).not.toBeNull();
     // Настоящий клик мышью в центр шара: шар всё время «дышит», locator.click не дождётся неподвижности
     await page.mouse.click(box!.x + box!.width / 2, box!.y + box!.height / 2);
     await expect(page.getByRole('region', { name: chatTitle })).not.toHaveAttribute('inert', /.*/);
+});
+
+// Б2: при быстром переходе (ползунок, End) таблица «Каждый месяц» не дотиралась – нижнее пояснение висело в сетке
+// «Что входит». Прыгаем за стык и ждём, пока сцены успокоятся: все пояснения обрезаны линией Terms
+test('/ai: после прыжка за стык «Каждый месяц» → «Что входит» таблица стёрта целиком', async ({ page }) => {
+    await page.setViewportSize({ width: 1400, height: 900 });
+    await page.goto('/ai');
+    // Сцены раскладываются после гидрации: ждём, пока «Что входит» встанет ниже сцен первого экрана
+    const terms = page.locator('section[aria-labelledby="terms-title"]');
+    const topOf = () => terms.evaluate((el) => el.getBoundingClientRect().top + window.scrollY);
+    await expect.poll(topOf).toBeGreaterThan(5000);
+    await page.evaluate((y) => window.scrollTo(0, y), await topOf() + 900);
+
+    const notes = page.locator('section[aria-labelledby="monthly-title"] ul');
+    const hidden = () => notes.evaluate((ul) => {
+        const layout = ul.parentElement!;
+        const m = getComputedStyle(layout).clipPath.match(/^inset\(([\d.]+)px/);
+        const cut = m ? layout.getBoundingClientRect().top + Number(m[1]) : -Infinity;
+        return [...ul.children].every((li) => li.getBoundingClientRect().bottom <= cut + 1);
+    });
+    await expect.poll(hidden, { timeout: 5000 }).toBe(true);
 });
 
 test.describe('уменьшить движение', () => {

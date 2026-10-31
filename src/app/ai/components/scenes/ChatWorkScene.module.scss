@@ -41,6 +41,11 @@
     z-index: 4;
 }
 
+// Панель чата вне окна чата (у .panel в OrbScene – auto; через .chatLayer – сильнее его при любом порядке стилей)
+.chatLayer .panelIdle {
+    pointer-events: none;
+}
+
 // ---------- Ступени ----------
 .tiers {
     position: absolute;

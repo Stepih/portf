@@ -440,40 +440,8 @@ $out: cubic-bezier(.16, 1, .3, 1);
         grid-template-columns: repeat(2, minmax(0, 1fr));
     }
 
-    .split {
-        grid-template-columns: minmax(0, 1fr);
-        gap: 8px;
-    }
-
-    .notes {
-        padding-top: 0;
-    }
-}
-
-@media screen and (max-width: 700px) {
-    .section {
-        margin-top: 70px;
-    }
-
-    // Строка таблицы – блок: что делает, где, цена
-    .row {
-        grid-template-columns: minmax(0, 1fr);
-        gap: 4px;
-
-        padding: 14px 0;
-    }
-
-    .row.head {
-        display: none;
-    }
-
-    .topics,
-    .terms {
-        grid-template-columns: minmax(0, 1fr);
-        gap: 20px;
-    }
-
-    // Линия шагов – вертикальная, шаги – строками
+    // Линия шагов – вертикальная, шаги – строками: на планшете пять колонок по ~120px давали текст до 7 строк
+    // (владелец 31.10.2026: «столбиком, как на телефоне»)
     .flow {
         grid-template-columns: minmax(0, 1fr);
         gap: 20px;
@@ -506,6 +474,39 @@ $out: cubic-bezier(.16, 1, .3, 1);
         flex-direction: row;
         gap: 16px;
         text-align: left;
+    }
+
+    .split {
+        grid-template-columns: minmax(0, 1fr);
+        gap: 8px;
+    }
+
+    .notes {
+        padding-top: 0;
+    }
+}
+
+@media screen and (max-width: 700px) {
+    .section {
+        margin-top: 70px;
+    }
+
+    // Строка таблицы – блок: что делает, где, цена
+    .row {
+        grid-template-columns: minmax(0, 1fr);
+        gap: 4px;
+
+        padding: 14px 0;
+    }
+
+    .row.head {
+        display: none;
+    }
+
+    .topics,
+    .terms {
+        grid-template-columns: minmax(0, 1fr);
+        gap: 20px;
     }
 
     .mrow {

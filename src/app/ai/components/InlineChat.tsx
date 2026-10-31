@@ -79,13 +79,15 @@ interface IInlineChat {
     // Фокус ушёл из панели
     onLeave?: () => void,
     // Прятать шар в углу, пока панель на экране; false – шаром управляет сцена (вариант C)
-    manageFab?: boolean
+    manageFab?: boolean,
+    // Путь самой дальней капли, px (единая скорость: сцена считает от него длину появления)
+    onDropPath?: (px: number) => void
 }
 
 // Демо-чат прямо на странице (SERVICES_PLAN У4, черновик): тот же диалог, что в окне из шара в углу (ChatProvider).
 // Разметка и стили – как в ChatWindow, без затемнения, закрытия и блокировки скролла. При переносе на /ai общее
 // с ChatWindow вынести в один компонент
-const InlineChat: FC<IInlineChat> = ({ className, bare, intro, orbRef, orbOpacity, inert, onInteract, onLeave, manageFab = true }) => {
+const InlineChat: FC<IInlineChat> = ({ className, bare, intro, orbRef, orbOpacity, inert, onInteract, onLeave, manageFab = true, onDropPath }) => {
     const { chat, tgButton, setInlineShown } = useChatDialog();
     const { items, loading, limit, ask, addNote } = chat;
     const [question, setQuestion] = useState('');
@@ -140,7 +142,7 @@ const InlineChat: FC<IInlineChat> = ({ className, bare, intro, orbRef, orbOpacit
             const p = offsetIn(o, r);
             const ox = p.x + o.offsetWidth / 2;
             const oy = p.y + o.offsetHeight / 2;
-            setGeoms(starterEls.current.map((el) => {
+            const next = starterEls.current.map((el) => {
                 if (!el) return { dx: 0, dy: 0, x: 0, y: 0, w: 0, h: 0 };
                 const b = offsetIn(el, r);
                 return {
@@ -151,14 +153,17 @@ const InlineChat: FC<IInlineChat> = ({ className, bare, intro, orbRef, orbOpacit
                     w: el.offsetWidth,
                     h: el.offsetHeight,
                 };
-            }));
+            });
+            setGeoms(next);
+            // Прямая до кнопки плюс дуга: подъём на LIFT и обратно
+            if (next.length) onDropPath?.(Math.max(...next.map((g) => Math.hypot(g.dx, g.dy))) + 2 * LIFT);
         };
         measure();
         document.fonts?.ready.then(measure);
         const observer = new ResizeObserver(measure);
         observer.observe(root.current);
         return () => observer.disconnect();
-    }, [intro, orb, showStarters]);
+    }, [intro, orb, showStarters, onDropPath]);
 
     const send = () => {
         if (!question.trim() || loading) return;

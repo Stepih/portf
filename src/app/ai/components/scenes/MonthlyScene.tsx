@@ -35,9 +35,10 @@ const LAST = monthlyRows.length - 1;
 type W = [number, number];
 interface IRowT {
     // Новый шар вырастает из точки в начале шкалы (строки 2 и 3); подпись выезжает слева; шар катится к левой границе,
-    // затем к правой – за ним тянется капсула, сумма набегает счётчиком; справа выезжает пояснение
+    // затем к правой – за ним тянется капсула, сумма набегает счётчиком; пояснение въезжает справа сразу на своё место
+    // в столбце пояснений таблицы
     grow: W, label: W, pre: W, stretch: W, note: W,
-    // Фаза 1: все части строки разом собираются под шкалой в компактную строку (шар на конце капсулы – до точки);
+    // Фаза 1: все части строки разом собираются под крупной подписью в компактную строку (шар на конце капсулы – до точки);
     // фаза 2: собранная строка одним блоком уезжает вверх в свою полосу таблицы
     gather: W, fly: W,
     // Строка села (land): линия строки прорисовывается, шар гаснет; крупная шкала гаснет до 30%, пока строка летит
@@ -55,7 +56,7 @@ interface ITimes {
 // Паузы, в экранах: строка дочитывается до сборки; между строками шар невидим хотя бы кадр
 const READ = .1;
 const GAP = .02;
-// Подпись въезжает слева на LABEL_IN, пояснение справа – на NOTE_IN, px
+// Подпись въезжает слева на LABEL_IN, пояснение в таблице справа – на NOTE_IN, px
 const LABEL_IN = 90;
 const NOTE_IN = 120;
 const win = (v: number, [a, d]: W) => span(v, a, d);
@@ -65,11 +66,17 @@ const D = 220;
 const BALL = 22;
 const CAP = 44;
 const DOT = 26;
+// Крупная сцена на низком экране: шрифты не мельче FIT_MIN от обычных. BIG_FIXED – её высота, не зависящая от шрифта
+// (капсула, отступы, строка «1 из 3»), px
+const FIT_MIN = .6;
+const BIG_FIXED = 130;
+// Собранная строка встаёт на DOCK ниже крупной подписи – на место подписей отметок (при сборке они гаснут), px
+const DOCK = 8;
 
 interface IPoint { x: number, y: number }
 interface IBox extends IPoint { w: number, h: number }
-// Замеры без transform, от верхнего левого угла экрана сцены. Крупные части строки (подпись, сумма, капсула,
-// пояснение) у всех строк лежат в одних местах; ...To – их места в собранной строке под шкалой: место в таблице,
+// Замеры без transform, от верхнего левого угла экрана сцены. Крупные части строки (подпись, сумма, капсула)
+// у всех строк лежат в одних местах; ...To – их места в собранной строке под подписью: место в таблице,
 // поднятое на lift (насколько строка потом уедет вверх). ...K – во сколько раз в таблице меньше шрифт
 interface IGeo {
     // Начало полёта шарика (экраны от закрепления, отрицательное), путь и его длина, px
@@ -81,7 +88,6 @@ interface IGeo {
     lift: number[],
     label: IPoint, labelTo: IPoint[], labelK: number,
     sum: IPoint, sumTo: IPoint[], sumK: number,
-    note: IPoint[], noteTo: IPoint[], noteK: number, noteW: number[],
     // Капсула и волосяная линия строки – от левого верха крупной шкалы
     capTo: IBox[], trackTo: IBox[],
     // Конец капсулы в таблице – там садится шар
@@ -132,7 +138,6 @@ const geo0: Omit<IGeo, 't'> = {
     pre: -1, path: [p0], fallLen: 900, land: p0, rail: { ...b0, w: 1200 }, lift: each(300),
     label: p0, labelTo: each(p0), labelK: 1,
     sum: p0, sumTo: each(p0), sumK: 1,
-    note: each(p0), noteTo: each(p0), noteK: 1, noteW: each(0),
     capTo: each(b0), trackTo: each(b0), dot: each(p0), shift: 100, gatherLen: each(300), rowW: 700
 };
 const noGeo: IGeo = { ...geo0, t: timesFor(geo0, 900) };
@@ -226,20 +231,21 @@ const ballAt = (v: number, g: IGeo) => {
     return { x, y, scale, rot, star: 1, on: scale > .001 ? 1 : 0 };
 };
 
-// Крупная шкала гаснет до 30%, пока строка собирается и летит в таблицу; в конце гаснет совсем
-const scaleOpacity = (v: number, t: ITimes) => {
+// Крупная шкала гаснет до 30%, пока строка собирается и летит в таблицу; в конце гаснет совсем. Подписи отметок
+// (depth 1) гаснут полностью: собранная строка проходит по ним
+const scaleOpacity = (v: number, t: ITimes, depth = .7) => {
     const i = rowOf(v, t);
     const row = t.rows[i];
     const back = i < LAST ? win(v, row.out) : 0;
     const dim = win(v, row.dim) * (1 - back);
-    return (1 - .7 * dim) * (1 - win(v, t.fade));
+    return (1 - depth * dim) * (1 - win(v, t.fade));
 };
 
 // ---------- Крупная строка: блок из подписи, суммы, капсулы и пояснения ----------
 interface IBig { time: MotionValue<number>, g: IGeo, i: number }
 interface IBlockRefs { label: (el: HTMLSpanElement | null) => void, sum?: (el: HTMLElement | null) => void }
 
-// Блок строки повторяет раскладку крупной сцены (подпись и сумма, место шкалы, линия, пояснение) и лежит поверх неё.
+// Блок строки повторяет раскладку крупной сцены (подпись и сумма, место шкалы, линия) и лежит поверх неё.
 // Фаза 1 – части сжимаются на свои места в собранной строке, фаза 2 – блок целиком уезжает вверх (общий transform)
 const Block: FC<IBig & { refs: IBlockRefs }> = ({ time, g, i, refs }) => {
     const r = g.t.rows[i];
@@ -280,13 +286,6 @@ const Block: FC<IBig & { refs: IBlockRefs }> = ({ time, g, i, refs }) => {
     // Волосяная линия строки таблицы проявляется под капсулой, пока строка собирается
     const trackOn = useTransform(time, (v) => span(gather(v), .3, .7));
 
-    // Пояснение въезжает справа и сжимается в плашку таблицы
-    const noteIn = (v: number) => win(v, r.note);
-    const noteX = useTransform(time, (v) => NOTE_IN * (1 - move(noteIn(v))) + (g.noteTo[i].x - g.note[i].x) * gather(v));
-    const noteY = useTransform(time, (v) => (g.noteTo[i].y - g.note[i].y) * gather(v));
-    const noteScale = useTransform(time, (v) => lerp(1, g.noteK, gather(v)));
-    const noteOn = useTransform(time, noteIn);
-
     const row = monthlyRows[i];
     const track = g.trackTo[i];
     return (
@@ -304,11 +303,6 @@ const Block: FC<IBig & { refs: IBlockRefs }> = ({ time, g, i, refs }) => {
             <div className={s.rail}>
                 <motion.span className={s.track} style={{ x: track.x, y: track.y + track.h / 2, width: track.w, opacity: trackOn }} />
                 <motion.span className={s.bigCap} style={{ x: capX, y: capY, width: capW, height: capH, borderRadius: capR, opacity: capOn }} />
-            </div>
-            <div className={s.noteSlot}>
-                <motion.span className={s.bigNote} style={{ x: noteX, y: noteY, scale: noteScale, opacity: noteOn, width: g.noteW[i] || undefined }}>
-                    {monthlyNotes[i]}
-                </motion.span>
             </div>
         </motion.div>
     );
@@ -366,9 +360,14 @@ const Row: FC<{ time: MotionValue<number>, t: ITimes, i: number, refs: IRowRefs,
     );
 };
 
-const Note: FC<{ time: MotionValue<number>, t: ITimes, i: number, noteRef: (el: HTMLLIElement | null) => void }> = ({ time, t, i, noteRef }) => {
-    const opacity = useTransform(time, (v) => v >= t.rows[i].land ? 1 : 0);
-    return <motion.li ref={noteRef} className={`${m.note} ${s.note}`} style={{ opacity }}>{monthlyNotes[i]}</motion.li>;
+// Пояснение въезжает справа прямо на своё место, пока строка играет (владелец 31.10.2026: под крупной шкалой
+// для него не хватало высоты экрана). Пояснения под таблицей (≤900px, side = false) – после посадки строки:
+// иначе собранная строка летела бы сквозь пояснение
+const Note: FC<{ time: MotionValue<number>, t: ITimes, i: number, side: boolean, noteRef: (el: HTMLLIElement | null) => void }> = ({ time, t, i, side, noteRef }) => {
+    const w = (v: number) => win(v, side ? t.rows[i].note : t.rows[i].out);
+    const x = useTransform(time, (v) => NOTE_IN * (1 - move(w(v))));
+    const opacity = useTransform(time, w);
+    return <motion.li ref={noteRef} className={`${m.note} ${s.note}`} style={{ x, opacity }}>{monthlyNotes[i]}</motion.li>;
 };
 
 interface IMonthlyScene {
@@ -380,11 +379,11 @@ interface IMonthlyScene {
 // падает, растёт до шара AgentDeck; экран раздела встаёт. Вверху с первого кадра – пустая таблица: шапка-ось и три
 // полосы с номерами. Шар садится слева и раскатывается в крупную шкалу на всю ширину: линия прорисовывается из-под
 // него, отметки 100 / 1 000 / 10 000 ₽ и мелкие насечки проявляются. Строки по очереди: слева выезжает подпись
-// «1 из 3», шар катится по шкале, за ним тянется капсула, сумма «/мес» набегает счётчиком, справа выезжает
-// пояснение. Затем строка собирается под шкалой в компактную и одним блоком уезжает в свою полосу (шкала гаснет до
-// 30%), шар – точкой на конце капсулы; новый шар вырастает из начала шкалы. В конце шкала гаснет, заголовок с
-// таблицей встают в середину экрана, шара в таблице нет. Крупная сцена –
-// aria-hidden, таблица (role="table") – настоящая
+// «1 из 3», шар катится по шкале, за ним тянется капсула, сумма «/мес» набегает счётчиком, пояснение въезжает
+// справа сразу в столбец пояснений таблицы. Затем строка собирается в компактную на месте отметок (они гаснут,
+// линия шкалы – до 30%) и одним блоком уезжает в свою полосу, шар – точкой на конце капсулы; новый шар вырастает
+// из начала шкалы. В конце шкала гаснет, заголовок с таблицей встают в середину экрана, шара в таблице нет.
+// Крупная сцена – aria-hidden, таблица (role="table") – настоящая
 const MonthlyScene: FC<IMonthlyScene> = ({ rider }) => {
     const scene = useRef<HTMLElement>(null);
     const screen = useRef<HTMLDivElement>(null);
@@ -393,7 +392,6 @@ const MonthlyScene: FC<IMonthlyScene> = ({ rider }) => {
     const stage = useRef<HTMLDivElement>(null);
     const bigHead = useRef<HTMLDivElement>(null);
     const rail = useRef<HTMLDivElement>(null);
-    const noteSlot = useRef<HTMLDivElement>(null);
     const bigLabels = useRef<(HTMLSpanElement | null)[]>([]);
     const bigSum = useRef<HTMLElement | null>(null);
     const cells = useRef(monthlyRows.map(() => ({
@@ -402,10 +400,19 @@ const MonthlyScene: FC<IMonthlyScene> = ({ rider }) => {
     })));
     const notes = useRef<(HTMLLIElement | null)[]>([]);
     const [g, setG] = useState<IGeo>(noGeo);
+    // Столбец пояснений – справа от таблицы (а не под ней)
+    const [noteSide, setNoteSide] = useState(true);
     // Верх таблицы с пояснениями после отпускания экрана: над падающей линией Terms таблица обрезается
+    // Подписка явная, а не useTransform по двум значениям: при быстром проходе (ползунок, End) он терял последнее
+    // изменение, и таблица оставалась обрезанной на полпути – нижнее пояснение висело поверх «Что входит»
     const layoutTop = useMotionValue(0);
-    const wipe = useTransform([monthlyWipe, layoutTop], ([w, top]: number[]) =>
-        w < 0 ? 'none' : `inset(${Math.max(0, w - top)}px -60px -60px -60px)`);
+    const wipe = useMotionValue('none');
+    const syncWipe = useCallback(() => {
+        const w = monthlyWipe.get();
+        wipe.set(w < 0 ? 'none' : `inset(${Math.max(0, w - layoutTop.get())}px -60px -60px -60px)`);
+    }, [wipe, layoutTop]);
+    useMotionValueEvent(monthlyWipe, 'change', syncWipe);
+    useMotionValueEvent(layoutTop, 'change', syncWipe);
     // Экран держится и на время «Что входит» и FAQ (termsPath + faqPath): заголовок гаснет, когда выезжает заголовок Terms
     const titleOn = useTransform(monthlyGone, (v) => 1 - v);
 
@@ -429,15 +436,16 @@ const MonthlyScene: FC<IMonthlyScene> = ({ rider }) => {
         const lay = layout.current;
         const head = bigHead.current;
         const rl = rail.current;
-        const ns = noteSlot.current;
-        if (!sec || !scr || !fr || !st || !lay || !head || !rl || !ns) return;
+        if (!sec || !scr || !fr || !st || !lay || !head || !rl) return;
         sec.style.setProperty('--page-w', `${document.documentElement.clientWidth}px`);
         const H = scr.offsetHeight;
         const W = scr.offsetWidth;
         const at = (el: HTMLElement) => offsetIn(el, scr);
         const box = (el: HTMLElement): IBox => ({ ...at(el), w: el.offsetWidth, h: el.offsetHeight });
-        // Низ экрана занят переключателем лабы и кнопкой чата
+        // Низ экрана справа занят кнопкой чата: таблица в конце встаёт посередине выше неё. Крупной сцене она не мешает
+        // (у пояснения справа место под кнопку, шкала выше пояснения) – её пол ниже
         const floor = H - 80;
+        const bigFloor = H - 16;
 
         const font = (el: Element) => parseFloat(getComputedStyle(el).fontSize) || 1;
         const sum = bigSum.current;
@@ -446,34 +454,47 @@ const MonthlyScene: FC<IMonthlyScene> = ({ rider }) => {
         // Высота самой высокой крупной подписи – в --label-h (по ней высота строки с суммой)
         const labels = bigLabels.current;
         const label = labels[0];
-        const labelK = label && c[0].label ? font(c[0].label) / font(label) : 1;
-        labels.forEach((el, i) => {
-            const cell = c[i].label;
-            if (el && cell) el.style.width = `${cell.offsetWidth / labelK}px`;
-        });
-        st.style.setProperty('--label-h', `${Math.max(0, ...labels.map((el) => el?.offsetHeight ?? 0))}px`);
+        const sizeLabels = () => {
+            const k = label && c[0].label ? font(c[0].label) / font(label) : 1;
+            labels.forEach((el, i) => {
+                const cell = c[i].label;
+                if (el && cell) el.style.width = `${cell.offsetWidth / k}px`;
+            });
+            st.style.setProperty('--label-h', `${Math.max(0, ...labels.map((el) => el?.offsetHeight ?? 0))}px`);
+            return k;
+        };
+        // Высота крупной сцены: до низа подписи шкалы или до низа собранной строки (dockY ниже)
+        const need = () => Math.max(st.offsetHeight, head.offsetTop + head.offsetHeight + DOCK + Math.max(0, ...c.map((cell) => cell.row?.offsetHeight ?? 0)));
 
-        // Крупная сцена – под таблицей, посередине свободного места
+        // Крупная сцена – под таблицей, посередине свободного места. Не влезает до пола (низкий экран, пояснения
+        // в 2–3 строки) – её шрифты мельче на --fit; шар, капсула и отступы прежние
         const tableBox = box(lay);
+        const firstNote = notes.current[0];
+        const table = lay.firstElementChild as HTMLElement | null;
+        setNoteSide(!!firstNote && !!table && at(firstNote).x >= at(table).x + table.offsetWidth);
         const bottom = tableBox.y + tableBox.h;
-        st.style.top = `${bottom + Math.max(20, (floor - bottom - st.offsetHeight) / 2)}px`;
+        const room = bigFloor - bottom - 20;
+        let fit = 1;
+        st.style.setProperty('--fit', '1');
+        let labelK = sizeLabels();
+        for (let n = 0; n < 3 && fit > FIT_MIN && need() > room + 1; n++) {
+            fit = Math.max(FIT_MIN, fit * (room - BIG_FIXED) / Math.max(1, need() - BIG_FIXED));
+            st.style.setProperty('--fit', `${fit}`);
+            labelK = sizeLabels();
+        }
+        const stTop = bottom + Math.max(20, (bigFloor - bottom - need()) / 2);
+        st.style.top = `${stTop}px`;
+        // Шкала дошла до высоты кнопки чата (60px в 24px от края) – кончается левее неё
+        st.style.setProperty('--fab-gap', stTop + rl.offsetTop + rl.offsetHeight > H - 24 - 60 - 8 ? '76px' : '0px');
         // В конце заголовок с таблицей встают в середину экрана (над переключателем лабы)
         const top = at(fr).y + parseFloat(getComputedStyle(fr).paddingTop);
         const shift = Math.max(0, (floor - (bottom - top)) / 2 - top);
 
         const railBox = box(rl);
         const headBox = box(head);
-        const slot = box(ns);
-        const big = notes.current.map((el) => el ? el.offsetWidth : 0);
-        const noteK = notes.current[0] ? font(notes.current[0]) / font(ns) : 1;
-        const noteW = big.map((w) => w / noteK);
-        // Собранная строка встаёт под шкалой: верх строки или её пояснения (что выше) – чуть ниже линии; lift –
-        // насколько она потом уедет вверх
-        const dockY = railBox.y + railBox.h + 14;
-        const lift = c.map((cell, i) => {
-            const note = notes.current[i];
-            return cell.row ? Math.min(at(cell.row).y, note ? at(note).y : Infinity) - dockY : 0;
-        });
+        // Собранная строка встаёт под крупной подписью, на месте погасших отметок; lift – насколько она потом уедет вверх
+        const dockY = headBox.y + headBox.h + DOCK;
+        const lift = c.map((cell) => cell.row ? at(cell.row).y - dockY : 0);
         const up = (p: IPoint, i: number) => ({ x: p.x, y: p.y - lift[i] });
 
         // Путь шарика: с конца линии шагов вправо и вниз за текстом шага 5, затем рано уходит влево – высоко над
@@ -502,8 +523,6 @@ const MonthlyScene: FC<IMonthlyScene> = ({ rider }) => {
         const sumAtBox = { x: headBox.x + headBox.w, y: headBox.y };
         const sumTo = c.map((cell, i) => cell.sum ? up({ x: at(cell.sum).x + cell.sum.offsetWidth, y: at(cell.sum).y }, i) : p0);
         const sumK = sum && c[0].sum ? font(c[0].sum) / font(sum) : 1;
-        const note = noteW.map((w) => ({ x: slot.x + slot.w - w, y: slot.y }));
-        const noteTo = notes.current.map((el, i) => el ? up(at(el), i) : p0);
         const geo: Omit<IGeo, 't'> = {
             pre: (joinFrom - scenePos.y) / H,
             path,
@@ -518,10 +537,6 @@ const MonthlyScene: FC<IMonthlyScene> = ({ rider }) => {
             sum: sumAtBox,
             sumTo,
             sumK,
-            note,
-            noteTo,
-            noteK,
-            noteW,
             capTo: c.map((cell, i) => {
                 if (!cell.track) return b0;
                 const tk = box(cell.track);
@@ -542,7 +557,7 @@ const MonthlyScene: FC<IMonthlyScene> = ({ rider }) => {
             gatherLen: [],
             rowW: c[0].row?.offsetWidth ?? 0
         };
-        // Сборка строки: самая дальняя часть – сдвиг и изменение размера (подпись и пояснение сжимаются в ячейку)
+        // Сборка строки: самая дальняя часть – сдвиг и изменение размера (подпись и сумма сжимаются в ячейку)
         const far = (a: IPoint, b: IPoint, size: number) => Math.hypot(b.x - a.x, b.y - a.y) + size / 2;
         geo.gatherLen = monthlyRows.map((_, i) => {
             const [a, b] = monthlyRanges[i].map(scalePos);
@@ -552,7 +567,6 @@ const MonthlyScene: FC<IMonthlyScene> = ({ rider }) => {
             return Math.max(
                 far(labelAt, labelTo[i], lw * (1 - labelK)),
                 far(sumAtBox, sumTo[i], (sum?.offsetWidth ?? 0) * (1 - sumK)),
-                far(note[i], noteTo[i], noteW[i] * (1 - noteK)),
                 Math.hypot(cap.x - a * railBox.w, cap.y) + Math.abs((b - a) * railBox.w - cap.w),
                 Math.hypot(geo.dot[i].x - ball.x, geo.dot[i].y - lift[i] - ball.y)
             );
@@ -617,6 +631,7 @@ const MonthlyScene: FC<IMonthlyScene> = ({ rider }) => {
     const frameY = useTransform(time, (v) => g.shift * move(win(v, g.t.center)));
     // Крупная шкала: линия прорисовывается из-под шара
     const scaleOn = useTransform(time, (v) => scaleOpacity(v, g.t));
+    const ticksOn = useTransform(time, (v) => scaleOpacity(v, g.t, 1));
     const lineSX = useTransform(time, (v) => move(win(v, g.t.draw)));
     const unitOn = useTransform(time, (v) => win(v, g.t.unit));
 
@@ -661,7 +676,7 @@ const MonthlyScene: FC<IMonthlyScene> = ({ rider }) => {
                             {monthlyRows.map((_, i) => <Row key={i} time={time} t={g.t} i={i} refs={rowRefs(i)} frame={frame} />)}
                         </div>
                         <ul className={m.notes}>
-                            {monthlyNotes.map((_, i) => <Note key={i} time={time} t={g.t} i={i} noteRef={(el) => { notes.current[i] = el }} />)}
+                            {monthlyNotes.map((_, i) => <Note key={i} time={time} t={g.t} i={i} side={noteSide} noteRef={(el) => { notes.current[i] = el }} />)}
                         </ul>
                     </motion.div>
                 </motion.div>
@@ -669,7 +684,7 @@ const MonthlyScene: FC<IMonthlyScene> = ({ rider }) => {
                 {/* Крупная сцена – дубль строк для глаза; читается таблица выше */}
                 <div ref={stage} className={s.stage} aria-hidden="true">
                     <div ref={bigHead} className={s.bigHead} />
-                    <motion.div className={s.bigScale} style={{ opacity: scaleOn }}>
+                    <motion.div className={s.bigScale} style={{ opacity: ticksOn }}>
                         {monthlyScale.map((v) => <BigTick key={v} time={time} t={g.t} value={v} />)}
                     </motion.div>
                     <div ref={rail} className={s.rail}>
@@ -679,7 +694,6 @@ const MonthlyScene: FC<IMonthlyScene> = ({ rider }) => {
                             <motion.span className={s.unitLabel} style={{ opacity: unitOn }}>{monthlyUnit}</motion.span>
                         </motion.div>
                     </div>
-                    <div ref={noteSlot} className={s.noteSlot} />
                     {monthlyRows.map((_, i) => (
                         <Block
                             key={i}

@@ -2,7 +2,7 @@
 
 // «Каждый месяц», десктоп варианта C: липкая сцена (scene.module.scss). Вверху экрана – заголовок и компактная таблица
 // (с первого кадра – пустой каркас: шапка-ось и три полосы с номерами), ниже – крупная сцена: подпись и сумма строки,
-// шкала с капсулой, пояснение. Строки собираются под шкалой и уезжают в свои полосы
+// шкала с капсулой; пояснение въезжает сразу в таблицу. Строки собираются на месте отметок и уезжают в свои полосы
 $line: rgba(128, 128, 128, 0.45);
 // Поле слева в строках таблицы – под номер полосы
 $num: 40px;
@@ -43,7 +43,8 @@ $num: 40px;
     position: relative;
     // Столбец суммы – постоянной ширины: у каждой строки своя сетка, а шкалы строк должны стоять под осью шапки
     // Подписи – шире шкалы: название и объём (второй строкой) не заходят под капсулу
-    grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr) 11.5rem;
+    // «1 700–13 400 ₽/мес» – около 9em суммы: в 11.5rem не влезала и выходила за край столбца
+    grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr) 12.25rem;
     gap: 20px;
 
     padding: 18px 0 18px $num;
@@ -196,11 +197,11 @@ $num: 40px;
 
     // Подпись – под номером «1 из 3»: название и объём второй строкой (высота самой высокой – --label-h от
     // компонента, без неё – две строки); сумма – справа сверху
-    --label: clamp(1.6rem, 2.8vw, 2.5rem);
+    --label: calc(clamp(1.6rem, 2.8vw, 2.5rem) * var(--fit, 1));
     height: max(1.2em, calc(var(--label-h, calc(2.25 * var(--label))) + 1.6rem));
     margin-bottom: 20px;
 
-    font-size: clamp(2.6rem, 5vw, 4.75rem);
+    font-size: calc(clamp(2.6rem, 5vw, 4.75rem) * var(--fit, 1));
 }
 
 .count {
@@ -243,9 +244,10 @@ $num: 40px;
     position: relative;
 
     height: 1.25em;
-    margin-bottom: 12px;
+    // --fab-gap – место под кнопку чата, когда шкала на её высоте (ставит компонент); шкала и отметки – одной ширины
+    margin: 0 var(--fab-gap, 0px) 12px 0;
 
-    font-size: clamp(1.6rem, 2.8vw, 2.4rem);
+    font-size: calc(clamp(1.6rem, 2.8vw, 2.4rem) * var(--fit, 1));
 }
 
 .bigTick {
@@ -267,7 +269,7 @@ $num: 40px;
     position: relative;
 
     height: 44px;
-    margin-bottom: 28px;
+    margin: 0 var(--fab-gap, 0px) 28px 0;
 }
 
 .axis {
@@ -339,35 +341,6 @@ $num: 40px;
     transition: vars.$transition;
 }
 
-// Пояснение – та же плашка, что в таблице, крупнее (поля – в em): сжимается в неё без перестройки строк
-.noteSlot {
-    position: relative;
-
-    // Справа – место под плавающий шар чата (60px в 24px от края экрана): пояснение под него не заходит
-    margin-right: 76px;
-
-    height: calc(1.45em + 1.75em);
-
-    font-size: 1.35rem;
-}
-
-.bigNote {
-    position: absolute;
-    top: 0;
-    right: 0;
-
-    padding: 0.875em 1em;
-
-    font-size: 1em;
-    line-height: 1.45;
-    color: var(--color-text-muted);
-
-    background: var(--color-frost);
-    border-radius: 0.8125em;
-    transform-origin: 0 0;
-    transition: vars.$transition;
-}
-
 // ---------- Шар ----------
 // Как шар AgentDeck: размер – от компонента, место – через x / y, слои – из OrbScene.module.scss
 .ball {
@@ -392,8 +365,14 @@ $num: 40px;
 
 // Узкий десктоп: колонки плотнее; подпись переносится так же, как крупная (ширину крупной ставит компонент)
 @media screen and (max-width: 1200px) {
+    // Таблица уже экрана: без полей она стояла вплотную к краям («В месяц» обрезалось на планшете)
+    .frame {
+        padding-right: 20px;
+        padding-left: 20px;
+    }
+
     .row {
-        grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr) 10.5rem;
+        grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr) 11rem;
         gap: 16px;
 
         padding-left: 32px;
@@ -401,6 +380,10 @@ $num: 40px;
 
     .head {
         padding-left: 32px;
+    }
+
+    .value {
+        font-size: 1.15rem;
     }
 }
 
@@ -423,7 +406,7 @@ $num: 40px;
     .bigHead {
         margin-bottom: 16px;
 
-        font-size: clamp(2.4rem, 4.4vw, 4.75rem);
+        font-size: calc(clamp(2.4rem, 4.4vw, 4.75rem) * var(--fit, 1));
     }
 
     .rail {

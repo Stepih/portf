@@ -191,6 +191,9 @@ const ChatWorkScene: FC<IChatWorkScene> = ({ tiers, note }) => {
     // Стык с AgentDeck – только там, где она липкая сцена (те же условия, что в AgentDeck)
     const handoff = useMediaQuery('(min-width: 701px) and (min-height: 600px)');
 
+    // Путь капель готовых вопросов – меряет InlineChat (onDropPath); до замера – оценка от высоты панели
+    const dropPath = useRef(0);
+
     const onMeasure = useCallback(() => {
         const root = stage.current;
         const els = [slot.current, panel.current, headOrb.current, area.current, workOrb.current, card.current];
@@ -238,8 +241,8 @@ const ChatWorkScene: FC<IChatWorkScene> = ({ tiers, note }) => {
             build: report ? report.offsetWidth * .9 : 340,
             toChat: change(geo.work, geo.panel),
             light: change(geo.work, geo.head),
-            // Капли готовых вопросов: от шара в шапке почти до низа панели
-            drop: geo.panel.h * .9,
+            // Капли готовых вопросов: от шара в шапке до кнопок, по дуге
+            drop: dropPath.current || geo.panel.h * .9,
             morph: change(geo.panel, geo.card),
             fly: change(geo.head, geo.fab),
             rule: geo.card.w,
@@ -248,7 +251,12 @@ const ChatWorkScene: FC<IChatWorkScene> = ({ tiers, note }) => {
         setG({ ...geo, t: timesFor(paths, H) });
     }, [vertical]);
 
-    const { progress, scrollToProgress } = useStickyScene({ scene, path, screen }, onMeasure);
+    const { progress, measure, scrollToProgress } = useStickyScene({ scene, path, screen }, onMeasure);
+    const onDropPath = useCallback((px: number) => {
+        if (Math.abs(px - dropPath.current) < 1) return;
+        dropPath.current = px;
+        measure();
+    }, [measure]);
 
     // Тач-экран: пока фокус в чате (клавиатура двигает страницу), сцена держится на открытом чате.
     // Фокус ушёл – плавно возвращается к скроллу. На компьютере не нужно: клавиатура страницу не двигает
@@ -502,7 +510,8 @@ const ChatWorkScene: FC<IChatWorkScene> = ({ tiers, note }) => {
 
                     <div className={`${o.chatLayer} ${s.chatLayer}`}>
                         <motion.p className={o.caption} style={{ opacity: captionOpacity, y: captionY }}>{ph.chatCaptionC}</motion.p>
-                        <motion.div ref={panel} className={o.panel} style={{ clipPath, opacity: chatOpacity }}>
+                        {/* Вне окна чата панель прозрачна для кликов: в покое её обрезка совпадает с шаром и закрывала кнопку шара */}
+                        <motion.div ref={panel} className={`${o.panel} ${chatOpen ? '' : s.panelIdle}`} style={{ clipPath, opacity: chatOpacity }}>
                             <InlineChat
                                 bare
                                 intro={chatIntro}
@@ -512,6 +521,7 @@ const ChatWorkScene: FC<IChatWorkScene> = ({ tiers, note }) => {
                                 onInteract={onInteract}
                                 onLeave={onLeave}
                                 manageFab={false}
+                                onDropPath={onDropPath}
                             />
                         </motion.div>
                     </div>
