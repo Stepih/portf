@@ -1,0 +1,79 @@
+@use '/src/styles/variables.scss' as vars;
+
+// Три колонки «Входит / Не входит / Остаётся вам» – без плашек, под волосяными линиями (как темы /ai)
+.head {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+}
+
+.grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 32px 28px;
+
+    width: 100%;
+    max-width: 1060px;
+    margin-top: 28px;
+}
+
+// На телефоне в сцене колонки лежат друг на друге и сменяются
+.swap > .column {
+    grid-area: 1 / 1;
+}
+
+.column {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.title {
+    margin: 8px 0 0;
+    font-size: 1.15rem;
+}
+
+.list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+
+    margin: 0;
+    padding: 0;
+
+    font-size: 1rem;
+    line-height: 1.45;
+    text-wrap: pretty;
+    color: var(--color-text-muted);
+    list-style: none;
+    transition: vars.$transition;
+}
+
+// Оговорка под «Остаётся вам» – мельче, без точки
+.note {
+    margin: 4px 0 0;
+
+    font-size: 0.95rem;
+    line-height: 1.4;
+    color: var(--color-text-muted);
+    transition: vars.$transition;
+}
+
+@media screen and (max-width: 900px) {
+    .grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media screen and (max-width: 700px) {
+    .grid {
+        grid-template-columns: minmax(0, 1fr);
+        gap: 28px;
+        margin-top: 20px;
+    }
+
+    .list {
+        font-size: 1.05rem;
+    }
+}

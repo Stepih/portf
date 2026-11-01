@@ -1,0 +1,70 @@
+@use '/src/styles/variables.scss' as vars;
+
+// «Ещё делаю» – таблетки с ценой (контур hairline 45%, 24px – как вторичные кнопки, но не кнопки) и тихая строка
+.head {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+}
+
+.pills {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 12px;
+
+    max-width: 980px;
+    margin: 28px 0 0;
+    padding: 0;
+
+    list-style: none;
+}
+
+.pill {
+    display: inline-block;
+
+    padding: 12px 22px;
+
+    line-height: 1.3;
+    text-align: center;
+
+    font-size: 1.05rem;
+    color: var(--color-text-100);
+
+    border: 1.5px solid rgba(128, 128, 128, 0.45);
+    border-radius: 24px;
+    transition: color vars.$transition;
+
+    b {
+        white-space: nowrap;
+    }
+}
+
+.quiet {
+    max-width: 760px;
+    margin: 20px 0 0;
+
+    font-size: 0.95rem;
+    line-height: 1.45;
+    text-align: center;
+    text-wrap: pretty;
+    color: var(--color-text-muted);
+    transition: vars.$transition;
+}
+
+@media screen and (max-width: 700px) {
+    .pills {
+        gap: 10px;
+    }
+
+    .pill {
+        padding: 10px 16px;
+
+        font-size: 1rem;
+    }
+
+    .quiet {
+        text-align: left;
+    }
+}

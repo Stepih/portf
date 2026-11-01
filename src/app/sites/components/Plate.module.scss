@@ -13,9 +13,6 @@ $hairline: rgba(128, 128, 128, 0.3);
     border-radius: 13px;
     box-shadow: vars.$shadow;
     transition: vars.$transition;
-
-    // Липкая навигация не закрывает заголовок раздела при переходе по якорю
-    scroll-margin-top: 88px;
 }
 
 .title {

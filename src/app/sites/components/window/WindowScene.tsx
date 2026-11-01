@@ -1,6 +1,6 @@
 "use client";
 
-import { CSSProperties, FC, MouseEvent, ReactNode, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { CSSProperties, FC, MouseEvent, ReactNode, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { animate, motion, MotionStyle, MotionValue, motionValue, useMotionValue, useMotionValueEvent, useTransform } from "framer-motion";
 
 import sc from '@/app/ai/components/scene.module.scss'
@@ -18,6 +18,7 @@ import { servicesButton } from "@/data/offer";
 import { buildUi, columns } from "@/data/sitesPage";
 import { CorporateMock, CorporateTabs, LandingMock, LeadToast, PanelMock, ShopBar, ShopMock, stepAt } from "./Mocks";
 import { ANCHOR_AFTER, FADE, INTRO, IKindRows, IPlan, IState, Kind, KINDS, mockP, planFor, stateAt } from "./timeline";
+import { windowEls, windowFade, windowTook } from "../scenes/handoff";
 
 export interface IWindowKind {
     service: Pick<IService, 'title' | 'price' | 'term' | 'note'> & { id: Kind },
@@ -71,12 +72,14 @@ interface IWindow {
     terms: (kind: Kind) => number,
     onTab: (e: MouseEvent<HTMLAnchorElement>, kind: Kind) => void,
     style?: MotionStyle,
+    // Стык с колодой кейсов: содержимое окна гаснет, остаётся пустая рамка (scenes/handoff.ts)
+    contentOpacity?: MotionValue<number>,
     windowRef?: (el: HTMLElement | null) => void
 }
 
 // Окно браузера: сверху вкладки видов, ниже строка адреса (у сайта компании – его страницы, у магазина – поиск и
 // корзина), в окне – нарисованный сайт, таблетки опций, заявка, панель и счётчик суммы
-const BrowserWindow: FC<IWindow> = ({ kinds, active, layers, p, opacity, pills, terms, onTab, style, windowRef }) => {
+const BrowserWindow: FC<IWindow> = ({ kinds, active, layers, p, opacity, pills, terms, onTab, style, contentOpacity, windowRef }) => {
     const layer = (kind: Kind, className: string, children: ReactNode) => (
         <motion.div key={kind} className={className} style={{ opacity: opacity?.[kind] ?? shown }}>{children}</motion.div>
     );
@@ -84,6 +87,7 @@ const BrowserWindow: FC<IWindow> = ({ kinds, active, layers, p, opacity, pills, 
 
     return (
         <motion.figure ref={windowRef} className={s.window} style={style}>
+            <motion.div className={s.content} style={{ opacity: contentOpacity ?? shown }}>
             <div className={s.strip}>
                 <span className={s.dots} aria-hidden="true"><i /><i /><i /></span>
                 <nav className={`${ralewayBold.className} ${s.tabs}`} aria-label={buildUi.tabs}>
@@ -133,6 +137,7 @@ const BrowserWindow: FC<IWindow> = ({ kinds, active, layers, p, opacity, pills, 
                     {build.sum && details.example && <Sum sum={build.sum} total={details.example.total} term={terms(service.id)} />}
                 </>
             )))}
+            </motion.div>
             <figcaption className={s.caption}>{buildUi.caption}</figcaption>
         </motion.figure>
     );
@@ -231,6 +236,17 @@ const WindowScene: FC<IProps> = ({ head, kinds }) => {
         setDy(Math.max(0, bottom - offsetIn(win.current, stage.current).y));
     }, []);
     const { progress } = useStickyScene({ scene, path, screen }, onMeasure);
+
+    // Стык с колодой кейсов (scenes/handoff.ts): колода кладёт пустую карточку точь-в-точь на окно; пока она гасит
+    // содержимое окна и забирает рамку – окно прячется, строка под ним гаснет
+    useLayoutEffect(() => {
+        if (reduceMotion || !win.current || !screen.current) return;
+        windowEls.set({ win: win.current, screen: screen.current });
+        return () => windowEls.set(null);
+    }, [reduceMotion]);
+    const contentOn = useTransform(windowFade, (v) => 1 - v);
+    const frameOn = useTransform(windowTook, (v) => 1 - v);
+    const handedOff = useTransform(windowFade, (v) => v > .5 ? 'none' : 'auto');
     const time = useTransform(progress, (k) => k * plan.total);
 
     const [state, setState] = useState<IState>(() => stateAt(plan, rows, 0));
@@ -377,12 +393,13 @@ const WindowScene: FC<IProps> = ({ head, kinds }) => {
                         pills={pillsOf}
                         terms={termsOf}
                         onTab={onTab}
-                        style={{ y: winY, scale: winScale }}
+                        style={{ y: winY, scale: winScale, opacity: frameOn, pointerEvents: handedOff }}
+                        contentOpacity={contentOn}
                         windowRef={(el) => { win.current = el }}
                     />
 
                     {/* Под окном – одна строка: текущая группа состава, опции тихой строкой или цена */}
-                    <div className={s.under}>
+                    <motion.div className={s.under} style={{ opacity: contentOn, pointerEvents: handedOff }}>
                         {kinds.map((item) => {
                             const { service } = item;
                             const text = kindText(item);
@@ -406,7 +423,7 @@ const WindowScene: FC<IProps> = ({ head, kinds }) => {
                                 </section>,
                             ];
                         })}
-                    </div>
+                    </motion.div>
                 </div>
             </div>
         </div>

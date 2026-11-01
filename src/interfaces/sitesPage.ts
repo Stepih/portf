@@ -76,3 +76,12 @@ export interface IBuild {
     pills: IBuildPill[],
     sum?: IBuildSum
 }
+
+// Этап шкалы «Оплата» (У5б, этап 2): сумма проекта и доли платежей. shares: false – проценты не подписываются
+// (по этапам), note – строка под шкалой
+export interface IPayStage {
+    range: string,
+    shares: boolean,
+    note?: string,
+    parts: { share: number, label?: string }[]
+}

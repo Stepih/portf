@@ -1,0 +1,240 @@
+@use '/src/styles/variables.scss' as vars;
+
+// «Оплата» – одна шкала (как «Каждый месяц» на /ai): сумма над шкалой, доли – отрезками, подписи под ними.
+// Тон отрезка – по номеру: первый (предоплата) чернилами, следующие светлее. Места и ширины ставит компонент
+$width: 860px;
+$bar: 44px;
+$gap: 6px;
+
+.head {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+}
+
+.scale {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+
+    width: min(#{$width}, 100%);
+    margin-top: 28px;
+}
+
+// Суммы проекта сменяют друг друга в одной ячейке
+.range {
+    display: grid;
+}
+
+.rangeItem {
+    grid-area: 1 / 1;
+
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 4px 16px;
+
+    margin: 0;
+}
+
+.sum {
+    font-size: 2.5rem;
+    line-height: 1.1;
+}
+
+.note {
+    font-size: 1.05rem;
+    color: var(--color-text-muted);
+    transition: vars.$transition;
+}
+
+.bar {
+    position: relative;
+    height: $bar;
+}
+
+.barInner {
+    position: absolute;
+    inset: 0;
+}
+
+// Отрезок доли: заливка – слоем с зазором $gap справа; у отрезка уже зазора её не видно
+.segment {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+
+    &::before {
+        content: '';
+        position: absolute;
+        inset: 0 $gap 0 0;
+
+        background: color-mix(in srgb, var(--color-text-100) 22%, transparent);
+        border-radius: 13px;
+        transition: background vars.$transition;
+    }
+
+    &[data-j="0"]::before {
+        background: var(--color-text-100);
+    }
+
+    &[data-j="1"]::before {
+        background: color-mix(in srgb, var(--color-text-100) 45%, transparent);
+    }
+}
+
+// Подписи этапов – в одной ячейке, каждая под своим отрезком
+.labelStack {
+    display: grid;
+}
+
+.labels {
+    position: relative;
+    grid-area: 1 / 1;
+
+    min-height: 76px;
+    margin: 0;
+    padding: 0;
+
+    list-style: none;
+}
+
+.label {
+    position: absolute;
+    top: 0;
+    left: var(--left);
+
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+
+    width: var(--width);
+    padding-right: 16px;
+}
+
+.swatch {
+    display: none;
+}
+
+.share {
+    font-size: 2rem;
+    line-height: 1;
+}
+
+.when {
+    font-size: 0.95rem;
+    line-height: 1.35;
+    text-wrap: balance;
+    color: var(--color-text-muted);
+    transition: vars.$transition;
+}
+
+// По этапам: подпись первой доли – шире своего отрезка
+.lastLabels .label {
+    width: auto;
+}
+
+.refund {
+    max-width: 640px;
+    margin: 20px 0 0;
+
+    font-size: 1.25rem;
+    line-height: 1.35;
+    text-align: center;
+    text-wrap: balance;
+}
+
+// ---------- Без движения ----------
+.still {
+    gap: 0;
+}
+
+.list {
+    display: flex;
+    flex-direction: column;
+
+    width: min(#{$width}, 100%);
+    margin: 20px 0 0;
+}
+
+.listRow {
+    display: grid;
+    grid-template-columns: minmax(0, 220px) minmax(0, 1fr);
+    gap: 16px;
+
+    padding: 12px 0;
+    border-top: 1.5px solid rgba(128, 128, 128, 0.45);
+
+    dt {
+        font-size: 1.15rem;
+    }
+
+    dd {
+        margin: 0;
+        color: var(--color-text-muted);
+        transition: vars.$transition;
+    }
+}
+
+// Телефон: под шкалой – подписи списком, у каждой – отрезок её тона
+@media screen and (max-width: 700px) {
+    .sum {
+        font-size: 2rem;
+    }
+
+    .labels {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+
+        min-height: 0;
+    }
+
+    .label {
+        position: static;
+
+        flex-direction: row;
+        align-items: baseline;
+        gap: 10px;
+
+        width: auto;
+        padding: 0;
+    }
+
+    .swatch {
+        display: block;
+        flex: none;
+        align-self: center;
+
+        width: 18px;
+        height: 10px;
+
+        background: color-mix(in srgb, var(--color-text-100) 22%, transparent);
+        border-radius: 7px;
+        transition: background vars.$transition;
+
+        [data-j="0"] > & {
+            background: var(--color-text-100);
+        }
+
+        [data-j="1"] > & {
+            background: color-mix(in srgb, var(--color-text-100) 45%, transparent);
+        }
+    }
+
+    .share {
+        flex: none;
+        width: 3.2rem;
+        font-size: 1.3rem;
+    }
+
+    .refund {
+        font-size: 1.05rem;
+    }
+
+    .listRow {
+        grid-template-columns: minmax(0, 1fr);
+        gap: 4px;
+    }
+}

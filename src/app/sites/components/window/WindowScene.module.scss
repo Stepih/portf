@@ -73,6 +73,18 @@ $width: 860px;
     transition: background vars.$transition;
 }
 
+// Всё внутри рамки окна – отдельным слоем: на стыке с колодой кейсов оно гаснет, рамка остаётся (scenes/handoff.ts).
+// Слои поверх сайта (панель, заявка, счётчик) – от его краёв, они совпадают с краями окна
+.content {
+    position: relative;
+
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+
+    min-height: 0;
+}
+
 // Строка вкладок: точки окна и вкладки видов сайта, как вкладки браузера над строкой адреса
 .strip {
     display: flex;

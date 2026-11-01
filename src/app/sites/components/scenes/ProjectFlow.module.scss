@@ -1,0 +1,306 @@
+@use '/src/styles/variables.scss' as vars;
+
+// «Как идёт проект» – линия шагов, как «Как работаем» на /ai (Sections.module.scss: .flow, .step, .rider).
+// Над бесплатными шагами – скобка «0 ₽» (как отрезок «0 ₽» в «Как работаем» главной). --count и --free ставит компонент
+$line: rgba(128, 128, 128, 0.45);
+$num: 40px;
+$top: 64px;
+
+.head {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+}
+
+.flow {
+    position: relative;
+
+    width: 100%;
+    max-width: 1060px;
+    margin-top: 28px;
+    padding-top: $top;
+}
+
+// Скобка – над колонками бесплатных шагов: черта чернилами с короткими концами вниз, «0 ₽» над ней
+.bracket {
+    position: absolute;
+    top: 0;
+    left: 16px;
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 6px;
+
+    width: calc(100% * var(--free) / var(--count) - 32px);
+    height: $top - 16px;
+}
+
+.bracketLine {
+    order: 2;
+
+    display: block;
+
+    width: 100%;
+    height: 10px;
+
+    border: 3px solid var(--color-text-100);
+    border-bottom: none;
+    border-radius: 7px 7px 0 0;
+    transform-origin: 0 50%;
+    transition: border-color vars.$transition;
+}
+
+.bracketLabel {
+    order: 1;
+
+    font-size: 1.6rem;
+    line-height: 1;
+}
+
+// Линия – от центра первого шага до центра последнего
+.track {
+    position: absolute;
+    top: $top + $num * .5 - 1px;
+    left: calc(50% / var(--count));
+    right: calc(50% / var(--count));
+
+    height: 2px;
+}
+
+.trackBase {
+    position: absolute;
+    inset: 0;
+
+    background: $line;
+    transform-origin: 0 50%;
+}
+
+.trackFill {
+    position: absolute;
+    inset: 0;
+
+    background: var(--color-text-100);
+    transform-origin: 0 50%;
+    transition: background vars.$transition;
+}
+
+// Малый шар – как на линии шагов /ai: стекло, тень мастерской, свет внутри
+.rider {
+    position: absolute;
+    top: 50%;
+    left: 0;
+    z-index: 2;
+
+    width: 22px;
+    height: 22px;
+    margin: -11px 0 0 -11px;
+
+    background: var(--color-orb-glass);
+    border-radius: 50%;
+    box-shadow: vars.$shadow;
+    transition: background vars.$transition;
+
+    &::before {
+        content: '';
+        position: absolute;
+        inset: 26%;
+
+        background: vars.$blue-100;
+        border-radius: 50%;
+        filter: blur(3px);
+        opacity: .8;
+
+        animation: flow-light 20s infinite;
+    }
+}
+
+@keyframes flow-light {
+    0%, 100% { background: vars.$redPink-100; }
+    33% { background: vars.$green-100; }
+    66% { background: vars.$blue-100; }
+}
+
+.list {
+    position: relative;
+
+    display: grid;
+    grid-template-columns: repeat(var(--count), minmax(0, 1fr));
+    gap: 0 16px;
+
+    margin: 0;
+    padding: 0;
+
+    list-style: none;
+}
+
+.step {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 14px;
+
+    text-align: center;
+}
+
+.num {
+    position: relative;
+    z-index: 1;
+
+    display: flex;
+    flex: none;
+    align-items: center;
+    justify-content: center;
+
+    width: $num;
+    height: $num;
+
+    font-size: 1.15rem;
+
+    background: var(--color-bg);
+    border: 1.5px solid $line;
+    border-radius: 50%;
+    transition: background vars.$transition;
+}
+
+.numFill {
+    position: absolute;
+    inset: -1.5px;
+
+    background: var(--color-text-100);
+    border-radius: 50%;
+    transition: background vars.$transition;
+}
+
+.digit {
+    position: relative;
+}
+
+.body {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.label {
+    margin: 0;
+
+    font-size: 1.15rem;
+    text-wrap: balance;
+}
+
+// «· 0 ₽» у бесплатного шага – только на вертикальной линии, на широком экране вместо неё скобка
+.freeInline {
+    display: none;
+}
+
+.text {
+    margin: 0;
+
+    font-size: 0.95rem;
+    line-height: 1.4;
+    text-wrap: pretty;
+    color: var(--color-text-muted);
+    transition: vars.$transition;
+}
+
+// Планшет и телефон – линия вертикальная, шаги строками (как «Как работаем» /ai до 900px). Низ линии – у кружка
+// последнего шага (--last-h – высота его строки, ставит компонент)
+@media screen and (max-width: 900px) {
+    .flow {
+        width: auto;
+        max-width: 520px;
+        margin-top: 20px;
+        padding-top: 0;
+    }
+
+    .bracket {
+        display: none;
+    }
+
+    .track {
+        top: $num * .5;
+        bottom: calc(var(--last-h, #{$num}) - #{$num * .5});
+        left: $num * .5 - 1px;
+        right: auto;
+
+        width: 2px;
+        height: auto;
+    }
+
+    .trackBase,
+    .trackFill {
+        transform-origin: 50% 0;
+    }
+
+    .rider {
+        top: 0;
+        left: 50%;
+    }
+
+    .list {
+        grid-template-columns: minmax(0, 1fr);
+        gap: 16px;
+    }
+
+    .step {
+        flex-direction: row;
+        align-items: flex-start;
+        gap: 16px;
+
+        text-align: left;
+    }
+
+    .body {
+        gap: 2px;
+        padding-top: 8px;
+    }
+
+    .label {
+        font-size: 1.05rem;
+    }
+
+    .freeInline {
+        display: inline;
+    }
+}
+
+// Телефон: шесть шагов и заголовок – на одном экране
+@media screen and (max-width: 700px) {
+    .head p {
+        display: none;
+    }
+
+    .flow {
+        margin-top: 16px;
+    }
+
+    .list {
+        gap: 12px;
+    }
+
+    .body {
+        padding-top: 2px;
+    }
+
+    .label {
+        font-size: 1rem;
+    }
+
+    .text {
+        font-size: 0.9rem;
+        line-height: 1.3;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .rider::before {
+        animation: none;
+    }
+
+    .digit {
+        color: var(--color-bg);
+    }
+}

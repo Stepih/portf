@@ -1,6 +1,6 @@
 import { expect, Page, test } from '@playwright/test';
 import { collectErrors } from './errors';
-import { build, buildUi, columns, faq, head, sections, sitesDetails } from '../src/data/sitesPage';
+import { build, buildUi, casesDeck, columns, faq, head, morePills, payment, projectPath, sections, sitesDetails, terms } from '../src/data/sitesPage';
 import { offerTgButton, services, servicesButton } from '../src/data/offer';
 import { contactHref } from '../src/scripts/services';
 import { planFor } from '../src/app/sites/components/window/timeline';
@@ -80,7 +80,8 @@ test('/sites: под окном одна строка шага – состав 
     await expect(tabs(page).getByRole('link', { name: 'Магазин или каталог' })).toHaveAttribute('aria-current', 'location');
 
     // Конец сборки: заказ оплачен, последняя группа – «Каталог без корзины»
-    await scrollToTime(page, shop.built - .03);
+    // Метка якоря стоит на ANCHOR_AFTER позже начала вида – отступаем с запасом
+    await scrollToTime(page, shop.built - .1);
     await expect(page.getByText(build.shop.callouts.at(-1)!.label!, { exact: true })).toBeVisible();
     await expect(page.getByText(build.shop.callouts[0].items[0], { exact: true })).toBeHidden();
     await expect(page.getByText(buildUi.paid)).toHaveCSS('opacity', '1');
@@ -136,11 +137,32 @@ for (const width of [1400, 375]) {
     });
 }
 
-test('/sites: кейсы ведут на страницы кейсов', async ({ page }) => {
+// Скролл к моменту t сцены нижней части (в экранах от кадра, где её экран встал); отрицательное t – от кадра,
+// где экран отпускает скролл
+const scrollToScene = async (page: Page, title: string, t: number) => {
+    // После загрузки сцены пересчитывают длины по замерам, колода встаёт на стык с окном – ждём, пока страница уляжется
+    await page.waitForTimeout(800);
+    const { y, height } = await page.evaluate((name) => {
+        const heading = [...document.querySelectorAll('h2')].find((h) => h.textContent === name)!;
+        const section = heading.closest('section')!;
+        let el: HTMLElement | null = section;
+        let top = 0;
+        while (el) {
+            top += el.offsetTop;
+            el = el.offsetParent as HTMLElement | null;
+        }
+        return { y: top, height: section.offsetHeight };
+    }, title);
+    const h = await page.evaluate(() => window.innerHeight);
+    await page.evaluate((top) => window.scrollTo(0, top), Math.round(t >= 0 ? y + t * h : y + height - h + t * h));
+    await page.waitForTimeout(1300);
+};
+
+test('/sites: кейсы колодой – без повторов, ведут на страницы кейсов', async ({ page }) => {
     await page.goto('/sites');
-    const list = page.getByRole('region', { name: columns.cases.replace(/:$/, '') });
+    const list = page.getByRole('region', { name: casesDeck.title });
     const links = list.locator('a[href^="/portfolio/"]');
-    const count = Object.values(sitesDetails).reduce((n, item) => n + item.cases.length, 0);
+    const count = new Set(Object.values(sitesDetails).flatMap((item) => item.cases.map((c) => c.id))).size;
     await expect(links).toHaveCount(count);
     const href = await links.first().getAttribute('href');
     const response = await page.request.get(href!);
@@ -182,4 +204,93 @@ test('/sites: без движения – по каждому виду собр�
     await page.mouse.wheel(0, 600);
     await page.waitForTimeout(400);
     expect((await heading.boundingBox())!.y).toBeLessThan(before - 400);
+});
+
+// Нижняя часть сценами (У5б, этап 2): порядок блоков – окно, кейсы, путь, оплата, три колонки, «Ещё делаю», FAQ, финал
+test('/sites: порядок блоков под сценой окна', async ({ page }) => {
+    await page.goto('/sites');
+    const titles = (await page.locator('main h2').allTextContents()).map(norm);
+    const order = [casesDeck.title, projectPath.title, payment.title, terms.title, sections.more.title, sections.faq.title, sections.cta.title];
+    const at = order.map((title) => titles.indexOf(title));
+    expect(at.every((i) => i >= 0)).toBe(true);
+    expect(at).toEqual([...at].sort((a, b) => a - b));
+    // Цены видов – выше кейсов
+    expect(titles.indexOf('Магазин или каталог')).toBeLessThan(at[0]);
+});
+
+// Стык окна с колодой: в начале колоды окно уже пустое и спрятано, на его месте – карточки с кейсами
+test('/sites: окно уходит в колоду кейсов, слайды листаются', async ({ page }) => {
+    await page.setViewportSize({ width: 1400, height: 900 });
+    await page.goto('/sites');
+    await scrollToScene(page, casesDeck.title, .9);
+    await expect(page.locator('figure').first()).toHaveCSS('opacity', '0');
+    const deck = page.getByRole('region', { name: casesDeck.title });
+    await expect(deck.getByRole('heading', { level: 2 })).toBeInViewport();
+    const first = deck.locator('li').first();
+    await expect(first).toBeInViewport();
+    await expect(first.getByRole('link')).toBeVisible();
+    // Слайд 2: первая пара ушла и не в фокусе
+    const dots = deck.getByRole('button', { name: /слайд/ });
+    await expect(dots.first()).toHaveAttribute('aria-current', 'true');
+    await dots.nth(1).click();
+    await page.waitForTimeout(1500);
+    await expect(dots.nth(1)).toHaveAttribute('aria-current', 'true');
+    await expect(first).toHaveAttribute('inert', '');
+});
+
+// Оплата – одна шкала: суммы проекта сменяют друг друга, в конце – возврат предоплаты
+test('/sites: шкала оплаты перестраивается по сумме', async ({ page }) => {
+    await page.setViewportSize({ width: 1400, height: 900 });
+    await page.goto('/sites');
+    const region = page.getByRole('region', { name: payment.title });
+    // Сумма этапа – в строке, которая проявляется и уходит целиком
+    const range = (i: number) => region.getByText(payment.stages[i].range, { exact: true }).locator('xpath=..');
+    await scrollToScene(page, payment.title, .7);
+    await expect(range(0)).toHaveCSS('opacity', '1');
+    await expect(region.getByText(payment.refund)).not.toBeInViewport();
+    await scrollToScene(page, payment.title, -.2);
+    await expect(range(2)).toHaveCSS('opacity', '1');
+    await expect(range(0)).toHaveCSS('opacity', '0');
+    await expect(region.getByText(payment.refund)).toBeInViewport();
+});
+
+for (const width of [1400, 375]) {
+    test(`/sites: три колонки и «Ещё делаю» на липком экране, ${width}`, async ({ page }) => {
+        await page.setViewportSize({ width, height: width > 700 ? 900 : 812 });
+        await page.goto('/sites');
+        const region = page.getByRole('region', { name: terms.title });
+        await scrollToScene(page, terms.title, -.2);
+        // В конце сцены видна последняя колонка (на телефоне колонки сменяют друг друга)
+        const last = terms.columns.at(-1)!;
+        await expect(region.getByRole('heading', { level: 3, name: last.title })).toBeInViewport();
+        await expect(region.getByText(last.items[0])).toBeInViewport();
+
+        const more = page.getByRole('region', { name: sections.more.title });
+        await scrollToScene(page, sections.more.title, -.2);
+        for (const pill of morePills.pills) await expect(more.getByText(pill.title)).toBeInViewport();
+        await expect(more.getByText(/1\s000\s₽\/час/).last()).toBeVisible();
+
+        const scrollWidth = await page.evaluate(() => document.documentElement.scrollWidth);
+        expect(scrollWidth).toBeLessThanOrEqual(width);
+    });
+}
+
+test('/sites: без движения нижняя часть – обычные блоки целиком', async ({ page }) => {
+    await page.emulateMedia({ reducedMotion: 'reduce' });
+    await page.setViewportSize({ width: 1400, height: 900 });
+    await page.goto('/sites');
+    const deck = page.getByRole('region', { name: casesDeck.title });
+    await expect(deck.locator('a[href^="/portfolio/"]').first()).toBeVisible();
+    const pay = page.getByRole('region', { name: payment.title });
+    for (const stage of payment.stages) await expect(pay.getByText(stage.range, { exact: true })).toBeVisible();
+    const region = page.getByRole('region', { name: terms.title });
+    for (const col of terms.columns) await expect(region.getByRole('heading', { level: 3, name: col.title })).toBeVisible();
+    for (const step of projectPath.steps) await expect(page.getByRole('heading', { level: 3, name: step.title })).toBeVisible();
+    // Не липкий экран: раздел уходит вверх вместе со страницей
+    const heading = pay.getByRole('heading', { level: 2 });
+    await heading.scrollIntoViewIfNeeded();
+    const before = (await heading.boundingBox())!.y;
+    await page.mouse.wheel(0, 500);
+    await page.waitForTimeout(400);
+    expect((await heading.boundingBox())!.y).toBeLessThan(before - 300);
 });

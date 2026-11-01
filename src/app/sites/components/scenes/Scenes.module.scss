@@ -1,0 +1,102 @@
+@use '/src/styles/variables.scss' as vars;
+
+// Сцены нижней части /sites (У5б, этап 2): липкий экран – scene.module.scss страницы /ai, здесь – кадр по центру
+// и общие заголовки. Без плашек, под волосяными линиями – как разделы /ai (Sections.module.scss)
+$line: rgba(128, 128, 128, 0.45);
+
+.scene {
+    position: relative;
+}
+
+// Кадр сцены – посередине экрана; снизу запас под шар чата
+.frame {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+
+    max-width: 1100px;
+    height: 100%;
+    margin: 0 auto;
+    padding: 32px 20px 72px;
+
+    color: var(--color-text-100);
+}
+
+// Без движения – обычный раздел
+.flat {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+
+    width: 100%;
+    max-width: 1100px;
+    margin: 0 auto;
+
+    color: var(--color-text-100);
+}
+
+.title {
+    margin: 0;
+
+    font-size: clamp(1.6rem, 4vw, 2.2rem);
+    line-height: 1.15;
+    text-align: center;
+    text-wrap: balance;
+    color: var(--color-text-100);
+    transition: vars.$transition;
+}
+
+.description {
+    margin: 0;
+
+    font-size: 1.05rem;
+    text-align: center;
+    text-wrap: balance;
+    color: var(--color-text-muted);
+    transition: vars.$transition;
+}
+
+.muted {
+    color: var(--color-text-muted);
+    transition: vars.$transition;
+}
+
+// Пункт с точкой: маркер – внутри строки, которая выезжает из-под маски (иначе он виден раньше текста)
+.bulleted {
+    position: relative;
+    display: block;
+    padding-left: 1.1em;
+
+    &::before {
+        content: '';
+        position: absolute;
+        top: .6em;
+        left: .3em;
+
+        width: 5px;
+        height: 5px;
+
+        background: var(--color-text-50);
+        border-radius: 50%;
+    }
+}
+
+// Волосяная линия над колонкой или шагом; прорисовывается слева направо (scaleX ставит компонент)
+.hairline {
+    display: block;
+
+    width: 100%;
+    height: 1.5px;
+
+    background: $line;
+    transform-origin: 0 50%;
+}
+
+@media screen and (max-width: 700px) {
+    .frame {
+        padding: 24px 16px 84px;
+    }
+}
