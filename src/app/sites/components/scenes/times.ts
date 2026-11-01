@@ -200,3 +200,27 @@ export const moreTimes = (pills: number): IMoreTimes => {
     const quiet = list[pills - 1] + .12;
     return { head: 0, pills: list, quiet, path: quiet + TEXT + READ };
 };
+
+// ---------- FAQ (этап 3) ----------
+// Вопрос приходит, как реплика клиента в чате (как FAQ на /ai): пузырь въезжает справа на ASK_SHIFT ширины списка
+// с наклоном, распрямляется и тает в строку. Вопросы – по одному: следующий трогается, когда прошлый прошёл ASK_GAP
+// своего пути (наклонённые пузыри не наезжают друг на друга)
+export const ASK_SHIFT = .3;
+export const ASK_GAP = .85;
+export interface IFaqTimes {
+    head: number,
+    // Въезд вопроса i и таяние его пузыря
+    ask: W[],
+    melt: W[],
+    path: number
+}
+
+// w – ширина списка, px; h – высота экрана
+export const faqTimes = (count: number, w: number, h: number): IFaqTimes => {
+    const fade = fadeFor(h);
+    const dur = Math.max(fade, durFor(w * ASK_SHIFT, h));
+    const step = Math.max(.1, dur * ASK_GAP);
+    const ask = Array.from({ length: count }, (_, i): W => [.12 + i * step, dur]);
+    const melt = ask.map(([a, d]): W => [a + d * .8, fade]);
+    return { head: 0, ask, melt, path: end(melt[count - 1]) + READ };
+};

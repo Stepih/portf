@@ -294,3 +294,61 @@ test('/sites: без движения нижняя часть – обычные
     await page.waitForTimeout(400);
     expect((await heading.boundingBox())!.y).toBeLessThan(before - 300);
 });
+
+// Условия – в FAQ (У5б, этап 3): на компьютере – липкий экран, вопросы приходят по одному, раскрыт один вопрос;
+// на телефоне список не влезает в экран – обычный раздел, вопрос въезжает по своему скроллу
+test('/sites: FAQ на липком экране – вопросы по одному, раскрыт один', async ({ page }) => {
+    await page.setViewportSize({ width: 1400, height: 900 });
+    await page.goto('/sites');
+    const region = page.getByRole('region', { name: sections.faq.title });
+    const items = region.locator('details');
+    await scrollToScene(page, sections.faq.title, .15);
+    await expect(items.first()).toBeInViewport();
+    await expect(items.last()).toHaveCSS('opacity', '0');
+    await scrollToScene(page, sections.faq.title, -.2);
+    await expect(items.last()).toHaveCSS('opacity', '1');
+    await expect(items.last()).toBeInViewport();
+    await expect(region.getByRole('link', { name: sections.faq.link })).toBeInViewport();
+    // Экран держится: заголовок не уехал вверх за время пути
+    const heading = region.getByRole('heading', { level: 2 });
+    await expect(heading).toBeInViewport();
+    // Раскрыт один: открыли третий – первый закрылся
+    await items.nth(2).locator('summary').click();
+    await expect(items.nth(2)).toHaveAttribute('open', '');
+    await expect(items.first()).not.toHaveAttribute('open', '');
+    // Ниже – финал
+    await expect(page.getByRole('region', { name: sections.cta.title })).toBeAttached();
+});
+
+test('/sites: FAQ на телефоне – по своему скроллу, без прокрутки вбок', async ({ page }) => {
+    await page.setViewportSize({ width: 375, height: 812 });
+    await page.goto('/sites');
+    const region = page.getByRole('region', { name: sections.faq.title });
+    await expect(region.locator('details')).toHaveCount(faq.length);
+    const last = region.locator('details').last();
+    await last.scrollIntoViewIfNeeded();
+    await page.mouse.wheel(0, 300);
+    await page.waitForTimeout(1300);
+    await expect(last).toHaveCSS('opacity', '1');
+    // Не липкий экран: раздел уходит вверх вместе со страницей
+    const heading = region.getByRole('heading', { level: 2 });
+    await heading.scrollIntoViewIfNeeded();
+    const before = (await heading.boundingBox())!.y;
+    await page.mouse.wheel(0, 500);
+    await page.waitForTimeout(400);
+    expect((await heading.boundingBox())!.y).toBeLessThan(before - 300);
+    expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(375);
+});
+
+test('/sites: FAQ без движения – обычный аккордеон, все вопросы видны', async ({ page }) => {
+    await page.emulateMedia({ reducedMotion: 'reduce' });
+    await page.setViewportSize({ width: 1400, height: 900 });
+    await page.goto('/sites');
+    const region = page.getByRole('region', { name: sections.faq.title });
+    await region.scrollIntoViewIfNeeded();
+    for (const item of faq) await expect(region.getByText(item.question)).toBeVisible();
+    await expect(region.locator('details').first()).toHaveAttribute('open', '');
+    // Можно раскрыть несколько
+    await region.locator('details').nth(3).locator('summary').click();
+    await expect(region.locator('details').first()).toHaveAttribute('open', '');
+});

@@ -1,11 +1,24 @@
-// Отступ сверху – свой, а не 100px FAQ главной (section – чтобы перебить её класс)
-section.faq {
+// FAQ /sites (У5б, этап 3): аккордеон FAQ главной (Faq.module.scss) в кадре липкого экрана – без отступа сверху
+// (div – чтобы перебить .faq главной), во всю ширину кадра до 820px
+div.body {
     width: 100%;
-    margin: 76px auto 0;
+    margin: 0 auto;
 }
 
-@media screen and (max-width: 600px) {
-    section.faq {
-        margin-top: 46px;
-    }
+.head {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+}
+
+// По своему скроллу (экран не вмещает список) – обычный раздел в колонке страницы
+.flat {
+    width: 100%;
+}
+
+// На липком экране строки плотнее: девять вопросов и раскрытый ответ вмещаются в экран от ~800px высотой
+div.body.compact :global(summary) {
+    padding-top: 14px;
+    padding-bottom: 14px;
 }

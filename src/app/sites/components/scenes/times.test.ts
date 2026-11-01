@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { move, PEAK, rise } from "@/app/ai/components/speed";
-import { cardIn, cardOut, deckTimes, edges, flowTimes, morphLen, padded, payStageAt, payTimes, slideAt, termsTimes, TEXT } from "./times";
+import { ASK_GAP, ASK_SHIFT, cardIn, cardOut, deckTimes, edges, faqTimes, flowTimes, morphLen, padded, payStageAt, payTimes, slideAt, termsTimes, TEXT } from "./times";
 
 // Пик скорости кривой на окне dur экранов, путь px, экран h: максимум |Δy| / Δскролл
 const peak = (curve: (k: number) => number, px: number, dur: number, h: number) => {
@@ -77,5 +77,19 @@ describe("сцены нижней части /sites", () => {
         const phone = termsTimes([6, 6, 5], true, 343, 667);
         expect(phone.cols[2].out).toBeNull();
         expect(phone.cols[1].line[0]).toBeGreaterThan(phone.cols[0].out![0] + phone.cols[0].out![1]);
+    });
+
+    // Этап 3: FAQ на липком экране – вопросы по одному, путь короче FAQ /ai (~5 экранов)
+    it("FAQ: вопрос въезжает не быстрее предела, вопросы по очереди, путь короче 2,3 экрана", () => {
+        for (const [w, h] of [[820, 900], [820, 800], [660, 1000]]) {
+            const t = faqTimes(9, w, h);
+            expect(peak(move, w * ASK_SHIFT, t.ask[0][1], h)).toBeLessThanOrEqual(PEAK);
+            // По одному: следующий трогается, когда прошлый прошёл большую часть пути
+            for (let i = 1; i < 9; i++) expect(t.ask[i][0] - t.ask[i - 1][0]).toBeGreaterThanOrEqual(Math.min(.1, t.ask[0][1] * ASK_GAP) - 1e-9);
+            // Пузырь тает, когда вопрос почти на месте
+            expect(t.melt[0][0]).toBeGreaterThan(t.ask[0][0] + t.ask[0][1] * .5);
+            expect(t.path).toBeGreaterThan(t.melt[8][0] + t.melt[8][1]);
+            expect(t.path).toBeLessThan(2.3);
+        }
     });
 });

@@ -8,42 +8,28 @@ export interface ISitesOption {
     note?: string
 }
 
-// Группа «Входит всегда»: у магазина две – «Магазин» и «Каталог без корзины». Первой строкой каждой группы – ссылка
-// «Всё, что есть в каждом сайте»; note – мелкая строка под списком
-export interface ISitesIncluded {
-    label?: string,
-    items: string[],
-    note?: string
-}
-
 // Кейс раздела: id работы из portfolioWorks и что в нём сделано
 export interface ISitesCase {
     id: string,
     text?: string
 }
 
-// Состав вида сайта. Название, описание, цена, срок и уточнение – из карточки главной (IService)
+// Опции и кейсы вида сайта. Название, описание, цена, срок и уточнение – из карточки главной (IService), состав –
+// выносками сцены (IBuild), «Не входит» и оплата – один раз на страницу (terms, payment в sitesPage.ts)
 export interface ISitesDetails {
-    included: ISitesIncluded[],
     options: ISitesOption[],
     // Опции без цены – одной строкой после «Цену назову на созвоне:»
     onCall: string,
-    // Пример расчёта: формула и итог
-    example?: { text: string, total: string },
-    excluded: string[],
-    payment: string[],
+    // Итог примера расчёта, слагаемые – IBuildSum
+    example?: { total: string },
     cases: ISitesCase[]
 }
 
-// Тема «Для всех сайтов»: заголовок, пункты и мелкие строки под ними
+// Колонка «Что входит и что остаётся вам»: заголовок, пункты и мелкие строки под ними
 export interface ISitesTopic {
     title: string,
     items: string[],
-    notes?: string[],
-    // Крупная цифра темы (У5а): «от 300 ₽/мес», «1 500 ₽/час»
-    figure?: string,
-    // Доли платежей для шкал «Оплаты», по пункту на шкалу (У5а)
-    splits?: number[][]
+    notes?: string[]
 }
 
 // Сцена сборки (У5а): выноски состава группами по шагам окна. at – номер шага (Mocks.tsx), at = steps – после сборки;

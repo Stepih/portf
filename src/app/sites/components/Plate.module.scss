@@ -1,126 +1,12 @@
 @use '/src/styles/variables.scss' as vars;
 
-// Общее для разделов /sites: матовая плашка (DESIGN.md, Cards), заголовок раздела, списки с точкой, цена.
-// Внутри плашки – волосяные линии, рамок нет
-$hairline: rgba(128, 128, 128, 0.3);
-
-.plate {
-    padding: 40px;
-
-    color: var(--color-text-100);
-
-    background: var(--color-frost);
-    border-radius: 13px;
-    box-shadow: vars.$shadow;
-    transition: vars.$transition;
-}
-
+// Общее для разделов /sites вне сцен: заголовок финала и кнопки первого экрана, цены вида и финала
 .title {
     margin: 0;
 
     font-size: clamp(1.6rem, 4vw, 2.2rem);
     line-height: 1.15;
     text-wrap: balance;
-}
-
-.text {
-    margin: 8px 0 0;
-
-    font-size: 1.05rem;
-    color: var(--color-text-muted);
-    transition: vars.$transition;
-}
-
-.rule {
-    height: 1px;
-    margin: 28px 0;
-
-    background: $hairline;
-    border: none;
-}
-
-// Название колонки или темы
-.label {
-    margin: 0 0 12px;
-
-    font-size: 1.05rem;
-}
-
-// Подзаголовок группы внутри колонки: «Магазин», «Каталог без корзины»
-.group {
-    margin: 0 0 8px;
-
-    font-size: 0.95rem;
-    color: var(--color-text-muted);
-    transition: vars.$transition;
-
-    * + & {
-        margin-top: 18px;
-    }
-}
-
-.list {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-
-    margin: 0;
-    padding: 0;
-
-    font-size: 1rem;
-    line-height: 1.4;
-    list-style: none;
-
-    li {
-        position: relative;
-        padding-left: 16px;
-        text-wrap: pretty;
-
-        &::before {
-            content: '';
-
-            position: absolute;
-            top: 0.6em;
-            left: 0;
-
-            width: 5px;
-            height: 5px;
-
-            background: var(--color-text-muted);
-            border-radius: 50%;
-            transition: vars.$transition;
-        }
-    }
-}
-
-// Мелкая строка под списком: опции без цены, пример, блоки на выбор
-.note {
-    margin: 12px 0 0;
-
-    font-size: 0.95rem;
-    line-height: 1.4;
-    color: var(--color-text-muted);
-    text-wrap: pretty;
-    transition: vars.$transition;
-}
-
-.price {
-    white-space: nowrap;
-}
-
-// Ссылка в тексте: цветом текста, подчёркнута (как кейсы в карточках главной)
-.link {
-    color: var(--color-text-100);
-    text-underline-offset: 3px;
-    transition: vars.$transition;
-
-    &:hover {
-        text-decoration-thickness: 2px;
-    }
-
-    &:focus-visible {
-        @include vars.focus-ring(2px);
-    }
 }
 
 // Кнопки: таблетка контуром, главная – залита (DESIGN.md, Buttons)
@@ -171,19 +57,5 @@ $hairline: rgba(128, 128, 128, 0.3);
     path {
         fill: currentColor;
         transition: vars.$transition;
-    }
-}
-
-@media screen and (max-width: 600px) {
-    .plate {
-        padding: 28px 20px;
-    }
-
-    .rule {
-        margin: 22px 0;
-    }
-
-    .list {
-        font-size: 0.95rem;
     }
 }

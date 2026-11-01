@@ -1,17 +1,28 @@
 import { describe, expect, it } from "vitest";
-import { build, buildUi, casesDeck, commonTopics, faq, head, moreOptions, morePills, payment, projectPath, sitesDetails, terms } from "./sitesPage";
+import { build, buildUi, casesDeck, columns, faq, head, morePills, payment, projectPath, sections, sitesDetails, terms } from "./sitesPage";
 import { services } from "./offer";
 import { portfolioWorks } from "./portfolio";
 import { portfolioCases } from "./portfolioCases";
 
 // Все клиентские строки страницы /sites одной строкой – для проверок по тексту
-const allText = (): string => JSON.stringify({ head, sitesDetails, build, buildUi, projectPath, commonTopics, moreOptions, faq, casesDeck, payment, terms, morePills });
+const allText = (): string => JSON.stringify({ head, sections, columns, sitesDetails, build, buildUi, projectPath, faq, casesDeck, payment, terms, morePills });
 
 describe("sitesPage", () => {
     it("в FAQ нет сумм, вопросы не повторяются (SALES_PLAN 3.8)", () => {
         for (const item of faq) expect(item.answer).not.toMatch(/₽/);
         const questions = faq.map((item) => item.question);
         expect(new Set(questions).size).toBe(questions.length);
+    });
+
+    // У5б, этап 3: условия – в FAQ, около 8 вопросов; вопрос – с «?», ответ – 1–2 предложения без точки в конце
+    it("FAQ: 7–9 вопросов, ответ – 1–2 предложения без точки в конце", () => {
+        expect(faq.length).toBeGreaterThanOrEqual(7);
+        expect(faq.length).toBeLessThanOrEqual(9);
+        for (const item of faq) {
+            expect(item.question).toMatch(/\?$/);
+            expect(item.answer).not.toMatch(/[.!]$/);
+            expect(item.answer.split(/[.!?] (?=[А-ЯЁA-Z0-9])/).length, item.question).toBeLessThanOrEqual(2);
+        }
     });
 
     // SERVICES_PLAN, правило 4: договор не обещаем, пока нет оферты; «шаблонных решений нет» не пишем
@@ -88,14 +99,9 @@ describe("sitesPage", () => {
             head.hint, ...Object.values(build).flatMap((item) => item.callouts.flatMap((group) => group.items)), ...projectPath.steps.map((step) => step.text),
             casesDeck.text, payment.refund, ...payment.stages.flatMap((stage) => stage.parts.map((part) => part.label ?? '')),
             ...terms.columns.flatMap((col) => [...col.items, ...(col.notes ?? [])]), morePills.quiet,
+            ...faq.flatMap((item) => [item.question, item.answer]),
         ];
         for (const line of lines) expect(line).not.toMatch(/ –/);
-    });
-
-    it("шкалы оплаты – по 100%", () => {
-        for (const topic of commonTopics) {
-            for (const split of topic.splits ?? []) expect(split.reduce((a, b) => a + b, 0)).toBe(100);
-        }
     });
 
     // У5б, этап 2: нижняя часть сценами – строки короткие, по одному фокусу на экран
@@ -114,11 +120,16 @@ describe("sitesPage", () => {
         }
     });
 
-    // Факты с суммами, которых не будет в FAQ (этап 3), остаются на странице: хостинг, работа по часу, поддержка
-    it("хостинг, работа по часу и поддержка – в колонках или «Ещё делаю»", () => {
+    // Факты с суммами, которых нет в FAQ (этап 3), остаются на странице: хостинг, работа по часу, поддержка, перенос
+    // лендинга, реклама. Условия без сумм – ответами FAQ
+    it("факты с суммами – в колонках или «Ещё делаю», условия – в FAQ", () => {
         const text = JSON.stringify({ terms, morePills }).replace(/\u00a0| /g, ' ');
-        for (const fact of ['от 300 ₽', '1 500 ₽/час', '1 000 ₽/час', 'Поддержка']) expect(text).toContain(fact);
+        for (const fact of ['от 300 ₽', '1 500 ₽/час', '1 000 ₽/час', 'Поддержка', 'от 3 000 ₽', 'Ведение рекламы – от 15 000 ₽ в месяц']) expect(text).toContain(fact);
         expect(JSON.stringify(projectPath)).toMatch(/2 недели/);
+        const answers = faq.map((item) => item.answer).join(' ').replace(/\u00a0|\u2060/g, ' ').replace(/\u2060/g, '');
+        for (const fact of ['предоплаты', 'новая задача', 'одним списком', 'файл не передаю', 'дежурство', 'на ваше имя', 'Мой налог', 'в течение часа', 'Тильду', 'по часу', 'со своего аккаунта']) {
+            expect(answers, fact).toContain(fact);
+        }
     });
 
     it("шкала оплаты: три суммы, у каждой доли – по 100%", () => {
