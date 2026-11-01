@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="ru"><head><meta charset="utf-8">
+<link href="https://fonts.googleapis.com/css2?family=Allerta+Stencil&family=Raleway:wght@400;700&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0}
+body{width:1440px;height:900px;overflow:hidden;background:#fff;color:#131313;font-family:Raleway,Arial,sans-serif;position:relative}
+.glow{position:absolute;border-radius:50%;filter:blur(60px);opacity:.6}
+.g1{width:320px;height:320px;background:#ea7777;left:-80px;top:40px}
+.g2{width:380px;height:380px;background:#77c7ea;right:-60px;bottom:-60px}
+.wrap{position:relative;display:grid;grid-template-columns:420px 1fr;gap:80px;max-width:1200px;margin:0 auto;padding:70px 0 0}
+.scale{position:relative;height:780px;border-left:1px solid rgba(128,128,128,.3);margin-left:120px}
+.tick{position:absolute;left:-120px;width:240px;display:flex;align-items:center;gap:16px}
+.tick b{font-family:'Allerta Stencil';font-weight:400;font-size:40px;width:110px;text-align:right}
+.tick span{font-size:15px;color:rgba(19,19,19,.62)}
+.tick i{width:14px;height:1px;background:#131313;display:block}
+.t1{top:40px}.t2{top:360px}.t3{top:620px}
+.t2 b,.t3 b{color:rgba(19,19,19,.3)}
+.mark{position:absolute;left:-30px;top:12px;width:60px;height:60px;border-radius:50%;background:#efefef;box-shadow:0 4px 48px rgba(0,0,0,.25);overflow:hidden}
+.mark:after{content:'';position:absolute;inset:17px;border-radius:50%;background:#77c7ea;filter:blur(7px);opacity:.7}
+.minor{position:absolute;left:0;width:10px;height:1px;background:rgba(128,128,128,.5)}
+.crumb{font-size:14px;color:rgba(19,19,19,.62);margin-bottom:24px}
+h1{font-size:56px;line-height:1.1;font-weight:700;max-width:640px}
+.lead{font-size:20px;line-height:1.4;color:rgba(19,19,19,.62);max-width:560px;margin:24px 0 36px}
+.btns{display:flex;gap:12px}
+.btn{font-weight:700;font-size:18px;padding:16px 22px;border-radius:13px;background:#131313;color:#fff}
+.pill{font-weight:700;font-size:16px;padding:14px 26px;border-radius:24px;border:1.5px solid rgba(128,128,128,.45)}
+.plate{margin-top:72px;background:rgba(57,57,57,.08);border-radius:13px;box-shadow:0 4px 48px rgba(0,0,0,.25);padding:28px 32px;display:grid;grid-template-columns:1fr 1fr;gap:32px;max-width:680px}
+.plate h2{font-size:28px;grid-column:1/-1}
+.plate h3{font-size:15px;margin-bottom:10px}
+.plate li{font-size:15px;line-height:1.5;list-style:none;padding-left:14px;position:relative}
+.plate li:before{content:'';position:absolute;left:0;top:10px;width:5px;height:5px;border-radius:50%;background:#131313}
+.opt{display:flex;justify-content:space-between;align-items:center;border-top:1px solid rgba(128,128,128,.3);padding:8px 0;font-size:15px}
+.sw{width:34px;height:20px;border-radius:10px;border:1.5px solid rgba(128,128,128,.45)}
+.sw.on{background:#131313;border-color:#131313}
+</style></head><body>
+<div class="glow g1"></div><div class="glow g2"></div>
+<div class="wrap">
+  <div class="scale">
+    <div class="tick t1"><b>8 000</b><i></i><span>Лендинг · 3–4 дня</span></div>
+    <div class="minor" style="top:140px"></div><div class="minor" style="top:220px"></div><div class="minor" style="top:290px"></div>
+    <div class="tick t2"><b>30 000</b><i></i><span>Сайт компании · 1–2 недели</span></div>
+    <div class="minor" style="top:450px"></div><div class="minor" style="top:530px"></div>
+    <div class="tick t3"><b>50 000</b><i></i><span>Магазин · 2–3 недели</span></div>
+    <div class="mark"></div>
+  </div>
+  <div>
+    <p class="crumb">Главная / Сайты</p>
+    <h1>Сайты под ключ: что входит и сколько стоит</h1>
+    <p class="lead">Лендинг, сайт компании и магазин – с ценой, сроком и опциями. Точную сумму назову на бесплатном созвоне</p>
+    <div class="btns"><span class="btn">Обсудить проект</span><span class="pill">Написать в Telegram</span></div>
+    <div class="plate">
+      <h2>Лендинг – от 8 000 ₽</h2>
+      <div><h3>Входит всегда</h3><ul><li>Дизайн по вашим примерам</li><li>До 8 блоков и подвал</li><li>Тексты блоков</li></ul></div>
+      <div><h3>Можно добавить</h3>
+        <div class="opt">Простая анимация · 1 500 ₽<span class="sw on"></span></div>
+        <div class="opt">Второй язык · 5 000 ₽<span class="sw"></span></div>
+        <div class="opt">Запись заявкой · 3 000 ₽<span class="sw"></span></div>
+      </div>
+    </div>
+  </div>
+</div>
+</body></html>

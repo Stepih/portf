@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="ru"><head><meta charset="utf-8">
+<link href="https://fonts.googleapis.com/css2?family=Allerta+Stencil&family=Raleway:wght@400;700&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0}
+body{width:1440px;height:900px;overflow:hidden;background:#fff;color:#131313;font-family:Raleway,Arial,sans-serif;position:relative}
+.glow{position:absolute;border-radius:50%;filter:blur(60px);opacity:.6}
+.g1{width:340px;height:340px;background:#00ea41;left:-100px;bottom:40px;opacity:.35}
+.g2{width:360px;height:360px;background:#77c7ea;right:-40px;top:-60px}
+.top{text-align:center;padding-top:56px;position:relative}
+.crumb{font-size:14px;color:rgba(19,19,19,.62);margin-bottom:16px}
+h1{font-size:46px;font-weight:700}
+.tabs{display:inline-flex;gap:6px;margin-top:28px;padding:6px;border-radius:24px;background:rgba(57,57,57,.08);box-shadow:0 4px 48px rgba(0,0,0,.25)}
+.tab{font-weight:700;font-size:15px;padding:12px 22px;border-radius:24px}
+.tab.on{background:#131313;color:#fff}
+.stage{position:relative;max-width:1180px;margin:40px auto 0;background:rgba(57,57,57,.08);border-radius:13px;box-shadow:0 4px 48px rgba(0,0,0,.25);padding:44px 48px;display:grid;grid-template-columns:360px 1fr 1fr;gap:48px;height:560px}
+.price{font-family:'Allerta Stencil';font-size:84px;line-height:1}
+.from{font-size:18px;color:rgba(19,19,19,.62);margin-bottom:8px}
+.term{font-size:18px;margin:14px 0 6px;font-weight:700}
+.note{font-size:15px;color:rgba(19,19,19,.62)}
+.cta{display:inline-block;margin-top:32px;font-weight:700;font-size:18px;padding:16px 22px;border-radius:13px;background:#131313;color:#fff}
+.shot{margin-top:40px;height:150px;border-radius:13px;background:linear-gradient(135deg,#d8d8d8,#bdbdbd);position:relative}
+.shot span{position:absolute;left:14px;bottom:12px;font-size:14px;font-weight:700}
+h3{font-size:16px;margin-bottom:16px}
+li{list-style:none;font-size:17px;line-height:1.45;padding:10px 0;border-top:1px solid rgba(128,128,128,.3)}
+li.new{font-weight:700}
+li em{font-style:normal;font-weight:700;float:right}
+.dots{position:absolute;right:48px;bottom:24px;display:flex;gap:8px}
+.dots i{width:40px;height:3px;background:rgba(19,19,19,.2)}.dots i.on{background:#131313}
+</style></head><body>
+<div class="glow g1"></div><div class="glow g2"></div>
+<div class="top">
+  <p class="crumb">Главная / Сайты</p>
+  <h1>Сайты под ключ: что входит и сколько стоит</h1>
+  <div class="tabs"><span class="tab">Лендинг</span><span class="tab on">Сайт компании</span><span class="tab">Магазин или каталог</span></div>
+</div>
+<div class="stage">
+  <div>
+    <p class="from">от</p>
+    <p class="price">30 000 ₽</p>
+    <p class="term">1–2 недели</p>
+    <p class="note">4 страницы, следующая – около 9 000 ₽</p>
+    <span class="cta">Узнать цену</span>
+    <div class="shot"><span>Союз вокалистов</span></div>
+  </div>
+  <div><h3>Входит всегда</h3><ul>
+    <li>Дизайн и тексты блоков</li>
+    <li class="new">4 страницы: Главная, Услуги, О компании, Контакты</li>
+    <li class="new">Панель управления: тексты, фото и цены</li>
+    <li>Заявки в Telegram или на почту</li>
+  </ul></div>
+  <div><h3>Можно добавить</h3><ul>
+    <li>Ещё страница <em>≈ 9 000 ₽</em></li>
+    <li>Личный кабинет <em>от 15 000 ₽</em></li>
+    <li>Онлайн-запись с ИИ-агентом <em>≈ 15 000 ₽</em></li>
+    <li>Второй язык <em>5 000 ₽</em></li>
+  </ul></div>
+  <div class="dots"><i></i><i class="on"></i><i></i></div>
+</div>
+</body></html>
