@@ -589,6 +589,26 @@ test('на главной нет снятых обещаний', async ({ page }
     await expect(page.locator('#contact')).toContainText('Платить за сайт');
 });
 
+// SERVICES_PLAN У7: FAQ – 12 вопросов, шаги не обещают панель в каждом сайте и говорят о правках после предоплаты,
+// подпись «Услуг и цен» ведёт к «Что входит»
+test('FAQ, шаги и подпись блока услуг после У7', async ({ page }) => {
+    await page.goto('/');
+
+    const faq = page.getByRole('region', { name: faqTitle });
+    await expect(faq.locator('details')).toHaveCount(12);
+    for (const question of ['Что, если вы пропадёте с предоплатой?', 'Как понять до оплаты, что агент подойдёт?']) {
+        await expect(faq.locator('summary', { hasText: question })).toHaveCount(1);
+    }
+
+    const steps = page.getByRole('region', { name: 'Как я работаю' }).getByRole('listitem');
+    await expect(steps.nth(0)).not.toContainText('число правок');
+    await expect(steps.nth(2)).toContainText('правлю выбранный макет');
+    await expect(steps.nth(2)).toContainText('если она нужна');
+    await expect(steps.nth(3)).toContainText('если она есть');
+
+    await expect(page.getByRole('region', { name: servicesTitle })).toContainText('по ссылке в каждой карточке');
+});
+
 // Планшет (DESIGN_FIXES_2_PLAN Д10): три отличия в одном ряду, а не 2 + 1, форма заявки по левому краю, как текст над ней.
 // Кейсы – в столбик, как услуги (DESIGN_FIXES_6_PLAN Д34): в три колонки теги отраслей переносились на две строки
 test('раскладка главной на планшете, 820px', async ({ page }) => {
