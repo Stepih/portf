@@ -1281,7 +1281,11 @@ for (const width of [1400, 375]) {
             expect(service.caseIds.length).toBeLessThanOrEqual(2);
         }
         const corporate = section.getByRole('listitem').filter({ has: page.getByRole('heading', { name: serviceTitle('corporate') }) });
-        await expect(corporate.getByRole('link', { name: 'Российский союз вокалистов' })).toHaveAttribute('href', '/portfolio/vocal');
+        // Под «Так уже сделано» – только запущенные сайты (владелец, 03.11.2026)
+        await expect(corporate.getByRole('link', { name: 'LOTi' })).toHaveAttribute('href', '/portfolio/loti');
+        const shop = section.getByRole('listitem').filter({ has: page.getByRole('heading', { name: serviceTitle('shop') }) });
+        await expect(shop.getByRole('link', { name: 'COCOSBEAUTY' })).toHaveAttribute('href', '/portfolio/cocos');
+        for (const id of ['vocal', 'onkel']) await expect(section.locator(`a[href="/portfolio/${id}"]`)).toHaveCount(0);
         // ИКЦ «Презентация» – лендинг (владелец)
         const landing = section.getByRole('listitem').filter({ has: page.getByRole('heading', { name: serviceTitle('landing') }) });
         await expect(landing.getByRole('link', { name: 'ИКЦ «Презентация»' })).toHaveAttribute('href', '/portfolio/icc');

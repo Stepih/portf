@@ -287,6 +287,8 @@
         color: #fff;
         text-decoration: none;
 
+        // Подложка: на телефоне рядом с кнопкой проверки ссылка уходит второй строкой на светлый макет
+        background: rgba(0, 0, 0, 0.35);
         border: 1.5px solid rgba(255, 255, 255, 0.6);
         border-radius: 22px;
         transition: border-color .25s;
@@ -294,6 +296,47 @@
         &:hover {
             border-color: #fff;
         }
+    }
+
+    .actions {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    // Залитая кнопка: главное действие в шапке, «Открыть сайт» рядом – контуром
+    .trialLink {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+
+        min-height: 44px;
+        padding: 4px 20px;
+
+        font-size: 0.95rem;
+        line-height: 1.2;
+        color: #111;
+        text-decoration: none;
+
+        background: #fff;
+        border-radius: 24px;
+        transition: background-color .25s;
+
+        &:hover {
+            background: rgba(255, 255, 255, 0.85);
+        }
+    }
+
+    .trialText {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .trialNote {
+        font-size: 0.75rem;
+        color: #555;
     }
 }
 
@@ -481,8 +524,13 @@
             display: none;
         }
 
-        .siteLink {
+        .siteLink,
+        .trialLink {
             padding: 0 16px;
+        }
+
+        .actions {
+            gap: 8px;
         }
     }
 

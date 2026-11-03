@@ -84,13 +84,14 @@ const CasePage: FC<IProps> = async ({ params }) => {
                 tags={data.tags}
                 accent={data.accent}
                 url={data.url}
+                trial={data.trial}
                 slides={data.slides}
             />
 
             <div className={s.body}>
                 <CaseInfo info={data.info} />
                 {data.features && <CaseFeatures features={data.features} />}
-                <CaseMetrics metrics={data.metrics} />
+                <CaseMetrics metrics={data.metrics} link={data.metricsLink} />
                 <CaseCtaShort caseId={work.id} />
                 <KeyScreens name={work.name} accent={data.accent} screens={data.screens} video={data.screensVideo} />
                 {data.before && after && <BeforeAfter name={work.name} before={data.before} after={after} />}

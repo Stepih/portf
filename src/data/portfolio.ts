@@ -6,17 +6,28 @@ const img = (file: string) => `/portfolio/${file}`
 // Порядок в массиве = порядок и номер на странице
 export const portfolioWorks: IPortfolioWork[] = [
     {
-        id: 'vocal',
-        name: 'Российский союз вокалистов',
-        year: 2026,
+        id: 'legiscan',
+        name: 'Legiscan',
+        year: 2025,
         kind: 'Веб-сервис',
-        industries: [],
-        description: 'Платформа Российского союза вокалистов: музыкальный сервис с чартами и страницами исполнителей, личные кабинеты, модерация и админка',
-        tags: ['Web', 'Mobile', 'Музыкальный сервис'],
-        tint: 'rgba(234, 119, 119, 0.2)',
-        cover: img('vocal-desktop.jpg'),
-        coverHeight: 420,
-        featured: { type: 'devices', desktop: img('vocal-desktop.jpg'), mobile: img('vocal-mobile.jpg') }
+        industries: ['outsourcing'],
+        description: 'ИИ-агент проверки договоров: риски с цитатой пункта и готовой правкой, сравнение редакций, сроки и чат по документу. Плюс Telegram-бот, API и интеграция с Pyrus',
+        tags: ['Web', 'Mobile', 'SaaS', 'ИИ'],
+        tint: 'rgba(59, 130, 246, 0.18)',
+        cover: img('legiscan-desktop.jpg'),
+        coverHeight: 420
+    },
+    {
+        id: 'loti',
+        name: 'LOTi',
+        year: 2025,
+        kind: 'Корпоративный',
+        industries: ['travel'],
+        description: 'Сайт премиального туроператора: главная как фильм при прокрутке, 9 направлений, каталог на 1138 отелей и карта агентств-партнёров',
+        tags: ['Web', 'Motion', 'Туризм'],
+        tint: 'rgba(62, 142, 138, 0.2)',
+        cover: img('loti-desktop.jpg'),
+        coverHeight: 420
     },
     {
         id: 'onkel',
@@ -32,17 +43,16 @@ export const portfolioWorks: IPortfolioWork[] = [
         featured: { type: 'devices', desktop: img('onkel-desktop.jpg'), mobile: img('onkel-mobile.jpg') }
     },
     {
-        id: 'keystone',
-        name: 'KEYSTONE',
-        year: 2026,
-        kind: 'Корпоративный',
-        industries: ['construction'],
-        description: 'Сайт компании, которая строит дома и делает ремонт под ключ: тур по интерьеру на скролле, этапы работ и галерея объектов',
-        tags: ['Web', 'Motion', 'Строительство'],
-        tint: 'rgba(201, 162, 114, 0.2)',
-        cover: img('keystone-after.jpg'),
-        coverHeight: 400,
-        featured: { type: 'video', src: img('keystone.mp4'), poster: img('keystone-poster.jpg') }
+        id: 'keytravel',
+        name: 'KeyTravel UAE',
+        year: 2024,
+        kind: 'Интернет-магазин',
+        industries: ['travel', 'ecommerce'],
+        description: 'Магазин экскурсий и билетов в Дубае и ОАЭ: бронирование в два шага, цены в рублях, долларах и дирхамах, оплата российской картой',
+        tags: ['Web', 'Mobile', 'Туризм'],
+        tint: 'rgba(23, 48, 80, 0.22)',
+        cover: img('keytravel-desktop.jpg'),
+        coverHeight: 400
     },
     {
         id: 'icc',
@@ -57,30 +67,6 @@ export const portfolioWorks: IPortfolioWork[] = [
         coverHeight: 380
     },
     {
-        id: 'keytravel',
-        name: 'KeyTravel UAE',
-        year: 2024,
-        kind: 'Интернет-магазин',
-        industries: ['travel', 'ecommerce'],
-        description: 'Магазин экскурсий и билетов в Дубае и ОАЭ: бронирование в два шага, цены в рублях, долларах и дирхамах, оплата российской картой',
-        tags: ['Web', 'Mobile', 'Туризм'],
-        tint: 'rgba(23, 48, 80, 0.22)',
-        cover: img('keytravel-desktop.jpg'),
-        coverHeight: 400
-    },
-    {
-        id: 'loti',
-        name: 'LOTi',
-        year: 2025,
-        kind: 'Корпоративный',
-        industries: ['travel'],
-        description: 'Сайт премиального туроператора: главная как фильм при прокрутке, 9 направлений, каталог на 1138 отелей и карта агентств-партнёров',
-        tags: ['Web', 'Motion', 'Туризм'],
-        tint: 'rgba(62, 142, 138, 0.2)',
-        cover: img('loti-desktop.jpg'),
-        coverHeight: 420
-    },
-    {
         id: 'ptmix',
         name: 'ПТМ',
         year: 2024,
@@ -91,18 +77,6 @@ export const portfolioWorks: IPortfolioWork[] = [
         tint: 'rgba(183, 53, 34, 0.18)',
         cover: img('ptmix-desktop.jpg'),
         coverHeight: 380
-    },
-    {
-        id: 'legiscan',
-        name: 'Legiscan',
-        year: 2025,
-        kind: 'Веб-сервис',
-        industries: ['outsourcing'],
-        description: 'ИИ-агент проверки договоров: риски с цитатой пункта и готовой правкой, сравнение редакций, сроки и чат по документу. Плюс Telegram-бот, API и интеграция с Pyrus',
-        tags: ['Web', 'Mobile', 'SaaS', 'ИИ'],
-        tint: 'rgba(59, 130, 246, 0.18)',
-        cover: img('legiscan-desktop.jpg'),
-        coverHeight: 420
     },
     {
         id: 'cocos',
@@ -127,6 +101,32 @@ export const portfolioWorks: IPortfolioWork[] = [
         tint: 'rgba(105, 83, 218, 0.2)',
         cover: img('endigo-desktop.jpg'),
         coverHeight: 420
+    },
+    {
+        id: 'vocal',
+        name: 'Российский союз вокалистов',
+        year: 2026,
+        kind: 'Веб-сервис',
+        industries: [],
+        description: 'Платформа Российского союза вокалистов: музыкальный сервис с чартами и страницами исполнителей, личные кабинеты, модерация и админка',
+        tags: ['Web', 'Mobile', 'Музыкальный сервис'],
+        tint: 'rgba(234, 119, 119, 0.2)',
+        cover: img('vocal-desktop.jpg'),
+        coverHeight: 420,
+        featured: { type: 'devices', desktop: img('vocal-desktop.jpg'), mobile: img('vocal-mobile.jpg') }
+    },
+    {
+        id: 'keystone',
+        name: 'KEYSTONE',
+        year: 2026,
+        kind: 'Корпоративный',
+        industries: ['construction'],
+        description: 'Сайт компании, которая строит дома и делает ремонт под ключ: тур по интерьеру на скролле, этапы работ и галерея объектов',
+        tags: ['Web', 'Motion', 'Строительство'],
+        tint: 'rgba(201, 162, 114, 0.2)',
+        cover: img('keystone-after.jpg'),
+        coverHeight: 400,
+        featured: { type: 'video', src: img('keystone.mp4'), poster: img('keystone-poster.jpg') }
     }
 ]
 

@@ -103,11 +103,15 @@ export interface IPortfolioCase {
     tags: string[],
     // Адрес живого сайта; нет — кнопки «Открыть сайт» не показываются
     url?: string,
+    // Кнопка попробовать продукт рядом с «Открыть сайт»: short – подпись на телефоне, note – мелко под кнопкой
+    trial?: { label: string, short: string, note: string, href: string },
     slides: ICaseSlide[],
     info: ICaseInfo[],
     features?: { title: string, text: string }[],
     // [значение, подпись]; число в значении считается от нуля при появлении
     metrics: [string, string][],
+    // Ссылка под цифрами – на услугу, похожую на кейс
+    metricsLink?: { label: string, href: string },
     screens: ICaseScreen[],
     // Видео для шагов с seg. ratio — высота к ширине записи, по умолчанию 672 / 1440
     screensVideo?: { src: string, poster: string, ratio?: number },

@@ -32,4 +32,25 @@
         text-wrap: pretty;
         transition: vars.$transition;
     }
+
+    // На всю строку сетки под цифрами
+    .link {
+        grid-column: 1 / -1;
+        justify-self: start;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        min-height: 44px;
+
+        font-size: 1.05rem;
+        color: var(--color-text-100);
+        text-decoration: underline;
+        text-underline-offset: 4px;
+        text-decoration-color: var(--color-text-50);
+        transition: vars.$transition;
+
+        &:hover {
+            text-decoration-color: currentColor;
+        }
+    }
 }

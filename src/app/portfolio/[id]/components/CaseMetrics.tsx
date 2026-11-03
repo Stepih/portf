@@ -1,6 +1,7 @@
 "use client";
 
 import { CSSProperties, FC, useEffect, useRef } from "react";
+import Link from "next/link";
 import { useInView } from "framer-motion";
 
 import s from './CaseMetrics.module.scss'
@@ -40,8 +41,8 @@ const Counter: FC<{ value: string }> = ({ value }) => {
     return <span ref={ref} className={`${allerta.className} ${s.value}`}>{value}</span>
 }
 
-// «Цифры»: крупные значения с подписью над тонкой линией
-const CaseMetrics: FC<{ metrics: [string, string][] }> = ({ metrics }) => {
+// «Цифры»: крупные значения с подписью над тонкой линией; link – ссылка под ними на похожую услугу
+const CaseMetrics: FC<{ metrics: [string, string][], link?: { label: string, href: string } }> = ({ metrics, link }) => {
     // --len — длина самого длинного значения: по нему считается один размер шрифта для всех цифр
     return (
         <section className={s.metrics} aria-label="Цифры" style={{ '--len': Math.max(...metrics.map(([value]) => value.length)) } as CSSProperties}>
@@ -51,6 +52,11 @@ const CaseMetrics: FC<{ metrics: [string, string][] }> = ({ metrics }) => {
                     <span className={s.label}>{label}</span>
                 </Rise>
             ))}
+            {link && (
+                <Link href={link.href} className={s.link}>
+                    {link.label}<span aria-hidden="true">→</span>
+                </Link>
+            )}
         </section>
     )
 }

@@ -34,6 +34,26 @@ test('призывы в кейсе ведут в форму с кейсом и �
     await expect(page.getByRole('link', { name: offerTgButton.title })).toHaveCount(2);
 });
 
+// Legiscan: в шапке – проверить свой договор, под цифрами – ссылка на /ai (аудит кейсов, 03.11.2026). Порядок:
+// Legiscan первым, незапущенные – ниже проверяемых
+test('кейс Legiscan: кнопка проверки договора и ссылка на агентов', async ({ page }) => {
+    await page.goto('/portfolio/legiscan');
+
+    const trial = page.getByRole('link', { name: 'Проверить свой договор бесплатно, до 5 страниц' });
+    await expect(trial).toBeVisible();
+    await expect(trial).toHaveAttribute('href', 'https://legiscan.ru/');
+    await expect(page.getByRole('link', { name: 'Открыть сайт' }).first()).toBeVisible();
+    await expect(page.getByRole('region', { name: 'Цифры' }).getByRole('link', { name: 'Нужен агент под ваши документы?' }))
+        .toHaveAttribute('href', '/ai');
+
+    // У других кейсов кнопки проверки нет
+    await page.goto('/portfolio/icc');
+    await expect(page.getByRole('link', { name: /Проверить свой договор/ })).toHaveCount(0);
+
+    await page.goto('/portfolio');
+    await expect(page.locator('#all h3 a').first()).toHaveText('Legiscan');
+});
+
 // Превью ссылок: у кейса своя картинка, у каталога – общая; обе отдаются как PNG (SALES_PLAN 5.6)
 test('картинки-превью ссылок у кейса и каталога', async ({ page, request }) => {
     for (const [path, image] of [['/portfolio/icc', '/portfolio/icc/opengraph-image'], ['/portfolio', '/opengraph-image']]) {

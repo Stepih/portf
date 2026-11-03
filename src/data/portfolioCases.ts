@@ -1,4 +1,5 @@
 import { ICaseMark, IPortfolioCase } from "@/interfaces/portfolio"
+import { aiPageURL } from "@/constants/urls"
 
 // Тексты кейсов из макета Claude Design
 
@@ -493,6 +494,8 @@ export const portfolioCases: Record<string, IPortfolioCase> = {
         metaDescription: 'ИИ-агент находит опасные пункты договора до подписи и сразу предлагает правку. Всё сам: агент, сервис, Telegram-бот, API и интеграция с Pyrus',
         tags: ['Web', 'Mobile', 'ИИ-агент', 'Юристы'],
         url: 'https://legiscan.ru/',
+        // Кнопка и ссылка под цифрами – тексты владельца (аудит кейсов, 03.11.2026)
+        trial: { label: 'Проверить свой договор бесплатно', short: 'Проверить договор', note: 'до 5 страниц', href: 'https://legiscan.ru/' },
         slides: [
             { type: 'desktop', src: img('legiscan-desktop.jpg'), caption: 'Главная · десктоп', dur: 16 },
             { type: 'mobile', src: img('legiscan-mobile.jpg'), caption: 'Мобильная версия', dur: 16 },
@@ -514,6 +517,7 @@ export const portfolioCases: Record<string, IPortfolioCase> = {
             { title: 'Там, где уже работают', text: 'Договор можно переслать в Telegram-бот и получить отчёт там же. Для компаний – API с синхронным и асинхронным анализом и бот для Pyrus: документ уходит на проверку прямо из задачи на согласование.' }
         ],
         metrics: [['6', 'функций в одном кабинете'], ['3', 'канала кроме сайта: бот, API, Pyrus'], ['1', 'договор проверяется бесплатно']],
+        metricsLink: { label: 'Нужен агент под ваши документы?', href: aiPageURL },
         screens: [
             {
                 title: 'Первый экран',

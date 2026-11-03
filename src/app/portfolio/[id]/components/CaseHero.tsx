@@ -6,7 +6,7 @@ import Image from "next/image";
 import { motion, useScroll, useTransform } from "framer-motion";
 
 import s from './CaseHero.module.scss'
-import { ICaseSlide } from "@/interfaces/portfolio";
+import { ICaseSlide, IPortfolioCase } from "@/interfaces/portfolio";
 import { allerta } from "@/app/fonts/fonts";
 import { portfolioPageURL } from "@/constants/urls";
 import { usePrefersReducedMotion } from "@/hooks/usePrefersReducedMotion";
@@ -23,6 +23,7 @@ interface IProps {
     tags: string[],
     accent: string,
     url?: string,
+    trial?: IPortfolioCase['trial'],
     slides: ICaseSlide[]
 }
 
@@ -112,7 +113,7 @@ const SlideContent: FC<{ slide: ICaseSlide, first: boolean }> = ({ slide, first 
 
 // Первый экран кейса: слайдер макетов на всю ширину окна, поверх — заголовок, метки и вкладки слайдов.
 // Слайды меняются сами по таймеру, свайпом, стрелками и клавишами ← →
-const CaseHero: FC<IProps> = ({ name, year, kind, role, headline, tags, accent, url, slides }) => {
+const CaseHero: FC<IProps> = ({ name, year, kind, role, headline, tags, accent, url, trial, slides }) => {
     const [index, setIndex] = useState(0);
     const reduceMotion = usePrefersReducedMotion();
 
@@ -358,12 +359,28 @@ const CaseHero: FC<IProps> = ({ name, year, kind, role, headline, tags, accent, 
                             <span aria-hidden="true">/</span>
                             <span className={s.current} aria-current="page">{name}</span>
                         </nav>
-                        {url && (
-                            <a href={url} target="_blank" rel="noopener" className={s.siteLink} aria-label="Открыть сайт">
-                                <span className={s.desk}>Открыть сайт</span>
-                                <span className={s.mob}>Сайт</span>
-                                <span aria-hidden="true">↗</span>
-                            </a>
+                        {(url || trial) && (
+                            <div className={s.actions}>
+                                {/* Попробовать продукт самому: кнопка залита, лимит – мелкой строкой внутри.
+                                    Под кнопкой подпись ложилась на светлый макет и не читалась */}
+                                {trial && (
+                                    <a href={trial.href} target="_blank" rel="noopener" className={s.trialLink} aria-label={`${trial.label}, ${trial.note}`}>
+                                        <span className={s.trialText}>
+                                            <span className={s.desk}>{trial.label}</span>
+                                            <span className={s.mob}>{trial.short}</span>
+                                            <span className={s.trialNote}>{trial.note}</span>
+                                        </span>
+                                        <span aria-hidden="true">↗</span>
+                                    </a>
+                                )}
+                                {url && (
+                                    <a href={url} target="_blank" rel="noopener" className={s.siteLink} aria-label="Открыть сайт">
+                                        <span className={s.desk}>Открыть сайт</span>
+                                        <span className={s.mob}>Сайт</span>
+                                        <span aria-hidden="true">↗</span>
+                                    </a>
+                                )}
+                            </div>
                         )}
                     </div>
 
