@@ -53,9 +53,12 @@ const Header:FC = () => {
             className={s.header}
             data-goal-place="header">
             
-            {/* Кнопка, а не div: на тач-экране шире 1200px шапка открывается касанием */}
+            {/* Кнопка, а не div: на тач-экране шире 1200px шапка открывается касанием. Вне порядка Tab (SERVICES_PLAN
+                У5б, 5в): с клавиатуры шапку открывает фокус на любой её ссылке, а сама «›» при фокусе гаснет – была
+                первой остановкой Tab, почти невидимой */}
             <motion.button
                 type="button"
+                tabIndex={-1}
                 aria-label="Открыть панель"
                 aria-expanded={open}
                 onClick={() => setHover(true)}

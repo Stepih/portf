@@ -13,6 +13,7 @@ import { easeOut, move, span, SMOOTH } from "@/app/ai/components/scene";
 import { faq, faqId, sections } from "@/data/sitesPage";
 import Scene from "./scenes/Scene";
 import { ASK_SHIFT, faqTimes, IFaqTimes, W } from "./scenes/times";
+import { faqLineTook, faqListEl } from "./scenes/handoff";
 
 // Как движется вопрос: scene – по времени липкого экрана, scroll – по своему скроллу (как FAQ на /ai, когда экран не
 // вмещает список), still – без движения
@@ -78,7 +79,16 @@ const FaqBody: FC<IBody> = ({ time, mode, t, bodyRef }) => {
     const headOn = useTransform(time, (v) => easeOut(span(v, t.head, .1)));
     // Нижняя линия списка – с последним вопросом
     const last = t.ask[t.ask.length - 1];
-    const bottom = useTransform(time, (v) => `rgba(128, 128, 128, ${(.45 * span(v, last[0], last[1] * .3)).toFixed(3)})`);
+    // Стык с финалом: линию забрал экран финала (SitesCta) – у списка она прячется
+    const bottom = useTransform([time, faqLineTook], ([v, took]: number[]) =>
+        `rgba(128, 128, 128, ${took ? 0 : (.45 * span(v, last[0], last[1] * .3)).toFixed(3)})`);
+    // Список на липком экране – финал отрывает от него линию (handoff.ts); иначе финал – обычный раздел
+    const list = useRef<HTMLDivElement>(null);
+    useEffect(() => {
+        if (!sticky) return;
+        faqListEl.set(list.current);
+        return () => faqListEl.set(null);
+    }, [sticky]);
 
     return (
         <div ref={bodyRef} className={`${ralewayRegular.className} ${f.faq} ${s.body} ${sticky ? s.compact : ''}`}>
@@ -91,6 +101,7 @@ const FaqBody: FC<IBody> = ({ time, mode, t, bodyRef }) => {
             </motion.div>
 
             <motion.div
+                ref={list}
                 className={`${f.list} ${q.list}`}
                 // Вопрос въезжает справа из-за края: список по ширине обрезает его, иначе у страницы прокрутка вбок
                 style={mode === 'still' ? undefined : { overflowX: 'clip', ...(sticky ? { borderBottomColor: bottom } : {}) }}
@@ -155,6 +166,9 @@ const SitesFaq: FC = () => {
         return () => window.removeEventListener('resize', onResize);
     }, []);
 
+    const [meltFrom, meltDur] = t.melt[t.melt.length - 1];
+    const revealAt = meltFrom + meltDur;
+
     if (!reduceMotion && !fits) {
         return (
             <section id={faqId} className={s.flat} aria-labelledby={`${faqId}-title`}>
@@ -164,7 +178,9 @@ const SitesFaq: FC = () => {
     }
 
     return (
-        <Scene id={faqId} labelledBy={`${faqId}-title`} len={t.path}>
+        // С клавиатуры (У5б, 5в): фокус на ссылке или вопросе раньше, чем пришёл весь список, – сцена доезжает до кадра,
+        // где все вопросы стоят строками (иначе фокус – на невидимом)
+        <Scene id={faqId} labelledBy={`${faqId}-title`} len={t.path} revealAt={revealAt}>
             {(time, mode) => <FaqBody time={time} mode={mode.sticky ? 'scene' : 'still'} t={t} bodyRef={setBody} />}
         </Scene>
     );

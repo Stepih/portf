@@ -40,3 +40,92 @@
         }
     }
 }
+
+// ---------- Сцена (У5б, 5б) ----------
+// Липкая сцена заходит на FAQ: экран встаёт в кадре, где экран FAQ отпускает скролл (отрицательный верхний отступ
+// ставит компонент). Сцена и экран прозрачные и пропускают клики к FAQ под ними
+.scene {
+    z-index: 4;
+
+    pointer-events: none;
+}
+
+.screen {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    padding: 32px 20px 72px;
+}
+
+// Подписи кнопок проявились – кнопки нажимаются
+.live a,
+.live button {
+    pointer-events: auto;
+}
+
+.staged {
+    width: 100%;
+    max-width: 1100px;
+    margin-top: 0;
+
+    .buttons {
+        position: relative;
+    }
+}
+
+.slot {
+    position: relative;
+    display: flex;
+}
+
+.morph {
+    display: flex;
+    flex: 1;
+
+    > * {
+        flex: 1;
+    }
+}
+
+.label {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+}
+
+// Нижняя линия FAQ, оторванная на экран финала: сначала – как рамка списка, потом чернилами (толщину удваивает
+// компонент)
+.line {
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: 1;
+
+    height: 1.5px;
+
+    background: rgba(128, 128, 128, 0.45);
+}
+
+.ink {
+    position: absolute;
+    inset: 0;
+
+    background: var(--color-text-100);
+    transition: vars.$transition;
+}
+
+.ball {
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: 3;
+
+    width: 22px;
+    height: 22px;
+    margin: -11px 0 0 -11px;
+
+    border-radius: 50%;
+    background: var(--color-text-100);
+    transition: vars.$transition;
+}

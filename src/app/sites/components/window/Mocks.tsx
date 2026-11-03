@@ -207,8 +207,9 @@ export const PanelMock: FC<IMock & { at: number, orders?: boolean, aside?: boole
     );
 };
 
-// Магазин: каталог → фильтры и поиск → карточка в корзину и оформление → оплата и чек
-export const ShopMock: FC<IMock> = ({ p }) => {
+// Магазин: каталог → фильтры и поиск → карточка в корзину и оформление → оплата и чек. room – место сверху под ряд
+// таблеток опций, px (WindowScene, У5б, 5в): магазин съезжает под них, а не лежит под ними
+export const ShopMock: FC<IMock & { room?: number }> = ({ p, room = 0 }) => {
     const n = 5;
     const t = (i: number) => stepAt(i, n);
     const pick = useTransform(p, (v) => 1 + .06 * rise(span(v, t(2), STEP)));
@@ -222,7 +223,7 @@ export const ShopMock: FC<IMock> = ({ p }) => {
     const paid = useTransform(p, (v) => ease(span(v, t(2) + STEP * 2, STEP)));
     const unpaid = useTransform(paid, (v) => 1 - v);
     return (
-        <div className={`${s.page} ${s.shop}`}>
+        <div className={`${s.page} ${s.shop}`} style={room ? { top: room } : undefined}>
             <Appear p={p} at={t(1)} x={-24} y={0} className={s.filters}>
                 <p className={`${ralewayBold.className} ${s.filtersTitle}`}>{buildUi.filters}</p>
                 {[64, 80, 52, 72].map((w, k) => (

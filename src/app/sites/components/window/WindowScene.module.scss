@@ -354,6 +354,17 @@ $width: 860px;
     white-space: nowrap;
 }
 
+// Панель сайта компании на узком окне уступает место счётчику суммы (замер – useCrowded, У5б, 5в)
+.panelSlot {
+    transition: opacity .45s ease-out, visibility 0s;
+}
+
+.panelYield {
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity .45s ease-out, visibility 0s .45s;
+}
+
 // ---------- Под окном: одна строка ----------
 .under {
     position: relative;
@@ -380,6 +391,19 @@ $width: 860px;
         transform: none;
         visibility: visible;
         transition: opacity .4s ease-out .2s, transform .4s ease-out .2s, visibility 0s .2s;
+    }
+}
+
+// Строка цены не прячется visibility: «Узнать цену» – в порядке Tab всегда, по фокусу сцена доезжает до цены вида
+// (У5б, 5в). Вне своей фазы она прозрачна и клики пропускает
+.priceCell {
+    visibility: visible;
+    pointer-events: none;
+    transition: opacity .2s ease-in, transform .2s ease-in;
+
+    &.on {
+        pointer-events: auto;
+        transition: opacity .4s ease-out .2s, transform .4s ease-out .2s;
     }
 }
 
@@ -509,14 +533,22 @@ $width: 860px;
         height: 8px;
     }
 
-    // Вкладки делят строку поровну (как вкладки браузера), текущая – целиком: «Ле…», «Сай…», а не «Л…».
-    // Зона нажатия – до верха окна (40px), сама вкладка 34px
+    // Названия видов целиком (У5б, 5в): строка делится по длине названий, длинное переносится на вторую строку
+    // («Магазин или / каталог»), слова не рвутся и за край окна не выходят. Зона нажатия – до верха окна (40px),
+    // сама вкладка 34px
+    .tabs {
+        flex: 1 1 auto;
+    }
+
     .tab {
-        flex: 1 1 0;
-        max-width: max-content;
+        flex: 1 1 auto;
+        // Не уже самого длинного слова – слова не рвутся и не налезают на соседнюю вкладку
+        min-width: auto;
         height: 34px;
-        padding: 0 10px;
+        padding: 0 8px;
         font-size: 0.875rem;
+        line-height: 1.05;
+        text-align: center;
 
         &::before {
             content: '';
@@ -526,7 +558,13 @@ $width: 860px;
     }
 
     .tabOn {
-        flex: none;
+        flex: 1 1 auto;
+    }
+
+    .tabLabel {
+        overflow: visible;
+        white-space: normal;
+        text-overflow: clip;
     }
 
     .toolbar {

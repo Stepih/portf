@@ -52,6 +52,10 @@ export const planFor = (phone: boolean): IPlan => {
     return { kinds, total: at };
 };
 
+// Середина цены вида: строка с ценой и «Узнать цену» стоит от конца опций до смены вида (за FADE до конца вида).
+// Сюда сцена доезжает, когда «Узнать цену» получает фокус с клавиатуры (У5б, 5в)
+export const priceAt = (k: IKindPlan) => k.priced + (k.to - FADE - k.priced) / 2;
+
 // Прогресс макета вида: FROM_P в начале вида, 1 – в конце сборки
 export const mockP = (k: IKindPlan, t: number) => FROM_P + (1 - FROM_P) * clamp01((t - k.from) / (k.built - k.from));
 

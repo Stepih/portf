@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { FADE, INTRO, IKindRows, KINDS, Kind, kindAt, mockP, planFor, stateAt } from "./timeline";
+import { FADE, INTRO, IKindRows, KINDS, Kind, kindAt, mockP, planFor, priceAt, stateAt } from "./timeline";
 
 // Сцена «окно-герой» /sites (SERVICES_PLAN У5б): время видов, фазы и строки под окном
 const rows: Record<Kind, IKindRows> = {
@@ -54,6 +54,17 @@ describe("timeline окна-героя", () => {
             expect(end.row).toBe(r.pills);
             expect(end.term).toBe(r.terms ? r.terms + 1 : 0);
             expect(stateAt(plan, rows, k.priced + .01)).toMatchObject({ phase: 'price', row: r.pills });
+        }
+    });
+
+    it("«Узнать цену» с клавиатуры: сцена доезжает до середины цены своего вида", () => {
+        for (const phone of [false, true]) {
+            const plan = planFor(phone);
+            for (const k of plan.kinds) {
+                const at = priceAt(k);
+                expect(stateAt(plan, rows, at)).toMatchObject({ kind: k.kind, phase: 'price' });
+                expect(at - k.priced).toBeGreaterThan(.1);
+            }
         }
     });
 });

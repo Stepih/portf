@@ -18,7 +18,7 @@ import { IBuild, ISitesDetails } from "@/interfaces/sitesPage";
 import { servicesButton } from "@/data/offer";
 import { buildUi, columns } from "@/data/sitesPage";
 import { CorporateMock, CorporateTabs, LandingMock, LeadToast, PanelMock, ShopBar, ShopMock, stepAt } from "./Mocks";
-import { ANCHOR_AFTER, FADE, INTRO, IKindRows, IPlan, IState, Kind, KINDS, mockP, planFor, stateAt } from "./timeline";
+import { ANCHOR_AFTER, FADE, INTRO, IKindRows, IPlan, IState, Kind, KINDS, mockP, planFor, priceAt, stateAt } from "./timeline";
 import { windowEls, windowFade, windowTook } from "../scenes/handoff";
 
 export interface IWindowKind {
@@ -84,7 +84,7 @@ interface IWindow {
 // прочитали, пока он не встал), панель встаёт у левого края. Скрытые слои замеру не мешают: visibility и opacity
 // раскладку не меняют
 const useCrowded = (fig: RefObject<HTMLElement | null>) => {
-    const [crowd, setCrowd] = useState({ pills: false, panel: false });
+    const [crowd, setCrowd] = useState({ pills: false, panel: false, sum: false });
     useLayoutEffect(() => {
         const root = fig.current;
         if (!root) return;
@@ -96,11 +96,16 @@ const useCrowded = (fig: RefObject<HTMLElement | null>) => {
             const sum = q(`.${s.sum}`);
             const paid = q(`.${m.paid}`);
             const panel = q(`.${m.panelOrders}`);
+            // Панель сайта компании и счётчик суммы – оба у нижнего края окна; узкое окно – они ложатся друг на друга
+            const corpPanel = q(`.${m.panel}:not(.${m.panelOrders})`);
+            const left = (el: HTMLElement) => offsetIn(el, root).x;
             const next = {
                 pills: !!pillsEl && !!sum && pillsEl.offsetHeight > 0 && bottom(pillsEl) + 8 > top(sum),
                 panel: !!paid && !!panel && bottom(paid) + 8 > top(panel),
+                sum: !!sum && !!corpPanel && left(sum) + sum.offsetWidth + 8 > left(corpPanel) && left(corpPanel) + corpPanel.offsetWidth + 8 > left(sum)
+                    && bottom(sum) + 8 > top(corpPanel) && bottom(corpPanel) + 8 > top(sum),
             };
-            setCrowd((prev) => prev.pills === next.pills && prev.panel === next.panel ? prev : next);
+            setCrowd((prev) => prev.pills === next.pills && prev.panel === next.panel && prev.sum === next.sum ? prev : next);
         };
         check();
         document.fonts?.ready.then(check);
@@ -111,11 +116,35 @@ const useCrowded = (fig: RefObject<HTMLElement | null>) => {
     return crowd;
 };
 
+// Место под таблетки магазина (У5б, 5в): поверх магазина таблетки закрывали «Фильтры» и верх оформления, между ними
+// торчал край чёрной таблетки каталога. Когда встаёт первая таблетка, магазин съезжает под их ряд (низ ряда – по
+// раскладке: скрытые таблетки место занимают). Только на окне, где под рядом хватает высоты (компьютер и планшет);
+// на телефоне и в низком окне – как раньше, поверх
+const useShopRoom = (fig: RefObject<HTMLElement | null>) => {
+    const roomy = useMediaQuery('(min-width: 701px) and (min-height: 700px)');
+    const [room, setRoom] = useState(0);
+    useLayoutEffect(() => {
+        const list = fig.current?.querySelector<HTMLElement>('[data-pills="shop"]');
+        if (!roomy || !list) {
+            setRoom(0);
+            return;
+        }
+        const check = () => setRoom(list.offsetTop + list.offsetHeight);
+        check();
+        document.fonts?.ready.then(check);
+        const observer = new ResizeObserver(check);
+        observer.observe(list);
+        return () => observer.disconnect();
+    }, [fig, roomy]);
+    return room;
+};
+
 // Окно браузера: сверху вкладки видов, ниже строка адреса (у сайта компании – его страницы, у магазина – поиск и
 // корзина), в окне – нарисованный сайт, таблетки опций, заявка, панель и счётчик суммы
 const BrowserWindow: FC<IWindow> = ({ kinds, active, layers, p, opacity, pills, terms, onTab, style, contentOpacity, windowRef }) => {
     const fig = useRef<HTMLElement | null>(null);
     const crowd = useCrowded(fig);
+    const room = useShopRoom(fig);
     // Тесно – таблетки сайта компании уступают окно счётчику, как только он встал
     const yieldPills = (kind: Kind, sum: boolean) => crowd.pills && sum && terms(kind) > 0;
     const layer = (kind: Kind, className: string, children: ReactNode) => (
@@ -155,7 +184,7 @@ const BrowserWindow: FC<IWindow> = ({ kinds, active, layers, p, opacity, pills, 
                     <>
                         {service.id === 'landing' && <LandingMock p={p.landing} />}
                         {service.id === 'corporate' && <CorporateMock p={p.corporate} />}
-                        {service.id === 'shop' && <ShopMock p={p.shop} />}
+                        {service.id === 'shop' && <ShopMock p={p.shop} room={pills('shop') > 0 ? room : 0} />}
                         {/* Опции – таблетками «+ имя · цена» поверх собранного сайта, по одной */}
                         <ul className={s.pills} data-pills={service.id}>
                             {build.pills.map((pill, i) => (
@@ -170,7 +199,12 @@ const BrowserWindow: FC<IWindow> = ({ kinds, active, layers, p, opacity, pills, 
             {shownKinds.map(({ service, build, details }) => layer(service.id, s.overLayer, (
                 <>
                     {service.id === 'landing' && <LeadToast p={p.landing} />}
-                    {service.id === 'corporate' && <PanelMock p={p.corporate} at={stepAt(2, 3)} />}
+                    {service.id === 'corporate' && (
+                        // Узкое окно: панель уступает место счётчику суммы, когда он встаёт (её уже показали на сборке)
+                        <div className={`${s.panelSlot} ${crowd.sum && terms('corporate') > 0 ? s.panelYield : ''}`}>
+                            <PanelMock p={p.corporate} at={stepAt(2, 3)} />
+                        </div>
+                    )}
                     {service.id === 'shop' && <PanelMock p={p.shop} at={stepAt(4, 5)} orders aside={crowd.panel} />}
                     {build.sum && details.example && <Sum sum={build.sum} total={details.example.total} term={terms(service.id)} />}
                 </>
@@ -218,7 +252,7 @@ const kindText = (item: IWindowKind) => ({
 });
 
 // Цена вида: название, «от 8 000 ₽ · 3–4 дня», уточнение, «Узнать цену» – одним фокусом
-const Price: FC<{ item: IWindowKind, className?: string, hidden?: boolean }> = ({ item, className = '', hidden }) => {
+const Price: FC<{ item: IWindowKind, className?: string, onFocus?: () => void }> = ({ item, className = '', onFocus }) => {
     const { service } = item;
     return (
         <div className={`${s.price} ${className}`}>
@@ -236,7 +270,7 @@ const Price: FC<{ item: IWindowKind, className?: string, hidden?: boolean }> = (
                 data-goal={GOALS.serviceClick}
                 data-goal-id={service.id}
                 aria-label={`${servicesButton}: ${service.title}`}
-                tabIndex={hidden ? -1 : undefined}
+                onFocus={onFocus}
             >
                 {servicesButton}
             </ContactLink>
@@ -273,7 +307,7 @@ const WindowScene: FC<IProps> = ({ head, kinds }) => {
         const bottom = intro.current.offsetTop + intro.current.offsetHeight + REST_GAP;
         setDy(Math.max(0, bottom - offsetIn(win.current, stage.current).y));
     }, []);
-    const { progress } = useStickyScene({ scene, path, screen }, onMeasure);
+    const { progress, scrollToProgress } = useStickyScene({ scene, path, screen }, onMeasure);
 
     // Стык с колодой кейсов (scenes/handoff.ts): колода кладёт пустую карточку точь-в-точь на окно; пока она гасит
     // содержимое окна и забирает рамку – окно прячется, строка под ним гаснет
@@ -343,6 +377,17 @@ const WindowScene: FC<IProps> = ({ head, kinds }) => {
         e.preventDefault();
         target.scrollIntoView({ behavior: reduceMotion ? 'auto' : 'smooth', block: 'start' });
         history.replaceState(null, '', `#${kind}`);
+    };
+
+    // ---------- С клавиатуры (У5б, 5в) ----------
+    // «Узнать цену» – в порядке Tab всегда: по фокусу сцена доезжает до цены вида (как колода кейсов до слайда)
+    const onPriceFocus = (kind: Kind) => {
+        if (state.kind === kind && state.phase === 'price') return;
+        scrollToProgress(priceAt(kindPlan(kind)) / plan.total);
+    };
+    // Первый экран ушёл вверх (Shift+Tab из окна) – фокус на его ссылках вернул бы сцену к началу
+    const onIntroFocus = () => {
+        if (time.get() > INTRO * .2) scrollToProgress(0);
     };
 
     // ---------- Без движения: обычные блоки ----------
@@ -418,6 +463,7 @@ const WindowScene: FC<IProps> = ({ head, kinds }) => {
                         ref={intro}
                         className={`${s.intro} ${atRest ? '' : s.introGone}`}
                         style={{ opacity: headOpacity, y: headY }}
+                        onFocus={onIntroFocus}
                     >
                         {head}
                     </motion.div>
@@ -454,10 +500,10 @@ const WindowScene: FC<IProps> = ({ head, kinds }) => {
                                 </div>,
                                 <section
                                     key={`${service.id}-p`}
-                                    className={`${s.cell} ${on(service.id, 'price') ? s.on : ''}`}
+                                    className={`${s.cell} ${s.priceCell} ${on(service.id, 'price') ? s.on : ''}`}
                                     aria-labelledby={`${service.id}-title`}
                                 >
-                                    <Price item={item} hidden={!on(service.id, 'price')} />
+                                    <Price item={item} onFocus={() => onPriceFocus(service.id)} />
                                 </section>,
                             ];
                         })}

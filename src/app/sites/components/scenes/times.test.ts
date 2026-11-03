@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { move, PEAK, rise } from "@/app/ai/components/speed";
-import { ASK_GAP, ASK_SHIFT, cardIn, cardOut, deckTimes, edges, faqTimes, flowTimes, morphLen, padded, payStageAt, payTimes, slideAt, termsTimes, TEXT } from "./times";
+import { ASK_GAP, ASK_SHIFT, cardIn, ctaTimes, cardOut, deckTimes, edges, faqTimes, flowTimes, morphLen, padded, payStageAt, payTimes, slideAt, termsTimes, TEXT } from "./times";
 
 // Пик скорости кривой на окне dur экранов, путь px, экран h: максимум |Δy| / Δскролл
 const peak = (curve: (k: number) => number, px: number, dur: number, h: number) => {
@@ -90,6 +90,25 @@ describe("сцены нижней части /sites", () => {
             expect(t.melt[0][0]).toBeGreaterThan(t.ask[0][0] + t.ask[0][1] * .5);
             expect(t.path).toBeGreaterThan(t.melt[8][0] + t.melt[8][1]);
             expect(t.path).toBeLessThan(2.3);
+        }
+    });
+
+    // 5б: финал со стыком от FAQ – все движения не быстрее предела, по порядку, на освобождённом месте
+    it("финал: линия, шарик и кнопки – не быстрее 2 px/px, по порядку, после ухода FAQ", () => {
+        for (const [h, clear] of [[900, 0], [800, 1.2]]) {
+            const g = { line: 820, lift: 260, apart: 120, stretch: 70, clearRow: clear, clearTitle: clear + .1 };
+            const t = ctaTimes(g, h);
+            expect(peak(move, g.line / 2, t.shrink[1], h)).toBeLessThanOrEqual(PEAK);
+            expect(peak(move, g.lift, t.lift[1], h)).toBeLessThanOrEqual(PEAK);
+            expect(peak(move, g.apart, t.apart[1], h)).toBeLessThanOrEqual(PEAK);
+            expect(peak(move, g.stretch, t.stretch[1], h)).toBeLessThanOrEqual(PEAK);
+            const end = ([a, d]: number[]) => a + d;
+            expect(t.lift[0]).toBeGreaterThanOrEqual(end(t.ball) - 1e-9);
+            expect(end(t.lift)).toBeGreaterThanOrEqual(g.clearRow - 1e-9);
+            expect(t.title[0]).toBeGreaterThanOrEqual(g.clearTitle - 1e-9);
+            expect(t.apart[0]).toBeGreaterThanOrEqual(end(t.grow) - 1e-9);
+            expect(t.note[0]).toBeGreaterThanOrEqual(end(t.label) - 1e-9);
+            expect(t.path).toBeGreaterThan(end(t.note));
         }
     });
 });

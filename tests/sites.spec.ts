@@ -363,19 +363,30 @@ test('/sites: FAQ без движения – обычный аккордеон,
 type Box = { x: number, y: number, width: number, height: number };
 const overlap = (a: Box, b: Box) => a.x < b.x + b.width && b.x < a.x + a.width && a.y < b.y + b.height && b.y < a.y + a.height;
 
-// Вкладки на телефоне делят строку поровну, текущая – целиком
-test('/sites: вкладки на телефоне – поровну, текущая целиком', async ({ page }) => {
-    await page.setViewportSize({ width: 375, height: 812 });
-    await page.goto('/sites#shop');
-    await page.waitForTimeout(1500);
-    const links = tabs(page).getByRole('link');
-    const [a, b, on] = await Promise.all([0, 1, 2].map(async (i) => (await links.nth(i).boundingBox())!));
-    expect(Math.abs(a.width - b.width)).toBeLessThanOrEqual(2);
-    expect(a.width).toBeGreaterThan(44);
-    const current = tabs(page).getByRole('link', { name: 'Магазин или каталог' }).locator('span');
-    expect(await current.evaluate((el) => el.scrollWidth <= el.clientWidth)).toBe(true);
-    expect(on.height).toBeGreaterThanOrEqual(34);
-});
+// Вкладки на телефоне (У5б, 5в): названия видов целиком – длинное переносится, за край экрана ничего не выходит;
+// так же без движения (там у каждого вида своё окно – смотрим первое)
+for (const reduce of [false, true]) {
+    test(`/sites: вкладки на телефоне – названия целиком, в пределах экрана${reduce ? ', без движения' : ''}`, async ({ page }) => {
+        if (reduce) await page.emulateMedia({ reducedMotion: 'reduce' });
+        await page.setViewportSize({ width: 375, height: 812 });
+        await page.goto('/sites#shop');
+        await page.waitForTimeout(1500);
+        const links = tabs(page).first().getByRole('link');
+        for (let i = 0; i < 3; i++) {
+            const link = links.nth(i);
+            await link.scrollIntoViewIfNeeded();
+            const box = (await link.boundingBox())!;
+            expect(box.width).toBeGreaterThan(44);
+            expect(box.height).toBeGreaterThanOrEqual(34);
+            expect(box.x).toBeGreaterThanOrEqual(0);
+            expect(box.x + box.width).toBeLessThanOrEqual(375);
+            // Подпись не обрезана: текст не шире своей коробки, без многоточия
+            const whole = await link.locator('span').evaluate((el) => el.scrollWidth <= el.clientWidth + 1 && getComputedStyle(el).textOverflow !== 'ellipsis');
+            expect(whole).toBe(true);
+        }
+        expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(375);
+    });
+}
 
 // Низкий телефон: таблетки сайта компании уступают окно счётчику суммы, а не прячутся под ним
 test('/sites: низкий телефон – счётчик суммы не ложится на таблетки', async ({ page }) => {
@@ -425,6 +436,26 @@ test('/sites: телефон лёжа – окно рядом со строко�
     expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(812);
 });
 
+// Телефон лёжа (У5б, 5в): кадр нижних сцен не встаёт в экран – обычные разделы, как колода и FAQ: заголовок уходит
+// вверх вместе со страницей, шаги и колонки – целиком
+test('/sites: телефон лёжа – нижние сцены обычными разделами', async ({ page }) => {
+    await page.setViewportSize({ width: 812, height: 375 });
+    await page.goto('/sites');
+    await page.waitForTimeout(800);
+    for (const title of [projectPath.title, payment.title, terms.title, sections.more.title]) {
+        const heading = page.getByRole('region', { name: title }).getByRole('heading', { level: 2 });
+        await heading.scrollIntoViewIfNeeded();
+        await page.waitForTimeout(300);
+        const before = (await heading.boundingBox())!.y;
+        await page.mouse.wheel(0, 300);
+        await page.waitForTimeout(500);
+        expect((await heading.boundingBox())!.y).toBeLessThan(before - 200);
+    }
+    for (const step of projectPath.steps) await expect(page.getByRole('heading', { level: 3, name: step.title })).toBeVisible();
+    for (const col of terms.columns) await expect(page.getByRole('heading', { level: 3, name: col.title })).toBeVisible();
+    expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(812);
+});
+
 // Без движения на телефоне: по каждому виду – окно, цена и кнопка, ничего не уходит вбок
 test('/sites: без движения на телефоне – виды обычными блоками', async ({ page }) => {
     await page.emulateMedia({ reducedMotion: 'reduce' });
@@ -443,17 +474,161 @@ test('/sites: без движения на телефоне – виды обы�
     expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(375);
 });
 
-// С клавиатуры: после вкладок окна Tab ведёт в карточку колоды, колода доезжает до неё, фокус не теряется
-test('/sites: Tab из вкладок окна – в карточку колоды', async ({ page }) => {
+// Непрозрачность элемента с учётом предков
+const opacityOf = (el: Element) => {
+    let op = 1;
+    for (let n: Element | null = el; n; n = n.parentElement) op *= parseFloat(getComputedStyle(n).opacity);
+    return op;
+};
+
+// С клавиатуры (У5б, 5в): после вкладок окна Tab ведёт по «Узнать цену» трёх видов – сцена доезжает до цены вида,
+// кнопка видна; дальше – в карточку колоды, колода доезжает до неё, фокус не теряется
+test('/sites: Tab из вкладок окна – «Узнать цену» по видам, потом карточка колоды', async ({ page }) => {
     await page.setViewportSize({ width: 1100, height: 800 });
     await page.goto('/sites');
+    await page.waitForTimeout(800);
     await tabs(page).getByRole('link', { name: 'Магазин или каталог' }).focus();
+    for (const service of sites) {
+        await page.keyboard.press('Tab');
+        await page.waitForTimeout(2000);
+        const focused = page.locator(':focus');
+        await expect(focused).toHaveAccessibleName(`${servicesButton}: ${service.title}`);
+        await expect(focused).toBeInViewport();
+        await expect.poll(() => focused.evaluate(opacityOf)).toBeGreaterThan(.95);
+    }
     await page.keyboard.press('Tab');
     await page.waitForTimeout(2000);
-    const focused = page.locator(':focus');
-    await expect(focused).toHaveAttribute('href', /^\/portfolio\//);
-    await expect(focused).toBeInViewport();
+    const card = page.locator(':focus');
+    await expect(card).toHaveAttribute('href', /^\/portfolio\//);
+    await expect(card).toBeInViewport();
+    await expect.poll(() => card.evaluate(opacityOf)).toBeGreaterThan(.95);
     await page.keyboard.press('Tab');
     await page.waitForTimeout(800);
     await expect(page.locator(':focus')).toHaveAttribute('href', /^\/portfolio\//);
 });
+
+// Shift+Tab с вкладок окна на кнопки первого экрана, когда он уже ушёл вверх, – сцена возвращается к началу
+test('/sites: Shift+Tab к первому экрану – он снова виден', async ({ page }) => {
+    await page.setViewportSize({ width: 1400, height: 900 });
+    await page.goto('/sites');
+    const corp = planFor(false).kinds[1];
+    await scrollToTime(page, corp.from + .3);
+    await tabs(page).getByRole('link', { name: 'Лендинг' }).focus();
+    await page.keyboard.press('Shift+Tab');
+    await page.waitForTimeout(2000);
+    const focused = page.locator(':focus');
+    await expect(focused).toContainText(head.tg);
+    await expect(focused).toBeInViewport();
+    await expect.poll(() => focused.evaluate(opacityOf)).toBeGreaterThan(.95);
+});
+
+// FAQ на липком экране: фокус на вопросе раньше, чем пришёл список, – сцена доезжает до кадра, где все вопросы стоят
+test('/sites: FAQ с клавиатуры – вопрос с фокусом виден', async ({ page }) => {
+    await page.setViewportSize({ width: 1400, height: 900 });
+    await page.goto('/sites');
+    await scrollToScene(page, sections.faq.title, .02);
+    const region = page.getByRole('region', { name: sections.faq.title });
+    await region.getByRole('link', { name: sections.faq.link }).focus();
+    await page.keyboard.press('Tab');
+    await page.waitForTimeout(2000);
+    const summary = region.locator('summary').first();
+    await expect(summary).toBeFocused();
+    await expect(summary).toBeInViewport();
+    await expect.poll(() => summary.evaluate(opacityOf)).toBeGreaterThan(.95);
+    await expect.poll(() => region.locator('details').last().evaluate(opacityOf)).toBeGreaterThan(.95);
+});
+
+// Первая остановка Tab – не «›» шапки (при фокусе она гаснет): шапку открывает фокус на её ссылках
+test('/sites: первая остановка Tab – видимый элемент шапки, не «Открыть панель»', async ({ page }) => {
+    await page.setViewportSize({ width: 1400, height: 900 });
+    await page.goto('/sites');
+    await page.waitForTimeout(800);
+    await expect(page.locator('header').getByRole('button', { name: 'Открыть панель' })).toHaveAttribute('tabindex', '-1');
+    await page.keyboard.press('Tab');
+    const focused = page.locator(':focus');
+    await expect(focused).not.toHaveAccessibleName('Открыть панель');
+    await page.waitForTimeout(600);
+    await expect(focused).toBeInViewport();
+    await expect.poll(() => focused.evaluate(opacityOf)).toBeGreaterThan(.95);
+});
+
+// Финал (У5б, 5б): пока FAQ – липкий экран, финал – липкая сцена со стыком от FAQ, как CtaScene на /ai. Экран финала
+// встаёт в кадре, где FAQ отпускает скролл: нижняя линия списка остаётся на нём (у списка рамка прячется), стягивается
+// в шарик, шарик делится на кнопки. Телефон, низкое окно и «уменьшить движение» – обычный раздел
+const ctaScene = async (page: Page) => page.evaluate(() => {
+    const sec = document.querySelector<HTMLElement>('[data-cta-scene]');
+    return sec ? { top: sec.getBoundingClientRect().top + window.scrollY, h: sec.offsetHeight, screen: window.innerHeight } : null;
+});
+
+test('/sites: финал – сцена со стыком от FAQ, кнопки собираются из линии', async ({ page }) => {
+    await page.setViewportSize({ width: 1400, height: 900 });
+    await page.goto('/sites');
+    await page.waitForTimeout(800);
+    const scene = (await ctaScene(page))!;
+    expect(scene).not.toBeNull();
+    const list = page.getByRole('region', { name: sections.faq.title }).locator('details').first().locator('..');
+    const final = page.getByRole('region', { name: sections.cta.title });
+    const primary = final.getByRole('link', { name: head.cta });
+
+    // Кадр стыка: линия списка FAQ перешла на экран финала – у списка рамка прозрачная, копия лежит на её месте
+    await page.evaluate((y) => window.scrollTo(0, y), scene.top + 2);
+    await page.waitForTimeout(300);
+    await expect(list).toHaveCSS('border-bottom-color', 'rgba(128, 128, 128, 0)');
+    const listBottom = (await list.boundingBox())!;
+    const line = await page.evaluate(() => {
+        const el = [...document.querySelectorAll<HTMLElement>('[data-cta-scene] span[aria-hidden="true"]')]
+            .find((s) => getComputedStyle(s).opacity === '1' && s.offsetHeight < 4);
+        const r = el?.getBoundingClientRect();
+        return r ? { y: r.top + r.height / 2, w: r.width } : null;
+    });
+    expect(line).not.toBeNull();
+    expect(Math.abs(line!.y - (listBottom.y + listBottom.height - .75))).toBeLessThan(3);
+    // Кнопки ещё не собрались – не нажимаются, клики проходят к FAQ
+    await expect(primary).toHaveCSS('pointer-events', 'none');
+
+    // Конец сцены: FAQ ушёл вверх, заголовок, кнопки и строка на экране, кнопки нажимаются
+    await page.evaluate((s) => window.scrollTo(0, s.top + s.h - s.screen - 10), scene);
+    await page.waitForTimeout(1300);
+    const title = final.getByRole('heading', { level: 2 });
+    await expect(title).toBeInViewport();
+    await expect(primary).toBeInViewport();
+    await expect(primary).toHaveCSS('pointer-events', 'auto');
+    await expect(final.getByText(sections.cta.text)).toHaveCSS('opacity', '1');
+    expect((await list.boundingBox())!.y + (await list.boundingBox())!.height).toBeLessThan((await title.boundingBox())!.y);
+    expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(1400);
+
+    // Обратно вверх – линия вернулась к списку
+    await page.evaluate((y) => window.scrollTo(0, y), scene.top - 300);
+    await page.waitForTimeout(300);
+    await expect(list).not.toHaveCSS('border-bottom-color', 'rgba(128, 128, 128, 0)');
+});
+
+test('/sites: финал с клавиатуры – Tab до кнопок доводит сцену до собранных кнопок', async ({ page }) => {
+    await page.setViewportSize({ width: 1400, height: 900 });
+    await page.goto('/sites');
+    await page.waitForTimeout(800);
+    const scene = (await ctaScene(page))!;
+    await page.evaluate((y) => window.scrollTo(0, y), scene.top + 2);
+    await page.waitForTimeout(300);
+    const primary = page.getByRole('region', { name: sections.cta.title }).getByRole('link', { name: head.cta });
+    await primary.focus();
+    await page.waitForTimeout(2000);
+    await expect(primary).toBeFocused();
+    await expect(primary).toBeInViewport();
+    await expect(primary).toHaveCSS('pointer-events', 'auto');
+});
+
+for (const [width, height, reduce] of [[375, 812, false], [1400, 900, true]] as const) {
+    test(`/sites: финал обычным разделом, ${width}${reduce ? ', без движения' : ''}`, async ({ page }) => {
+        if (reduce) await page.emulateMedia({ reducedMotion: 'reduce' });
+        await page.setViewportSize({ width, height });
+        await page.goto('/sites');
+        await page.waitForTimeout(800);
+        expect(await ctaScene(page)).toBeNull();
+        const final = page.getByRole('region', { name: sections.cta.title });
+        await final.scrollIntoViewIfNeeded();
+        await expect(final.getByRole('link', { name: head.cta })).toBeInViewport();
+        await expect(final.getByRole('link', { name: head.tg })).toBeVisible();
+        await expect(final.getByText(sections.cta.text)).toBeVisible();
+    });
+}

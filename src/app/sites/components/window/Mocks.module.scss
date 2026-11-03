@@ -428,6 +428,8 @@ $hairline: rgba(128, 128, 128, 0.3);
     flex-direction: row;
     gap: 0;
     overflow: hidden;
+    // Под ряд таблеток опций магазин съезжает плавно, как они встают (top ставит WindowScene)
+    transition: top .45s ease-out;
 }
 
 .filters {

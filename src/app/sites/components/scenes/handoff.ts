@@ -17,3 +17,11 @@ export const windowEls = motionValue<IWindowEls | null>(null);
 export const windowFade = motionValue(0);
 // 1 – пустую рамку уже рисует колода, WindowScene прячет окно. Ставит колода
 export const windowTook = motionValue(0);
+
+// Стык FAQ → финал (SitesCta) – как FAQ → CtaScene на /ai: экран финала встаёт поверх экрана FAQ в кадре, где тот
+// отпускает скролл; FAQ уезжает вверх, его нижняя линия списка остаётся на экране финала и стягивается в шарик.
+// Список FAQ на липком экране – ставит SitesFaq, пока FAQ – сцена (на телефоне и в низком окне FAQ – обычный раздел,
+// null – финал тоже обычный раздел)
+export const faqListEl = motionValue<HTMLElement | null>(null);
+// 1 – линию рисует финал, у списка нижняя рамка прячется. Ставит SitesCta по скроллу
+export const faqLineTook = motionValue(0);

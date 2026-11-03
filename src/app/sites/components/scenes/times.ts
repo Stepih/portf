@@ -224,3 +224,53 @@ export const faqTimes = (count: number, w: number, h: number): IFaqTimes => {
     const melt = ask.map(([a, d]): W => [a + d * .8, fade]);
     return { head: 0, ask, melt, path: end(melt[count - 1]) + READ };
 };
+
+// ---------- Финал (У5б, 5б) ----------
+// Стык FAQ → финал, как CtaScene на /ai: в кадре, где экран FAQ отпускает скролл, нижняя линия списка остаётся
+// на экране финала – чернеет и толстеет (ink), концы сходятся к середине (shrink), на её месте – шарик (ball); шарик
+// поднимается к ряду кнопок (lift) и дорастает до высоты кнопки (grow). Дальше он делится: из-под залитой кнопки
+// выезжает вторая, кружки разъезжаются (apart) и вытягиваются в таблетки (stretch), проявляются подписи (label)
+// и строка под кнопками (note). Заголовок выезжает, когда ушедший вверх FAQ освободил его место
+export interface ICtaGeo {
+    // Ширина линии, путь шарика от середины линии до центра ряда, путь дальней кнопки от центра ряда до места
+    // и сколько сходится каждый край таблетки ((ширина − высота) / 2), px
+    line: number,
+    lift: number,
+    apart: number,
+    stretch: number,
+    // Сколько экранов скролла FAQ уходит вверх, пока его нижняя линия не поднимется над рядом кнопок и над заголовком
+    clearRow: number,
+    clearTitle: number
+}
+export interface ICtaTimes {
+    ink: W,
+    shrink: W,
+    ball: W,
+    lift: W,
+    grow: W,
+    title: W,
+    apart: W,
+    stretch: W,
+    label: W,
+    note: W,
+    path: number
+}
+
+export const ctaTimes = (g: ICtaGeo, h: number): ICtaTimes => {
+    const fade = fadeFor(h);
+    const d = (px: number) => Math.max(fade, durFor(px, h));
+    const ink: W = [0, fade];
+    // Каждый конец линии проходит половину её ширины
+    const shrink: W = [end(ink), d(g.line / 2)];
+    const ball: W = [end(shrink) - fade * .5, fade];
+    // Шарик и кнопки встают на ряд и заголовок выезжает только на месте, которое FAQ уже освободил (он уходит со
+    // скоростью скролла): до того шарик ждёт на месте линии, под ушедшим списком
+    const lift: W = [Math.max(end(ball), g.clearRow - d(g.lift)), d(g.lift)];
+    const grow: W = [end(lift), fade];
+    const title: W = [Math.max(end(lift) - TEXT * .5, g.clearTitle), TEXT];
+    const apart: W = [end(grow), d(g.apart)];
+    const stretch: W = [end(apart) - apart[1] * .3, d(g.stretch)];
+    const label: W = [end(stretch) - fade * .5, fade];
+    const note: W = [Math.max(end(label), end(title)), TEXT];
+    return { ink, shrink, ball, lift, grow, title, apart, stretch, label, note, path: end(note) + READ };
+};
