@@ -353,6 +353,13 @@ $hairline: rgba(128, 128, 128, 0.3);
     transition: background vars.$transition, color vars.$transition;
 }
 
+// Панель магазина на низком окне – у левого края, поверх фильтров: справа она закрыла бы «Заказ оплачен» (замер –
+// WindowScene, У5б, этап 4)
+.panelOrders.panelAside {
+    right: auto;
+    left: -44px;
+}
+
 .panelTitle {
     margin: 0 0 4px;
     font-size: 0.95rem;
@@ -728,6 +735,11 @@ $hairline: rgba(128, 128, 128, 0.3);
         padding: 12px;
     }
 
+    .panelOrders.panelAside {
+        right: auto;
+        left: 8px;
+    }
+
     .tab {
         padding: 0 8px;
         font-size: 0.875rem;
@@ -764,5 +776,43 @@ $hairline: rgba(128, 128, 128, 0.3);
 
     .sheet {
         width: 70%;
+    }
+
+    // Узкое окно: оформление занимает 70% ширины, и панель с заказами сбоку закрыла бы «Заказ оплачен» с любой
+    // стороны. Она ложится на оформление целиком, как следующий экран магазина (низ окна: вкладки 40px + адрес 40px)
+    .panelOrders,
+    .panelOrders.panelAside {
+        top: 88px;
+        right: 8px;
+        bottom: 8px;
+        left: auto;
+        width: calc(70% - 16px);
+    }
+}
+
+// Телефон лёжа и низкое окно (У5б, этап 4): окно стоит слева от строки (WindowScene) – слои не выступают за его края
+@media screen and (min-width: 701px) and (max-height: 520px) {
+    .page,
+    .layer {
+        gap: 8px;
+        padding: 10px;
+    }
+
+    .toast {
+        right: 8px;
+        bottom: 10px;
+        font-size: 0.875rem;
+    }
+
+    .panel {
+        right: 8px;
+        bottom: 8px;
+        width: 190px;
+        padding: 12px;
+    }
+
+    .panelOrders.panelAside {
+        right: auto;
+        left: 8px;
     }
 }

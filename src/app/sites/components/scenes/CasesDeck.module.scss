@@ -299,8 +299,10 @@ $page-gap-phone: 96px;
         justify-content: center;
     }
 
+    // Палец, а не курсор: зона нажатия 44px в высоту, полоска та же
     .dot {
         width: 30px;
+        height: 44px;
     }
 }
 

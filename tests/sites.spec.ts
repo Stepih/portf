@@ -104,10 +104,13 @@ test('/sites: у сайта компании счётчик суммы дохо�
     await expect(page.locator('figure').getByText(norm(sitesDetails.corporate.example!.total))).toBeVisible();
 });
 
+// Ширины и высоты окна для проверок по экранам (У5б, этап 4): компьютер, ноутбук, планшет стоя, телефон
+const screens: Record<number, number> = { 1400: 900, 1100: 800, 820: 1180, 375: 812 };
+
 // Вкладки видов в окне: клик прокручивает к началу вида, якорь в адресе, вкладка подсвечена, без прокрутки вбок
-for (const width of [1400, 375]) {
+for (const width of [1400, 1100, 820, 375]) {
     test(`/sites: вкладки видов в окне, ${width}`, async ({ page }) => {
-        await page.setViewportSize({ width, height: width > 700 ? 900 : 812 });
+        await page.setViewportSize({ width, height: screens[width] });
         await page.goto('/sites');
 
         await expect(tabs(page).getByRole('link')).toHaveText(sites.map((service) => service.title));
@@ -126,9 +129,9 @@ for (const width of [1400, 375]) {
 }
 
 // Ссылки «Что входит →» с карточек главной: /sites#shop открывает начало сборки магазина
-for (const width of [1400, 375]) {
+for (const width of [1400, 1100, 820, 375]) {
     test(`/sites#shop с главной – начало магазина, ${width}`, async ({ page }) => {
-        await page.setViewportSize({ width, height: width > 700 ? 900 : 812 });
+        await page.setViewportSize({ width, height: screens[width] });
         await page.goto('/sites#shop');
         await page.waitForTimeout(1500);
         await expect(tabs(page).getByRole('link', { name: 'Магазин или каталог' })).toHaveAttribute('aria-current', 'location');
@@ -323,6 +326,9 @@ test('/sites: FAQ на липком экране – вопросы по одн�
 test('/sites: FAQ на телефоне – по своему скроллу, без прокрутки вбок', async ({ page }) => {
     await page.setViewportSize({ width: 375, height: 812 });
     await page.goto('/sites');
+    // FAQ меряет, вмещается ли он в экран, и перестраивается из сцены в обычный раздел – ждём, пока уляжется
+    // (без паузы в Edge вопросы успевали смениться между поиском и прокруткой)
+    await page.waitForTimeout(800);
     const region = page.getByRole('region', { name: sections.faq.title });
     await expect(region.locator('details')).toHaveCount(faq.length);
     const last = region.locator('details').last();
@@ -351,4 +357,103 @@ test('/sites: FAQ без движения – обычный аккордеон,
     // Можно раскрыть несколько
     await region.locator('details').nth(3).locator('summary').click();
     await expect(region.locator('details').first()).toHaveAttribute('open', '');
+});
+
+// ---------- Телефон и планшет (У5б, этап 4) ----------
+type Box = { x: number, y: number, width: number, height: number };
+const overlap = (a: Box, b: Box) => a.x < b.x + b.width && b.x < a.x + a.width && a.y < b.y + b.height && b.y < a.y + a.height;
+
+// Вкладки на телефоне делят строку поровну, текущая – целиком
+test('/sites: вкладки на телефоне – поровну, текущая целиком', async ({ page }) => {
+    await page.setViewportSize({ width: 375, height: 812 });
+    await page.goto('/sites#shop');
+    await page.waitForTimeout(1500);
+    const links = tabs(page).getByRole('link');
+    const [a, b, on] = await Promise.all([0, 1, 2].map(async (i) => (await links.nth(i).boundingBox())!));
+    expect(Math.abs(a.width - b.width)).toBeLessThanOrEqual(2);
+    expect(a.width).toBeGreaterThan(44);
+    const current = tabs(page).getByRole('link', { name: 'Магазин или каталог' }).locator('span');
+    expect(await current.evaluate((el) => el.scrollWidth <= el.clientWidth)).toBe(true);
+    expect(on.height).toBeGreaterThanOrEqual(34);
+});
+
+// Низкий телефон: таблетки сайта компании уступают окно счётчику суммы, а не прячутся под ним
+test('/sites: низкий телефон – счётчик суммы не ложится на таблетки', async ({ page }) => {
+    await page.setViewportSize({ width: 375, height: 667 });
+    await page.goto('/sites');
+    const corp = planFor(true).kinds[1];
+    await scrollToTime(page, (corp.priced + corp.to) / 2, true);
+    const figure = page.locator('figure');
+    await expect(figure.getByText(build.corporate.sum!.caption)).toBeVisible();
+    for (const pill of build.corporate.pills) await expect(figure.locator('li', { hasText: label(pill.label) }).first()).toBeHidden();
+    expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(375);
+});
+
+// Ноутбук с низким окном: панель магазина не закрывает «Заказ оплачен»
+test('/sites: низкое окно – панель магазина не закрывает «Заказ оплачен»', async ({ page }) => {
+    await page.setViewportSize({ width: 1024, height: 768 });
+    await page.goto('/sites');
+    const shop = planFor(false).kinds[2];
+    await scrollToTime(page, (shop.priced + shop.to) / 2);
+    const paid = page.locator('figure').getByText(buildUi.paid);
+    await expect(paid).toHaveCSS('opacity', '1');
+    const panel = page.locator('figure [class*="panelOrders"]');
+    expect(overlap((await paid.boundingBox())!, (await panel.boundingBox())!)).toBe(false);
+});
+
+// Телефон лёжа: окно слева на всю высоту, строка с ценой – справа; колода – обычной сеткой
+test('/sites: телефон лёжа – окно рядом со строкой, колода сеткой', async ({ page }) => {
+    await page.setViewportSize({ width: 812, height: 375 });
+    await page.goto('/sites');
+    const landing = planFor(false).kinds[0];
+    await scrollToTime(page, (landing.priced + landing.to) / 2);
+    const win = (await page.locator('figure').boundingBox())!;
+    const price = page.locator('section[aria-labelledby="landing-title"]');
+    await expect(price.getByRole('link', { name: `${servicesButton}: Лендинг` })).toBeInViewport();
+    expect((await price.boundingBox())!.x).toBeGreaterThan(win.x + win.width);
+    expect(win.y).toBeGreaterThanOrEqual(0);
+    expect(win.y + win.height).toBeLessThanOrEqual(375);
+    // Колода не липкая: заголовок уходит вверх вместе со страницей, все кейсы – ссылками
+    const deck = page.getByRole('region', { name: casesDeck.title });
+    const heading = deck.getByRole('heading', { level: 2 });
+    await heading.scrollIntoViewIfNeeded();
+    const before = (await heading.boundingBox())!.y;
+    await page.mouse.wheel(0, 300);
+    await page.waitForTimeout(500);
+    expect((await heading.boundingBox())!.y).toBeLessThan(before - 200);
+    await expect(deck.locator('a[href^="/portfolio/"]')).toHaveCount(await deck.locator('li').count());
+    expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(812);
+});
+
+// Без движения на телефоне: по каждому виду – окно, цена и кнопка, ничего не уходит вбок
+test('/sites: без движения на телефоне – виды обычными блоками', async ({ page }) => {
+    await page.emulateMedia({ reducedMotion: 'reduce' });
+    await page.setViewportSize({ width: 375, height: 812 });
+    await page.goto('/sites');
+    for (const service of sites) {
+        const section = page.locator(`section#${service.id}`);
+        await section.getByRole('heading', { level: 2 }).scrollIntoViewIfNeeded();
+        await expect(section.locator('figure')).toBeVisible();
+        await expect(section.getByRole('link', { name: `${servicesButton}: ${service.title}` })).toBeVisible();
+    }
+    // Счётчик суммы виден, таблетки из-под него не торчат (они перечислены под окном)
+    const corp = page.locator('section#corporate');
+    await expect(corp.locator('figure').getByText(build.corporate.sum!.caption)).toBeVisible();
+    for (const pill of build.corporate.pills) await expect(corp.getByText(sitesDetails.corporate.options[pill.option].title, { exact: false }).last()).toBeVisible();
+    expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(375);
+});
+
+// С клавиатуры: после вкладок окна Tab ведёт в карточку колоды, колода доезжает до неё, фокус не теряется
+test('/sites: Tab из вкладок окна – в карточку колоды', async ({ page }) => {
+    await page.setViewportSize({ width: 1100, height: 800 });
+    await page.goto('/sites');
+    await tabs(page).getByRole('link', { name: 'Магазин или каталог' }).focus();
+    await page.keyboard.press('Tab');
+    await page.waitForTimeout(2000);
+    const focused = page.locator(':focus');
+    await expect(focused).toHaveAttribute('href', /^\/portfolio\//);
+    await expect(focused).toBeInViewport();
+    await page.keyboard.press('Tab');
+    await page.waitForTimeout(800);
+    await expect(page.locator(':focus')).toHaveAttribute('href', /^\/portfolio\//);
 });

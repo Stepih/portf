@@ -81,18 +81,22 @@ interface ICard {
     side: number,
     sticky: boolean,
     live: boolean,
+    // Карточка в порядке Tab (текущий слайд; до начала колоды – первый)
+    focusable: boolean,
+    onFocus?: () => void,
     cellRef?: (el: HTMLLIElement | null) => void
 }
 
 // Карточка кейса: крупный скриншот, вид сайта, название-ссылка на страницу кейса (растянута на карточку), подпись
-const Card: FC<ICard> = ({ item, time, t, j, side, sticky, live, cellRef }) => {
+const Card: FC<ICard> = ({ item, time, t, j, side, sticky, live, focusable, onFocus, cellRef }) => {
     const row = { time, t, j, animated: sticky };
     return (
         <li
             ref={cellRef}
             className={`${s.card} ${sticky ? s.stacked : s.plate} ${live ? s.live : ''}`}
             style={sticky ? { gridColumn: side + 1 } as CSSProperties : undefined}
-            inert={sticky && !live ? true : undefined}
+            inert={sticky && !focusable ? true : undefined}
+            onFocus={onFocus}
         >
             <Row {...row} r={0} className={s.shot}>
                 <Image src={item.cover} alt="" fill sizes="(max-width: 700px) 100vw, 540px" className={s.image} />
@@ -131,12 +135,16 @@ const Dot: FC<{ time: MotionValue<number>, t: IDeckTimes, j: number, active: boo
 // и строка с ценой, рамку окна сменяет пустая карточка колоды, едет на место левой, из-под неё выезжает правая.
 // Без сцены окна – карточки проявляются на местах. При reduced-motion – сетка карточек
 const CasesDeck: FC<{ cases: IDeckCase[] }> = ({ cases }) => {
+    // Низкий экран (телефон лёжа, У5б, этап 4): заголовок, карточка и полоски на один экран не встают – обычная сетка,
+    // как без движения (так же FAQ). Стыка с окном тогда нет: сцена окна уходит вверх обычным блоком
     const reduceMotion = usePrefersReducedMotion();
+    const low = useMediaQuery('(max-height: 520px)');
+    const flat = reduceMotion || low;
     const phone = useMediaQuery('(max-width: 700px)');
     const per = phone ? 1 : 2;
     const slides = Math.ceil(cases.length / per);
     const els = useValue(windowEls);
-    const joined = !!els && !reduceMotion;
+    const joined = !!els && !flat;
 
     const scene = useRef<HTMLElement>(null);
     const path = useRef<HTMLDivElement>(null);
@@ -198,6 +206,12 @@ const CasesDeck: FC<{ cases: IDeckCase[] }> = ({ cases }) => {
     const barsOn = useTransform(time, (v) => span(v, t.first, .1));
 
     const onPick = useCallback((j: number) => scrollToProgress((t.first + j * t.slide + .3) / t.path), [scrollToProgress, t.first, t.slide, t.path]);
+    // С клавиатуры (У5б, этап 4): Tab после вкладок окна попадает в карточку первого слайда, пока колода ещё не
+    // встала. Карточка не становится inert на пути к колоде (иначе фокус теряется), колода сама доезжает до слайда
+    const onCardFocus = useCallback((j: number) => {
+        const v = time.get();
+        if (v < t.first - .08 || slideAt(t, v) !== j) onPick(j);
+    }, [time, t, onPick]);
 
     const title = (
         <>
@@ -206,14 +220,14 @@ const CasesDeck: FC<{ cases: IDeckCase[] }> = ({ cases }) => {
         </>
     );
 
-    // ---------- Без движения: сетка карточек ----------
-    if (reduceMotion) {
+    // ---------- Без движения и на низком экране: сетка карточек ----------
+    if (flat) {
         return (
             <section className={x.flat} aria-labelledby="cases-title">
                 {title}
                 <ul className={s.grid}>
                     {cases.map((item, i) => (
-                        <Card key={item.id} item={item} time={time} t={t} j={0} side={i % 2} sticky={false} live />
+                        <Card key={item.id} item={item} time={time} t={t} j={0} side={i % 2} sticky={false} live focusable />
                     ))}
                 </ul>
             </section>
@@ -244,6 +258,8 @@ const CasesDeck: FC<{ cases: IDeckCase[] }> = ({ cases }) => {
                                 side={i % per}
                                 sticky
                                 live={Math.floor(i / per) === active}
+                                focusable={Math.floor(i / per) === Math.max(0, active)}
+                                onFocus={() => onCardFocus(Math.floor(i / per))}
                                 cellRef={i < per ? (el) => { cells.current[i] = el } : undefined}
                             />
                         ))}

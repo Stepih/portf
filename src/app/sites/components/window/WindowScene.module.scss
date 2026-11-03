@@ -250,6 +250,14 @@ $width: 860px;
         transition: $appear, background vars.$transition, color vars.$transition, visibility 0s;
     }
 
+    // Окно тесное, встал счётчик суммы – таблетки уступают ему место (useCrowded)
+    &.shown.yielded {
+        opacity: 0;
+        transform: translateY(-8px);
+        visibility: hidden;
+        transition: $appear, background vars.$transition, color vars.$transition, visibility 0s .45s;
+    }
+
     b {
         font-weight: inherit;
     }
@@ -501,10 +509,24 @@ $width: 860px;
         height: 8px;
     }
 
+    // Вкладки делят строку поровну (как вкладки браузера), текущая – целиком: «Ле…», «Сай…», а не «Л…».
+    // Зона нажатия – до верха окна (40px), сама вкладка 34px
     .tab {
+        flex: 1 1 0;
+        max-width: max-content;
         height: 34px;
         padding: 0 10px;
         font-size: 0.875rem;
+
+        &::before {
+            content: '';
+            position: absolute;
+            inset: -6px 0 0;
+        }
+    }
+
+    .tabOn {
+        flex: none;
     }
 
     .toolbar {
@@ -566,6 +588,71 @@ $width: 860px;
     }
 }
 
+// Планшет стоя (820×1180, 768×1024): окно выше – иначе над и под ним по трети пустого экрана
+@media screen and (min-width: 701px) and (orientation: portrait) and (min-height: 1000px) {
+    .scene .window {
+        height: min(760px, calc(var(--screen-h) - 330px));
+    }
+}
+
+// Телефон лёжа и низкое окно (У5б, этап 4): под окном нет места на строку – окно слева на всю высоту экрана, строка
+// справа от него. Счётчик и панель не выступают за края окна (как до 900px)
+@media screen and (min-width: 701px) and (max-height: 520px) {
+    .stage {
+        flex-direction: row;
+        gap: 24px;
+        padding: 12px 24px;
+    }
+
+    .window {
+        width: min(560px, 58%);
+        height: calc(var(--screen-h) - 24px);
+    }
+
+    .under {
+        flex: 1 1 0;
+        align-self: center;
+        width: auto;
+        height: auto;
+        min-height: 0;
+        padding-right: 40px;
+    }
+
+    .step {
+        align-items: flex-start;
+        text-align: left;
+    }
+
+    .line,
+    .optionsLabel {
+        font-size: 1.05rem;
+    }
+
+    .quiet {
+        font-size: 0.875rem;
+    }
+
+    .price {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 12px;
+    }
+
+    .cost {
+        font-size: 1.8rem;
+    }
+
+    .termText {
+        font-size: 1.05rem;
+    }
+
+    .sum {
+        bottom: 8px;
+        left: 8px;
+        width: min(360px, calc(100% - 16px));
+    }
+}
+
 // ---------- Без движения: по каждому виду – окно, цена, состав и опции ----------
 .static {
     display: flex;
@@ -585,6 +672,12 @@ $width: 860px;
         transform: none;
         visibility: visible;
         transition: none;
+    }
+
+    // Без движения таблетки и так перечислены под окном – на тесном окне остаётся счётчик
+    .pill.yielded {
+        opacity: 0;
+        visibility: hidden;
     }
 
     @media screen and (max-width: 700px) {

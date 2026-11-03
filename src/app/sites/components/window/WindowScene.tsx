@@ -1,11 +1,12 @@
 "use client";
 
-import { CSSProperties, FC, MouseEvent, ReactNode, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
+import { CSSProperties, FC, MouseEvent, ReactNode, RefObject, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { animate, motion, MotionStyle, MotionValue, motionValue, useMotionValue, useMotionValueEvent, useTransform } from "framer-motion";
 
 import sc from '@/app/ai/components/scene.module.scss'
 import p from '../Plate.module.scss'
 import s from './WindowScene.module.scss'
+import m from './Mocks.module.scss'
 import { ralewayBold } from "@/app/fonts/fonts";
 import ContactLink from "@/app/(home)/components/contact-link/ContactLink";
 import { useMediaQuery } from "@/hooks/useMediaQuery";
@@ -77,16 +78,53 @@ interface IWindow {
     windowRef?: (el: HTMLElement | null) => void
 }
 
+// Тесно ли в окне (У5б, этап 4). На низком окне (телефон, телефон лёжа, ноутбук с окном ниже ~800px) таблетки сайта компании
+// уходят под счётчик суммы, а панель магазина закрывает «Заказ оплачен». Замер по раскладке (offset*, без transform):
+// низ таблеток – верх счётчика, низ «Заказ оплачен» – верх панели. Тесно – таблетки уступают окно счётчику (их уже
+// прочитали, пока он не встал), панель встаёт у левого края. Скрытые слои замеру не мешают: visibility и opacity
+// раскладку не меняют
+const useCrowded = (fig: RefObject<HTMLElement | null>) => {
+    const [crowd, setCrowd] = useState({ pills: false, panel: false });
+    useLayoutEffect(() => {
+        const root = fig.current;
+        if (!root) return;
+        const check = () => {
+            const q = (selector: string) => root.querySelector<HTMLElement>(selector);
+            const top = (el: HTMLElement) => offsetIn(el, root).y;
+            const bottom = (el: HTMLElement) => top(el) + el.offsetHeight;
+            const pillsEl = q('[data-pills="corporate"]');
+            const sum = q(`.${s.sum}`);
+            const paid = q(`.${m.paid}`);
+            const panel = q(`.${m.panelOrders}`);
+            const next = {
+                pills: !!pillsEl && !!sum && pillsEl.offsetHeight > 0 && bottom(pillsEl) + 8 > top(sum),
+                panel: !!paid && !!panel && bottom(paid) + 8 > top(panel),
+            };
+            setCrowd((prev) => prev.pills === next.pills && prev.panel === next.panel ? prev : next);
+        };
+        check();
+        document.fonts?.ready.then(check);
+        const observer = new ResizeObserver(check);
+        observer.observe(root);
+        return () => observer.disconnect();
+    }, [fig]);
+    return crowd;
+};
+
 // Окно браузера: сверху вкладки видов, ниже строка адреса (у сайта компании – его страницы, у магазина – поиск и
 // корзина), в окне – нарисованный сайт, таблетки опций, заявка, панель и счётчик суммы
 const BrowserWindow: FC<IWindow> = ({ kinds, active, layers, p, opacity, pills, terms, onTab, style, contentOpacity, windowRef }) => {
+    const fig = useRef<HTMLElement | null>(null);
+    const crowd = useCrowded(fig);
+    // Тесно – таблетки сайта компании уступают окно счётчику, как только он встал
+    const yieldPills = (kind: Kind, sum: boolean) => crowd.pills && sum && terms(kind) > 0;
     const layer = (kind: Kind, className: string, children: ReactNode) => (
         <motion.div key={kind} className={className} style={{ opacity: opacity?.[kind] ?? shown }}>{children}</motion.div>
     );
     const shownKinds = kinds.filter(({ service }) => layers.includes(service.id));
 
     return (
-        <motion.figure ref={windowRef} className={s.window} style={style}>
+        <motion.figure ref={(el) => { fig.current = el; windowRef?.(el) }} className={s.window} style={style}>
             <motion.div className={s.content} style={{ opacity: contentOpacity ?? shown }}>
             <div className={s.strip}>
                 <span className={s.dots} aria-hidden="true"><i /><i /><i /></span>
@@ -119,9 +157,9 @@ const BrowserWindow: FC<IWindow> = ({ kinds, active, layers, p, opacity, pills, 
                         {service.id === 'corporate' && <CorporateMock p={p.corporate} />}
                         {service.id === 'shop' && <ShopMock p={p.shop} />}
                         {/* Опции – таблетками «+ имя · цена» поверх собранного сайта, по одной */}
-                        <ul className={s.pills}>
+                        <ul className={s.pills} data-pills={service.id}>
                             {build.pills.map((pill, i) => (
-                                <li key={pill.option} className={`${s.pill} ${i < pills(service.id) ? s.shown : ''}`}>
+                                <li key={pill.option} className={`${s.pill} ${i < pills(service.id) ? s.shown : ''} ${yieldPills(service.id, !!build.sum) ? s.yielded : ''}`}>
                                     + {pill.label} · <b className={ralewayBold.className}>{details.options[pill.option]?.price}</b>
                                 </li>
                             ))}
@@ -133,7 +171,7 @@ const BrowserWindow: FC<IWindow> = ({ kinds, active, layers, p, opacity, pills, 
                 <>
                     {service.id === 'landing' && <LeadToast p={p.landing} />}
                     {service.id === 'corporate' && <PanelMock p={p.corporate} at={stepAt(2, 3)} />}
-                    {service.id === 'shop' && <PanelMock p={p.shop} at={stepAt(4, 5)} orders />}
+                    {service.id === 'shop' && <PanelMock p={p.shop} at={stepAt(4, 5)} orders aside={crowd.panel} />}
                     {build.sum && details.example && <Sum sum={build.sum} total={details.example.total} term={terms(service.id)} />}
                 </>
             )))}

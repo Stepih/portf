@@ -181,12 +181,13 @@ const Tab: FC<{ p: MotionValue<number>, at: number, until?: number, label: strin
     );
 };
 
-// Панель управления: поле «Цена» заполняется, «Сохранить» нажимается. lines – строки списка (заказы магазина)
-export const PanelMock: FC<IMock & { at: number, orders?: boolean }> = ({ p, at, orders }) => {
+// Панель управления: поле «Цена» заполняется, «Сохранить» нажимается. orders – строки заказов (магазин).
+// aside – низкое окно (У5б, этап 4): у правого края панель закрыла бы «Заказ оплачен», она встаёт у левого
+export const PanelMock: FC<IMock & { at: number, orders?: boolean, aside?: boolean }> = ({ p, at, orders, aside }) => {
     const typed = useTransform(p, (v) => ease(span(v, at + STEP, STEP)));
     const press = useTransform(p, (v) => 1 - .06 * Math.sin(Math.PI * span(v, at + STEP * 2, STEP * .5)));
     return (
-        <Appear p={p} at={at} x={40} y={0} className={s.panel}>
+        <Appear p={p} at={at} x={aside ? -40 : 40} y={0} className={`${s.panel} ${orders ? s.panelOrders : ''} ${aside ? s.panelAside : ''}`}>
             <p className={`${ralewayBold.className} ${s.panelTitle}`}>{buildUi.panel}</p>
             {orders ? (
                 [0, 1, 2].map((k) => (
