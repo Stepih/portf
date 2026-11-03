@@ -2,7 +2,7 @@ import { getClientIp } from '@/lib/clientIp';
 import { isGarbage, isSameOrigin } from '@/lib/chat/filters';
 import { answerKey, budgetAlert, CHAT_GUARD, ChatLimitReason, fromUnits, hitIpLimit, reserveBudget, toUnits } from '@/lib/chat/guard';
 import { CHAT_MAX_TOKENS, replyCostRub, streamChatReply } from '@/lib/chat/model';
-import { buildSystemPrompt } from '@/lib/chat/prompt';
+import { buildChatPrompt } from '@/lib/chat/prompt';
 import { validateChatRequest } from '@/lib/chat/request';
 import { getChatStore, IChatStore } from '@/lib/chat/store';
 import { sendTelegram, telegramConfigured } from '@/lib/telegram';
@@ -10,9 +10,6 @@ import { HONEYPOT_FIELD } from '@/lib/validation/feedback';
 
 // Демо-чат (CONVERSION_PLAN К3.2). Защита от накрутки – до вызова модели, по порядку: свой сайт, ловушка,
 // формат, лимит диалога, мусор, лимиты IP, готовый ответ, бюджет на сутки. Худший случай – бюджет за сутки
-
-// Промпт собирается из статичных данных один раз на процесс
-const systemPrompt = buildSystemPrompt();
 
 // Токенов во вводе – с запасом: токенизатор Claude даёт около 3,8 символа русского текста на токен
 const estimateInputTokens = (chars: number) => Math.ceil(chars / 2.5);
@@ -79,6 +76,8 @@ export async function POST(req: Request) {
 
     const { messages } = result;
     const question = messages[messages.length - 1].content;
+    // Основа и добавки по теме вопроса (SERVICES_PLAN У6)
+    const systemPrompt = buildChatPrompt(messages);
     if (isGarbage(question)) {
         return json({ error: 'Invalid message' }, 400);
     }

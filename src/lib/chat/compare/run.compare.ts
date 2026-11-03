@@ -7,7 +7,7 @@
 import { mkdirSync, writeFileSync } from "fs";
 import { expect, it } from "vitest";
 import { chatReplyWithUsage } from "../model";
-import { buildSystemPrompt } from "../prompt";
+import { buildChatPrompt, buildSystemPrompt } from "../prompt";
 import { answerProblems } from "./checks";
 import { compareQuestions } from "./questions";
 
@@ -32,9 +32,9 @@ it.runIf(process.env.CHAT_COMPARE === '1')('сравнение моделей', 
     const dir = `.chat-compare/${stamp}`;
     mkdirSync(dir, { recursive: true });
 
-    // Промпт каждой модели – в файл до первого запроса: видно, с чем именно она отвечала.
+    // Основа промпта – в файл до первого запроса, добавки по теме – у каждого вопроса (SERVICES_PLAN У6).
     // Инструментов (tools) и поиска в запросе нет, модель видит только этот текст и вопрос
-    for (const model of models) writeFileSync(`${dir}/prompt-${model.id}.txt`, system);
+    writeFileSync(`${dir}/prompt-core.txt`, system);
 
     const rows: string[] = [];
     const usageLog: unknown[] = [];
@@ -45,9 +45,10 @@ it.runIf(process.env.CHAT_COMPARE === '1')('сравнение моделей', 
 
     // По очереди, без параллели: видно время ответа, кэш успевает записаться, а при ошибке ключа тратится один запрос
     for (const [qi, q] of compareQuestions.entries()) {
+        const prompt = buildChatPrompt([{ role: 'user', content: q.question }]);
         const answers: string[] = [];
         for (const [mi, model] of models.entries()) {
-            const ask = () => chatReplyWithUsage(system, [{ role: 'user', content: q.question }], model.id, cacheOn[mi]);
+            const ask = () => chatReplyWithUsage(prompt, [{ role: 'user', content: q.question }], model.id, cacheOn[mi]);
             const started = Date.now();
             try {
                 let r;
@@ -63,7 +64,7 @@ it.runIf(process.env.CHAT_COMPARE === '1')('сравнение моделей', 
                 // Цена без скидки за кэш: тариф BotHub на кэш неизвестен, экономию видно по cachedTokens и балансу
                 const cost = (r.inputTokens * model.input + r.outputTokens * model.output) / 1e6;
                 const problems = [
-                    ...answerProblems(r.text, system),
+                    ...answerProblems(r.text, prompt),
                     r.finishReason === 'length' && 'обрезан по max_tokens',
                 ].filter((p): p is string => Boolean(p));
                 const t = totals[mi];

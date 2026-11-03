@@ -1,7 +1,8 @@
 import { describe, expect, it } from "vitest";
+import { sitePaths } from "../prompt";
 import { answerProblems } from "./checks";
 
-const prompt = "Лендинг: цена от 8 000 ₽. Сайт компании: от 30 000 ₽";
+const prompt = "Лендинг: цена от 8 000 ₽. Сайт компании: от 30 000 ₽. Второй язык – 5 000 ₽";
 
 describe("answerProblems", () => {
     it("хороший ответ проходит", () => {
@@ -9,9 +10,11 @@ describe("answerProblems", () => {
     });
 
     it("цена, которой нет в базе, и цена без «от»", () => {
-        expect(answerProblems("Лендинг – от 5000 рублей.", prompt)).toEqual(["цена не из базы: 5000 ₽"]);
+        expect(answerProblems("Лендинг – от 7000 рублей.", prompt)).toEqual(["цена не из базы: 7000 ₽"]);
         expect(answerProblems("Сайт компании от 30000 ₽.", prompt)).toEqual([]);
         expect(answerProblems("Лендинг стоит 8 000 ₽.", prompt)).toEqual(["цена без «от»: 8000 ₽"]);
+        // Точная цена опции – как в промпте, без «от»
+        expect(answerProblems("Второй язык – 5 000 ₽.", prompt)).toEqual([]);
     });
 
     it("длинное тире, Markdown, ссылка, пустой ответ", () => {
@@ -19,7 +22,9 @@ describe("answerProblems", () => {
         expect(answerProblems("**Да**, конечно.", prompt)).toEqual(["Markdown"]);
         expect(answerProblems("- пункт\n- пункт", prompt)).toEqual(["Markdown"]);
         expect(answerProblems("Пишите: t.me/polo_ymniy", prompt)).toEqual(["ссылка"]);
-        expect(answerProblems("Кейс: /portfolio/loti", prompt)).toEqual(["ссылка"]);
+        expect(answerProblems("Сайты подробно – на /sites#shop.", prompt)).toEqual([]);
+        expect(answerProblems(`Кейс: ${sitePaths.find((p) => p.startsWith("/portfolio/"))}`, prompt)).toEqual([]);
+        expect(answerProblems("Кейс: /portfolio/nope и /admin.", prompt)).toEqual(["адрес не из списка: /portfolio/nope", "адрес не из списка: /admin"]);
         expect(answerProblems("  ", prompt)).toEqual(["пустой ответ"]);
     });
 
