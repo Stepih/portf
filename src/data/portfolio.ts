@@ -7,12 +7,12 @@ const img = (file: string) => `/portfolio/${file}`
 export const portfolioWorks: IPortfolioWork[] = [
     {
         id: 'vocal',
-        name: 'Союз вокалистов',
+        name: 'Российский союз вокалистов',
         year: 2026,
-        kind: 'Корпоративный',
+        kind: 'Веб-сервис',
         industries: [],
-        description: 'Сайт Российского союза вокалистов: вступление в союз, конкурсы и премии, события и новости',
-        tags: ['Web', 'Mobile', 'Корпоративный'],
+        description: 'Платформа Российского союза вокалистов: музыкальный сервис с чартами и страницами исполнителей, личные кабинеты, модерация и админка',
+        tags: ['Web', 'Mobile', 'Музыкальный сервис'],
         tint: 'rgba(234, 119, 119, 0.2)',
         cover: img('vocal-desktop.jpg'),
         coverHeight: 420,
@@ -47,7 +47,7 @@ export const portfolioWorks: IPortfolioWork[] = [
     {
         id: 'icc',
         name: 'ИКЦ «Презентация»',
-        year: 2026,
+        year: 2024,
         kind: 'Лендинг',
         industries: ['outsourcing'],
         description: 'Сайт кировской компании: сопровождение 1С, сайты, ИТ-поддержка 24/7, бухгалтерия и юристы на одной странице',
@@ -95,10 +95,10 @@ export const portfolioWorks: IPortfolioWork[] = [
     {
         id: 'legiscan',
         name: 'Legiscan',
-        year: 2026,
+        year: 2025,
         kind: 'Веб-сервис',
         industries: ['outsourcing'],
-        description: 'ИИ-сервис проверки договоров: риски с цитатой пункта и готовой правкой, сравнение редакций, сроки и чат по документу. Плюс Telegram-бот, API и интеграция с Pyrus',
+        description: 'ИИ-агент проверки договоров: риски с цитатой пункта и готовой правкой, сравнение редакций, сроки и чат по документу. Плюс Telegram-бот, API и интеграция с Pyrus',
         tags: ['Web', 'Mobile', 'SaaS', 'ИИ'],
         tint: 'rgba(59, 130, 246, 0.18)',
         cover: img('legiscan-desktop.jpg'),

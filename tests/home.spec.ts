@@ -1281,7 +1281,7 @@ for (const width of [1400, 375]) {
             expect(service.caseIds.length).toBeLessThanOrEqual(2);
         }
         const corporate = section.getByRole('listitem').filter({ has: page.getByRole('heading', { name: serviceTitle('corporate') }) });
-        await expect(corporate.getByRole('link', { name: 'Союз вокалистов' })).toHaveAttribute('href', '/portfolio/vocal');
+        await expect(corporate.getByRole('link', { name: 'Российский союз вокалистов' })).toHaveAttribute('href', '/portfolio/vocal');
         // ИКЦ «Презентация» – лендинг (владелец)
         const landing = section.getByRole('listitem').filter({ has: page.getByRole('heading', { name: serviceTitle('landing') }) });
         await expect(landing.getByRole('link', { name: 'ИКЦ «Презентация»' })).toHaveAttribute('href', '/portfolio/icc');
@@ -1301,9 +1301,11 @@ test('кейс ИКЦ: тип – лендинг', async ({ page }) => {
 // Союз вокалистов – разработка владельца целиком, а не только дизайн (SERVICES_PLAN У3)
 test('кейс Союза вокалистов: роль – дизайн и разработка', async ({ page }) => {
     await page.goto('/portfolio/vocal');
-    await expect(page.getByText('Дизайн и разработка под ключ').first()).toBeVisible();
+    await expect(page.getByText('Всё сам: дизайн, разработка, админка').first()).toBeVisible();
     await expect(page.locator('body')).not.toContainText('адаптив');
-    await expect(page.locator('meta[name="description"]')).toHaveAttribute('content', /Дизайн и разработка под ключ/);
+    await expect(page.locator('meta[name="description"]')).toHaveAttribute('content', /дизайн, разработка, админка/);
+    // Не запущен – статус назван (аудит кейсов, 03.11.2026)
+    await expect(page.getByText(/Финальный этап разработки/)).toBeVisible();
 });
 
 // Фоновые пятна приглушены по теме, чтобы приглушённый текст над ними читался (DESIGN_FIXES_5_PLAN Д25)
