@@ -128,7 +128,12 @@ const Scene: FC<{ tgHref: string, list: HTMLElement }> = ({ tgHref, list }) => {
             className={`${sc.scene} ${cs.scene}`}
             style={{ '--scene-h': `calc(var(--screen-h) + ${t.path * 100}vh)` } as CSSProperties}
         >
-            <div ref={screen} className={`${sc.screen} ${cs.screen} ${live ? cs.live : ''}`}>
+            {/* Tab на кнопку до того, как она проявилась, – страница доезжает до конца анимации кнопок */}
+            <div
+                ref={screen}
+                className={`${sc.screen} ${cs.screen} ${live ? cs.live : ''}`}
+                onFocusCapture={() => live || window.scrollTo({ top: pinY.get() + t.stage[1] * screenH.get(), behavior: 'smooth' })}
+            >
                 <motion.span className={cs.line} style={{ x: lineX, y: lineY, width: lineW, scaleY: thick, opacity: lineOn }} aria-hidden="true">
                     <motion.span className={cs.ink} style={{ opacity: ink }} />
                 </motion.span>

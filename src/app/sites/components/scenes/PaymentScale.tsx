@@ -84,6 +84,8 @@ const Range: FC<{ time: MotionValue<number>, t: IPayTimes, s: number, animated: 
 const PayBody: FC<{ time: MotionValue<number>, mode: ISceneMode, onLen: (len: number) => void }> = ({ time, mode, onLen }) => {
     const bar = useRef<HTMLDivElement>(null);
     const [size, setSize] = useState({ w: 860, h: 900 });
+    const animated = mode.sticky;
+    // Шкала есть только в сцене: режим сменился – мерим заново
     useLayoutEffect(() => {
         const el = bar.current;
         if (!el) return;
@@ -96,15 +98,11 @@ const PayBody: FC<{ time: MotionValue<number>, mode: ISceneMode, onLen: (len: nu
             observer.disconnect();
             window.removeEventListener('resize', measure);
         };
-    }, []);
+    }, [animated]);
     const t = useMemo(() => payTimes(shares, size.w, size.h), [size]);
     useEffect(() => onLen(t.path), [onLen, t.path]);
-
-    const animated = mode.sticky;
     const draw = useTransform(time, (v) => `inset(0 ${(1 - move(k(v, t.draw))) * 100}% 0 0)`);
     const headOn = useTransform(time, (v) => easeOut(span(v, t.head, .1)));
-    // Без движения – все три этапа списком, шкала – последнего; в сцене – по одному
-    const shown = animated ? stages.map((_, i) => i) : [stages.length - 1];
 
     return (
         <>
@@ -113,25 +111,24 @@ const PayBody: FC<{ time: MotionValue<number>, mode: ISceneMode, onLen: (len: nu
                 <p className={x.description}>{payment.text}</p>
             </motion.div>
 
-            <div className={`${s.scale} ${animated ? '' : s.still}`}>
-                {animated ? (
+            {/* Без движения шкалы нет: без сумм и подписей её отрезки не читались (SERVICES_PLAN У8) */}
+            {animated && (
+                <div className={s.scale}>
                     <div className={s.range}>
                         {stages.map((_, i) => <Range key={i} time={time} t={t} s={i} animated />)}
                     </div>
-                ) : null}
-                <div ref={bar} className={s.bar}>
-                    <motion.div className={s.barInner} style={animated ? { clipPath: draw } : undefined}>
-                        {Array.from({ length: N }, (_, j) => <Segment key={j} time={time} t={t} j={j} />)}
-                    </motion.div>
-                </div>
-                {animated && (
-                    <div className={s.labelStack}>
-                        {shown.map((i) => <Labels key={i} time={time} t={t} s={i} animated last={i === stages.length - 1} />)}
+                    <div ref={bar} className={s.bar}>
+                        <motion.div className={s.barInner} style={{ clipPath: draw }}>
+                            {Array.from({ length: N }, (_, j) => <Segment key={j} time={time} t={t} j={j} />)}
+                        </motion.div>
                     </div>
-                )}
-            </div>
+                    <div className={s.labelStack}>
+                        {stages.map((_, i) => <Labels key={i} time={time} t={t} s={i} animated last={i === stages.length - 1} />)}
+                    </div>
+                </div>
+            )}
 
-            {/* Без движения: три суммы списком под шкалой последнего этапа */}
+            {/* Без движения: три суммы списком */}
             {!animated && (
                 <dl className={s.list}>
                     {stages.map((stage) => (

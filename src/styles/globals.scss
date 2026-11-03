@@ -62,6 +62,10 @@ body {
   background: var(--color-text-100);
 }
 
+// Заголовки – без одного слова на последней строке (SERVICES_PLAN У8)
+h1, h2, h3 {
+  text-wrap: balance;
+}
 h1 {
   margin-bottom: 30px;
 

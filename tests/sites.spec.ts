@@ -286,6 +286,8 @@ test('/sites: без движения нижняя часть – обычные
     await expect(deck.locator('a[href^="/portfolio/"]').first()).toBeVisible();
     const pay = page.getByRole('region', { name: payment.title });
     for (const stage of payment.stages) await expect(pay.getByText(stage.range, { exact: true })).toBeVisible();
+    // У8: шкалы без подписей нет – суммы и доли только списком
+    await expect(pay.locator('span[data-j]')).toHaveCount(0);
     const region = page.getByRole('region', { name: terms.title });
     for (const col of terms.columns) await expect(region.getByRole('heading', { level: 3, name: col.title })).toBeVisible();
     for (const step of projectPath.steps) await expect(page.getByRole('heading', { level: 3, name: step.title })).toBeVisible();

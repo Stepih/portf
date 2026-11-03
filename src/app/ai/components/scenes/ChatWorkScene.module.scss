@@ -117,6 +117,9 @@
     box-shadow: vars.$shadow;
     transform-origin: 50% 0;
     transition: vars.$transition;
+    // Свой слой: вторая карточка едет поверх первой, та уменьшается и гаснет – без слоя тень и текст
+    // перерисовывались каждый кадр (У8, рывок ~7 500px на 1400)
+    will-change: transform, opacity;
 }
 
 .card + .card {

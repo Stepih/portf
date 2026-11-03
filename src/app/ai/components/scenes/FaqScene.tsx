@@ -1,6 +1,6 @@
 "use client";
 
-import { CSSProperties, FC, ReactNode, useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
+import { CSSProperties, FC, FocusEvent, ReactNode, useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { motion, MotionValue, useMotionValue, useMotionValueEvent, useScroll, useTransform } from "framer-motion";
 
 import sc from '../scene.module.scss'
@@ -352,6 +352,13 @@ const FaqScene: FC<{ end: ITermsEnd, children: ReactNode }> = ({ end, children }
     const ballScale = useTransform(ball, (b) => b.scale);
     const ballOpacity = useTransform(ball, (b) => b.opacity);
 
+    // Tab на вопрос, пока настоящий FAQ спрятан под копией, – страница доезжает до отпускания (и до вопроса, если он ниже)
+    const reveal = (event: FocusEvent<HTMLDivElement>) => {
+        if (real.get()) return;
+        const at = event.target.getBoundingClientRect().bottom + window.scrollY - window.innerHeight * .8;
+        window.scrollTo({ top: Math.max(releaseY.get(), at), behavior: 'smooth' });
+    };
+
     return (
         <>
             <section
@@ -391,7 +398,7 @@ const FaqScene: FC<{ end: ITermsEnd, children: ReactNode }> = ({ end, children }
                     </div>
                 </motion.div>
             </section>
-            <motion.div className={fs.real} style={{ opacity: real }}>{children}</motion.div>
+            <motion.div className={fs.real} style={{ opacity: real }} onFocusCapture={reveal}>{children}</motion.div>
         </>
     );
 };

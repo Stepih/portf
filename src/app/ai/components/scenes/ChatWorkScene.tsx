@@ -361,6 +361,12 @@ const ChatWorkScene: FC<IChatWorkScene> = ({ tiers, note }) => {
     const card1Dim = useTransform(arrive, (a) => 1 - .65 * a);
     const bar1 = useTransform(e, (v) => k(t, v, t.card1));
     const bar2 = useTransform(e, (v) => k(t, v, t.card2));
+    // Tab на кнопку карточки, пока она не проявилась (или уже погасла), – сцена доезжает до кадра, где карточка видна целиком
+    const revealCard = (i: number) => {
+        const [from, to] = i === 0 ? [t.card1[1], t.card2[0]] : [t.card2Text[1], handoff ? t.handoff[0] : t.path];
+        const v = e.get();
+        if (v < f(t, from) || v > f(t, to)) scrollToProgress(f(t, from));
+    };
 
     const heading = (
         <>
@@ -478,11 +484,11 @@ const ChatWorkScene: FC<IChatWorkScene> = ({ tiers, note }) => {
                             </motion.div>
                         </motion.div>
                         <div className={s.stack}>
-                            <motion.div ref={card} className={s.card} style={{ opacity: card1Opacity, scale: card1Scale, y: card1Y }}>
+                            <motion.div ref={card} className={s.card} style={{ opacity: card1Opacity, scale: card1Scale, y: card1Y }} onFocusCapture={() => revealCard(0)}>
                                 <motion.div className={s.cardBody} style={{ opacity: card1Dim }}>{tierCard(0, c1)}</motion.div>
                             </motion.div>
                             {/* data-deck-from: AgentDeck меряет эту карточку и в стыке рисует такую же на её месте */}
-                            <motion.div className={s.card} style={{ y: card2Y, opacity: card2Shown }} data-deck-from="">
+                            <motion.div className={s.card} style={{ y: card2Y, opacity: card2Shown }} data-deck-from="" onFocusCapture={() => revealCard(1)}>
                                 <motion.div className={s.cardBody} style={{ opacity: handoffOut }}>{tierCard(1, c2)}</motion.div>
                             </motion.div>
                         </div>
@@ -491,7 +497,8 @@ const ChatWorkScene: FC<IChatWorkScene> = ({ tiers, note }) => {
                     {/* Стекло шара: в покое – шар, в центре сцены – шар агента, потом плашка чата, в конце – первая ступень */}
                     <motion.div
                         className={`${o.shell} ${s.shell} ${atRest ? o.breathe : ''}`}
-                        style={{ top: shellTop, left: shellLeft, width: shellW, height: shellH, borderRadius: shellRadius, scale: pulse, opacity: shellOpacity }}
+                        // Сдвиг – transform, а не top/left: на стыках шар → плашка → карточка кадр не пересчитывал раскладку (У8, рывки)
+                        style={{ top: 0, left: 0, x: shellLeft, y: shellTop, width: shellW, height: shellH, borderRadius: shellRadius, scale: pulse, opacity: shellOpacity }}
                         aria-hidden="true"
                     >
                         <motion.span className={o.glass} style={{ opacity: glass }} />
