@@ -1093,7 +1093,7 @@ for (const viewport of [{ width: 1400, height: 900 }, { width: 375, height: 667 
             }
         });
 
-        test('диск растёт, когда отрасли уже погасли; в дыре – кружок «10 проектов»', async ({ page }) => {
+        test('диск растёт, когда отрасли уже погасли; знак в дыре не полупрозрачный', async ({ page }) => {
             await page.goto('/');
             await page.waitForTimeout(800);
             const screen = sceneScreen(page);
@@ -1104,7 +1104,6 @@ for (const viewport of [{ width: 1400, height: 900 }, { width: 375, height: 667 
                 return m ? parseFloat(m[1]) : 0;
             });
             const title = page.locator('#industries-title');
-            const badge = sceneEl(page).locator(':scope > span > span');
             const mark = () => screen.evaluate((el) => {
                 const b = [...el.querySelectorAll('b')].find((n) => /проект/.test(n.nextElementSibling?.textContent ?? ''))!;
                 let op = 1;
@@ -1117,15 +1116,13 @@ for (const viewport of [{ width: 1400, height: 900 }, { width: 375, height: 667 
             await expect.poll(diskRadius).toBeGreaterThan(55);
             expect(await title.evaluate(opacityOf)).toBeLessThan(.02);
 
-            // Дыра только открылась: знак на диске скрыт, кружок над маской – целиком и непрозрачный
-            await scrollPath(page, at.portal(15 / 35 + .02 * 20 / 35));
-            await expect.poll(() => badge.evaluate(opacityOf)).toBeGreaterThan(.98);
-            expect(await mark()).toBeLessThan(.02);
-            await expect(badge).toBeInViewport({ ratio: 1 });
+            // Дыра только открылась: знак на диске целиком непрозрачный (его ест дыра, а не прозрачность)
+            await scrollPath(page, at.portal(15 / 35 + .005 * 20 / 35));
+            await expect.poll(mark).toBeGreaterThan(.98);
 
-            // Дыра на полпути: «Лучшие проекты» в ней, кружок погас
+            // Дыра на полпути: знака нет, «Лучшие проекты» в ней
             await scrollPath(page, at.portal(15 / 35 + .5 * 20 / 35));
-            await expect.poll(() => badge.evaluate(opacityOf)).toBeLessThan(.02);
+            await expect.poll(mark).toBeLessThan(.02);
             await expect(page.locator('#cases-title')).toBeInViewport({ ratio: 1 });
         });
     });

@@ -61,44 +61,6 @@
     visibility: hidden;
 }
 
-// Кружок «10 проектов» в открывающейся дыре (DESIGN_FIXES_7_PLAN Д37): над маской экрана.
-// Липкий слой нулевой высоты стоит у верха окна вместе с экраном; положение, размер и масштаб ставит компонент
-.badgeTrack {
-    position: sticky;
-    top: 0;
-    z-index: 1;
-
-    display: block;
-    height: 0;
-    pointer-events: none;
-}
-
-// Как знак на диске (.works): тёмный круг, число и подпись цветом фона
-.badge {
-    position: absolute;
-    top: 0;
-    left: 0;
-
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-
-    font-size: 0.875rem;
-    line-height: 1;
-    color: var(--color-bg);
-    background: var(--color-text-100);
-    border-radius: 50%;
-    opacity: 0;
-    transition: vars.$transition;
-
-    b {
-        margin-bottom: 2px;
-        font-size: 2.5rem;
-        font-weight: 800;
-    }
-}
-
 // Дыра почти на весь экран: сцена прозрачна для кликов, чтобы кликался блок под ней
 .passThrough,
 .passThrough * {
@@ -533,11 +495,6 @@
 }
 
 @media screen and (max-width: 560px) {
-    // Как .works в узком кружке
-    .badge b {
-        font-size: 2rem;
-    }
-
     .hero .photo,
     .static .photo {
         width: 160px;

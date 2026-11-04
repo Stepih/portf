@@ -265,14 +265,11 @@ const DISK_SHARE = .3;
 // Запас от диска до краёв экрана, px. Где диск с ним не влезает (короткий телефон), он вместе со знаком, пока растёт,
 // сдвигается внутрь экрана ровно настолько, насколько нужно; размер не меняется (DESIGN_FIXES_6_PLAN С2, решение владельца)
 const DISK_GAP = 12;
-// Знак «10 проектов» не съедается дырой и не гаснет в ней полупрозрачным (Д37, выбор владельца): когда она открывается,
-// его подменяет такой же знак над маской (badge) и сжимается обратно в кружок за этот отрезок хода дыры.
-// Кружок стоит в дыре поверх кейсов, пока «Лучшие проекты» не окажутся в ней целиком, и гаснет, пока дыра
-// растёт ещё на BADGE_FADE, px: в каждом кадре открытия есть что прочитать
-const BADGE_SHRINK = .2;
-const BADGE_FADE = 40;
-// Запас от заголовка кейсов до края дыры, px
-const HEAD_GAP = 8;
+// Знак «10 проектов» не гаснет полупрозрачным в дыре (Д37): он целый, пока дыра его не съела, и пропадает,
+// когда дыра шире этой доли диска – надписи знака в ней уже целиком, снаружи остался только чёрный круг, как диск.
+// Кружок-знак над маской до «Лучших проектов» владелец отклонил (04.11.2026): короткий кадр открытия дыры
+// без целого текста (~20px прокрутки на 1400, ~50 на 820) принят
+const MARK_GONE = .75;
 // Кольцо между дырой и краем диска гаснет в этом отрезке хода дыры (holeEase),
 // пока оно ещё толстое: не сжимается в волосяную дугу (DESIGN_FIXES_2_PLAN, Д9). Раньше – .3–.7: чёрный «бублик»
 // стоял ~190px прокрутки, потом ~90 (DESIGN_FIXES_6_PLAN Д30), с быстрым стартом дыры – ~30 (Д37)
@@ -353,8 +350,6 @@ const HeroExpand: FC<HeroExpandProps> = ({ chips, worksCount, children }) => {
     const diskMax = useMotionValue(DISK);
     const diskDy = useMotionValue(0);
     const rMax = useMotionValue(0);
-    // Радиус дыры, при котором заголовок кейсов в ней целиком
-    const headReach = useMotionValue(Infinity);
 
     // Объявлены до замера: useTransform подписывается на края в своём эффекте,
     // и замер, сделанный раньше подписки, фон бы не увидел
@@ -408,18 +403,6 @@ const HeroExpand: FC<HeroExpandProps> = ({ chips, worksCount, children }) => {
             diskDy.set(dy);
             // Дыра открывается из нового центра
             rMax.set(Math.hypot(Math.max(x, box.width - x), Math.max(y + dy, box.height - y - dy)) + 2);
-            // Заголовок кейсов там, где блок прилипает на время портала: по центру экрана, если короче него (как nextTop),
-            // по горизонтали – на своём месте
-            const next = nextEl.current;
-            const head = next?.querySelector<HTMLElement>('#cases-title');
-            if (next && head) {
-                const h = offsetIn(head, next);
-                const hx = next.getBoundingClientRect().left - box.left + h.x;
-                const hy = Math.max(0, (window.innerHeight - next.offsetHeight) / 2) + h.y;
-                const far = (a: number, b: number, c: number) => Math.max(Math.abs(a - c), Math.abs(b - c));
-                headReach.set(Math.hypot(far(hx, hx + head.offsetWidth, x), far(hy, hy + head.offsetHeight, y + dy)) + HEAD_GAP);
-            }
-
             // Брызги: где заголовок и чипы относительно кружка
             if (!root.current || !lead.current) return;
             const r = root.current;
@@ -450,10 +433,10 @@ const HeroExpand: FC<HeroExpandProps> = ({ chips, worksCount, children }) => {
         measure();
         document.fonts?.ready.then(measure);
         const observer = new ResizeObserver(measure);
-        [scene.current, path.current, screen.current, card.current, photoBox.current, slot.current, root.current, lead.current, nextEl.current]
+        [scene.current, path.current, screen.current, card.current, photoBox.current, slot.current, root.current, lead.current]
             .forEach((el) => el && observer.observe(el));
         return () => observer.disconnect();
-    }, [reduceMotion, sceneTop, sceneLen, lagCap, top, right, bottom, left, photoDx, photoDy, photoScale, cx, cy, r0, diskMax, diskDy, rMax, headReach]);
+    }, [reduceMotion, sceneTop, sceneLen, lagCap, top, right, bottom, left, photoDx, photoDy, photoScale, cx, cy, r0, diskMax, diskDy, rMax]);
 
     // Тач-экран: экран сцены не ниже наибольшего innerHeight при этой ширине окна (--screen-max-h в стилях).
     // Только растёт – панели браузера сворачиваются и разворачиваются на скролле; при смене ширины (поворот) – заново.
@@ -513,16 +496,8 @@ const HeroExpand: FC<HeroExpandProps> = ({ chips, worksCount, children }) => {
         const u = holeEase(v);
         return d - dm * (1 - u) * (1 - u);
     });
-    // Знак на диске – до дыры; дальше его место занимает кружок над маской, в тот же кадр и того же размера
-    const markOut = useTransform(q, (v): number => v <= OPEN_AT ? 1 : 0);
+    const markOut = useTransform([hole, diskMax], ([h, dm]: number[]): number => h < dm * MARK_GONE ? 1 : 0);
     const markOpacity = useTransform([markIn, markOut], ([a, b]: number[]) => a * b);
-    const badgeX = useTransform([cx, r0], ([x, r]: number[]) => x - r);
-    const badgeY = useTransform([diskCy, r0], ([y, r]: number[]) => y - r);
-    const badgeSize = useTransform(r0, (r) => r * 2);
-    const badgeScale = useTransform([q, r0, diskMax], ([v, r, dm]: number[]) =>
-        r > 0 ? 1 + (dm / r - 1) * (1 - ease(clamp01(holeEase(v) / BADGE_SHRINK))) : 1);
-    const badgeOpacity = useTransform([q, hole, headReach], ([v, h, reach]: number[]) =>
-        v <= OPEN_AT ? 0 : 1 - clamp01((h - reach) / BADGE_FADE));
     const diskBg = useTransform([q, cx, diskCy, disk], ([v, x, y, d]: number[]) => v <= 0
         ? 'none'
         : `radial-gradient(circle at ${x}px ${y}px, var(--color-text-100) ${d}px, transparent ${d + 1}px)`);
@@ -754,17 +729,6 @@ const HeroExpand: FC<HeroExpandProps> = ({ chips, worksCount, children }) => {
                 } as CSSProperties}
                 aria-labelledby="hero-title"
             >
-                {/* Кружок «10 проектов» в открывающейся дыре: над маской экрана, поэтому дыра его не съедает.
-                    Липкий слой нулевой высоты – в тех же координатах, что экран, места в потоке не занимает */}
-                <span className={s.badgeTrack} aria-hidden="true">
-                    <motion.span
-                        className={s.badge}
-                        style={{ x: badgeX, y: badgeY, width: badgeSize, height: badgeSize, scale: badgeScale, opacity: badgeOpacity }}
-                    >
-                        <b className={ralewayBold.className}>{worksCount}</b>
-                        <span className={ralewayRegular.className}>{plural(worksCount, ['проект', 'проекта', 'проектов'])}</span>
-                    </motion.span>
-                </span>
                 <motion.div
                     ref={screen}
                     className={`${s.screen} ${portalState === 'open' ? s.passThrough : ''}`}
