@@ -103,6 +103,8 @@ export interface IPortfolioCase {
     tags: string[],
     // Адрес живого сайта; нет — кнопки «Открыть сайт» не показываются
     url?: string,
+    // Неопубликованный сайт, собранный в статику в public/ (путь к index.html): открывается на /portfolio/{id}/site, кнопки «Открыть сайт» ведут туда
+    demo?: string,
     // Кнопка попробовать продукт рядом с «Открыть сайт»: short – подпись на телефоне, note – мелко под кнопкой
     trial?: { label: string, short: string, note: string, href: string },
     slides: ICaseSlide[],

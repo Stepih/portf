@@ -1,0 +1,24 @@
+{
+  "temporary": false,
+  "source": null,
+  "focus": {
+    "x": 0.5,
+    "y": 0.5
+  },
+  "desktop": {
+    "count": 476,
+    "width": 1280,
+    "height": 720,
+    "dir": "media/hero/desktop",
+    "ext": "webp",
+    "pad": 4
+  },
+  "mobile": {
+    "count": 239,
+    "width": 1280,
+    "height": 720,
+    "dir": "media/hero/mobile",
+    "ext": "webp",
+    "pad": 4
+  }
+}

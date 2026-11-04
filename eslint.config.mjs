@@ -18,6 +18,8 @@ const eslintConfig = [
             '.ds-sync/**',
             '.design-sync/**',
             'baseline/**',
+            // собранные макеты сайтов из кейсов (поле demo)
+            'public/keystone-demo/**',
         ],
     },
     // next/core-web-vitals уже включает react-hooks (rules-of-hooks, exhaustive-deps)

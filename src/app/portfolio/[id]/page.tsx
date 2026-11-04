@@ -71,6 +71,8 @@ const CasePage: FC<IProps> = async ({ params }) => {
         if (found) byIndustry[industry] = toNext(found);
     }
 
+    // Свой адрес или собранный макет на этом сайте
+    const siteUrl = data.url ?? (data.demo ? `/portfolio/${id}/site` : undefined);
     const after = data.after ?? data.slides.find((slide) => slide.type === 'desktop')?.src;
 
     return (
@@ -83,7 +85,7 @@ const CasePage: FC<IProps> = async ({ params }) => {
                 headline={data.headline}
                 tags={data.tags}
                 accent={data.accent}
-                url={data.url}
+                url={siteUrl}
                 trial={data.trial}
                 slides={data.slides}
             />
@@ -96,7 +98,7 @@ const CasePage: FC<IProps> = async ({ params }) => {
                 <KeyScreens name={work.name} accent={data.accent} screens={data.screens} video={data.screensVideo} />
                 {data.before && after && <BeforeAfter name={work.name} before={data.before} after={after} />}
                 {data.quote && <CaseQuote {...data.quote} accent={data.accent} />}
-                <CaseCta caseId={work.id} url={data.url} />
+                <CaseCta caseId={work.id} url={siteUrl} />
                 <NextCase next={next} byIndustry={byIndustry} />
             </div>
         </div>
