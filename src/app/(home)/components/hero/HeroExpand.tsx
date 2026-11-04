@@ -3,7 +3,7 @@
 import { CSSProperties, FC, FocusEvent, ReactNode, useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { cubicBezier, easeIn, easeOut, motion, MotionValue, useMotionValue, useMotionValueEvent, useScroll, useSpring, useTransform } from "framer-motion";
+import { cubicBezier, easeIn, easeInOut, easeOut, motion, MotionValue, useMotionValue, useMotionValueEvent, useScroll, useSpring, useTransform } from "framer-motion";
 
 import photo from '@/assets/_img/rectangles/title-page/i.png'
 
@@ -29,14 +29,17 @@ interface HeroExpandProps {
     children?: ReactNode
 }
 
-// Путь портала в экранах: диск растёт из кружка вместе с надписью «10 работ» (PORTAL_GROW), стоит с ней
-// (PORTAL_HOLD), потом в нём открывается дыра и уходит за края экрана (PORTAL_OPEN).
+// Путь портала в экранах: отрасли гаснут, и опорой кадра остаётся знак «10 проектов» (PORTAL_CLEAR), потом диск растёт
+// из кружка вместе со знаком (PORTAL_GROW), стоит с ним (PORTAL_HOLD), и в нём открывается дыра до краёв экрана (PORTAL_OPEN).
 // Рост и дыра вдвое короче, чем были (.1 и .3): кружок поверх заголовка и чёрное кольцо – недорисованные кадры,
-// на них не должно получаться остановиться; путь отдан стоянию диска и чипам (DESIGN_FIXES_6_PLAN Д30, выбор владельца)
+// на них не должно получаться остановиться; путь отдан стоянию диска и чипам (DESIGN_FIXES_6_PLAN Д30, выбор владельца).
+// Отрасли гаснут до роста диска, а не под ним: диск не закрывает заголовок, пока тот читается
+// (DESIGN_FIXES_7_PLAN Д37, выбор владельца); место взято из стояния, длина портала прежняя
+const PORTAL_CLEAR = .03;
 const PORTAL_GROW = .05;
-const PORTAL_HOLD = .1;
+const PORTAL_HOLD = .07;
 const PORTAL_OPEN = .2;
-const PORTAL_PATH = PORTAL_GROW + PORTAL_HOLD + PORTAL_OPEN;
+const PORTAL_PATH = PORTAL_CLEAR + PORTAL_GROW + PORTAL_HOLD + PORTAL_OPEN;
 
 // Точки сцены в экранах прокрутки: раскрытие, брызги отраслей (с SHOW_AT, путь BURST_PATH),
 // чипы стоят CHIPS_HOLD, чтобы по ним успели кликнуть, потом портал.
@@ -118,16 +121,19 @@ type PortalState = 'off' | 'on' | 'open';
 // Таймлайн в секундах, но время берётся из скролла: весь путь брызг (BURST_PATH) – вся их длительность.
 // Скролл назад проигрывает их в обратную сторону теми же кадрами
 
-// Капля летит FLIGHT, растекается в пилюлю SPREAD и растворяется в чип FADE; волна от кружка идёт WAVE, с.
-// Растекание и растворение вдвое короче, чем были (.35 и .3 – и капли вылетают чаще), волна – тоже (.9): чёрная пилюля без текста и обрезанный
-// волной заголовок – недорисованные кадры (DESIGN_FIXES_6_PLAN Д30)
+// Капля летит FLIGHT, растекается в залитый чип SPREAD, стоит залитой FILLED и стекает слева направо за DRAIN;
+// волна от кружка идёт WAVE, с. Растекание и волна вдвое короче, чем были (.35 и .9): обрезанный волной заголовок –
+// недорисованный кадр (DESIGN_FIXES_6_PLAN Д30).
+// Подпись чипа – над каплей (DESIGN_FIXES_7_PLAN Д37, выбор владельца): в капле её копия цветом фона, как у чипа
+// при наведении, под каплей – обычная. Где заливка, текст светлый, где её уже нет – тёмный: чёрной пилюли без подписи нет ни в одном кадре
 const FLIGHT = .7;
 const SPREAD = .15;
-const FADE = .15;
+const FILLED = .05;
+const DRAIN = .2;
 const WAVE = .45;
-// Чип проступает под каплей: FACE_FROM после конца полёта, за FACE, с – до того, как капля растворится
-const FACE_FROM = .05;
-const FACE = .3;
+// Кнопка и цена первого экрана держатся, пока волна не открыла заголовок, и гаснут до того, как лягут капли (Д37)
+const CTA_OUT_FROM = .45;
+const CTA_OUT_TO = .7;
 // Строка «Другая сфера?» поднимается, когда долетела последняя капля: OTHER_FROM после её полёта, за OTHER_RISE, с
 const OTHER_FROM = 0;
 const OTHER_RISE = .4;
@@ -140,7 +146,7 @@ const chipDelay = (i: number) => .2 + i * .04;
 // Длительность брызг, с: до конца последней капли и строки «Другая сфера?»
 const burstLength = (count: number) => {
     const last = chipDelay(Math.max(0, count - 1));
-    return last + FLIGHT + Math.max(SPREAD + FADE, FACE_FROM + FACE, OTHER_FROM + OTHER_RISE);
+    return last + FLIGHT + Math.max(SPREAD + FILLED + DRAIN, OTHER_FROM + OTHER_RISE);
 };
 
 // Чип относительно кружка: сдвиг от места чипа до центра кружка и размер чипа
@@ -180,17 +186,25 @@ const waveFrame = (time: number, g: WaveGeom) => {
     };
 };
 
-// Чип в момент time: полёт из кружка по дуге, как из фонтана, капля растекается в пилюлю и растворяется, чип проступает
+// Чип в момент time: полёт из кружка по дуге, как из фонтана, капля растекается в залитый чип с подписью
+// и стекает слева направо, открывая обычный чип
 const chipFrame = (time: number, g: ChipGeom) => {
     const d = chipDelay(g.i);
     const f = span(time, d, FLIGHT);
-    const spread = spreadEase(span(time, d + FLIGHT - .05, SPREAD));
+    // Растекается, когда долетела: в полёте пилюля прошла бы по подписи отраслей (на телефоне чипы далеко внизу)
+    const spreadFrom = d + FLIGHT;
+    const spread = spreadEase(span(time, spreadFrom, SPREAD));
+    const drain = easeInOut(span(time, spreadFrom + SPREAD + FILLED, DRAIN));
     return {
         x: g.dx * (1 - flyEase(f)),
         y: f < .4 ? g.dy - LIFT * easeOut(f / .4) : (g.dy - LIFT) * (1 - easeIn((f - .4) / .6)),
-        clip: `inset(${(g.h - DROP) / 2 * (1 - spread)}px ${(g.w - DROP) / 2 * (1 - spread)}px round 24px)`,
-        drop: time < d ? 0 : 1 - span(time, d + FLIGHT + SPREAD, FADE),
-        face: easeOut(span(time, d + FLIGHT + FACE_FROM, FACE)),
+        clip: drain > 0
+            ? `inset(0px 0px 0px ${g.w * drain}px round 24px)`
+            : `inset(${(g.h - DROP) / 2 * (1 - spread)}px ${(g.w - DROP) / 2 * (1 - spread)}px round 24px)`,
+        // .999, а не 1: в конце брызг (1,5 − 1,3) / 0,2 даёт 0,999…
+        drop: time < d || drain > .999 ? 0 : 1,
+        // Обычный чип открывается под каплей, когда она растеклась целиком: до этого он летел бы вместе с ней
+        face: time >= spreadFrom + SPREAD ? 1 : 0,
     };
 };
 
@@ -199,11 +213,13 @@ interface ScrubChipProps {
     time: MotionValue<number>,
     geom: ChipGeom,
     itemRef: (el: HTMLLIElement | null) => void,
+    // Подпись чипа в капле – копия цветом фона
+    fill: ReactNode,
     children: ReactNode
 }
 
 // Чип брызг: кадр считается из времени, без своих анимаций
-const ScrubChip: FC<ScrubChipProps> = ({ time, geom, itemRef, children }) => {
+const ScrubChip: FC<ScrubChipProps> = ({ time, geom, itemRef, fill, children }) => {
     const x = useMotionValue(0);
     const y = useMotionValue(0);
     const clip = useMotionValue(dot(geom));
@@ -223,7 +239,9 @@ const ScrubChip: FC<ScrubChipProps> = ({ time, geom, itemRef, children }) => {
 
     return (
         <motion.li ref={itemRef} className={s.chipItem} style={{ x, y }}>
-            <motion.span className={s.drop} style={{ clipPath: clip, opacity: drop }} aria-hidden="true" />
+            <motion.span className={s.drop} style={{ clipPath: clip, opacity: drop }} aria-hidden="true">
+                <span className={`${s.chip} ${s.chipFill}`}>{fill}</span>
+            </motion.span>
             <motion.div style={{ opacity: face }}>{children}</motion.div>
         </motion.li>
     );
@@ -231,20 +249,33 @@ const ScrubChip: FC<ScrubChipProps> = ({ time, geom, itemRef, children }) => {
 
 // ---------- Круг-портал ----------
 
-// Доли пути портала: к DISK_TO диск дорос, на OPEN_AT в нём открывается дыра; между ними он стоит с надписью
-const DISK_TO = PORTAL_GROW / PORTAL_PATH;
-const OPEN_AT = (PORTAL_GROW + PORTAL_HOLD) / PORTAL_PATH;
+// Доли пути портала: к CLEAR_TO отрасли погасли и диск начинает расти, к DISK_TO дорос, на OPEN_AT в нём открывается дыра;
+// между ними он стоит с надписью
+const CLEAR_TO = PORTAL_CLEAR / PORTAL_PATH;
+const DISK_TO = (PORTAL_CLEAR + PORTAL_GROW) / PORTAL_PATH;
+const OPEN_AT = (PORTAL_CLEAR + PORTAL_GROW + PORTAL_HOLD) / PORTAL_PATH;
+// Рост диска за путь CLEAR_TO–DISK_TO
+const diskGrow = (v: number) => ease(clamp01((v - CLEAR_TO) / (DISK_TO - CLEAR_TO)));
+// Ход дыры: быстрый старт – знак уходит в дыру, и в ней почти сразу видны «Лучшие проекты» (Д37). Кадры те же, что раньше
+// (кольцо гаснет таким же толстым), меняется только их скорость на пути
+const holeEase = (v: number) => 1 - Math.pow(1 - clamp01((v - OPEN_AT) / (1 - OPEN_AT)), 4);
 // Диск до открытия дыры: радиус, px, но не больше доли ширины экрана
 const DISK = 150;
 const DISK_SHARE = .3;
 // Запас от диска до краёв экрана, px. Где диск с ним не влезает (короткий телефон), он вместе со знаком, пока растёт,
 // сдвигается внутрь экрана ровно настолько, насколько нужно; размер не меняется (DESIGN_FIXES_6_PLAN С2, решение владельца)
 const DISK_GAP = 12;
-// Знак «10 работ», выросший с диском, гаснет за эту долю пути портала после открытия дыры
-const MARK_FADE = .1;
-// Кольцо между дырой и краем диска гаснет в этом отрезке пути дыры (доли от открытия до конца),
+// Знак «10 проектов» не съедается дырой и не гаснет в ней полупрозрачным (Д37, выбор владельца): когда она открывается,
+// его подменяет такой же знак над маской (badge) и сжимается обратно в кружок за этот отрезок хода дыры.
+// Кружок стоит в дыре поверх кейсов, пока «Лучшие проекты» не окажутся в ней целиком, и гаснет, пока дыра
+// растёт ещё на BADGE_FADE, px: в каждом кадре открытия есть что прочитать
+const BADGE_SHRINK = .2;
+const BADGE_FADE = 40;
+// Запас от заголовка кейсов до края дыры, px
+const HEAD_GAP = 8;
+// Кольцо между дырой и краем диска гаснет в этом отрезке хода дыры (holeEase),
 // пока оно ещё толстое: не сжимается в волосяную дугу (DESIGN_FIXES_2_PLAN, Д9). Раньше – .3–.7: чёрный «бублик»
-// стоял ~190px прокрутки, теперь ~90 (DESIGN_FIXES_6_PLAN Д30)
+// стоял ~190px прокрутки, потом ~90 (DESIGN_FIXES_6_PLAN Д30), с быстрым стартом дыры – ~30 (Д37)
 const RING_FADE_FROM = .2;
 const RING_FADE_TO = .5;
 
@@ -322,6 +353,8 @@ const HeroExpand: FC<HeroExpandProps> = ({ chips, worksCount, children }) => {
     const diskMax = useMotionValue(DISK);
     const diskDy = useMotionValue(0);
     const rMax = useMotionValue(0);
+    // Радиус дыры, при котором заголовок кейсов в ней целиком
+    const headReach = useMotionValue(Infinity);
 
     // Объявлены до замера: useTransform подписывается на края в своём эффекте,
     // и замер, сделанный раньше подписки, фон бы не увидел
@@ -375,6 +408,17 @@ const HeroExpand: FC<HeroExpandProps> = ({ chips, worksCount, children }) => {
             diskDy.set(dy);
             // Дыра открывается из нового центра
             rMax.set(Math.hypot(Math.max(x, box.width - x), Math.max(y + dy, box.height - y - dy)) + 2);
+            // Заголовок кейсов там, где блок прилипает на время портала: по центру экрана, если короче него (как nextTop),
+            // по горизонтали – на своём месте
+            const next = nextEl.current;
+            const head = next?.querySelector<HTMLElement>('#cases-title');
+            if (next && head) {
+                const h = offsetIn(head, next);
+                const hx = next.getBoundingClientRect().left - box.left + h.x;
+                const hy = Math.max(0, (window.innerHeight - next.offsetHeight) / 2) + h.y;
+                const far = (a: number, b: number, c: number) => Math.max(Math.abs(a - c), Math.abs(b - c));
+                headReach.set(Math.hypot(far(hx, hx + head.offsetWidth, x), far(hy, hy + head.offsetHeight, y + dy)) + HEAD_GAP);
+            }
 
             // Брызги: где заголовок и чипы относительно кружка
             if (!root.current || !lead.current) return;
@@ -406,10 +450,10 @@ const HeroExpand: FC<HeroExpandProps> = ({ chips, worksCount, children }) => {
         measure();
         document.fonts?.ready.then(measure);
         const observer = new ResizeObserver(measure);
-        [scene.current, path.current, screen.current, card.current, photoBox.current, slot.current, root.current, lead.current]
+        [scene.current, path.current, screen.current, card.current, photoBox.current, slot.current, root.current, lead.current, nextEl.current]
             .forEach((el) => el && observer.observe(el));
         return () => observer.disconnect();
-    }, [reduceMotion, sceneTop, sceneLen, lagCap, top, right, bottom, left, photoDx, photoDy, photoScale, cx, cy, r0, diskMax, diskDy, rMax]);
+    }, [reduceMotion, sceneTop, sceneLen, lagCap, top, right, bottom, left, photoDx, photoDy, photoScale, cx, cy, r0, diskMax, diskDy, rMax, headReach]);
 
     // Тач-экран: экран сцены не ниже наибольшего innerHeight при этой ширине окна (--screen-max-h в стилях).
     // Только растёт – панели браузера сворачиваются и разворачиваются на скролле; при смене ширины (поворот) – заново.
@@ -439,41 +483,51 @@ const HeroExpand: FC<HeroExpandProps> = ({ chips, worksCount, children }) => {
     // В портале знак с надписью растёт вместе с диском и гаснет, когда в диске открывается дыра
     const photoOpacity = useTransform(t, [.7, 1], [1, 0]);
     const markIn = useTransform(t, [.7, 1], [0, 1]);
-    const markOut = useTransform(q, (v) => 1 - clamp01((v - OPEN_AT) / MARK_FADE));
-    const markOpacity = useTransform([markIn, markOut], ([a, b]: number[]) => a * b);
     const markScaleIn = useTransform(t, [.7, 1], [.6, 1]);
 
+    // Надпись и подпись слайда гаснут сразу – на их месте проступит заголовок сцены. Кнопка и цена держатся,
+    // пока заголовок не открылся (CTA_OUT_*, ниже): в кадре всегда есть что прочитать (DESIGN_FIXES_7_PLAN Д37, выбор владельца)
     const slidesOpacity = useTransform(scrollYProgress, [tm.expandFrom, tm.expandFrom + .1], [1, 0]);
     const slidesY = useTransform(scrollYProgress, [tm.expandFrom, tm.expandTo], [0, -60]);
 
-    // Отрасли втягиваются к кружку и гаснут, пока он растёт
-    const contentOpacity = useTransform(q, [0, DISK_TO], [1, 0]);
-    const contentScale = useTransform(q, [0, DISK_TO * 1.1], [1, .9]);
-    const contentY = useTransform(q, [0, DISK_TO * 1.1], [0, -24]);
+    // Отрасли втягиваются к кружку и гаснут до того, как он начнёт расти
+    const contentOpacity = useTransform(q, [0, CLEAR_TO], [1, 0]);
+    const contentScale = useTransform(q, [0, CLEAR_TO], [1, .9]);
+    const contentY = useTransform(q, [0, CLEAR_TO], [0, -24]);
 
     // Диск растёт из кружка до DISK, стоит с надписью до OPEN_AT, потом в нём открывается дыра. Дыра догоняет край диска,
     // и оба уходят за дальний угол экрана: кольцо между ними тоньшает до нуля
     const disk = useTransform([q, r0, diskMax, rMax], ([v, r, dm, rm]: number[]) => {
-        if (v < OPEN_AT) return r + (dm - r) * ease(clamp01(v / DISK_TO));
-        const u = (v - OPEN_AT) / (1 - OPEN_AT);
+        if (v < OPEN_AT) return r + (dm - r) * diskGrow(v);
+        const u = holeEase(v);
         return dm + (rm - dm) * u * u;
     });
     // Сдвиг центра внутрь экрана идёт вместе с ростом диска, дальше стоит: край диска не заходит за запас ни в одном кадре
-    const diskY = useTransform([q, diskDy], ([v, dy]: number[]) => dy * ease(clamp01(v / DISK_TO)));
+    const diskY = useTransform([q, diskDy], ([v, dy]: number[]) => dy * diskGrow(v));
     const diskCy = useTransform([cy, diskY], ([y, d]: number[]) => y + d);
     // Знак «10 работ» растёт вместе с диском до его размера перед дырой: круг, число и подпись – одним целым
     const markScale = useTransform([markScaleIn, q, r0, disk, diskMax], ([a, v, r, d, dm]: number[]) =>
         a * (v > 0 && r > 0 ? Math.min(d, dm) / r : 1));
     const hole = useTransform([q, diskMax, disk], ([v, dm, d]: number[]) => {
         if (v <= OPEN_AT) return 0;
-        const u = (v - OPEN_AT) / (1 - OPEN_AT);
+        const u = holeEase(v);
         return d - dm * (1 - u) * (1 - u);
     });
+    // Знак на диске – до дыры; дальше его место занимает кружок над маской, в тот же кадр и того же размера
+    const markOut = useTransform(q, (v): number => v <= OPEN_AT ? 1 : 0);
+    const markOpacity = useTransform([markIn, markOut], ([a, b]: number[]) => a * b);
+    const badgeX = useTransform([cx, r0], ([x, r]: number[]) => x - r);
+    const badgeY = useTransform([diskCy, r0], ([y, r]: number[]) => y - r);
+    const badgeSize = useTransform(r0, (r) => r * 2);
+    const badgeScale = useTransform([q, r0, diskMax], ([v, r, dm]: number[]) =>
+        r > 0 ? 1 + (dm / r - 1) * (1 - ease(clamp01(holeEase(v) / BADGE_SHRINK))) : 1);
+    const badgeOpacity = useTransform([q, hole, headReach], ([v, h, reach]: number[]) =>
+        v <= OPEN_AT ? 0 : 1 - clamp01((h - reach) / BADGE_FADE));
     const diskBg = useTransform([q, cx, diskCy, disk], ([v, x, y, d]: number[]) => v <= 0
         ? 'none'
         : `radial-gradient(circle at ${x}px ${y}px, var(--color-text-100) ${d}px, transparent ${d + 1}px)`);
     const ringOpacity = useTransform(q, (v) =>
-        1 - clamp01(((v - OPEN_AT) / (1 - OPEN_AT) - RING_FADE_FROM) / (RING_FADE_TO - RING_FADE_FROM)));
+        1 - clamp01((holeEase(v) - RING_FADE_FROM) / (RING_FADE_TO - RING_FADE_FROM)));
     const holeMask = useTransform([hole, cx, diskCy], ([h, x, y]: number[]) => h <= 0
         ? 'none'
         : `radial-gradient(circle at ${x}px ${y}px, transparent ${h}px, #000 ${h + 1}px)`);
@@ -521,6 +575,7 @@ const HeroExpand: FC<HeroExpandProps> = ({ chips, worksCount, children }) => {
     // Брызги: время их таймлайна, с, и кадр волны, кружка и строки «Другая сфера?»
     const burstTotal = burstLength(chips.length);
     const burstTime = useTransform(scrollYProgress, (p) => clamp01((p - tm.burstFrom) / (tm.burstTo - tm.burstFrom)) * burstTotal);
+    const ctaOpacity = useTransform(burstTime, [CTA_OUT_FROM, CTA_OUT_TO], [1, 0]);
     const [burstShown, setBurstShown] = useState(false);
     const leadClip = useMotionValue('none');
     const leadOpacity = useMotionValue(0);
@@ -575,6 +630,14 @@ const HeroExpand: FC<HeroExpandProps> = ({ chips, worksCount, children }) => {
     };
     const geomOf = (i: number): ChipGeom => chipGeoms[i] ?? { i, dx: 0, dy: 0, w: 0, h: 0 };
 
+    // Число подписано: «· 2 проекта» (DESIGN_FIXES_7_PLAN Д35)
+    const chipFace = (chip: IIndustryChip) => (
+        <>
+            {chip.label}
+            <span className={s.count} aria-hidden="true">·</span>
+            <span className={s.count}>{industryChipCount(chip.count)}</span>
+        </>
+    );
     const chipLink = (chip: IIndustryChip) => (
         <Link
             href={withIndustry(portfolioPageURL, chip.id)}
@@ -583,10 +646,7 @@ const HeroExpand: FC<HeroExpandProps> = ({ chips, worksCount, children }) => {
             data-goal-id={chip.id}
             aria-label={`${chip.label}, ${industryChipCount(chip.count)}`}
         >
-            {/* Число подписано: «· 2 проекта» (DESIGN_FIXES_7_PLAN Д35) */}
-            {chip.label}
-            <span className={s.count} aria-hidden="true">·</span>
-            <span className={s.count}>{industryChipCount(chip.count)}</span>
+            {chipFace(chip)}
         </Link>
     );
 
@@ -644,7 +704,7 @@ const HeroExpand: FC<HeroExpandProps> = ({ chips, worksCount, children }) => {
                     {chips.map((chip, i) => reduceMotion ? (
                         <li key={chip.id} className={s.chipItem}>{chipLink(chip)}</li>
                     ) : (
-                        <ScrubChip key={chip.id} time={burstTime} geom={geomOf(i)} itemRef={(el) => { chipEls.current[i] = el }}>
+                        <ScrubChip key={chip.id} time={burstTime} geom={geomOf(i)} itemRef={(el) => { chipEls.current[i] = el }} fill={chipFace(chip)}>
                             {chipLink(chip)}
                         </ScrubChip>
                     ))}
@@ -694,6 +754,17 @@ const HeroExpand: FC<HeroExpandProps> = ({ chips, worksCount, children }) => {
                 } as CSSProperties}
                 aria-labelledby="hero-title"
             >
+                {/* Кружок «10 проектов» в открывающейся дыре: над маской экрана, поэтому дыра его не съедает.
+                    Липкий слой нулевой высоты – в тех же координатах, что экран, места в потоке не занимает */}
+                <span className={s.badgeTrack} aria-hidden="true">
+                    <motion.span
+                        className={s.badge}
+                        style={{ x: badgeX, y: badgeY, width: badgeSize, height: badgeSize, scale: badgeScale, opacity: badgeOpacity }}
+                    >
+                        <b className={ralewayBold.className}>{worksCount}</b>
+                        <span className={ralewayRegular.className}>{plural(worksCount, ['проект', 'проекта', 'проектов'])}</span>
+                    </motion.span>
+                </span>
                 <motion.div
                     ref={screen}
                     className={`${s.screen} ${portalState === 'open' ? s.passThrough : ''}`}
@@ -714,9 +785,11 @@ const HeroExpand: FC<HeroExpandProps> = ({ chips, worksCount, children }) => {
                         </div>
 
                         <div ref={card} className={`${ralewayRegular.className} ${s.card}`} onFocus={focusHero}>
-                            <motion.div style={{ opacity: slidesOpacity, y: slidesY }}>
-                                <HeroSlides slides={heroSlides} titleSlide={heroTitleSlide} interval={heroInterval} />
-                                {cta}
+                            <motion.div style={{ y: slidesY }}>
+                                <motion.div style={{ opacity: slidesOpacity }}>
+                                    <HeroSlides slides={heroSlides} titleSlide={heroTitleSlide} interval={heroInterval} />
+                                </motion.div>
+                                <motion.div style={{ opacity: ctaOpacity }}>{cta}</motion.div>
                             </motion.div>
                         </div>
                     </div>

@@ -990,9 +990,10 @@ for (const { viewport, shifted } of [
         await page.setViewportSize(viewport);
         await page.goto('/');
         await page.waitForTimeout(800);
-        // Середина стояния диска, доля пути сцены: начало портала + (DISK_TO + OPEN_AT) / 2 его пути (HeroExpand.tsx)
+        // Середина стояния диска, доля пути сцены: начало портала + (DISK_TO + OPEN_AT) / 2 его пути (HeroExpand.tsx):
+        // DISK_TO = .08 / .35, OPEN_AT = .15 / .35 (DESIGN_FIXES_7_PLAN Д37)
         const from = viewport.width <= 700 ? .84 / 1.19 : .94 / 1.29;
-        const at = from + (1 - from) * 2 / 7;
+        const at = from + (1 - from) * 23 / 70;
         const path = await scenePath(page);
         await scrollInstant(page, path.top + path.len * at);
 
@@ -1025,6 +1026,126 @@ for (const { viewport, shifted } of [
         else expect(Math.abs(f.y - f.slotY)).toBeLessThan(1);
     });
 }
+
+// Стоп-кадры сцены (DESIGN_FIXES_7_PLAN Д37): в каждом кадре есть что прочитать целиком.
+// Доли пути – из HeroExpand.tsx: длина сцены 1,29 экрана (телефон 1,19), брызги с .24 на .32 экрана за 1,5 с,
+// портал с .94 (.84): отрасли гаснут до 3/35 его пути, диск растёт до 8/35, дыра – с 15/35
+const sceneAt = (width: number) => {
+    const len = width <= 700 ? 1.19 : 1.29;
+    const portalFrom = (width <= 700 ? .84 : .94) / len;
+    return {
+        burst: (sec: number) => (.24 + .32 * sec / 1.5) / len,
+        portal: (k: number) => portalFrom + (1 - portalFrom) * k,
+    };
+};
+const scrollPath = async (page: Page, at: number) => {
+    const path = await scenePath(page);
+    await scrollInstant(page, path.top + path.len * at);
+};
+const sceneEl = (page: Page) => page.locator('section[aria-labelledby="hero-title"]');
+
+for (const viewport of [{ width: 1400, height: 900 }, { width: 375, height: 667 }]) {
+    test.describe(`стоп-кадры сцены, ${viewport.width}px`, () => {
+        test.use({ viewport });
+        const at = sceneAt(viewport.width);
+
+        test('кнопка и цена первого экрана держатся, пока не проступил заголовок', async ({ page }) => {
+            await page.goto('/');
+            await page.waitForTimeout(800);
+            // Фото летит в кружок, надпись слайда уже погасла, волны заголовка ещё нет
+            await scrollPath(page, at.burst(0) * .6);
+            const cta = page.locator('[data-goal-place="hero"]');
+            await expect.poll(() => cta.evaluate(opacityOf)).toBeGreaterThan(.98);
+            await expect(cta).toBeInViewport({ ratio: 1 });
+            await expect.poll(() => page.locator('#hero-title').evaluate(opacityOf)).toBeLessThan(.02);
+            // Заголовок открыт – кнопка погасла
+            await scrollPath(page, at.burst(.8));
+            await expect.poll(() => cta.evaluate(opacityOf)).toBeLessThan(.02);
+            await expect.poll(() => page.locator('#industries-title').evaluate(opacityOf)).toBeGreaterThan(.98);
+        });
+
+        test('капля растекается в чип с подписью: подпись над заливкой', async ({ page }) => {
+            await page.goto('/');
+            await page.waitForTimeout(800);
+            // Первая капля долетела (0,2 + 0,7 с) и растеклась
+            await scrollPath(page, at.burst(1.05));
+            const items = sceneEl(page).getByRole('region', { name: 'Каким может быть сайт для вашего бизнеса' }).getByRole('listitem');
+            await expect.poll(() => items.first().evaluate((li) => {
+                const drop = li.querySelector<HTMLElement>(':scope > span[aria-hidden="true"]')!;
+                return parseFloat(getComputedStyle(drop).opacity);
+            })).toBe(1);
+            const chips = await items.evaluateAll((lis) => {
+                // Цвет фона темы – через пробный элемент
+                const probe = document.createElement('i');
+                probe.style.color = 'var(--color-bg)';
+                document.body.append(probe);
+                const bg = getComputedStyle(probe).color;
+                probe.remove();
+                return lis.map((li) => {
+                    const fill = li.querySelector(':scope > span[aria-hidden="true"]')!.firstElementChild!;
+                    return { same: fill.textContent === li.querySelector('a')!.textContent, fill: getComputedStyle(fill).color, bg };
+                });
+            });
+            for (const chip of chips) {
+                expect(chip.same).toBe(true);
+                // Текст в заливке – цветом фона, как у чипа при наведении
+                expect(chip.fill).toBe(chip.bg);
+            }
+        });
+
+        test('диск растёт, когда отрасли уже погасли; в дыре – кружок «10 проектов»', async ({ page }) => {
+            await page.goto('/');
+            await page.waitForTimeout(800);
+            const screen = sceneScreen(page);
+            const diskRadius = () => screen.evaluate((el) => {
+                const disk = [...el.querySelectorAll<HTMLElement>('div[aria-hidden="true"]')]
+                    .find((d) => d.style.background.includes('radial-gradient'));
+                const m = disk?.style.background.match(/, [^,]+ ([\d.]+)px, transparent/);
+                return m ? parseFloat(m[1]) : 0;
+            });
+            const title = page.locator('#industries-title');
+            const badge = sceneEl(page).locator(':scope > span > span');
+            const mark = () => screen.evaluate((el) => {
+                const b = [...el.querySelectorAll('b')].find((n) => /проект/.test(n.nextElementSibling?.textContent ?? ''))!;
+                let op = 1;
+                for (let n: Element | null = b; n; n = n.parentElement) op *= parseFloat(getComputedStyle(n).opacity);
+                return op;
+            });
+
+            // Середина роста диска: заголовок отраслей уже не виден
+            await scrollPath(page, at.portal(5.5 / 35));
+            await expect.poll(diskRadius).toBeGreaterThan(55);
+            expect(await title.evaluate(opacityOf)).toBeLessThan(.02);
+
+            // Дыра только открылась: знак на диске скрыт, кружок над маской – целиком и непрозрачный
+            await scrollPath(page, at.portal(15 / 35 + .02 * 20 / 35));
+            await expect.poll(() => badge.evaluate(opacityOf)).toBeGreaterThan(.98);
+            expect(await mark()).toBeLessThan(.02);
+            await expect(badge).toBeInViewport({ ratio: 1 });
+
+            // Дыра на полпути: «Лучшие проекты» в ней, кружок погас
+            await scrollPath(page, at.portal(15 / 35 + .5 * 20 / 35));
+            await expect.poll(() => badge.evaluate(opacityOf)).toBeLessThan(.02);
+            await expect(page.locator('#cases-title')).toBeInViewport({ ratio: 1 });
+        });
+    });
+}
+
+// Колода (Д37): год и название крайних карт на месте с начала раздачи, маска строки их не режет
+test('колода: названия карт не под маской в середине раздачи, 1400px', async ({ page }) => {
+    await page.setViewportSize({ width: 1400, height: 900 });
+    await page.goto('/');
+    await page.waitForTimeout(800);
+    const path = await scenePath(page);
+    // Треть пути после портала (распорка – 0,3 экрана): карты ещё едут
+    await scrollInstant(page, path.top + path.len + 900 * .3 * .35);
+    const titles = page.getByRole('region', { name: 'Лучшие проекты' }).getByRole('heading', { level: 3 });
+    await expect.poll(() => titles.evaluateAll((hs) => hs.every((h) => {
+        const mask = h.querySelector('span')!.getBoundingClientRect();
+        const link = h.querySelector('a')!.getBoundingClientRect();
+        return link.top >= mask.top - 1 && link.bottom <= mask.bottom + 1;
+    }))).toBe(true);
+});
 
 // Заявка из чата – кнопкой в шапке окна, с первого открытия, без вопросов модели (DESIGN_FIXES_2_PLAN Д7)
 test('кнопка «Связаться» в шапке чата открывает заявку до вопросов', async ({ page }) => {

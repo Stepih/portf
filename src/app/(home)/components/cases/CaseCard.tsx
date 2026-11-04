@@ -31,7 +31,10 @@ export interface ITiming {
     dealTo: number,
     textFrom: number,
     lineStep: number,
-    lineDur: number
+    lineDur: number,
+    // Год и название на месте с начала раздачи, выезжают только описание и метки:
+    // маска строки не режет заголовок карточки ни в одном кадре (DESIGN_FIXES_7_PLAN Д37)
+    headShown?: boolean
 }
 
 interface IProps {
@@ -119,6 +122,8 @@ const CaseCard: FC<IProps> = ({ work, mobile, shared, stack, timing }) => {
 
     const href = `${portfolioPageURL}/${work.id}`;
     const lineFrom = (n: number) => timing.textFrom + n * timing.lineStep;
+    // Год (строка 0) и название (1): при headShown – уже выехали
+    const headFrom = (n: number) => timing.headShown ? -1 : lineFrom(n);
 
     return (
         <motion.article
@@ -143,10 +148,10 @@ const CaseCard: FC<IProps> = ({ work, mobile, shared, stack, timing }) => {
 
             <div className={w.body}>
                 <div className={w.meta}>
-                    <Rise progress={progress} from={lineFrom(0)} dur={timing.lineDur}>{work.year}</Rise>
+                    <Rise progress={progress} from={headFrom(0)} dur={timing.lineDur}>{work.year}</Rise>
                 </div>
                 <h3 className={`${ralewayBold.className} ${w.title}`}>
-                    <Rise progress={progress} from={lineFrom(1)} dur={timing.lineDur}>
+                    <Rise progress={progress} from={headFrom(1)} dur={timing.lineDur}>
                         {/* Ссылка растянута на всю карточку через ::after */}
                         <PortfolioLink href={href} className={w.link}>{work.name}</PortfolioLink>
                     </Rise>
