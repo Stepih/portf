@@ -92,8 +92,9 @@
         transition: vars.$transition;
     }
 
+    // Две служебные строки под кнопкой читаются одной группой: между ними 6px, меньше, чем от кнопки (12px) (DESIGN_FIXES_7_PLAN Д40)
     .trust {
-        margin-top: 4px;
+        margin-top: -6px;
     }
 
     .part {

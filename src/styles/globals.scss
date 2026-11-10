@@ -9,6 +9,13 @@ html {
   scroll-padding-bottom: 92px;
 }
 
+// «Уменьшить движение»: ссылки-якоря («Перейти к содержимому» и др.) переносят сразу, без плавной прокрутки (DESIGN_FIXES_7_PLAN Д40)
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+}
+
 // Телефон: шар 54px + отступ 16px и вырез экрана
 @media screen and (max-width: 600px) {
   html {

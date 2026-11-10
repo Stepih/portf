@@ -4,6 +4,9 @@
 
 :root {
     /* Light Theme */
+    // То, что рисует браузер (автозаполнение полей, полосы прокрутки Firefox, системные элементы), – в тон теме (DESIGN_FIXES_7_PLAN Д40)
+    color-scheme: light;
+
     --color-bg: #{vars.$white-100};
 
     --color-text-100: #{vars.$black-100};
@@ -29,6 +32,8 @@
 
 [data-theme="dark"] {
     /* Dark Theme */
+    color-scheme: dark;
+
     --color-bg: #{vars.$black-100};
     
     --color-text-100: #{vars.$white-100};

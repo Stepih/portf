@@ -1819,3 +1819,42 @@ test.describe('цели касания 44×44, 375px', () => {
         });
     }
 });
+
+// DESIGN_FIXES_7_PLAN Д40: финальный проход. То, что рисует браузер (автозаполнение, системные полосы), – в тон теме
+for (const theme of ['light', 'dark'] as const) {
+    test(`color-scheme в тон теме, ${theme === 'light' ? 'светлая' : 'тёмная'}`, async ({ page }) => {
+        await page.addInitScript((t) => localStorage.setItem('theme', t), theme);
+        await page.goto('/');
+        expect(await page.evaluate(() => getComputedStyle(document.documentElement).colorScheme)).toBe(theme);
+    });
+}
+
+// Д40: при «уменьшить движение» якоря переносят сразу, без плавной прокрутки
+test.describe('якоря без плавной прокрутки, уменьшить движение', () => {
+    test.use({ reducedMotion: 'reduce' });
+
+    test('scroll-behavior: auto', async ({ page }) => {
+        await page.goto('/');
+        expect(await page.evaluate(() => getComputedStyle(document.documentElement).scrollBehavior)).toBe('auto');
+    });
+});
+
+// Д40: строки под Telegram в контактах – одна группа: между ними меньше, чем от кнопки до первой
+for (const viewport of [{ width: 1400, height: 900 }, { width: 375, height: 812 }]) {
+    test(`контакты: служебные строки под Telegram – одной группой, ${viewport.width}px`, async ({ page }) => {
+        await page.setViewportSize(viewport);
+        await page.goto('/');
+        // Все три блока меряются в одном кадре: страница может ещё прокручиваться
+        const { toNote, toTrust } = await page.locator('#contact').evaluate((root, [tgTitle, notePart, trustText]) => {
+            const box = (el: Element | undefined) => el!.getBoundingClientRect();
+            const tg = box([...root.querySelectorAll('a')].find((a) => a.textContent!.includes(tgTitle)));
+            // Строка из частей-span, на телефоне в две строки – меряем абзац целиком
+            const paragraphs = [...root.querySelectorAll('p')];
+            const note = box(paragraphs.find((p) => p.textContent!.startsWith(notePart)));
+            const trust = box(paragraphs.find((p) => p.textContent === trustText));
+            return { toNote: note.top - tg.bottom, toTrust: trust.top - note.bottom };
+        }, [offerTgButton.title, offerButtonsNote.split(' · ')[0], offerTrustLine()]);
+        expect(toTrust).toBeGreaterThan(0);
+        expect(toTrust).toBeLessThan(toNote);
+    });
+}
