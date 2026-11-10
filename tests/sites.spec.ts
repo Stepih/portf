@@ -2,6 +2,7 @@ import { expect, Page, test } from '@playwright/test';
 import { collectErrors } from './errors';
 import { build, buildUi, casesDeck, columns, faq, head, morePills, payment, projectPath, sections, sitesDetails, terms } from '../src/data/sitesPage';
 import { offerTgButton, services, servicesButton } from '../src/data/offer';
+import { skipToContent } from '../src/data/layout';
 import { contactHref } from '../src/scripts/services';
 import { planFor } from '../src/app/sites/components/window/timeline';
 
@@ -540,16 +541,19 @@ test('/sites: FAQ с клавиатуры – вопрос с фокусом в�
     await expect.poll(() => region.locator('details').last().evaluate(opacityOf)).toBeGreaterThan(.95);
 });
 
-// Первая остановка Tab – не «›» шапки (при фокусе она гаснет): шапку открывает фокус на её ссылках
-test('/sites: первая остановка Tab – видимый элемент шапки, не «Открыть панель»', async ({ page }) => {
+// Первые остановки Tab видны (DESIGN_FIXES_7_PLAN Д39, владелец 10.11.2026): ссылка «к содержимому»,
+// затем «›» шапки – в фокусе она не гаснет и панель не выезжает
+test('/sites: первые остановки Tab – «к содержимому» и видимая «Открыть панель»', async ({ page }) => {
     await page.setViewportSize({ width: 1400, height: 900 });
     await page.goto('/sites');
     await page.waitForTimeout(800);
-    await expect(page.locator('header').getByRole('button', { name: 'Открыть панель' })).toHaveAttribute('tabindex', '-1');
+    await page.keyboard.press('Tab');
+    await expect(page.locator(':focus')).toHaveText(skipToContent);
     await page.keyboard.press('Tab');
     const focused = page.locator(':focus');
-    await expect(focused).not.toHaveAccessibleName('Открыть панель');
+    await expect(focused).toHaveAccessibleName('Открыть панель');
     await page.waitForTimeout(600);
+    await expect(focused).toHaveAttribute('aria-expanded', 'false');
     await expect(focused).toBeInViewport();
     await expect.poll(() => focused.evaluate(opacityOf)).toBeGreaterThan(.95);
 });

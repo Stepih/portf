@@ -5,6 +5,7 @@ import { contactTitle, faqContactLink, industriesOtherQuestion, industryChipCoun
 import { contactIncomplete, formSuccessText, formSuccessTitle, inputsListFeedback } from '../src/data/inputsFeedBack';
 import { chatButtonText, chatButtonTitle, chatFabLabel, chatLeadOpen, chatLeadSuccess } from '../src/data/chat';
 import { footerName, footerSince, footerTg } from '../src/data/footer';
+import { skipToContent } from '../src/data/layout';
 
 // Выбранный чип типа проекта в форме (SALES_PLAN 4.2): услуга из ссылки «Узнать цену»
 const pickedService = (form: Locator) => form.locator('[aria-pressed=true]');
@@ -1668,3 +1669,153 @@ for (const viewport of [{ width: 1400, height: 900 }, { width: 375, height: 740 
         await expect.poll(() => fab.evaluate((el) => Number(getComputedStyle(el).opacity))).toBeGreaterThan(0.95);
     });
 }
+
+// DESIGN_FIXES_7_PLAN Д39: клавиатура и цели касания.
+// Кольцо фокуса – у самого элемента или у карточки, к которой он растянут (`:has(.link:focus-visible)`)
+const ringOf = (el: Element) => {
+    for (let n: Element | null = el; n; n = n.parentElement) {
+        const cs = getComputedStyle(n);
+        if (cs.outlineStyle === 'solid' && cs.outlineWidth === '2px' && cs.boxShadow.includes('rgba(119, 199, 234, 0.7)')) return true;
+        if (n.tagName === 'MAIN') break;
+    }
+    return false;
+};
+
+// Зона касания: сам элемент вместе с ::before / ::after (их ставят, чтобы добрать 44px, не меняя вид)
+const hitBoxOf = (el: Element) => {
+    const r = el.getBoundingClientRect();
+    let [l, t, rr, b] = [r.left, r.top, r.right, r.bottom];
+    for (const pseudo of ['::before', '::after']) {
+        const ps = getComputedStyle(el, pseudo);
+        if (ps.content === 'none' || ps.position !== 'absolute' || ps.pointerEvents === 'none') continue;
+        // Псевдоэлемент отсчитывается от ближайшего позиционированного предка, сам элемент – тоже кандидат
+        let cb: Element | null = el;
+        while (cb && getComputedStyle(cb).position === 'static') cb = cb.parentElement;
+        if (!cb) continue;
+        const cr = cb.getBoundingClientRect(), ccs = getComputedStyle(cb);
+        const m = new DOMMatrix(ps.transform === 'none' ? undefined : ps.transform);
+        const x = cr.left + parseFloat(ccs.borderLeftWidth) + parseFloat(ps.left) + m.e;
+        const y = cr.top + parseFloat(ccs.borderTopWidth) + parseFloat(ps.top) + m.f;
+        [l, t, rr, b] = [Math.min(l, x), Math.min(t, y), Math.max(rr, x + parseFloat(ps.width)), Math.max(b, y + parseFloat(ps.height))];
+    }
+    return { width: rr - l, height: b - t };
+};
+
+// Цели меньше 44×44 внутри root. Строчные ссылки в тексте – исключение WCAG 2.5.8 (решение владельца 10.11.2026)
+const smallTargets = (root: Element) => {
+    const hit = (window as unknown as { hitBoxOf_: (el: Element) => { width: number; height: number } }).hitBoxOf_;
+    const out: string[] = [];
+    for (const el of root.querySelectorAll('a, button, summary, [role=button]')) {
+        const r = el.getBoundingClientRect();
+        const cs = getComputedStyle(el);
+        if (!r.width || !r.height || cs.visibility === 'hidden' || el.closest('[aria-hidden=true], [inert]')) continue;
+        const block = el.parentElement?.closest('p, li, dd, h1, h2, h3, div');
+        if (cs.display === 'inline' && block && block.textContent!.trim().length > el.textContent!.trim().length) continue;
+        const box = hit(el);
+        if (box.width < 43.5 || box.height < 43.5) {
+            out.push(`${(el.getAttribute('aria-label') || el.textContent || '').trim().slice(0, 40)} ${Math.round(box.width)}×${Math.round(box.height)}`);
+        }
+    }
+    return out;
+};
+
+const exposeHitBox = (page: Page) => page.addInitScript(`window.hitBoxOf_ = ${hitBoxOf.toString()}`);
+
+for (const viewport of [{ width: 1400, height: 900 }, { width: 375, height: 812 }]) {
+    test.describe(`клавиатура, ${viewport.width}px`, () => {
+        test.use({ viewport });
+
+        test('первый Tab – видимая ссылка «к содержимому», Enter ведёт к main', async ({ page }) => {
+            await page.goto('/');
+            await page.waitForTimeout(800);
+            await page.keyboard.press('Tab');
+            const skip = page.locator(':focus');
+            await expect(skip).toHaveText(skipToContent);
+            await expect(skip).toHaveAttribute('href', '#main');
+            await expect(skip).toBeInViewport({ ratio: 1 });
+            expect(await skip.evaluate(ringOf)).toBe(true);
+
+            await page.keyboard.press('Enter');
+            await expect(page.locator('main')).toBeFocused();
+            await expect(page).toHaveURL(/#main$/);
+            // Ссылка ушла за край, следующий Tab – уже в странице, мимо шапки
+            await expect(page.getByRole('link', { name: skipToContent })).not.toBeInViewport();
+            await page.keyboard.press('Tab');
+            expect(await page.locator(':focus').evaluate((el) => !!el.closest('main'))).toBe(true);
+        });
+
+        test('у каждого шага Tab – видимое кольцо', async ({ page }) => {
+            await page.goto('/');
+            await page.waitForTimeout(800);
+            for (let i = 0; i < 14; i++) {
+                await page.keyboard.press('Tab');
+                const focused = page.locator(':focus');
+                const name = await focused.evaluate((el) => (el.getAttribute('aria-label') || el.textContent || '').trim().slice(0, 40));
+                expect(await focused.evaluate(ringOf), `кольцо: ${name}`).toBe(true);
+                await expect(focused, `в кадре: ${name}`).toBeInViewport();
+                await expect.poll(() => focused.evaluate(opacityOf), { message: `видно: ${name}` }).toBeGreaterThan(.95);
+            }
+        });
+    });
+}
+
+// «›» шапки – в порядке Tab (владелец, 10.11.2026): в фокусе видна с кольцом, панель закрыта; Enter открывает панель
+// и ставит фокус на переключатель темы; Shift+Tab обратно на «›» панель закрывает
+test.describe('«Открыть панель» с клавиатуры, 1400px', () => {
+    test.use({ viewport: { width: 1400, height: 900 } });
+
+    test('вторая остановка Tab – видимая «›» с кольцом', async ({ page }) => {
+        await page.goto('/');
+        await page.waitForTimeout(800);
+        const header = page.locator('header');
+        const open = header.getByRole('button', { name: 'Открыть панель' });
+        const left = async () => (await header.boundingBox())!.x;
+
+        await page.keyboard.press('Tab');
+        await page.keyboard.press('Tab');
+        await expect(open).toBeFocused();
+        await page.waitForTimeout(400);
+        await expect(open).toHaveAttribute('aria-expanded', 'false');
+        await expect(open).toBeInViewport({ ratio: 1 });
+        expect(await open.evaluate(opacityOf)).toBeGreaterThan(.95);
+        expect(await open.evaluate(ringOf)).toBe(true);
+        expect(await left()).toBeLessThan(-50);
+
+        await page.keyboard.press('Enter');
+        await expect(open).toHaveAttribute('aria-expanded', 'true');
+        await expect(header.getByRole('button', { name: 'Тёмная тема' })).toBeFocused();
+        await expect.poll(left).toBe(0);
+
+        await page.keyboard.press('Shift+Tab');
+        await expect(open).toBeFocused();
+        await expect(open).toHaveAttribute('aria-expanded', 'false');
+        await expect.poll(() => open.evaluate(opacityOf)).toBeGreaterThan(.95);
+        await expect.poll(left).toBeLessThan(-50);
+    });
+});
+
+// Цели касания на телефоне – не меньше 44×44 (кроме строчных ссылок в тексте): зона добирается полями
+// или псевдоэлементом, вид прежний. На главной – вся страница, на остальных – шапка и футер (общие компоненты)
+test.describe('цели касания 44×44, 375px', () => {
+    test.use({ viewport: { width: 375, height: 812 } });
+
+    test('главная', async ({ page }) => {
+        await exposeHitBox(page);
+        await page.goto('/');
+        await page.waitForTimeout(800);
+        expect(await page.locator('body').evaluate(smallTargets)).toEqual([]);
+    });
+
+    for (const path of ['/portfolio', '/portfolio/icc', '/popup', '/music']) {
+        test(`шапка и футер, ${path}`, async ({ page }) => {
+            await exposeHitBox(page);
+            await page.goto(path);
+            await page.waitForTimeout(800);
+            expect(await page.locator('header[data-goal-place="header"]').evaluate(smallTargets)).toEqual([]);
+            expect(await page.locator('footer').evaluate(smallTargets)).toEqual([]);
+            // Ссылка «к содержимому» – первая и на этих страницах
+            await page.keyboard.press('Tab');
+            await expect(page.locator(':focus')).toHaveText(skipToContent);
+        });
+    }
+});

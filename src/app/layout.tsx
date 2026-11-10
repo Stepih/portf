@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 
 import "../styles/globals.scss";
 import s from './layout.module.scss'
-import { ralewayRegular } from "@/app/fonts/fonts";
+import { ralewayBold, ralewayRegular } from "@/app/fonts/fonts";
 
 import BackgroundPage from "@/components/bg-page/Background";
 import Header from "@/components/header/Header";
@@ -11,6 +11,7 @@ import YandexMetrika from "@/components/analytics/YandexMetrika";
 import ChatProvider from "@/app/(home)/components/chat/ChatProvider";
 import { baseOpenGraph } from "@/data/metadata";
 import { offerTgButton } from "@/data/offer";
+import { skipToContent } from "@/data/layout";
 
 
 export const metadata: Metadata = {
@@ -51,10 +52,13 @@ export default function RootLayout({
         <script dangerouslySetInnerHTML={{ __html: themeScript }} />
       </head>
       <body className={`${s.body}`}>
+          {/* Первая остановка Tab: мимо шапки сразу к странице. Видна только в фокусе (DESIGN_FIXES_7_PLAN Д39) */}
+          <a href="#main" className={`${ralewayBold.className} ${s.skip}`}>{skipToContent}</a>
           <BackgroundPage />
           <ChatProvider tgButton={offerTgButton}>
             <Header />
-            <main id="main" className={`${ralewayRegular.className} ${s.main}`}>
+            {/* tabIndex -1: ссылка «к содержимому» переносит в main и фокус, следующий Tab – первая ссылка страницы */}
+            <main id="main" tabIndex={-1} className={`${ralewayRegular.className} ${s.main}`}>
               {children}
             </main>
             <Footer />

@@ -30,27 +30,35 @@
     .headerTouch {
         @include vars.button-reset;
         display: flex;
+        align-items: center;
+        justify-content: center;
 
+        // Капсула 19×44 вокруг стрелки 7px (Д39): кольцу фокуса есть где лечь. Стрелка стоит, где стояла (10px от края
+        // окна), капсула шире на 6px с каждой стороны – кольцо с отступом (4px) ещё целиком в окне
         position: absolute;
         top: 50%;
         left: 120%;
+        width: 19px;
+        height: 44px;
+        margin-left: -6px;
         transform: translate(0, -50%);
 
-        border-radius: 50%;
-        
+        border-radius: 24px;
+
         svg>path {
             stroke: var(--color-text-100);
         }
 
+        // Зона наведения – полоса вдоль левого края, на том же месте, что и до капсулы
         &::after {
             content: "";
             position: absolute;
-            bottom: 0;
-            transform: translateY(50%);
+            top: 50%;
+            transform: translateY(-50%);
             width: 60px;
             height: 100vh;
-            left: -30px;
-            
+            left: -24px;
+
         }
     }
 
@@ -73,6 +81,22 @@
             align-items: center;
 
             gap: 10px;
+
+            // Иконка 28px, цель касания – 44×44 за счёт ::before, вид и место прежние (Д39)
+            >a {
+                position: relative;
+                display: flex;
+
+                &::before {
+                    content: "";
+                    position: absolute;
+                    top: 50%;
+                    left: 50%;
+                    width: 44px;
+                    height: 44px;
+                    transform: translate(-50%, -50%);
+                }
+            }
 
             .contactImg {
                 transition: transform .1s;

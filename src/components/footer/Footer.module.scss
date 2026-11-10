@@ -22,9 +22,18 @@
 
 // Ссылка – цветом основного текста, подчёркнута: видно, что она кликается
 .link {
+    // Строка 20px, цель касания – 44px в высоту за счёт ::before, вид прежний (Д39)
+    position: relative;
+
     color: var(--color-text-100);
     text-underline-offset: 3px;
     transition: vars.$transition;
+
+    &::before {
+        content: "";
+        position: absolute;
+        inset: -12px 0;
+    }
 
     &:hover {
         text-decoration-thickness: 2px;

@@ -86,6 +86,13 @@ $ease: cubic-bezier(.7, 0, .2, 1);
     width: 40px;
     height: 19px;
 
+    // Цель касания 44×44 (Д39): вверх и вниз на 12.5px, вбок на 2px – вплотную к соседней черте, без наложения
+    &::after {
+        content: '';
+        position: absolute;
+        inset: -12.5px -2px;
+    }
+
     &::before,
     .fill {
         content: '';

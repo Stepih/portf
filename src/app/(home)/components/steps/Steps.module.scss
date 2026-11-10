@@ -173,15 +173,15 @@ $free-line: 3px;
 
     // Под шагами – одна текстовая ссылка к форме, по центру, как заголовок (DESIGN_FIXES_3_PLAN Д15)
     .next {
-        margin: 26px 0 0;
+        margin: 24px 0 -2px;
 
         font-size: 1.05rem;
         text-align: center;
 
-        // Ссылка стоит отдельно: поля дают цель касания ≥24px, видимый отступ – прежние 36px
+        // Ссылка стоит отдельно: поля дают цель касания 44px (Д39), видимый отступ – прежние 36px
         .link {
             display: inline-block;
-            padding: 10px 0;
+            padding: 12px 0;
         }
     }
 

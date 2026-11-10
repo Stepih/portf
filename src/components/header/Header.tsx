@@ -20,6 +20,7 @@ const Header:FC = () => {
 
     const [hover, setHover] = useState(false)
     const headerRef = useRef<HTMLElement>(null)
+    const touchRef = useRef<HTMLButtonElement>(null)
     // При «Уменьшить движение» панель и «›» меняются сразу, без выезда
     const reduceMotion = usePrefersReducedMotion()
     const instant = reduceMotion ? { duration: 0 } : undefined
@@ -43,8 +44,8 @@ const Header:FC = () => {
             ref={headerRef}
             onHoverStart={() => setHover(true)} 
             onHoverEnd={()=> setHover(false)}
-            // С клавиатуры шапка выезжает, пока фокус внутри неё
-            onFocus={() => setHover(true)}
+            // С клавиатуры шапка выезжает, пока фокус внутри неё. Кроме «›»: пока фокус на ней, панель закрыта и стрелку видно
+            onFocus={(e) => { if (e.target !== touchRef.current) setHover(true) }}
             onBlur={(e) => { if (!e.currentTarget.contains(e.relatedTarget)) setHover(false) }}
             // Без initial панель после гидрации уезжала из left: 0 на каждой загрузке – теперь стоит там, где её ставит CSS
             initial={false}
@@ -53,15 +54,20 @@ const Header:FC = () => {
             className={s.header}
             data-goal-place="header">
             
-            {/* Кнопка, а не div: на тач-экране шире 1200px шапка открывается касанием. Вне порядка Tab (SERVICES_PLAN
-                У5б, 5в): с клавиатуры шапку открывает фокус на любой её ссылке, а сама «›» при фокусе гаснет – была
-                первой остановкой Tab, почти невидимой */}
+            {/* Кнопка, а не div: на тач-экране шире 1200px шапка открывается касанием. В порядке Tab сразу после ссылки
+                «к содержимому» (владелец, DESIGN_FIXES_7_PLAN Д39): в фокусе панель не выезжает, «›» видна с кольцом.
+                Shift+Tab из панели на «›» панель закрывает, иначе фокус остался бы на погасшей стрелке */}
             <motion.button
+                ref={touchRef}
                 type="button"
-                tabIndex={-1}
                 aria-label="Открыть панель"
                 aria-expanded={open}
-                onClick={() => setHover(true)}
+                onFocus={(e) => { if (e.currentTarget.matches(":focus-visible")) setHover(false) }}
+                onClick={(e) => {
+                    setHover(true)
+                    // Enter или пробел: стрелка гаснет, фокус – на переключатель темы, первый в панели
+                    if (e.detail === 0) headerRef.current?.querySelector<HTMLElement>("button[aria-pressed]")?.focus()
+                }}
                 initial={false}
                 animate={{opacity: !open ? 1 : 0}}
                 transition={instant}
