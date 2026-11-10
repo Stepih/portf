@@ -4,6 +4,16 @@
 
 html {
   scroll-behavior: smooth;
+  // Запас под шар чата в правом нижнем углу (DESIGN_FIXES_7_PLAN Д38): кнопка или вопрос, к которым прокрутили
+  // Tab-ом или scrollIntoView, встают над шаром, а не под ним. Шар 60px + отступ 24px + 8px воздуха
+  scroll-padding-bottom: 92px;
+}
+
+// Телефон: шар 54px + отступ 16px и вырез экрана
+@media screen and (max-width: 600px) {
+  html {
+    scroll-padding-bottom: calc(78px + env(safe-area-inset-bottom));
+  }
 }
 
 

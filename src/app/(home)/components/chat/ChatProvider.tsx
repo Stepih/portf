@@ -24,10 +24,17 @@ import { reachGoal } from "@/scripts/metrika";
 // Где шара нет: на /music внизу плеер, на /popup человек уже заполняет форму
 const FAB_HIDDEN = [musicPageURL, popupPageURL];
 
-const ChatContext = createContext<(() => void) | null>(null);
+// opener – кнопка, которой открыли чат: после закрытия фокус возвращается на неё (DESIGN_FIXES_7_PLAN Д38).
+// Передаётся явно: Safari при клике не фокусирует кнопку, и activeElement там – body
+type OpenChat = (opener?: HTMLElement | null) => void;
+
+const ChatContext = createContext<OpenChat | null>(null);
+
+// Пока форма заявки на экране, шар в углу скрыт: не закрывает поля и кнопку отправки (Д38, решение владельца 10.11.2026)
+const FabHideContext = createContext<((shown: boolean) => void) | null>(null);
 
 // Открыть чат из любого места страницы (кнопка в карточке ИИ-услуги)
-export const useOpenChat = () => {
+export const useOpenChat = (): OpenChat => {
     const open = useContext(ChatContext);
     if (!open) throw new Error('useOpenChat вне ChatProvider');
     return open;
@@ -49,6 +56,24 @@ export const useChatDialog = () => {
     return dialog;
 };
 
+// Callback-ref для формы заявки: пока хоть край формы в окне, шар скрыт. Вне ChatProvider ничего не делает
+export const useHideChatFab = () => {
+    const setFormShown = useContext(FabHideContext);
+    const observer = useRef<IntersectionObserver | null>(null);
+
+    return useCallback((el: HTMLElement | null) => {
+        observer.current?.disconnect();
+        observer.current = null;
+        if (!setFormShown) return;
+        if (!el) {
+            setFormShown(false);
+            return;
+        }
+        observer.current = new IntersectionObserver(([entry]) => setFormShown(entry.isIntersecting));
+        observer.current.observe(el);
+    }, [setFormShown]);
+};
+
 interface IChatProvider {
     tgButton: IOfferButton;
     children: ReactNode;
@@ -58,6 +83,7 @@ const ChatProvider: FC<IChatProvider> = ({ tgButton, children }) => {
     const [open, setOpen] = useState(false);
     const [mounted, setMounted] = useState(false);
     const [inlineShown, setInlineShown] = useState(false);
+    const [formShown, setFormShown] = useState(false);
     const chat = useChat();
     const pathname = usePathname();
     // Куда вернуть фокус после закрытия: шар или кнопка в карточке
@@ -65,23 +91,29 @@ const ChatProvider: FC<IChatProvider> = ({ tgButton, children }) => {
 
     useEffect(() => setMounted(true), []);
 
-    const openChat = useCallback(() => {
-        openerRef.current = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+    const openChat = useCallback<OpenChat>((opener) => {
+        openerRef.current = opener ?? (document.activeElement instanceof HTMLElement ? document.activeElement : null);
         setOpen(true);
         reachGoal(GOALS.chatOpen, { page: window.location.pathname });
     }, []);
 
     const onClose = useCallback(() => {
         setOpen(false);
-        openerRef.current?.focus();
+        // Шар, скрытый за встроенным чатом или формой, фокус не берёт
+        const opener = openerRef.current;
+        if (opener?.isConnected && opener.getAttribute('aria-hidden') !== 'true') opener.focus();
     }, []);
 
     const fabVisible = !FAB_HIDDEN.some((url) => pathname.startsWith(url));
+    // Шар на месте, но погашен: на экране встроенный чат (/ai) или форма заявки. Для Tab и скринридера его тоже нет
+    const fabMuted = inlineShown || formShown;
 
     return (
         <ChatContext.Provider value={openChat}>
             <ChatDialogContext.Provider value={{ chat, tgButton, setInlineShown }}>
-                {children}
+                <FabHideContext.Provider value={setFormShown}>
+                    {children}
+                </FabHideContext.Provider>
             </ChatDialogContext.Provider>
 
             {mounted && createPortal(
@@ -91,16 +123,16 @@ const ChatProvider: FC<IChatProvider> = ({ tgButton, children }) => {
                             <motion.button
                                 type="button"
                                 className={s.fab}
-                                onClick={openChat}
+                                onClick={(e) => openChat(e.currentTarget)}
                                 aria-haspopup="dialog"
-                                // Пока чат на странице, шар в углу гаснет на месте, без сжатия: на странице /ai
+                                // Пока чат или форма на странице, шар в углу гаснет на месте, без сжатия: на странице /ai
                                 // в угол прилетает большой шар страницы и передаёт ему место
-                                aria-hidden={inlineShown || undefined}
-                                tabIndex={inlineShown ? -1 : undefined}
-                                style={{ pointerEvents: inlineShown ? 'none' : undefined }}
+                                aria-hidden={fabMuted || undefined}
+                                tabIndex={fabMuted ? -1 : undefined}
+                                style={{ pointerEvents: fabMuted ? 'none' : undefined }}
                                 initial={{ opacity: 0, scale: 0 }}
                                 // Пока окно открыто, шар прячется под ним
-                                animate={open ? { opacity: 0, scale: 0.5 } : inlineShown ? { opacity: 0, scale: 1 } : { opacity: 1, scale: 1 }}
+                                animate={open ? { opacity: 0, scale: 0.5 } : fabMuted ? { opacity: 0, scale: 1 } : { opacity: 1, scale: 1 }}
                                 exit={{ opacity: 0, scale: 0 }}
                                 transition={{ type: 'spring', stiffness: 260, damping: 18 }}
                             >

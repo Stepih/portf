@@ -21,7 +21,7 @@ const ChatButton: FC<IChatButton> = ({ className }) => {
         <button
             type="button"
             className={`${s.trigger} ${className ?? ''}`}
-            onClick={openChat}
+            onClick={(e) => openChat(e.currentTarget)}
             aria-haspopup="dialog"
         >
             <span className={`${s.orb} ${s.triggerOrb}`} aria-hidden="true">

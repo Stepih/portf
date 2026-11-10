@@ -1,5 +1,5 @@
 import { expect, test, type Page, type Request } from '@playwright/test';
-import { chatButtonTitle, chatFabLabel, chatLeadSuccess, chatLimitText, chatPlaceholder, chatStarters, chatStartersLabel, chatSubtitle, chatTitle } from '../src/data/chat';
+import { chatButtonTitle, chatClose, chatFabLabel, chatLeadSuccess, chatLimitText, chatPlaceholder, chatStarters, chatStartersLabel, chatSubtitle, chatTitle } from '../src/data/chat';
 import { formButton, offerTgButton } from '../src/data/offer';
 import { contactIncomplete } from '../src/data/inputsFeedBack';
 import { hiddenPages, musicPageURL } from '../src/constants/urls';
@@ -242,4 +242,49 @@ test('кнопка демо в карточке ИИ – таблетка со �
         await button.click();
         await expect(page.getByRole('dialog')).toBeVisible();
     }
+});
+
+// DESIGN_FIXES_7_PLAN Д38: открыли чат – фокус в поле вопроса на любой ширине и при reduced-motion
+// (раньше на телефоне он оставался на погашенном шаре); закрыли – фокус на кнопке, которой открывали
+for (const { width, height, reduce } of [
+    { width: 1400, height: 900, reduce: false },
+    { width: 375, height: 740, reduce: false },
+    { width: 375, height: 740, reduce: true },
+    { width: 1400, height: 900, reduce: true },
+]) {
+    test(`фокус чата: в поле после открытия, назад на кнопку после закрытия, ${width}px${reduce ? ', reduced-motion' : ''}`, async ({ page }) => {
+        await mockChat(page);
+        if (reduce) await page.emulateMedia({ reducedMotion: 'reduce' });
+        await page.setViewportSize({ width, height });
+        await page.goto('/');
+        const input = page.getByRole('dialog').getByRole('textbox', { name: chatPlaceholder });
+
+        // Шар: открыть с клавиатуры, закрыть Esc
+        const fab = page.getByRole('button', { name: chatFabLabel });
+        await fab.focus();
+        await page.keyboard.press('Enter');
+        await expect(input).toBeFocused();
+        await page.keyboard.press('Escape');
+        await expect(page.getByRole('dialog')).toHaveCount(0);
+        await expect(fab).toBeFocused();
+
+        // Кнопка в карточке ИИ: открыть кликом, закрыть кнопкой закрытия
+        const button = page.getByRole('button', { name: chatButtonTitle });
+        await button.scrollIntoViewIfNeeded();
+        await button.click();
+        await expect(input).toBeFocused();
+        await page.getByRole('dialog').getByRole('button', { name: chatClose }).click();
+        await expect(page.getByRole('dialog')).toHaveCount(0);
+        await expect(button).toBeFocused();
+    });
+}
+
+test('лимит исчерпан – поля нет, фокус на кнопке закрытия (Д38)', async ({ page }) => {
+    await mockChat(page, { status: 429, json: { error: 'limit', reason: 'budget' } });
+    const dialog = await openChat(page);
+    await dialog.getByRole('button', { name: chatStarters[1] }).click();
+    await expect(dialog.getByText(chatLimitText.budget)).toBeVisible();
+    await page.keyboard.press('Escape');
+    await page.getByRole('button', { name: chatButtonTitle }).click();
+    await expect(page.getByRole('dialog').getByRole('button', { name: chatClose })).toBeFocused();
 });

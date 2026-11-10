@@ -17,6 +17,7 @@ import { ralewayBold } from "@/app/fonts/fonts";
 import { ILeadService, LeadServiceId } from "@/interfaces/offer";
 import { SERVICE_PARAM } from "@/scripts/services";
 import ServiceChoice from "./service-choice/ServiceChoice";
+import { useHideChatFab } from "@/app/(home)/components/chat/ChatProvider";
 
 // Порядок полей на экране: фокус уходит на первое неверное
 const inputsOrder: (keyof IInputKeyValue)[] = ['name', 'contact'];
@@ -48,6 +49,8 @@ const LeadForm: FC<ILeadForm> = ({ className, services }) => {
     const [sentName, setSentName] = useState<string | null>(null);
     const [isSending, setIsSending] = useState(false);
     const successTitleRef = useRef<HTMLHeadingElement>(null);
+    // Пока форма (или плашка после отправки) на экране, шар чата скрыт (DESIGN_FIXES_7_PLAN Д38)
+    const hideFabRef = useHideChatFab();
 
     // Форма исчезает вместе с кнопкой, фокус переносим на заголовок плашки
     useEffect(() => {
@@ -130,7 +133,7 @@ const LeadForm: FC<ILeadForm> = ({ className, services }) => {
     if (sentName !== null) {
         return (
             // В заголовке имя клиента – Вебвизор его тоже не записывает
-            <div className={`${classes} ${s.success} ym-hide-content`} role="status">
+            <div ref={hideFabRef} className={`${classes} ${s.success} ym-hide-content`} role="status">
                 <h3 ref={successTitleRef} tabIndex={-1} className={`${ralewayBold.className} ${s.successTitle}`}>
                     {formSuccessTitle(sentName)}
                 </h3>
@@ -141,7 +144,7 @@ const LeadForm: FC<ILeadForm> = ({ className, services }) => {
 
     return (
         // ym-hide-content: Вебвизор не записывает, что ввели в поля заявки (SALES_PLAN 6.2)
-        <form className={`${classes} ym-hide-content`} onSubmit={onSubmit}>
+        <form ref={hideFabRef} className={`${classes} ym-hide-content`} onSubmit={onSubmit}>
             <ErrorMessage error={error} />
             {services && <ServiceChoice services={services} value={service} onChange={setService} />}
             <ListInput handleSetFocusInput={handleSetFocusInput} value={inputValue} handleSetValue={handleSetInputValue} errors={fieldErrors} inputRefs={inputRefs} />

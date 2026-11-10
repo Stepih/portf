@@ -30,6 +30,7 @@ const ChatWindow: FC<IChatWindow> = ({ chat, tgButton, onClose }) => {
     const titleId = useId();
     const listRef = useRef<HTMLDivElement>(null);
     const inputRef = useRef<HTMLTextAreaElement>(null);
+    const closeRef = useRef<HTMLButtonElement>(null);
     const honeypotRef = useRef<HTMLInputElement>(null);
 
     useBodyScrollLock(true);
@@ -40,9 +41,10 @@ const ChatWindow: FC<IChatWindow> = ({ chat, tgButton, onClose }) => {
         return () => document.removeEventListener('keydown', onKey);
     }, [onClose]);
 
-    // На компьютере сразу в поле вопроса; на телефоне – нет, иначе клавиатура закроет приветствие
+    // Фокус – в поле вопроса на всех ширинах и при reduced-motion (DESIGN_FIXES_7_PLAN Д38): иначе он остаётся
+    // на шаре, который под окном погашен. Поля нет (лимит исчерпан) – на кнопку закрытия
     useEffect(() => {
-        if (window.matchMedia('(pointer: fine)').matches) inputRef.current?.focus();
+        (inputRef.current ?? closeRef.current)?.focus();
     }, []);
 
     // Новая реплика или кусок ответа – прокрутка вниз
@@ -113,7 +115,7 @@ const ChatWindow: FC<IChatWindow> = ({ chat, tgButton, onClose }) => {
                             {chatLeadOpen}
                         </button>
                     )}
-                    <button type="button" className={s.close} onClick={onClose} aria-label={chatClose}>
+                    <button ref={closeRef} type="button" className={s.close} onClick={onClose} aria-label={chatClose}>
                         <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" /></svg>
                     </button>
                 </div>

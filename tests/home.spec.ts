@@ -1609,3 +1609,62 @@ test.describe('шапка-полоса без пелены, 1100px', () => {
         expect((await header.boundingBox())!.x).toBe(0);
     });
 });
+
+// DESIGN_FIXES_7_PLAN Д38: шар чата не закрывает действия. Запас под шар внизу (scroll-padding-bottom):
+// «Узнать цену» у ИИ и «+» вопросов FAQ, к которым прокрутили (Tab или scrollIntoView к низу окна), стоят над шаром.
+// Пока форма заявки на экране, шар погашен, не нажимается и пропадает из Tab и для скринридера
+const fabLocator = (page: Page) => page.locator('body > button[aria-haspopup="dialog"]');
+const overlap = (a: { x: number; y: number; width: number; height: number }, b: { x: number; y: number; width: number; height: number }) =>
+    a.x < b.x + b.width && b.x < a.x + a.width && a.y < b.y + b.height && b.y < a.y + a.height;
+
+for (const viewport of [{ width: 1400, height: 900 }, { width: 375, height: 740 }]) {
+    test(`шар чата не закрывает «Узнать цену» ИИ, «+» FAQ и форму, ${viewport.width}px`, async ({ page }) => {
+        await page.setViewportSize(viewport);
+        await page.goto('/');
+        const fab = fabLocator(page);
+        await expect(fab).toBeVisible();
+
+        const checkClear = async (target: Locator, label: string) => {
+            // Шар погашен (рядом форма) – закрывать нечего
+            if (await fab.getAttribute('aria-hidden') === 'true') return;
+            const [t, f] = [await target.boundingBox(), await fab.boundingBox()];
+            expect(t && f && !overlap(t, f), `${label} под шаром`).toBe(true);
+        };
+
+        // Прокрутка к низу окна – худший случай: цель у нижнего края
+        const aiCard = page.locator('li').filter({ hasText: serviceTitle('ai') }).first();
+        const aiPrice = aiCard.getByRole('link', { name: /^Узнать цену/ });
+        await aiPrice.evaluate((el) => el.scrollIntoView({ block: 'end', behavior: 'instant' }));
+        await checkClear(aiPrice, '«Узнать цену» ИИ');
+
+        const summaries = page.getByRole('region', { name: faqTitle }).locator('summary');
+        const count = await summaries.count();
+        for (let i = 0; i < count; i++) {
+            await summaries.nth(i).evaluate((el) => el.scrollIntoView({ block: 'end', behavior: 'instant' }));
+            await checkClear(summaries.nth(i), `вопрос FAQ ${i + 1}`);
+        }
+
+        // Tab: следующий вопрос чуть ниже окна – браузер докручивает его над шаром
+        await summaries.nth(count - 2).evaluate((el) => {
+            el.scrollIntoView({ block: 'end', behavior: 'instant' });
+            window.scrollBy({ top: -60, behavior: 'instant' });
+        });
+        await summaries.nth(count - 2).focus();
+        await page.keyboard.press('Tab');
+        await expect(summaries.nth(count - 1)).toBeFocused();
+        await page.waitForTimeout(600);
+        await checkClear(summaries.nth(count - 1), 'последний вопрос FAQ после Tab');
+
+        // Форма на экране – шар погашен и выпал из Tab; ушли вверх – вернулся
+        const comment = page.getByRole('region', { name: contactTitle }).getByPlaceholder('Комментарий');
+        await comment.evaluate((el) => el.scrollIntoView({ block: 'end', behavior: 'instant' }));
+        await expect(fab).toHaveAttribute('aria-hidden', 'true');
+        await expect(fab).toHaveAttribute('tabindex', '-1');
+        await expect.poll(() => fab.evaluate((el) => Number(getComputedStyle(el).opacity))).toBeLessThan(0.05);
+        expect(await fab.evaluate((el) => getComputedStyle(el).pointerEvents)).toBe('none');
+
+        await page.evaluate(() => window.scrollTo({ top: 0, behavior: 'instant' }));
+        await expect(fab).not.toHaveAttribute('aria-hidden', 'true');
+        await expect.poll(() => fab.evaluate((el) => Number(getComputedStyle(el).opacity))).toBeGreaterThan(0.95);
+    });
+}
