@@ -1,0 +1,52 @@
+# Общий вход сервера: nginx на 80/443 для всех сайтов, certbot для сертификатов Let's Encrypt
+# и реестр образов, в который deploy.ps1 пушит образы через ssh-туннель.
+# На сервере лежит в /opt/proxy, ставится и обновляется deploy/setup-server.ps1.
+# Сайты – отдельные compose-проекты в /opt/sites/<имя>, nginx видит их по сети web.
+name: proxy
+
+services:
+  nginx:
+    image: nginx:1.29-alpine
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./nginx/proxy_params.conf:/etc/nginx/proxy_params.conf:ro
+      # Собирает conf.d/sites.conf из sites.conf при каждом старте (и по команде reload из cert.sh)
+      - ./nginx/render-sites.sh:/docker-entrypoint.d/40-render-sites.sh:ro
+      - ./sites.conf:/etc/nginx/sites.list:ro
+      - ./certbot/conf:/etc/letsencrypt:ro
+      - ./certbot/www:/var/www/certbot:ro
+    # Собирает сайты (стартовые скрипты образа при своей команде не запускаются) и раз в 6 часов
+    # перечитывает сертификаты, которые обновил certbot
+    command: ["/bin/sh", "-c", "sh /docker-entrypoint.d/40-render-sites.sh && { while :; do sleep 6h; nginx -s reload; done & } && exec nginx -g 'daemon off;'"]
+    networks: [web]
+
+  certbot:
+    image: certbot/certbot:v5.1.0
+    restart: unless-stopped
+    volumes:
+      - ./certbot/conf:/etc/letsencrypt
+      - ./certbot/www:/var/www/certbot
+    # Продлевает сертификаты, которым осталось меньше 30 дней; первый выпуск – cert.sh
+    entrypoint: ["/bin/sh", "-c", "trap exit TERM; while :; do certbot renew --webroot -w /var/www/certbot --quiet; sleep 12h & wait $${!}; done"]
+
+  registry:
+    image: registry:2.8.3
+    restart: unless-stopped
+    # Только localhost сервера: снаружи недоступен, deploy.ps1 ходит через ssh-туннель
+    ports:
+      - "127.0.0.1:5000:5000"
+    environment:
+      REGISTRY_STORAGE_DELETE_ENABLED: "true"
+    volumes:
+      - registry:/var/lib/registry
+
+networks:
+  web:
+    external: true
+
+volumes:
+  registry:

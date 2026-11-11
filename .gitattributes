@@ -1,3 +1,7 @@
 # Лаунчер скилла impeccable – sh-скрипт: с CRLF после checkout на Windows он не запустится
 .claude/skills/impeccable/scripts/impeccable text eol=lf
 .agents/skills/impeccable/scripts/impeccable text eol=lf
+
+# Скрипты деплоя выполняются на Linux-сервере
+*.sh text eol=lf
+deploy/server/** text eol=lf

@@ -27,7 +27,7 @@ npm run dev      # dev-сервер на http://localhost:3000
 
 Не запускайте `npm run build`, пока работает `npm run dev`: оба пишут в `.next`, и сборка ломает dev-сервер.
 
-Прод работает в Docker. Dockerfile и конфиг деплоя лежат вне репозитория.
+Docker: [Dockerfile](Dockerfile), деплой на свой сервер – [deploy/README.md](deploy/README.md).
 
 ## Переменные окружения
 

@@ -1,0 +1,17 @@
+# showmyworks.ru на сервере: /opt/sites/portfolio/compose.yml, секреты – /opt/sites/portfolio/.env
+# Образ собирает и пушит deploy.ps1, поднимает /opt/proxy/site-up.sh portfolio
+name: portfolio
+
+services:
+  app:
+    image: 127.0.0.1:5000/portfolio:latest
+    restart: unless-stopped
+    env_file: .env
+    mem_limit: 512m
+    networks:
+      web:
+        aliases: [portfolio]
+
+networks:
+  web:
+    external: true

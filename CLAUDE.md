@@ -25,7 +25,7 @@ Next.js 15 (App Router), React 19, TypeScript `strict`, SCSS Modules, `framer-mo
 - При работающем `next dev` не запускай `next build` и `test:e2e`: оба пишут в `.next` и ломают dev. Сборку для e2e поднимай на :3003 из отдельной копии.
 
 ## Деплой
-Vercel (с 22.10.2026); Dockerfile – вне репозитория. ФС чувствительна к регистру: пути в импортах – буква в букву. Env – в настройках Vercel, список – `.env.example`.
+Прод пока на Vercel (с 22.10.2026); готов переезд на свой сервер (Hetzner, 2.31.105.139): `Dockerfile`, `deploy/` – nginx на два сайта (showmyworks + money), деплой `deploy/deploy.ps1`, подробно – `deploy/README.md`. Образ собирается на Windows (на сервере 1 ГБ RAM). ФС чувствительна к регистру: пути в импортах – буква в букву. Env – в Vercel и в `/opt/sites/portfolio/.env` на сервере, список – `.env.example`.
 
 ## Соглашения
 - Компонент – папка `Name.tsx` + `Name.module.scss`, стили как `s`; `const Name: FC<Props> = …` и `export default Name`; пропсы рядом, общие типы – `src/interfaces` (префикс `I`). Алиас `@/*` → `src/*`.

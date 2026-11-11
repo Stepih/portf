@@ -1,0 +1,87 @@
+# money (союз музыкантов) на сервере: /opt/sites/money/compose.yml, секреты – /opt/sites/money/.env
+# Отличия от демо-стека из репозитория money: nginx общий (/opt/proxy), сайт – https://${DOMAIN},
+# Strapi – https://cms.${DOMAIN}; образы собирает deploy.ps1 -Site money у владельца и пушит в реестр сервера.
+# MailDev наружу не открыт: http://localhost:1080 через «ssh -L 1080:127.0.0.1:1080 root@<сервер>».
+name: money
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_NAME}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER}"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+
+  maildev:
+    image: maildev/maildev:2.2.1
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:1080:1080"
+
+  strapi:
+    image: 127.0.0.1:5000/money-strapi:latest
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      NODE_ENV: production
+      HOST: 0.0.0.0
+      DATABASE_CLIENT: postgres
+      DATABASE_HOST: postgres
+      DATABASE_PORT: 5432
+      DATABASE_NAME: ${DB_NAME}
+      DATABASE_USERNAME: ${DB_USER}
+      DATABASE_PASSWORD: ${DB_PASSWORD}
+      DATABASE_SSL: "false"
+      PUBLIC_URL: https://cms.${DOMAIN}
+      SITE_URL: https://${DOMAIN}
+      CORS_ORIGINS: https://${DOMAIN},https://www.${DOMAIN}
+      SMTP_HOST: ${SMTP_HOST:-maildev}
+      SMTP_PORT: ${SMTP_PORT:-1025}
+      DEFAULT_FROM_EMAIL: ${DEFAULT_FROM_EMAIL:-no-reply@${DOMAIN}}
+      DEFAULT_REPLY_TO: ${DEFAULT_REPLY_TO:-no-reply@${DOMAIN}}
+      NEXT_APP_URL: http://nextjs:3000
+    depends_on:
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:1337/_health').then(r=>process.exit(r.status<400?0:1)).catch(()=>process.exit(1))"]
+      interval: 15s
+      timeout: 5s
+      start_period: 120s
+      retries: 5
+    networks:
+      default: {}
+      web:
+        aliases: [money-strapi]
+
+  nextjs:
+    image: 127.0.0.1:5000/money-next:latest
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      HOSTNAME: 0.0.0.0
+      STRAPI_APP_URL: http://strapi:1337
+      REVALIDATE_SECRET: ${REVALIDATE_SECRET:-}
+      # Пока нет сертификата (сайт по HTTP), вход не сохранит cookie – поставьте "true" в .env, после HTTPS уберите
+      SESSION_COOKIE_INSECURE: ${SESSION_COOKIE_INSECURE:-false}
+    depends_on:
+      - strapi
+    networks:
+      default: {}
+      web:
+        aliases: [money-next]
+
+volumes:
+  postgres_data:
+
+networks:
+  web:
+    external: true
