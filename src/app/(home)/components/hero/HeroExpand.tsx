@@ -3,18 +3,19 @@
 import { CSSProperties, FC, FocusEvent, ReactNode, useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { cubicBezier, easeIn, easeInOut, easeOut, motion, MotionValue, useMotionValue, useMotionValueEvent, useScroll, useSpring, useTransform } from "framer-motion";
+import { cubicBezier, easeInOut, easeOut, motion, MotionValue, useMotionValue, useMotionValueEvent, useScroll, useSpring, useTransform } from "framer-motion";
 
 import photo from '@/assets/_img/rectangles/title-page/i.png'
 
 import s from './HeroExpand.module.scss'
 import HeroSlides from "./HeroSlides";
 import { SceneAfterContext } from "./sceneAfter";
+import { burstLength, chipDelay, chipPeak, CHIP_UP, CLEAR_LIFT, DESKTOP_DEFAULT, DRAIN, FILLED, FLIGHT, ISceneTiming, LIFT, OTHER_FROM, OTHER_RISE, PHONE_DEFAULT, sameTiming, sceneTiming, SPREAD, WAVE } from "./timing";
+import { drop, move } from "@/app/ai/components/speed";
 import { ralewayBold, ralewayRegular } from "@/app/fonts/fonts";
 import { portfolioPageURL } from "@/constants/urls";
 import ContactLink from "../contact-link/ContactLink";
 import { formButton, heroInterval, heroPrice, heroPriceNote, heroSlides, heroTitleSlide, industriesDescription, industriesOther, industriesOtherQuestion, industriesTitle, industryChipCount } from "@/data/offer";
-import { useMediaQuery } from "@/hooks/useMediaQuery";
 import { usePrefersReducedMotion } from "@/hooks/usePrefersReducedMotion";
 import { IIndustryChip } from "@/interfaces/portfolio";
 import { withIndustry } from "@/scripts/portfolioIndustry";
@@ -29,59 +30,9 @@ interface HeroExpandProps {
     children?: ReactNode
 }
 
-// Путь портала в экранах: отрасли гаснут, и опорой кадра остаётся знак «10 проектов» (PORTAL_CLEAR), потом диск растёт
-// из кружка вместе со знаком (PORTAL_GROW), стоит с ним (PORTAL_HOLD), и в нём открывается дыра до краёв экрана (PORTAL_OPEN).
-// Рост и дыра вдвое короче, чем были (.1 и .3): кружок поверх заголовка и чёрное кольцо – недорисованные кадры,
-// на них не должно получаться остановиться; путь отдан стоянию диска и чипам (DESIGN_FIXES_6_PLAN Д30, выбор владельца).
-// Отрасли гаснут до роста диска, а не под ним: диск не закрывает заголовок, пока тот читается
-// (DESIGN_FIXES_7_PLAN Д37, выбор владельца); место взято из стояния, длина портала прежняя
-const PORTAL_CLEAR = .03;
-const PORTAL_GROW = .05;
-const PORTAL_HOLD = .07;
-const PORTAL_OPEN = .2;
-const PORTAL_PATH = PORTAL_CLEAR + PORTAL_GROW + PORTAL_HOLD + PORTAL_OPEN;
-
-// Точки сцены в экранах прокрутки: раскрытие, брызги отраслей (с SHOW_AT, путь BURST_PATH),
-// чипы стоят CHIPS_HOLD, чтобы по ним успели кликнуть, потом портал.
-// Волна заголовка начинается внахлёст с концом полёта фото, а не после него: иначе экран стоит пустым
-// с одним кружком (DESIGN_FIXES_2_PLAN, Д9)
-const EXPAND_FROM = .024;
-const EXPAND_TO = .36;
-const SHOW_AT = .24;
-// Брызги короче вместе со своей длительностью (было .4 на 1,85 с – тот же путь на секунду брызг);
-// чипы стоят дольше на этот хвост и на сжатый портал: длина сцены прежняя (Д30)
-const BURST_PATH = .32;
-const CHIPS_HOLD = .33;
-// Запас после брызг до чипов на месте
-const BURST_TAIL = .05;
-
-// Во сколько раз длиннее путь сцены: доводки нет, этапы проходятся только скроллом (доводку владелец отклонил, Д30).
-// Раскрытие ~0,35 экрана, брызги ~0,32, чипы ~0,33, портал ~0,35 (DESIGN_FIXES_PLAN, Д1: цены не дальше ~2,5 экрана)
-const PACE = 1;
-// Путь после портала, в экранах: кейсы ещё прилипают, скролл раздаёт их из колоды (SceneAfterContext)
-const AFTER = .3;
-
-// Телефон (≤700px): кейсы в столбик длиннее экрана, и до цен далеко.
-// Чипы стоят меньше, а вся сцена проходится быстрее (DESIGN_FIXES_2_PLAN, Д7). Ширина – та же, что в @media стилей .scene и .nextTrack
-const PHONE_QUERY = '(max-width: 700px)';
-const PHONE_CHIPS_HOLD = .23;
-const PHONE_PACE = .75;
-
-// Точки сцены в долях её прокрутки и длина сцены в экранах
-const timing = (chipsHold: number) => {
-    const portalFrom = SHOW_AT + BURST_TAIL + BURST_PATH + chipsHold;
-    const length = portalFrom + PORTAL_PATH;
-    return {
-        length,
-        expandFrom: EXPAND_FROM / length,
-        expandTo: EXPAND_TO / length,
-        burstFrom: SHOW_AT / length,
-        burstTo: (SHOW_AT + BURST_PATH) / length,
-        portalFrom: portalFrom / length,
-    };
-};
-const DESKTOP_TIMING = timing(CHIPS_HOLD);
-const PHONE_TIMING = timing(PHONE_CHIPS_HOLD);
+// Время сцены – timing.ts: окна движений от их путей, скорость как у сцен /sites и /ai (владелец 11.11.2026).
+// Доводки нет, этапы проходятся только скроллом (Д30). Телефон – до 700px, как @media стилей .scene и .nextTrack
+const PHONE_QUERY = "(max-width: 700px)";
 
 // Сглаживание прогресса: щелчки колеса мыши не дёргают анимацию. Без перелёта, догоняет за ~0,3 с
 const SMOOTH = { stiffness: 170, damping: 30, restDelta: .0001 };
@@ -90,12 +41,15 @@ const SMOOTH = { stiffness: 170, damping: 30, restDelta: .0001 };
 // уже на весь экран, при любой скорости. Колесо и тачпад отстают на 100–300px – потолок не срабатывает (DESIGN_FIXES_6_PLAN С3)
 const LAG_CAP = .8;
 
-const ease = cubicBezier(.4, 0, .2, 1);
 const clamp01 = (v: number) => Math.min(1, Math.max(0, v));
 
 // Отступ края фона: от отступа карточки при t = 0 до нуля при t = 1
 const useInset = (t: MotionValue<number>, edge: MotionValue<number>) =>
     useTransform([t, edge], ([p, e]: number[]) => e * (1 - p));
+
+// Кадр от значений и времени сцены: пересчитывается и при скролле, и когда замер меняет время
+const useTimed = <T,>(tmv: MotionValue<ISceneTiming>, inputs: MotionValue<number>[], fn: (v: number[], tm: ISceneTiming) => T) =>
+    useTransform([...inputs, tmv] as MotionValue[], (all) => fn(all.slice(0, -1) as number[], all[all.length - 1] as ISceneTiming));
 
 // Сдвиг или масштаб фото: от 0 (или 1) при t = 0 до цели при t = 1
 const useToward = (t: MotionValue<number>, target: MotionValue<number>, from = 0) =>
@@ -118,36 +72,19 @@ const offsetIn = (el: HTMLElement, root: HTMLElement) => {
 type PortalState = 'off' | 'on' | 'open';
 
 // ---------- Брызги из круга, по скроллу ----------
-// Таймлайн в секундах, но время берётся из скролла: весь путь брызг (BURST_PATH) – вся их длительность.
+// Таймлайн в секундах, но время берётся из скролла: весь путь брызг (timing.ts) – вся их длительность.
 // Скролл назад проигрывает их в обратную сторону теми же кадрами
 
 // Капля летит FLIGHT, растекается в залитый чип SPREAD, стоит залитой FILLED и стекает слева направо за DRAIN;
-// волна от кружка идёт WAVE, с. Растекание и волна вдвое короче, чем были (.35 и .9): обрезанный волной заголовок –
-// недорисованный кадр (DESIGN_FIXES_6_PLAN Д30).
+// волна от кружка идёт WAVE, с (timing.ts). Путь брызг в экранах – от путей капель и волны: в среднем они не быстрее
+// сцен /sites и /ai (владелец 11.11.2026); волна длиннее, чем была (.45 с), чтобы не обгонять капли.
 // Подпись чипа – над каплей (DESIGN_FIXES_7_PLAN Д37, выбор владельца): в капле её копия цветом фона, как у чипа
 // при наведении, под каплей – обычная. Где заливка, текст светлый, где её уже нет – тёмный: чёрной пилюли без подписи нет ни в одном кадре
-const FLIGHT = .7;
-const SPREAD = .15;
-const FILLED = .05;
-const DRAIN = .2;
-const WAVE = .45;
 // Кнопка и цена первого экрана держатся, пока волна не открыла заголовок, и гаснут до того, как лягут капли (Д37)
-const CTA_OUT_FROM = .45;
-const CTA_OUT_TO = .7;
-// Строка «Другая сфера?» поднимается, когда долетела последняя капля: OTHER_FROM после её полёта, за OTHER_RISE, с
-const OTHER_FROM = 0;
-const OTHER_RISE = .4;
-// Размер капли в полёте и подъём дуги над стартом, px
+const CTA_OUT_FROM = .5;
+const CTA_OUT_TO = .75;
+// Размер капли в полёте, px
 const DROP = 12;
-const LIFT = 48;
-// Капли вылетают по очереди
-const chipDelay = (i: number) => .2 + i * .04;
-
-// Длительность брызг, с: до конца последней капли и строки «Другая сфера?»
-const burstLength = (count: number) => {
-    const last = chipDelay(Math.max(0, count - 1));
-    return last + FLIGHT + Math.max(SPREAD + FILLED + DRAIN, OTHER_FROM + OTHER_RISE);
-};
 
 // Чип относительно кружка: сдвиг от места чипа до центра кружка и размер чипа
 interface ChipGeom { i: number, dx: number, dy: number, w: number, h: number }
@@ -162,7 +99,8 @@ const dot = ({ w, h }: ChipGeom) => `inset(${(h - DROP) / 2}px ${(w - DROP) / 2}
 
 const flyEase = cubicBezier(.3, .5, .5, 1);
 const spreadEase = cubicBezier(.2, .9, .3, 1);
-const waveEase = cubicBezier(.2, .6, .3, 1);
+// Волна: наклон на старте 1,5 (WAVE_SLOPE в timing.ts – менять вместе), а не 3 – без рывка в первом кадре
+const waveEase = cubicBezier(.3, .45, .4, 1);
 const riseEase = cubicBezier(.2, .8, .2, 1);
 // Доля отрезка [from, from + dur] к моменту time
 const span = (time: number, from: number, dur: number) => clamp01((time - from) / dur);
@@ -197,7 +135,8 @@ const chipFrame = (time: number, g: ChipGeom) => {
     const drain = easeInOut(span(time, spreadFrom + SPREAD + FILLED, DRAIN));
     return {
         x: g.dx * (1 - flyEase(f)),
-        y: f < .4 ? g.dy - LIFT * easeOut(f / .4) : (g.dy - LIFT) * (1 - easeIn((f - .4) / .6)),
+        // Падение – кривой drop, как у падающей линии /ai: разгон и ровно до удара, без разгона в самой посадке
+        y: f < CHIP_UP ? g.dy - LIFT * easeOut(f / CHIP_UP) : (g.dy - LIFT) * (1 - drop((f - CHIP_UP) / (1 - CHIP_UP))),
         clip: drain > 0
             ? `inset(0px 0px 0px ${g.w * drain}px round 24px)`
             : `inset(${(g.h - DROP) / 2 * (1 - spread)}px ${(g.w - DROP) / 2 * (1 - spread)}px round 24px)`,
@@ -249,16 +188,12 @@ const ScrubChip: FC<ScrubChipProps> = ({ time, geom, itemRef, fill, children }) 
 
 // ---------- Круг-портал ----------
 
-// Доли пути портала: к CLEAR_TO отрасли погасли и диск начинает расти, к DISK_TO дорос, на OPEN_AT в нём открывается дыра;
-// между ними он стоит с надписью
-const CLEAR_TO = PORTAL_CLEAR / PORTAL_PATH;
-const DISK_TO = (PORTAL_CLEAR + PORTAL_GROW) / PORTAL_PATH;
-const OPEN_AT = (PORTAL_CLEAR + PORTAL_GROW + PORTAL_HOLD) / PORTAL_PATH;
-// Рост диска за путь CLEAR_TO–DISK_TO
-const diskGrow = (v: number) => ease(clamp01((v - CLEAR_TO) / (DISK_TO - CLEAR_TO)));
-// Ход дыры: быстрый старт – знак уходит в дыру, и в ней почти сразу видны «Лучшие проекты» (Д37). Кадры те же, что раньше
-// (кольцо гаснет таким же толстым), меняется только их скорость на пути
-const holeEase = (v: number) => 1 - Math.pow(1 - clamp01((v - OPEN_AT) / (1 - OPEN_AT)), 4);
+// Доли пути портала (timing.ts): к clearTo отрасли погасли и диск начинает расти, к diskTo дорос, на openAt в нём
+// открывается дыра; между ними он стоит с надписью. Рост диска – кривой move (speed.ts), как движения /sites и /ai
+const diskGrow = (v: number, tm: ISceneTiming) => move((v - tm.clearTo) / (tm.diskTo - tm.clearTo));
+// Ход дыры – тоже move: радиус дыры растёт с постоянной скоростью (SPEED) от нуля до дальнего угла экрана.
+// Раньше старт был резким (1 − (1 − k)⁴, до ~18 px/px на 1400×900) – владелец 11.11.2026: «резко расширяется, неприятно»
+const holeEase = (v: number, tm: ISceneTiming) => move((v - tm.openAt) / (1 - tm.openAt));
 // Диск до открытия дыры: радиус, px, но не больше доли ширины экрана
 const DISK = 150;
 const DISK_SHARE = .3;
@@ -285,7 +220,18 @@ const RING_FADE_TO = .5;
 // Чип ведёт на /portfolio?for=<id>, отрасли без работ не показываются
 const HeroExpand: FC<HeroExpandProps> = ({ chips, worksCount, children }) => {
     const reduceMotion = usePrefersReducedMotion();
-    const tm = useMediaQuery(PHONE_QUERY) ? PHONE_TIMING : DESKTOP_TIMING;
+    // Время сцены: до замера – по типичному экрану, после – по путям на этом экране (timing.ts).
+    // В состоянии – для высоты сцены, в tmv – для кадров: useTransform пересчитывает кадр, когда меняется время
+    // До замера длина сцены – из CSS по ширине (типичный компьютер или телефон): высота страницы не прыгает после загрузки
+    const [tm, setTm] = useState(DESKTOP_DEFAULT);
+    const [measured, setMeasured] = useState(false);
+    const tmv = useMotionValue(tm);
+    const applyTiming = useCallback((next: ISceneTiming) => {
+        setMeasured(true);
+        if (sameTiming(next, tmv.get())) return;
+        tmv.set(next);
+        setTm(next);
+    }, [tmv]);
 
     const scene = useRef<HTMLElement>(null);
     const path = useRef<HTMLDivElement>(null);
@@ -332,7 +278,8 @@ const HeroExpand: FC<HeroExpandProps> = ({ chips, worksCount, children }) => {
         scrollYProgress.jump(v < lo ? lo : hi);
         scrollYProgress.set(clamp01(p));
     });
-    const t = useTransform(scrollYProgress, [tm.expandFrom, tm.expandTo], [0, 1], { ease, clamp: true });
+    // Раскрытие: фон до краёв, фото в кружок – кривой move, как движения /sites и /ai
+    const t = useTimed(tmv, [scrollYProgress], ([p], m) => move((p - m.expandFrom) / (m.expandTo - m.expandFrom)));
 
     // Отступы карточки от краёв липкого экрана, меряются при загрузке и ресайзе
     const top = useMotionValue(0);
@@ -429,14 +376,36 @@ const HeroExpand: FC<HeroExpandProps> = ({ chips, worksCount, children }) => {
                     h: el.offsetHeight,
                 };
             }));
+
+            // Время сцены – от путей на этом экране (timing.ts)
+            const chipOffsets = chipEls.current.map((el) => {
+                if (!el) return [0, 0];
+                const ch = offsetIn(el, r);
+                return [sx - ch.x - el.offsetWidth / 2, sy - ch.y - el.offsetHeight / 2];
+            });
+            const phoneNow = window.matchMedia(PHONE_QUERY).matches;
+            applyTiming(sceneTiming({
+                h: box.height,
+                phone: phoneNow,
+                chips: chipEls.current.length,
+                photo: Math.hypot(photoDx.get(), photoDy.get()),
+                inset: Math.max(top.get(), right.get(), bottom.get(), left.get()),
+                chip: Math.max(0, ...chipOffsets.map(([dx, dy]) => Math.hypot(dx, dy))),
+                chipPeak: Math.max(0, ...chipOffsets.map(([dx, dy]) => chipPeak(dx, dy))),
+                wave: Math.hypot(Math.max(lx, lead.current.offsetWidth - lx), lead.current.offsetHeight - ly),
+                grow: Math.max(dm - target.width / 2, Math.abs(dy)),
+                open: rMax.get(),
+                // Крайняя карта колоды едет на ширину колонки (три в ряд); на телефоне раздачи от сцены нет
+                deal: phoneNow || !nextEl.current ? 0 : nextEl.current.offsetWidth / 3,
+            }));
         };
         measure();
         document.fonts?.ready.then(measure);
         const observer = new ResizeObserver(measure);
-        [scene.current, path.current, screen.current, card.current, photoBox.current, slot.current, root.current, lead.current]
+        [scene.current, path.current, screen.current, card.current, photoBox.current, slot.current, root.current, lead.current, nextEl.current]
             .forEach((el) => el && observer.observe(el));
         return () => observer.disconnect();
-    }, [reduceMotion, sceneTop, sceneLen, lagCap, top, right, bottom, left, photoDx, photoDy, photoScale, cx, cy, r0, diskMax, diskDy, rMax]);
+    }, [reduceMotion, sceneTop, sceneLen, lagCap, top, right, bottom, left, photoDx, photoDy, photoScale, cx, cy, r0, diskMax, diskDy, rMax, applyTiming]);
 
     // Тач-экран: экран сцены не ниже наибольшего innerHeight при этой ширине окна (--screen-max-h в стилях).
     // Только растёт – панели браузера сворачиваются и разворачиваются на скролле; при смене ширины (поворот) – заново.
@@ -460,7 +429,7 @@ const HeroExpand: FC<HeroExpandProps> = ({ chips, worksCount, children }) => {
     }, [reduceMotion]);
 
     // Доля пути портала
-    const q = useTransform(scrollYProgress, (p) => clamp01((p - tm.portalFrom) / (1 - tm.portalFrom)));
+    const q = useTimed(tmv, [scrollYProgress], ([p], m) => clamp01((p - m.portalFrom) / (1 - m.portalFrom)));
 
     // На подлёте к кружку фото перетекает в знак: фото гаснет, знак проявляется и дорастает до размера.
     // В портале знак с надписью растёт вместе с диском и гаснет, когда в диске открывается дыра
@@ -470,39 +439,36 @@ const HeroExpand: FC<HeroExpandProps> = ({ chips, worksCount, children }) => {
 
     // Надпись и подпись слайда гаснут сразу – на их месте проступит заголовок сцены. Кнопка и цена держатся,
     // пока заголовок не открылся (CTA_OUT_*, ниже): в кадре всегда есть что прочитать (DESIGN_FIXES_7_PLAN Д37, выбор владельца)
-    const slidesOpacity = useTransform(scrollYProgress, [tm.expandFrom, tm.expandFrom + .1], [1, 0]);
-    const slidesY = useTransform(scrollYProgress, [tm.expandFrom, tm.expandTo], [0, -60]);
+    const slidesOpacity = useTimed(tmv, [scrollYProgress], ([p], m) => 1 - clamp01((p - m.expandFrom) / (m.slidesOut - m.expandFrom)));
+    const slidesY = useTimed(tmv, [scrollYProgress], ([p], m) => -60 * clamp01((p - m.expandFrom) / (m.expandTo - m.expandFrom)));
 
     // Отрасли втягиваются к кружку и гаснут до того, как он начнёт расти
-    const contentOpacity = useTransform(q, [0, CLEAR_TO], [1, 0]);
-    const contentScale = useTransform(q, [0, CLEAR_TO], [1, .9]);
-    const contentY = useTransform(q, [0, CLEAR_TO], [0, -24]);
+    const cleared = useTimed(tmv, [q], ([v], m) => clamp01(v / m.clearTo));
+    const contentOpacity = useTransform(cleared, [0, 1], [1, 0]);
+    const contentScale = useTransform(cleared, [0, 1], [1, .9]);
+    const contentY = useTransform(cleared, [0, 1], [0, -CLEAR_LIFT]);
 
-    // Диск растёт из кружка до DISK, стоит с надписью до OPEN_AT, потом в нём открывается дыра. Дыра догоняет край диска,
-    // и оба уходят за дальний угол экрана: кольцо между ними тоньшает до нуля
-    const disk = useTransform([q, r0, diskMax, rMax], ([v, r, dm, rm]: number[]) => {
-        if (v < OPEN_AT) return r + (dm - r) * diskGrow(v);
-        const u = holeEase(v);
-        return dm + (rm - dm) * u * u;
+    // Диск растёт из кружка до DISK, стоит с надписью до openAt, потом в нём открывается дыра. Радиус дыры растёт
+    // с постоянной скоростью до дальнего угла экрана, диск – впереди неё на кольцо, которое тоньшает до нуля
+    const disk = useTimed(tmv, [q, r0, diskMax, rMax], ([v, r, dm, rm], m) => {
+        if (v < m.openAt) return r + (dm - r) * diskGrow(v, m);
+        const u = holeEase(v, m);
+        return rm * u + dm * (1 - u) * (1 - u);
     });
     // Сдвиг центра внутрь экрана идёт вместе с ростом диска, дальше стоит: край диска не заходит за запас ни в одном кадре
-    const diskY = useTransform([q, diskDy], ([v, dy]: number[]) => dy * diskGrow(v));
+    const diskY = useTimed(tmv, [q, diskDy], ([v, dy], m) => dy * diskGrow(v, m));
     const diskCy = useTransform([cy, diskY], ([y, d]: number[]) => y + d);
     // Знак «10 работ» растёт вместе с диском до его размера перед дырой: круг, число и подпись – одним целым
     const markScale = useTransform([markScaleIn, q, r0, disk, diskMax], ([a, v, r, d, dm]: number[]) =>
         a * (v > 0 && r > 0 ? Math.min(d, dm) / r : 1));
-    const hole = useTransform([q, diskMax, disk], ([v, dm, d]: number[]) => {
-        if (v <= OPEN_AT) return 0;
-        const u = holeEase(v);
-        return d - dm * (1 - u) * (1 - u);
-    });
+    const hole = useTimed(tmv, [q, rMax], ([v, rm], m) => v <= m.openAt ? 0 : rm * holeEase(v, m));
     const markOut = useTransform([hole, diskMax], ([h, dm]: number[]): number => h < dm * MARK_GONE ? 1 : 0);
     const markOpacity = useTransform([markIn, markOut], ([a, b]: number[]) => a * b);
     const diskBg = useTransform([q, cx, diskCy, disk], ([v, x, y, d]: number[]) => v <= 0
-        ? 'none'
+        ? "none"
         : `radial-gradient(circle at ${x}px ${y}px, var(--color-text-100) ${d}px, transparent ${d + 1}px)`);
-    const ringOpacity = useTransform(q, (v) =>
-        1 - clamp01((holeEase(v) - RING_FADE_FROM) / (RING_FADE_TO - RING_FADE_FROM)));
+    const ringOpacity = useTimed(tmv, [q], ([v], m) =>
+        1 - clamp01((holeEase(v, m) - RING_FADE_FROM) / (RING_FADE_TO - RING_FADE_FROM)));
     const holeMask = useTransform([hole, cx, diskCy], ([h, x, y]: number[]) => h <= 0
         ? 'none'
         : `radial-gradient(circle at ${x}px ${y}px, transparent ${h}px, #000 ${h + 1}px)`);
@@ -549,7 +515,10 @@ const HeroExpand: FC<HeroExpandProps> = ({ chips, worksCount, children }) => {
 
     // Брызги: время их таймлайна, с, и кадр волны, кружка и строки «Другая сфера?»
     const burstTotal = burstLength(chips.length);
-    const burstTime = useTransform(scrollYProgress, (p) => clamp01((p - tm.burstFrom) / (tm.burstTo - tm.burstFrom)) * burstTotal);
+    // До посадки последней капли – скоростью капель, после – коротким хвостом (timing.ts, TAIL_MAX)
+    const burstTime = useTimed(tmv, [scrollYProgress], ([p], m) => p < m.landAt
+        ? clamp01((p - m.burstFrom) / (m.landAt - m.burstFrom)) * m.landSec
+        : m.landSec + clamp01((p - m.landAt) / (m.burstTo - m.landAt)) * (burstTotal - m.landSec));
     const ctaOpacity = useTransform(burstTime, [CTA_OUT_FROM, CTA_OUT_TO], [1, 0]);
     const [burstShown, setBurstShown] = useState(false);
     const leadClip = useMotionValue('none');
@@ -724,10 +693,13 @@ const HeroExpand: FC<HeroExpandProps> = ({ chips, worksCount, children }) => {
                 ref={scene}
                 className={s.scene}
                 style={{
-                    '--scene-h': `calc(var(--screen-h) + ${DESKTOP_TIMING.length * PACE * 100}vh)`,
-                    '--scene-h-phone': `calc(var(--screen-h) + ${PHONE_TIMING.length * PHONE_PACE * 100}vh)`,
+                    '--scene-h-desktop': `calc(var(--screen-h) + ${DESKTOP_DEFAULT.length * 100}vh)`,
+                    '--scene-h-phone': `calc(var(--screen-h) + ${PHONE_DEFAULT.length * 100}vh)`,
+                    ...(measured ? { '--scene-h': `calc(var(--screen-h) + ${tm.length * 100}vh)` } : {}),
                 } as CSSProperties}
                 aria-labelledby="hero-title"
+                // Время сцены на этом экране – для e2e (tests/home.spec.ts: доли пути этапов)
+                data-timing={JSON.stringify(tm)}
             >
                 <motion.div
                     ref={screen}
@@ -776,8 +748,9 @@ const HeroExpand: FC<HeroExpandProps> = ({ chips, worksCount, children }) => {
                 ref={nextTrack}
                 className={`${s.nextTrack} ${portalState === 'off' ? s.nextHidden : ''}`}
                 style={{
-                    '--exit-desktop': `${PORTAL_PATH * PACE * 100}vh`,
-                    '--exit-phone': `${PORTAL_PATH * PHONE_PACE * 100}vh`,
+                    '--exit-desktop': `${DESKTOP_DEFAULT.portal * 100}vh`,
+                    '--exit-phone': `${PHONE_DEFAULT.portal * 100}vh`,
+                    ...(measured ? { '--exit': `${tm.portal * 100}vh` } : {}),
                     '--next-top': `${nextTop}px`,
                 } as CSSProperties}
                 onFocus={focusCases}
@@ -787,7 +760,7 @@ const HeroExpand: FC<HeroExpandProps> = ({ chips, worksCount, children }) => {
                         {children}
                     </SceneAfterContext.Provider>
                 </div>
-                <div ref={afterEl} className={s.after} style={{ height: `${AFTER * 100}vh` }} aria-hidden="true" />
+                <div ref={afterEl} className={s.after} style={{ height: `${tm.after * 100}vh` }} aria-hidden="true" />
             </div>
         </>
     );

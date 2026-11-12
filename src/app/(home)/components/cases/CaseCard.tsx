@@ -14,6 +14,7 @@ import { IPortfolioWork } from "@/interfaces/portfolio";
 import BrowserFrame from "@/app/portfolio/components/BrowserFrame";
 import PortfolioLink from "@/app/portfolio/components/PortfolioLink";
 import { easeOutCubic } from "@/app/portfolio/components/easing";
+import { move } from "@/app/ai/components/speed";
 
 // Положение карточки в колоде до раздачи: сдвиг к верхней карте, наклон, масштаб, слой
 export interface IStack {
@@ -55,6 +56,10 @@ const easeOutBack = (k: number): number => {
     const c = 1.2;
     return 1 + (c + 1) * Math.pow(k - 1, 3) + c * Math.pow(k - 1, 2);
 };
+
+// Раздача: плавный разгон (move, как движения /sites и /ai) и тот же лёгкий перелёт (~3%) у места; пик скорости –
+// ~1,25 средней, а не ~4 у easeOutBack на старте (владелец 11.11.2026: скорость как у /sites и /ai)
+const dealEase = (k: number): number => move(k) + .08 * Math.sin(Math.PI * k) * k * k;
 
 const local = (v: number, from: number, dur: number) => clamp01((v - from) / dur);
 
@@ -110,7 +115,7 @@ const CaseCard: FC<IProps> = ({ work, mobile, shared, stack, timing }) => {
     const place = useCallback((v: number) => {
         if (!stack) return;
         const k = local(v, timing.dealFrom, timing.dealTo - timing.dealFrom);
-        const rest = 1 - easeOutBack(k);
+        const rest = 1 - dealEase(k);
         x.set(stack.x * rest);
         y.set(stack.y * rest);
         rotate.set(stack.rotate * rest);

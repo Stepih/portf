@@ -54,7 +54,8 @@ for (const viewport of [{ width: 1400, height: 800 }, { width: 375, height: 667 
 // когда первый экран раскрылся: к 0,75 экрана брызги доиграли, портал ещё не начался
 test('чип отрасли открывает портфолио с фильтром', async ({ page }) => {
     await page.goto('/');
-    await page.evaluate(() => window.scrollTo(0, window.innerHeight * .75));
+    await page.waitForTimeout(800);
+    await scrollIndustries(page);
 
     const chips = page.getByRole('region', { name: 'Каким может быть сайт для вашего бизнеса' }).getByRole('listitem').getByRole('link');
     await expect(chips.first()).toBeVisible();
@@ -299,9 +300,8 @@ for (const viewport of [{ width: 1400, height: 900 }, { width: 375, height: 667 
         // До гидрации клик – обычный переход по якорю: ждём обработчик React
         const region = industriesRegion(page);
         await expect.poll(() => region.getByRole('link', { name: formButton }).evaluate((el) => Object.keys(el).some((key) => key.startsWith('__reactProps')))).toBe(true);
-        // Устойчивый кадр отраслей – середина пути сцены, как в тесте «скролл назад»
-        const path = await scenePath(page);
-        await scrollInstant(page, path.top + path.len * .6);
+        // Устойчивый кадр отраслей, как в тесте «скролл назад»
+        await scrollIndustries(page);
         const link = await expectOtherLine(region);
         await link.click();
         await expect(page).toHaveURL(/\/#contact$/);
@@ -312,6 +312,10 @@ for (const viewport of [{ width: 1400, height: 900 }, { width: 375, height: 667 
 test('«Другая сфера?» под «Все проекты»: вопрос жирным, числа подписаны, 375px', async ({ page }) => {
     await page.setViewportSize({ width: 375, height: 812 });
     await page.goto('/');
+    await page.waitForTimeout(800);
+    // Блок кейсов прилипает к экрану на время портала и длиннее экрана: строка под ним видна, когда сцена его отпустила
+    const path = await scenePath(page);
+    await scrollInstant(page, path.top + path.len);
     const row = casesIndustries(page);
     await row.scrollIntoViewIfNeeded();
     await expectOtherLine(row);
@@ -772,9 +776,10 @@ test('после заявки на главной – плашка «что да
 // Д19 (DESIGN_FIXES_4_PLAN): под кейсами на телефоне – строка отраслей, 244px + отступ 32px = 0,345 экрана:
 // 3,08 → 3,425. Порог поднят только на неё; сама сцена не удлинилась.
 // Д20: корень 16px и до 400px – карточки кейсов и строка отраслей выше на ~80px: 3,425 → 3,53–3,55. Сцена та же
+// 11.11.2026 (владелец): скорость сцены как у /sites и /ai – сцена длиннее, до цен 3,60 экрана на 1400×900, 4,93 на 375×800
 for (const { viewport, screens } of [
-    { viewport: { width: 375, height: 800 }, screens: 3.6 },
-    { viewport: { width: 1400, height: 900 }, screens: 2.85 },
+    { viewport: { width: 375, height: 800 }, screens: 5 },
+    { viewport: { width: 1400, height: 900 }, screens: 3.65 },
 ]) {
     test(`услуги и цены не дальше ${screens} экрана, ${viewport.width}px`, async ({ page }) => {
         await page.setViewportSize(viewport);
@@ -791,10 +796,12 @@ for (const { viewport, screens } of [
 test('сцена без пустых пауз: заголовок, кольцо портала, верхняя карта', async ({ page }) => {
     await page.setViewportSize({ width: 1400, height: 900 });
     await page.goto('/');
-    const scrollTo = (screens: number) => page.evaluate((k) => window.scrollTo(0, window.innerHeight * k), screens);
+    await page.waitForTimeout(800);
+    const tm = await sceneTiming(page);
+    const portal = (k: number) => scrollPath(page, tm.portalFrom + (1 - tm.portalFrom) * k);
 
-    // 0,3 экрана: раньше здесь был серый экран с одним кружком
-    await scrollTo(.3);
+    // Конец полёта фото: раньше здесь был серый экран с одним кружком
+    await scrollPath(page, (tm.burstFrom + tm.expandTo) / 2);
     const title = page.getByRole('heading', { name: 'Каким может быть сайт для вашего бизнеса' });
     // Радиус круга волны, px: заголовок проступает дальше самого кружка
     const waveRadius = () => title.evaluate((el) => {
@@ -804,32 +811,34 @@ test('сцена без пустых пауз: заголовок, кольцо 
     await expect.poll(() => title.evaluate(opacityOf)).toBe(1);
     await expect.poll(waveRadius).toBeGreaterThan(100);
 
-    // Диск портала – слой с радиальным градиентом; к 1,25 экрана кольцо уже погасло
+    // Диск портала – слой с радиальным градиентом; к середине хода дыры кольцо уже погасло
     const diskOpacity = () => page.evaluate(() => {
         const disk = [...document.querySelectorAll<HTMLElement>('section div[aria-hidden="true"]')]
             .find((el) => el.style.background.includes('radial-gradient'));
         return disk ? parseFloat(getComputedStyle(disk).opacity) : -1;
     });
-    await scrollTo(1);
+    await portal(tm.diskTo);
     await expect.poll(diskOpacity).toBe(1);
-    await scrollTo(1.25);
+    await portal(tm.openAt + .6 * (1 - tm.openAt));
     await expect.poll(diskOpacity).toBeLessThan(.05);
 
     // Начало портала: средняя карта – верхняя в колоде, название уже выехало из-под маски
-    await scrollTo(1);
+    await portal(tm.diskTo);
     const top = page.getByRole('region', { name: 'Лучшие проекты' }).getByRole('heading', { level: 3 }).nth(1);
     await expect.poll(() => top.evaluate((h) =>
         h.querySelector('a')!.getBoundingClientRect().top - h.getBoundingClientRect().top)).toBeLessThan(3);
 });
 
-// Недорисованные кадры сцены вдвое короче, путь отдан чипам (DESIGN_FIXES_6_PLAN Д30): на 1400×900 кадр отраслей
-// целый с 0,56 до 0,94 экрана, раньше – с 0,64 до 0,84. Текст каждого чипа виден, чёрной капли над ним нет
-test('кадр отраслей стоит дольше: чипы с подписями от 0,58 до 0,92 экрана', async ({ page }) => {
+// Кадр отраслей целый от конца брызг до начала портала (DESIGN_FIXES_6_PLAN Д30; время – timing.ts, 11.11.2026).
+// Текст каждого чипа виден, чёрной капли над ним нет
+test('кадр отраслей: чипы с подписями от конца брызг до портала', async ({ page }) => {
     await page.setViewportSize({ width: 1400, height: 900 });
     await page.goto('/');
+    await page.waitForTimeout(800);
+    const tm = await sceneTiming(page);
     const items = page.getByRole('region', { name: 'Каким может быть сайт для вашего бизнеса' }).getByRole('listitem');
-    for (const screens of [.58, .92]) {
-        await page.evaluate((k) => window.scrollTo(0, window.innerHeight * k), screens);
+    for (const at of [tm.burstTo + .005, tm.portalFrom - .005]) {
+        await scrollPath(page, at);
         await expect.poll(() => items.evaluateAll((lis) => lis.every((li) => {
             let op = 1;
             for (let n: Element | null = li.querySelector('a'); n; n = n.parentElement) op *= parseFloat(getComputedStyle(n).opacity);
@@ -898,17 +907,25 @@ const recordFrames = (page: Page, ms: number) => sceneScreen(page).evaluate((el,
     requestAnimationFrame(() => setTimeout(sample));
 }), ms);
 const scrollInstant = (page: Page, y: number) => page.evaluate((v) => window.scrollTo({ top: v, behavior: 'instant' }), y);
+// Время сцены на этом экране (HeroExpand: data-timing, расчёт – timing.ts): доли пути этапов, путь портала и после него, экраны
+interface ISceneTiming { length: number, portal: number, after: number, expandTo: number, burstFrom: number, burstTo: number, landAt: number, landSec: number, portalFrom: number, clearTo: number, diskTo: number, openAt: number }
+const sceneTiming = (page: Page) => page.locator('section[aria-labelledby="hero-title"]')
+    .evaluate((el) => JSON.parse((el as HTMLElement).dataset.timing!) as ISceneTiming);
+// Кадр отраслей: брызги кончились, портал ещё не начался – середина между ними
+const scrollIndustries = async (page: Page) => {
+    const [path, tm] = [await scenePath(page), await sceneTiming(page)];
+    await scrollInstant(page, path.top + path.len * (tm.burstTo + tm.portalFrom) / 2);
+};
 
 for (const viewport of [{ width: 1400, height: 900 }, { width: 375, height: 667 }]) {
     test.describe(`быстрый скролл за конец сцены, ${viewport.width}px`, () => {
         test.use({ viewport });
-        // Начало портала, доля пути сцены (HeroExpand.tsx: portalFrom)
-        const portalFrom = viewport.width <= 700 ? .84 / 1.19 : .94 / 1.29;
 
         test('прыжок за конец пути: полосы под экраном нет', async ({ page }) => {
             await page.goto('/');
             await page.waitForTimeout(800);
             const path = await scenePath(page);
+            const { portalFrom } = await sceneTiming(page);
             for (const k of [.3, .9, 1.5]) {
                 await scrollInstant(page, path.top + path.len * portalFrom);
                 await page.waitForTimeout(700);
@@ -922,6 +939,7 @@ for (const viewport of [{ width: 1400, height: 900 }, { width: 375, height: 667 
             await page.goto('/');
             await page.waitForTimeout(800);
             const path = await scenePath(page);
+            const { portalFrom } = await sceneTiming(page);
             await scrollInstant(page, path.top + path.len * portalFrom);
             await page.waitForTimeout(700);
             await page.mouse.move(viewport.width / 2, viewport.height / 2);
@@ -937,7 +955,7 @@ for (const viewport of [{ width: 1400, height: 900 }, { width: 375, height: 667 
             await scrollInstant(page, path.top + path.len + path.screen * 1.5);
             await page.waitForTimeout(700);
             // Кадр отраслей: дыры нет, чипы с подписями на местах
-            await scrollInstant(page, path.top + path.len * .6);
+            await scrollIndustries(page);
             await expect.poll(() => sceneScreen(page).evaluate((el) => el.style.maskImage)).toBe('none');
             const items = page.getByRole('region', { name: 'Каким может быть сайт для вашего бизнеса' }).getByRole('listitem');
             await expect.poll(() => items.evaluateAll((lis) => lis.every((li) => {
@@ -991,10 +1009,9 @@ for (const { viewport, shifted } of [
         await page.setViewportSize(viewport);
         await page.goto('/');
         await page.waitForTimeout(800);
-        // Середина стояния диска, доля пути сцены: начало портала + (DISK_TO + OPEN_AT) / 2 его пути (HeroExpand.tsx):
-        // DISK_TO = .08 / .35, OPEN_AT = .15 / .35 (DESIGN_FIXES_7_PLAN Д37)
-        const from = viewport.width <= 700 ? .84 / 1.19 : .94 / 1.29;
-        const at = from + (1 - from) * 23 / 70;
+        // Середина стояния диска, доля пути сцены: начало портала + (diskTo + openAt) / 2 его пути (timing.ts)
+        const tm = await sceneTiming(page);
+        const at = tm.portalFrom + (1 - tm.portalFrom) * (tm.diskTo + tm.openAt) / 2;
         const path = await scenePath(page);
         await scrollInstant(page, path.top + path.len * at);
 
@@ -1029,14 +1046,17 @@ for (const { viewport, shifted } of [
 }
 
 // Стоп-кадры сцены (DESIGN_FIXES_7_PLAN Д37): в каждом кадре есть что прочитать целиком.
-// Доли пути – из HeroExpand.tsx: длина сцены 1,29 экрана (телефон 1,19), брызги с .24 на .32 экрана за 1,5 с,
-// портал с .94 (.84): отрасли гаснут до 3/35 его пути, диск растёт до 8/35, дыра – с 15/35
-const sceneAt = (width: number) => {
-    const len = width <= 700 ? 1.19 : 1.29;
-    const portalFrom = (width <= 700 ? .84 : .94) / len;
+// Доли пути – из времени сцены на этом экране (sceneTiming): брызги до посадки последней капли идут равномерно по секундам,
+// портал: отрасли гаснут до clearTo его пути, диск растёт до diskTo, дыра – с openAt
+const sceneAt = async (page: Page) => {
+    const tm = await sceneTiming(page);
     return {
-        burst: (sec: number) => (.24 + .32 * sec / 1.5) / len,
-        portal: (k: number) => portalFrom + (1 - portalFrom) * k,
+        tm,
+        burst: (sec: number) => {
+            if (sec > tm.landSec) throw new Error('кадр после посадки капель – считать по хвосту брызг');
+            return tm.burstFrom + (tm.landAt - tm.burstFrom) * sec / tm.landSec;
+        },
+        portal: (k: number) => tm.portalFrom + (1 - tm.portalFrom) * k,
     };
 };
 const scrollPath = async (page: Page, at: number) => {
@@ -1048,11 +1068,11 @@ const sceneEl = (page: Page) => page.locator('section[aria-labelledby="hero-titl
 for (const viewport of [{ width: 1400, height: 900 }, { width: 375, height: 667 }]) {
     test.describe(`стоп-кадры сцены, ${viewport.width}px`, () => {
         test.use({ viewport });
-        const at = sceneAt(viewport.width);
 
         test('кнопка и цена первого экрана держатся, пока не проступил заголовок', async ({ page }) => {
             await page.goto('/');
             await page.waitForTimeout(800);
+            const at = await sceneAt(page);
             // Фото летит в кружок, надпись слайда уже погасла, волны заголовка ещё нет
             await scrollPath(page, at.burst(0) * .6);
             const cta = page.locator('[data-goal-place="hero"]');
@@ -1068,6 +1088,7 @@ for (const viewport of [{ width: 1400, height: 900 }, { width: 375, height: 667 
         test('капля растекается в чип с подписью: подпись над заливкой', async ({ page }) => {
             await page.goto('/');
             await page.waitForTimeout(800);
+            const at = await sceneAt(page);
             // Первая капля долетела (0,2 + 0,7 с) и растеклась
             await scrollPath(page, at.burst(1.05));
             const items = sceneEl(page).getByRole('region', { name: 'Каким может быть сайт для вашего бизнеса' }).getByRole('listitem');
@@ -1097,6 +1118,7 @@ for (const viewport of [{ width: 1400, height: 900 }, { width: 375, height: 667 
         test('диск растёт, когда отрасли уже погасли; знак в дыре не полупрозрачный', async ({ page }) => {
             await page.goto('/');
             await page.waitForTimeout(800);
+            const at = await sceneAt(page);
             const screen = sceneScreen(page);
             const diskRadius = () => screen.evaluate((el) => {
                 const disk = [...el.querySelectorAll<HTMLElement>('div[aria-hidden="true"]')]
@@ -1113,16 +1135,16 @@ for (const viewport of [{ width: 1400, height: 900 }, { width: 375, height: 667 
             });
 
             // Середина роста диска: заголовок отраслей уже не виден
-            await scrollPath(page, at.portal(5.5 / 35));
+            await scrollPath(page, at.portal((at.tm.clearTo + at.tm.diskTo) / 2));
             await expect.poll(diskRadius).toBeGreaterThan(55);
             expect(await title.evaluate(opacityOf)).toBeLessThan(.02);
 
             // Дыра только открылась: знак на диске целиком непрозрачный (его ест дыра, а не прозрачность)
-            await scrollPath(page, at.portal(15 / 35 + .005 * 20 / 35));
+            await scrollPath(page, at.portal(at.tm.openAt + .005 * (1 - at.tm.openAt)));
             await expect.poll(mark).toBeGreaterThan(.98);
 
             // Дыра на полпути: знака нет, «Лучшие проекты» в ней
-            await scrollPath(page, at.portal(15 / 35 + .5 * 20 / 35));
+            await scrollPath(page, at.portal(at.tm.openAt + .5 * (1 - at.tm.openAt)));
             await expect.poll(mark).toBeLessThan(.02);
             await expect(page.locator('#cases-title')).toBeInViewport({ ratio: 1 });
         });
@@ -1135,8 +1157,9 @@ test('колода: названия карт не под маской в сер
     await page.goto('/');
     await page.waitForTimeout(800);
     const path = await scenePath(page);
-    // Треть пути после портала (распорка – 0,3 экрана): карты ещё едут
-    await scrollInstant(page, path.top + path.len + 900 * .3 * .35);
+    // Треть пути после портала (распорка – after экрана, timing.ts): карты ещё едут
+    const { after } = await sceneTiming(page);
+    await scrollInstant(page, path.top + path.len + 900 * after * .35);
     const titles = page.getByRole('region', { name: 'Лучшие проекты' }).getByRole('heading', { level: 3 });
     await expect.poll(() => titles.evaluateAll((hs) => hs.every((h) => {
         const mask = h.querySelector('span')!.getBoundingClientRect();

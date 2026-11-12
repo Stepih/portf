@@ -23,8 +23,11 @@
 // margin-top снимает верхний отступ main, чтобы липкий экран начинался от края окна
 .scene {
     position: relative;
-    // Высота – в экранах пути сцены: на телефоне путь короче (--scene-h-phone, DESIGN_FIXES_2_PLAN, Д7)
-    height: calc(var(--scene-h) + var(--hold));
+    // Высота – в экранах пути сцены (--scene-h ставит компонент по замеру, timing.ts)
+    // До замера – типичный экран по ширине (--scene-h-desktop / -phone), после – замер (--scene-h)
+    --scene-h-auto: var(--scene-h-desktop);
+
+    height: calc(var(--scene-h, var(--scene-h-auto)) + var(--hold));
     margin: -60px calc(50% - var(--page-w, 100vw) / 2) 0;
 
     // Сцена над кейсами, которые лежат под ней и видны сквозь дыру портала.
@@ -57,7 +60,7 @@
     left: 0;
 
     width: 0;
-    height: var(--scene-h);
+    height: var(--scene-h, var(--scene-h-auto));
     visibility: hidden;
 }
 
@@ -399,15 +402,15 @@
 // а отпускается в конце пути сцены; невидимый экран сцены держится ещё --hold поверх него и пропускает клики.
 // Запас пути – распоркой, а не padding: sticky ездит только в области содержимого родителя
 .nextTrack {
-    --exit: var(--exit-desktop);
+    --exit-auto: var(--exit-desktop);
 
-    margin-top: calc(-1 * var(--screen-h) - var(--exit) - var(--hold));
+    margin-top: calc(-1 * var(--screen-h) - var(--exit, var(--exit-auto)) - var(--hold));
 
     // + --next-top: блок прилипает ниже верха экрана, и без запаса его отпустило бы раньше, чем доиграет колода
     &::after {
         content: '';
         display: block;
-        height: calc(var(--exit) + var(--next-top, 0px));
+        height: calc(var(--exit, var(--exit-auto)) + var(--next-top, 0px));
     }
 }
 
@@ -423,18 +426,14 @@
     }
 }
 
+// Ширина – та же, что PHONE_QUERY в HeroExpand.tsx
 @media screen and (max-width: 700px) {
-    // Ширина – та же, что PHONE_QUERY в HeroExpand.tsx
     .scene {
-        height: calc(var(--scene-h-phone) + var(--hold));
-    }
-
-    .path {
-        height: var(--scene-h-phone);
+        --scene-h-auto: var(--scene-h-phone);
     }
 
     .nextTrack {
-        --exit: var(--exit-phone);
+        --exit-auto: var(--exit-phone);
     }
 }
 
