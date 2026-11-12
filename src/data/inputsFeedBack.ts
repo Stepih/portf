@@ -3,20 +3,26 @@ import { IInput } from "@/interfaces/input";
 interface IInputId extends IInput {
     id: number,
 }
+// Подписи полей формы заявки: над полем, обязательные – со звёздочкой (DESIGN_FIXES_8_PLAN Д43, выбор владельца –
+// те же слова, что были подсказками, поля пустые)
 export const inputsListFeedback:IInputId[] = [
     {
         id: 1,
         inputKey: 'name',
-        placeholder: 'Имя *',
+        label: 'Имя',
+        required: true,
         type: 'text',
     },
     {
         id: 2,
         inputKey: 'contact',
-        placeholder: 'Телефон или Telegram *',
+        label: 'Телефон или Telegram',
+        required: true,
         type: 'text',
     }
 ]
+// Необязательное поле – без звёздочки
+export const formMessageLabel = 'Комментарий'
 
 // Кнопка отправки формы и ссылки на форму на /portfolio и в кейсах (CONVERSION_PLAN К1.4: скилл
 // marketing:draft-content, выбор владельца). Лежит здесь, а не в offer.ts: форма – клиентский компонент,

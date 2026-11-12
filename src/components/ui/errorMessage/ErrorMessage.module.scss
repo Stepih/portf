@@ -6,9 +6,14 @@
     top: 30px;
     left: 50%;
     
+    // left: 50% ужимал тост до половины экрана – на 375 текст шёл в столбик (Д43)
+    width: max-content;
+    max-width: min(500px, calc(100vw - 32px));
     padding: 25px;
-    background: vars.$redPink-100;
-    color: white;
+    text-wrap: balance;
+    // Белый на заливке – 5.1:1, одинаково в обеих темах (DESIGN_FIXES_8_PLAN Д43)
+    background: var(--color-error-fill);
+    color: vars.$white-100;
 
     border-radius: 13px;
 }

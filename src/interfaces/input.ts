@@ -1,7 +1,9 @@
 export interface IInput {
     inputKey: keyof IInputKeyValue,
-    
-    placeholder?: string,
+
+    // Подпись над полем (DESIGN_FIXES_8_PLAN Д43); в чате – подсказка внутри поля
+    label: string,
+    required?: boolean,
     type: 'text' | 'tel'
 }
 

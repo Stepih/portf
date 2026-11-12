@@ -1,23 +1,34 @@
 @use '/src/styles/variables.scss' as vars;
 
-// Поле с ошибкой под ним; отступ до следующего поля – у обёртки (DESIGN_FIXES_6_PLAN Д31)
+// Подпись, поле и ошибка под ним; отступ до следующего поля – у обёртки (DESIGN_FIXES_6_PLAN Д31)
 .field {
+    display: flex;
+    flex-direction: column;
     width: 100%;
     margin-bottom: 25px;
+}
+
+// Подпись над полем (DESIGN_FIXES_8_PLAN Д43) – как заголовок чипов «Что нужно»: вторичный текст, по тому же левому краю, ближе к своему полю
+.label {
+    margin: 0 0 8px;
+
+    font-size: 1.05rem;
+    line-height: 1.3;
+    color: var(--color-text-muted);
+    transition: vars.$transition;
 }
 
 .input, .textArea {
     width: 100%;
     padding: 12px;
-    margin-bottom: 25px;
     // Иначе браузер ставит полям свой шрифт, а textarea – моноширинный (CONVERSION_PLAN К1.3)
     font: inherit;
     font-size: 1.25rem;
 
-    border: none;
     outline: none;
 
-    background: vars.$black-10;
+    // Стекло поля (frost-field): в тёмной теме – светлее плашки, иначе поле сливается с ней (Д43)
+    background: var(--color-field);
 
     transition: vars.$transition;
 
@@ -28,17 +39,9 @@
 
     resize: none;
 
-    &::placeholder {
-        color: var(--color-text-muted);
-    }
-
     &:focus {
         border: 2px solid var(--color-text-100);
     }
-}
-
-.field .input {
-    margin-bottom: 0;
 }
 
 // Контур поля с ошибкой – цветом ошибки, и в фокусе тоже: фокус ставится на первое неверное поле
@@ -57,6 +60,7 @@
 }
 
 .textArea {
+    display: block;
     height: 100px;
     width: 100% !important;
 }

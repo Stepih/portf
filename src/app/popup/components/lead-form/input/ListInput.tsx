@@ -29,13 +29,14 @@ const ListInput:FC<IListInput> = ({value, handleSetValue, handleSetFocusInput, e
                 <Input
                     key={input.id}
                     inputKey={input.inputKey}
-                    placeholder={input.placeholder}
+                    label={input.label}
+                    required={input.required}
                     type={input.type}
                     value={value}
                     handleSetValue={handleSetValue}
                     handleSetFocusInput={handleSetFocusInput}
                     error={errors[input.inputKey]}
-                    errorId={`${id}-${input.inputKey}-error`}
+                    fieldId={`${id}-${input.inputKey}`}
                     inputRef={(el) => { inputRefs.current[input.inputKey] = el; }}
                 />
             ))}

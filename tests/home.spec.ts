@@ -193,8 +193,8 @@ test('услуги и цены на главной', async ({ page }) => {
     await expect(pickedService(contact)).toHaveText(serviceTitle('shop'));
     await expect(page).toHaveURL(/\/\?service=shop#contact$/);
 
-    await contact.getByPlaceholder('Имя *').fill('Иван');
-    await contact.getByPlaceholder('Телефон или Telegram *').fill('79990001122');
+    await contact.getByRole('textbox', { name: 'Имя', exact: true }).fill('Иван');
+    await contact.getByLabel('Телефон или Telegram').fill('79990001122');
     await contact.getByRole('button', { name: formButton }).click();
     await expect(contact.getByRole('heading', { name: formSuccessTitle('Иван') })).toBeVisible();
     expect(requests).toHaveLength(1);
@@ -674,13 +674,13 @@ for (const path of ['/', '/popup']) {
     test(`кнопка отправки формы жирная, ${path}`, async ({ page }) => {
         await page.goto(path);
 
-        const form = page.locator('form', { has: page.getByPlaceholder('Имя *') });
+        const form = page.locator('form', { has: page.getByRole('textbox', { name: 'Имя', exact: true }) });
         const submit = form.getByRole('button', { name: formButton });
         expect(await submit.evaluate((el) => getComputedStyle(el).fontWeight)).toBe('700');
         // Начертание Raleway Bold, а не синтетический жирный из Regular, которым набраны поля
         const family = (el: Element) => getComputedStyle(el).fontFamily;
-        expect(await submit.evaluate(family)).not.toBe(await form.getByPlaceholder('Имя *').evaluate(family));
-        const name = (await form.getByPlaceholder('Имя *').boundingBox())!;
+        expect(await submit.evaluate(family)).not.toBe(await form.getByRole('textbox', { name: 'Имя', exact: true }).evaluate(family));
+        const name = (await form.getByRole('textbox', { name: 'Имя', exact: true }).boundingBox())!;
         const button = (await submit.boundingBox())!;
         expect(Math.abs(button.width - name.width)).toBeLessThan(1);
     });
@@ -741,9 +741,9 @@ test('форма заявки и Telegram на главной', async ({ page })
     await expect(section.getByRole('link', { name: offerTgButton.title })).toHaveAttribute('href', offerTgButton.href);
 
     // Имя с дефисом проходит (DESIGN_FIXES_3_PLAN Д14)
-    await section.getByPlaceholder('Имя *').pressSequentially('Анна-Мария');
-    await expect(section.getByPlaceholder('Имя *')).toHaveValue('Анна-Мария');
-    await section.getByPlaceholder('Телефон или Telegram *').fill('79990001122');
+    await section.getByRole('textbox', { name: 'Имя', exact: true }).pressSequentially('Анна-Мария');
+    await expect(section.getByRole('textbox', { name: 'Имя', exact: true })).toHaveValue('Анна-Мария');
+    await section.getByLabel('Телефон или Telegram').fill('79990001122');
     await section.getByRole('button', { name: formButton }).click();
 
     await expect(section.getByRole('heading', { name: formSuccessTitle('Анна-Мария') })).toBeVisible();
@@ -757,13 +757,13 @@ test('после заявки на главной – плашка «что да
     await page.goto('/');
 
     const section = page.getByRole('region', { name: contactTitle });
-    await section.getByPlaceholder('Имя *').fill('Иван');
-    await section.getByPlaceholder('Телефон или Telegram *').fill('123');
+    await section.getByRole('textbox', { name: 'Имя', exact: true }).fill('Иван');
+    await section.getByLabel('Телефон или Telegram').fill('123');
     await section.getByRole('button', { name: formButton }).click();
     await expect(page.getByText(contactIncomplete)).toBeVisible();
     await expect(page.getByRole('alert').filter({ hasText: contactIncomplete })).toHaveCount(1);
 
-    await section.getByPlaceholder('Телефон или Telegram *').fill('+7 999 123-45-67');
+    await section.getByLabel('Телефон или Telegram').fill('+7 999 123-45-67');
     await section.getByRole('button', { name: formButton }).click();
 
     await expect(section.getByRole('status')).toContainText(formSuccessText);
@@ -1268,17 +1268,18 @@ for (const [theme, frost] of [['light', 'rgba(57, 57, 57, 0.08)'], ['dark', 'rgb
     });
 }
 
-// Вторичный текст и плейсхолдеры – не ниже 4.5:1: в светлой 62% чернил, в тёмной 50% бумаги уже проходят (DESIGN_FIXES_3_PLAN Д16)
+// Вторичный текст и подписи полей – не ниже 4.5:1: в светлой 62% чернил, в тёмной 50% бумаги уже проходят (DESIGN_FIXES_3_PLAN Д16)
 for (const [theme, muted] of [['light', 'rgba(19, 19, 19, 0.62)'], ['dark', 'rgba(255, 255, 255, 0.5)']] as const) {
-    test(`вторичный текст и плейсхолдеры, ${theme === 'light' ? 'светлая' : 'тёмная'} тема`, async ({ page }) => {
+    test(`вторичный текст и подписи полей, ${theme === 'light' ? 'светлая' : 'тёмная'} тема`, async ({ page }) => {
         await page.addInitScript((t) => localStorage.setItem('theme', t), theme);
         await page.goto('/');
 
         const summary = page.getByRole('region', { name: servicesTitle }).getByText(services[0].summary);
         await expect.poll(() => summary.evaluate((el) => getComputedStyle(el).color)).toBe(muted);
 
-        const name = page.locator('#contact form').getByPlaceholder(inputsListFeedback[0].placeholder!);
-        await expect.poll(() => name.evaluate((el) => getComputedStyle(el, '::placeholder').color)).toBe(muted);
+        // Подписи полей формы – вторичным текстом (Д43: подсказок внутри полей больше нет)
+        const label = page.locator('#contact form label').filter({ hasText: inputsListFeedback[0].label });
+        await expect.poll(() => label.evaluate((el) => getComputedStyle(el).color)).toBe(muted);
     });
 }
 
@@ -1680,7 +1681,7 @@ for (const viewport of [{ width: 1400, height: 900 }, { width: 375, height: 740 
         await checkClear(summaries.nth(count - 1), 'последний вопрос FAQ после Tab');
 
         // Форма на экране – шар погашен и выпал из Tab; ушли вверх – вернулся
-        const comment = page.getByRole('region', { name: contactTitle }).getByPlaceholder('Комментарий');
+        const comment = page.getByRole('region', { name: contactTitle }).getByLabel('Комментарий');
         await comment.evaluate((el) => el.scrollIntoView({ block: 'end', behavior: 'instant' }));
         await expect(fab).toHaveAttribute('aria-hidden', 'true');
         await expect(fab).toHaveAttribute('tabindex', '-1');

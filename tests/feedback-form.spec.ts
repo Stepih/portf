@@ -29,9 +29,9 @@ const expectNoFieldError = async (field: Locator) => {
 };
 
 const fields = (page: Page) => ({
-    name: page.getByPlaceholder('Имя *'),
-    contact: page.getByPlaceholder('Телефон или Telegram *'),
-    message: page.getByPlaceholder('Комментарий'),
+    name: page.getByRole('textbox', { name: 'Имя', exact: true }),
+    contact: page.getByLabel('Телефон или Telegram'),
+    message: page.getByLabel('Комментарий'),
     submit: page.getByRole('button', { name: formButton }),
 });
 
@@ -271,3 +271,62 @@ test('без сети – плашка, введённое сохраняетс�
     await expectNoFieldError(form.name);
     await expectNoFieldError(form.contact);
 });
+
+// Относительная яркость цвета rgb(a) – для контраста по WCAG
+const luminance = (rgb: string) => {
+    const [r, g, b] = rgb.match(/[\d.]+/g)!.slice(0, 3).map(Number).map(v => {
+        const c = v / 255;
+        return c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4;
+    });
+    return 0.2126 * r + 0.7152 * g + 0.0722 * b;
+};
+const contrast = (a: string, b: string) => {
+    const [hi, lo] = [luminance(a), luminance(b)].sort((x, y) => y - x);
+    return (hi + 0.05) / (lo + 0.05);
+};
+
+// Подписи над полями, а не подсказки внутри (DESIGN_FIXES_8_PLAN Д43); в тёмной теме поле не сливается с плашкой
+for (const theme of ['light', 'dark'] as const) {
+    test(`подписи полей над полями, поле видно на плашке, ${theme === 'light' ? 'светлая' : 'тёмная'} тема`, async ({ page }) => {
+        await page.addInitScript((t) => localStorage.setItem('theme', t), theme);
+        await page.goto('/popup');
+        const form = fields(page);
+
+        for (const field of [form.name, form.contact, form.message]) {
+            await expect(field).toBeVisible();
+            await expect(field).not.toHaveAttribute('placeholder');
+            const label = page.locator(`label[for="${await field.getAttribute('id')}"]`);
+            const [l, f] = [(await label.boundingBox())!, (await field.boundingBox())!];
+            expect(l.y + l.height).toBeLessThanOrEqual(f.y);
+            expect(f.y - (l.y + l.height)).toBeLessThan(16);
+        }
+        // Обязательные – со звёздочкой глазам и aria-required скринридеру
+        await expect(form.name).toHaveAttribute('aria-required', 'true');
+        await expect(form.contact).toHaveAttribute('aria-required', 'true');
+        await expect(form.message).not.toHaveAttribute('aria-required');
+
+        // Заливка поля не прозрачная: на чёрном это светлое стекло, а не серое
+        const fill = await form.name.evaluate(el => getComputedStyle(el).backgroundColor);
+        expect(Number(fill.match(/[\d.]+/g)![3] ?? 1)).toBeGreaterThan(0.05);
+        if (theme === 'dark') expect(fill.startsWith('rgba(255, 255, 255')).toBe(true);
+    });
+}
+
+// Тост ошибки: белый на розовом – не ниже 4.5:1 (Д43, было ~2.8:1); на телефоне – во всю ширину, а не столбиком
+for (const width of [1400, 375]) {
+    test(`тост ошибки читается, ${width}px`, async ({ page }) => {
+        await page.setViewportSize({ width, height: 800 });
+        await mockSendMessage(page, 500);
+        const form = fields(page);
+        await form.name.fill('Иван');
+        await form.contact.fill('+7 999 123-45-67');
+        await form.submit.click();
+
+        const toast = page.getByRole('alert').filter({ hasText: 'Не удалось отправить заявку' }).locator('div');
+        await expect(toast).toBeVisible();
+        const [bg, color] = await toast.evaluate(el => [getComputedStyle(el).backgroundColor, getComputedStyle(el).color]);
+        expect(contrast(bg, color)).toBeGreaterThanOrEqual(4.5);
+        const box = (await toast.boundingBox())!;
+        expect(box.width).toBeGreaterThan(Math.min(width - 32, 500) - 40);
+    });
+}

@@ -5,6 +5,7 @@ import { FC, Ref } from "react";
 import { FEEDBACK_LIMITS } from "@/lib/validation/feedback";
 
 import s from './Input.module.scss'
+import FieldLabel from "./FieldLabel";
 
 interface IInputSetValue extends IInput {
     value: IInputKeyValue;
@@ -12,16 +13,20 @@ interface IInputSetValue extends IInput {
     handleSetFocusInput: (inputName: keyof IInputKeyValue) => void;
     // Ошибка поля – текстом под ним (DESIGN_FIXES_6_PLAN Д31)
     error?: string;
-    errorId: string;
+    // Префикс id: подпись связана с полем, ошибка – с описанием поля
+    fieldId: string;
     inputRef?: Ref<HTMLInputElement>;
 }
 
-const Input:FC<IInputSetValue> = ({value, handleSetValue, handleSetFocusInput, inputKey, placeholder, type, error, errorId, inputRef}) => {
+const Input:FC<IInputSetValue> = ({value, handleSetValue, handleSetFocusInput, inputKey, label, required, type, error, fieldId, inputRef}) => {
+    const errorId = `${fieldId}-error`;
 
     return (
         <div className={s.field}>
+            <FieldLabel htmlFor={fieldId} text={label} required={required} />
             <input
                 ref={inputRef}
+                id={fieldId}
                 className={`${s.input}${error ? ` ${s.invalid}` : ''}`}
                 type={type}
                 inputMode={type === 'tel' ? 'tel' : 'text'}
@@ -31,7 +36,8 @@ const Input:FC<IInputSetValue> = ({value, handleSetValue, handleSetFocusInput, i
                 value={value[inputKey]}
                 onFocus={() => handleSetFocusInput(inputKey)}
                 onChange={(e) => {handleSetValue({...value, [inputKey]: e.target.value}); }}
-                placeholder={placeholder}
+                // Не атрибут required: проверку ведёт форма, ошибки – под полями, а не всплывашкой браузера
+                aria-required={required || undefined}
                 aria-invalid={error ? true : undefined}
                 aria-describedby={error ? errorId : undefined}
             />

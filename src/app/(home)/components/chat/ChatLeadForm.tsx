@@ -18,7 +18,11 @@ interface IChatLeadForm {
     onBack: () => void;
 }
 
-const placeholder = (key: 'name' | 'contact') => inputsListFeedback.find((input) => input.inputKey === key)?.placeholder;
+// В чате поля без подписей: подпись формы – подсказкой внутри поля, обязательное – со звёздочкой
+const placeholder = (key: 'name' | 'contact') => {
+    const input = inputsListFeedback.find((item) => item.inputKey === key);
+    return input && `${input.label}${input.required ? ' *' : ''}`;
+};
 
 const ChatLeadForm: FC<IChatLeadForm> = ({ questions, onSent, onBack }) => {
     const [name, setName] = useState('');
