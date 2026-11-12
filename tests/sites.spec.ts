@@ -1,6 +1,6 @@
 import { expect, Page, test } from '@playwright/test';
 import { collectErrors } from './errors';
-import { build, buildUi, casesDeck, columns, faq, head, morePills, payment, projectPath, sections, sitesDetails, terms } from '../src/data/sitesPage';
+import { build, buildUi, casesDeck, columns, faq, head, more, payment, projectPath, sections, sitesDetails, terms } from '../src/data/sitesPage';
 import { offerTgButton, services, servicesButton } from '../src/data/offer';
 import { skipToContent } from '../src/data/layout';
 import { contactHref } from '../src/scripts/services';
@@ -269,10 +269,17 @@ for (const width of [1400, 375]) {
         await expect(region.getByRole('heading', { level: 3, name: last.title })).toBeInViewport();
         await expect(region.getByText(last.items[0])).toBeInViewport();
 
-        const more = page.getByRole('region', { name: sections.more.title });
+        // Д41: прайс в колонках – в конце сцены видны колонки (на телефоне – последняя), веб-сервисы и партнёры
+        const moreRegion = page.getByRole('region', { name: sections.more.title });
         await scrollToScene(page, sections.more.title, -.2);
-        for (const pill of morePills.pills) await expect(more.getByText(pill.title)).toBeInViewport();
-        await expect(more.getByText(/1\s000\s₽\/час/).last()).toBeVisible();
+        const shown = width > 700 ? more.columns : more.columns.slice(-1);
+        for (const col of shown) {
+            await expect(moreRegion.getByRole('heading', { level: 3, name: col.title })).toBeInViewport();
+            for (const row of col.rows) await expect(moreRegion.getByText(row.title, { exact: true })).toBeInViewport();
+        }
+        await expect(moreRegion.getByText(more.wide.price, { exact: true })).toBeInViewport();
+        await expect(moreRegion.getByText(more.quiet)).toBeInViewport();
+        if (width > 700) await expect(moreRegion.getByText(/1\s000\s₽\/⁠?ч/)).toBeInViewport();
 
         const scrollWidth = await page.evaluate(() => document.documentElement.scrollWidth);
         expect(scrollWidth).toBeLessThanOrEqual(width);
@@ -576,8 +583,17 @@ test('/sites: финал – сцена со стыком от FAQ, кнопки
     const final = page.getByRole('region', { name: sections.cta.title });
     const primary = final.getByRole('link', { name: head.cta });
 
-    // Кадр стыка: линия списка FAQ перешла на экран финала – у списка рамка прозрачная, копия лежит на её месте
-    await page.evaluate((y) => window.scrollTo(0, y), scene.top + 2);
+    // Кадр стыка: линия списка FAQ перешла на экран финала – у списка рамка прозрачная, копия лежит на её месте.
+    // Сцены выше досчитывают длины ~1,5 с после загрузки, и верх финала сдвигается на 1–2px; за стыком копия стоит,
+    // а список уходит со скроллом, поэтому прокрутка – на 1px за стык от верха после того, как он перестал меняться
+    // (Д41: при +2px от раннего замера исход зависел от дробной части позиции сцены)
+    await expect.poll(async () => {
+        const before = (await ctaScene(page))!.top;
+        await page.waitForTimeout(300);
+        return Math.abs((await ctaScene(page))!.top - before);
+    }).toBeLessThan(.05);
+    const settled = (await ctaScene(page))!;
+    await page.evaluate((y) => window.scrollTo(0, y), Math.ceil(settled.top) + 1);
     await page.waitForTimeout(300);
     await expect(list).toHaveCSS('border-bottom-color', 'rgba(128, 128, 128, 0)');
     const listBottom = (await list.boundingBox())!;

@@ -8,6 +8,24 @@ export interface ISitesOption {
     note?: string
 }
 
+// «Ещё делаю» (Д41): колонка прайса – строки «услуга … цена»; ladder – ступени одной услуги, note – тихо под ними
+export interface IMoreRow {
+    title: string,
+    price: string
+}
+export interface IMoreColumn {
+    title: string,
+    rows: IMoreRow[],
+    ladder?: boolean,
+    note?: string
+}
+export interface IMore {
+    columns: IMoreColumn[],
+    // Строка во всю ширину под колонками и тихая строка под ней
+    wide: IMoreRow,
+    quiet: string
+}
+
 // Кейс раздела: id работы из portfolioWorks и что в нём сделано
 export interface ISitesCase {
     id: string,

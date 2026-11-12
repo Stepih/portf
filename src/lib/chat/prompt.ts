@@ -9,7 +9,7 @@ import { faq as aiFaq, deckAgents, flow, flowText, howTopics, monthlyNotes, mont
 import { formButton, offerFaq, offerReasons, offerTgButton, services, servicesCommon } from "@/data/offer";
 import { portfolioWorks } from "@/data/portfolio";
 import { portfolioCases } from "@/data/portfolioCases";
-import { faq as sitesFaq, faqId, morePills, payment, projectPath, sitesDetails, terms as sitesTerms } from "@/data/sitesPage";
+import { faq as sitesFaq, faqId, more, payment, projectPath, sitesDetails, terms as sitesTerms } from "@/data/sitesPage";
 import type { IChatMessage } from "./request";
 
 // В текстах сайта есть невидимые символы вёрстки: U+2060 не даёт разорвать «ИИ-агент», U+00A0 – неразрывный пробел.
@@ -89,7 +89,7 @@ const sitesMore = () => [
     `## Сайты подробно (${sitesPageURL})\n${list([
         ...siteKinds(),
         ...sitesTerms.columns.map((c) => `${c.title}: ${c.items.join('; ')}${c.notes ? `. ${c.notes.join('. ')}` : ''}`),
-        `Ещё делает: ${morePills.pills.map((p) => `${p.title.toLowerCase()} – ${p.price}`).join('; ')}. ${morePills.quiet}`,
+        `Ещё делает: ${more.columns.map((c) => `${c.title} – ${c.rows.map((r) => `${r.title} ${r.price}`).join(', ')}${c.note ? ` (${c.note})` : ''}`).join('; ')}; ${more.wide.title} ${more.wide.price}. ${more.quiet}`,
         ...offerReasons.map((r) => `${r.title}: ${r.text}`),
     ])}`,
     `## Частые вопросы о сайтах\n${qa(sitesFaq)}`,

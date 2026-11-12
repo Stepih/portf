@@ -1,11 +1,11 @@
 import { describe, expect, it } from "vitest";
-import { build, buildUi, casesDeck, columns, faq, head, morePills, payment, projectPath, sections, sitesDetails, terms } from "./sitesPage";
+import { build, buildUi, casesDeck, columns, faq, head, more, payment, projectPath, sections, sitesDetails, terms } from "./sitesPage";
 import { services } from "./offer";
 import { portfolioWorks } from "./portfolio";
 import { portfolioCases } from "./portfolioCases";
 
 // Все клиентские строки страницы /sites одной строкой – для проверок по тексту
-const allText = (): string => JSON.stringify({ head, sections, columns, sitesDetails, build, buildUi, projectPath, faq, casesDeck, payment, terms, morePills });
+const allText = (): string => JSON.stringify({ head, sections, columns, sitesDetails, build, buildUi, projectPath, faq, casesDeck, payment, terms, more });
 
 describe("sitesPage", () => {
     it("в FAQ нет сумм, вопросы не повторяются (SALES_PLAN 3.8)", () => {
@@ -98,20 +98,28 @@ describe("sitesPage", () => {
         const lines = [
             head.hint, ...Object.values(build).flatMap((item) => item.callouts.flatMap((group) => group.items)), ...projectPath.steps.map((step) => step.text),
             casesDeck.text, payment.refund, ...payment.stages.flatMap((stage) => stage.parts.map((part) => part.label ?? '')),
-            ...terms.columns.flatMap((col) => [...col.items, ...(col.notes ?? [])]), morePills.quiet,
+            ...terms.columns.flatMap((col) => [...col.items, ...(col.notes ?? [])]), more.quiet, ...more.columns.map((col) => col.note ?? ''),
             ...faq.flatMap((item) => [item.question, item.answer]),
         ];
         for (const line of lines) expect(line).not.toMatch(/ –/);
     });
 
     // У5б, этап 2: нижняя часть сценами – строки короткие, по одному фокусу на экран
-    it("нижняя часть: путь 5–6 шагов, колонки до 6 пунктов, «Ещё делаю» до 6 таблеток с ценой, у кейсов – подпись", () => {
+    it("нижняя часть: путь 5–6 шагов, колонки до 6 пунктов, «Ещё делаю» – три колонки прайса, у кейсов – подпись", () => {
         expect(projectPath.steps.length).toBeGreaterThanOrEqual(5);
         expect(projectPath.steps.length).toBeLessThanOrEqual(6);
         expect(terms.columns.map((col) => col.title)).toEqual(['Входит в каждый сайт', 'Не входит', 'Остаётся вам']);
         for (const col of terms.columns) expect(col.items.length).toBeLessThanOrEqual(6);
-        expect(morePills.pills.length).toBeLessThanOrEqual(6);
-        for (const pill of morePills.pills) expect(pill.price).toBeTruthy();
+        // Д41: колонки по задаче клиента, до 6 строк; цена – одной строкой (без обычных пробелов), единицы «/ч» и «/мес»
+        expect(more.columns.map((col) => col.title)).toEqual(['Уже есть сайт', 'Сопровождение', 'Реклама и контент']);
+        const rows = [...more.columns.flatMap((col) => col.rows), more.wide];
+        for (const col of more.columns) expect(col.rows.length).toBeLessThanOrEqual(6);
+        for (const row of rows) {
+            expect(row.price, row.title).toMatch(/₽(\/⁠(ч|мес))?$/);
+            expect(row.price, row.title).not.toMatch(/ /);
+        }
+        // Таблетки «Поддержка после гарантии» больше нет: час правок – только тихо под ступенями сопровождения
+        expect(rows.map((row) => row.price).filter((price) => /1 000 ₽\/ч/.test(price))).toEqual([]);
         // Кейсы без повторов – у каждого есть подпись хотя бы в одном разделе
         const ids = [...new Set(Object.values(sitesDetails).flatMap((item) => item.cases.map((c) => c.id)))];
         for (const id of ids) {
@@ -123,8 +131,8 @@ describe("sitesPage", () => {
     // Факты с суммами, которых нет в FAQ (этап 3), остаются на странице: хостинг, работа по часу, поддержка, перенос
     // лендинга, реклама. Условия без сумм – ответами FAQ
     it("факты с суммами – в колонках или «Ещё делаю», условия – в FAQ", () => {
-        const text = JSON.stringify({ terms, morePills }).replace(/\u00a0| /g, ' ');
-        for (const fact of ['от 300 ₽', '1 500 ₽/час', '1 000 ₽/час', 'Поддержка', 'от 3 000 ₽', 'Ведение рекламы – от 15 000 ₽ в месяц']) expect(text).toContain(fact);
+        const text = JSON.stringify({ terms, more }).replace(/ /g, ' ').replace(/⁠/g, '');
+        for (const fact of ['от 300 ₽', '1 500 ₽/ч', '1 000 ₽/ч', 'от 4 000 ₽/ч', 'Сопровождение', 'от 3 000 ₽', 'от 15 000 ₽/мес', 'от 180 000 ₽']) expect(text).toContain(fact);
         expect(JSON.stringify(projectPath)).toMatch(/2 недели/);
         const answers = faq.map((item) => item.answer).join(' ').replace(/\u00a0|\u2060/g, ' ').replace(/\u2060/g, '');
         for (const fact of ['предоплаты', 'новая задача', 'одним списком', 'файл не передаю', 'сопровождение', 'на ваше имя', 'Мой налог', 'в течение часа', 'Тильду', 'по часу', 'со своего аккаунта']) {

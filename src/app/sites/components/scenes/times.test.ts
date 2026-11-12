@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { move, PEAK, rise } from "@/app/ai/components/speed";
-import { ASK_GAP, ASK_SHIFT, cardIn, ctaTimes, cardOut, deckTimes, edges, faqTimes, flowTimes, morphLen, padded, payStageAt, payTimes, slideAt, termsTimes, TEXT } from "./times";
+import { ASK_GAP, ASK_SHIFT, cardIn, ctaTimes, cardOut, deckTimes, edges, faqTimes, flowTimes, moreTimes, morphLen, padded, payStageAt, payTimes, slideAt, termsTimes, TEXT } from "./times";
 
 // Пик скорости кривой на окне dur экранов, путь px, экран h: максимум |Δy| / Δскролл
 const peak = (curve: (k: number) => number, px: number, dur: number, h: number) => {
@@ -77,6 +77,19 @@ describe("сцены нижней части /sites", () => {
         const phone = termsTimes([6, 6, 5], true, 343, 667);
         expect(phone.cols[2].out).toBeNull();
         expect(phone.cols[1].line[0]).toBeGreaterThan(phone.cols[0].out![0] + phone.cols[0].out![1]);
+    });
+
+    // Д41: «Ещё делаю» – колонки прайса, как «Что входит», потом строка во всю ширину и тихая строка
+    it("«Ещё делаю»: строка во всю ширину – после последней колонки, её линия не быстрее предела", () => {
+        for (const [phone, col, wide, h] of [[false, 327, 1060, 900], [true, 343, 343, 812]] as const) {
+            const t = moreTimes([3, 4, 5], phone, col, wide, h);
+            const lastCol = t.cols[2];
+            expect(t.wide.line[0]).toBeGreaterThan(lastCol.items[lastCol.items.length - 1]);
+            expect(peak(move, wide, t.wide.line[1], h)).toBeLessThanOrEqual(PEAK);
+            expect(t.quiet).toBeGreaterThan(t.wide.row);
+            expect(t.path).toBeGreaterThan(t.quiet + TEXT);
+            expect(t.path).toBeGreaterThan(t.wide.line[0] + t.wide.line[1]);
+        }
     });
 
     // Этап 3: FAQ на липком экране – вопросы по одному, путь короче FAQ /ai (~5 экранов)

@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { deckAgents, monthlyRows } from "@/data/aiPage";
 import { offerFaq, services } from "@/data/offer";
 import { portfolioWorks } from "@/data/portfolio";
-import { morePills, payment, sitesDetails } from "@/data/sitesPage";
+import { more, payment, sitesDetails } from "@/data/sitesPage";
 import { buildChatPrompt, buildSystemPrompt, detectTopics, faqInBrief, plainText, sitePaths } from "./prompt";
 
 const ask = (...questions: string[]) => questions.map((content) => ({ role: 'user' as const, content }));
@@ -119,7 +119,8 @@ describe("buildChatPrompt – основа и добавки", () => {
         for (const kind of Object.values(sitesDetails)) {
             for (const o of kind.options) expect(prompt).toContain(plainText(o.title));
         }
-        expect(prompt).toContain(plainText(morePills.quiet));
+        expect(prompt).toContain(plainText(more.quiet));
+        for (const row of [...more.columns.flatMap((c) => c.rows), more.wide]) expect(prompt).toContain(plainText(row.price));
         expect(prompt).toContain('Можно на Тильде?');
         expect(prompt).not.toContain(plainText(deckAgents[0].where));
     });

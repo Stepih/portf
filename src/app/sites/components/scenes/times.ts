@@ -188,17 +188,23 @@ export const termsTimes = (counts: number[], phone: boolean, col: number, h: num
 };
 
 // ---------- Ещё делаю ----------
-export interface IMoreTimes {
-    head: number,
-    pills: number[],
-    quiet: number,
-    path: number
+// Д41: прайс в колонках – колонки встают, как «Что входит» (termsTimes: по одной, на телефоне сменяют друг друга),
+// затем строка во всю ширину (её линия – своим путём) и тихая строка под ней
+export interface IMoreTimes extends ITermsTimes {
+    wide: { line: W, row: number },
+    quiet: number
 }
 
-export const moreTimes = (pills: number): IMoreTimes => {
-    const list = Array.from({ length: pills }, (_, i) => .12 + i * .06);
-    const quiet = list[pills - 1] + .12;
-    return { head: 0, pills: list, quiet, path: quiet + TEXT + READ };
+// wide – ширина строки во всю ширину, px
+export const moreTimes = (counts: number[], phone: boolean, col: number, wide: number, h: number): IMoreTimes => {
+    const terms = termsTimes(counts, phone, col, h);
+    const lastCol = terms.cols[terms.cols.length - 1];
+    const shown = lastCol.items[lastCol.items.length - 1] + TEXT;
+    const line: W = [shown + .04, Math.max(fadeFor(h), durFor(wide, h))];
+    const row = line[0] + .06;
+    const quiet = row + .1;
+    // Пауза чтения – когда и тихая строка встала, и линия дорисована
+    return { ...terms, wide: { line, row }, quiet, path: Math.max(quiet + TEXT, end(line)) + READ };
 };
 
 // ---------- FAQ (этап 3) ----------
