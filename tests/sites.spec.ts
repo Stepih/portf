@@ -279,7 +279,7 @@ for (const width of [1400, 375]) {
         }
         await expect(moreRegion.getByText(more.wide.price, { exact: true })).toBeInViewport();
         await expect(moreRegion.getByText(more.quiet)).toBeInViewport();
-        if (width > 700) await expect(moreRegion.getByText(/1\s000\s₽\/⁠?ч/)).toBeInViewport();
+        if (width > 700) await expect(moreRegion.getByText(/Правки без тарифа.+1\s500\s₽\/⁠?ч/)).toBeInViewport();
 
         const scrollWidth = await page.evaluate(() => document.documentElement.scrollWidth);
         expect(scrollWidth).toBeLessThanOrEqual(width);
