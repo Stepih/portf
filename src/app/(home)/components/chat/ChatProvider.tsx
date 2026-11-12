@@ -9,10 +9,12 @@ import s from './Chat.module.scss'
 import ChatWindow from "./ChatWindow";
 import OrbStar from "./OrbStar";
 import { useChat } from "./useChat";
+import { useScrollAway } from "./useScrollAway";
 import { ralewayRegular } from "@/app/fonts/fonts";
 import { GOALS } from "@/constants/analytics";
 import { musicPageURL, popupPageURL } from "@/constants/urls";
 import { chatFabLabel } from "@/data/chat";
+import { useMediaQuery } from "@/hooks/useMediaQuery";
 import { IOfferButton } from "@/interfaces/offer";
 import { reachGoal } from "@/scripts/metrika";
 
@@ -107,6 +109,10 @@ const ChatProvider: FC<IChatProvider> = ({ tgButton, children }) => {
     const fabVisible = !FAB_HIDDEN.some((url) => pathname.startsWith(url));
     // Шар на месте, но погашен: на экране встроенный чат (/ai) или форма заявки. Для Tab и скринридера его тоже нет
     const fabMuted = inlineShown || formShown;
+    // Телефон: пока листают вниз, шар уходит и не закрывает текст (Д44). Он на мгновение, поэтому остаётся в Tab и для скринридера
+    const fabRef = useRef<HTMLButtonElement>(null);
+    const isPhone = useMediaQuery('(max-width: 600px)');
+    const fabAway = useScrollAway(isPhone && fabVisible && !open, fabRef);
 
     return (
         <ChatContext.Provider value={openChat}>
@@ -122,6 +128,7 @@ const ChatProvider: FC<IChatProvider> = ({ tgButton, children }) => {
                         {fabVisible && (
                             <motion.button
                                 type="button"
+                                ref={fabRef}
                                 className={s.fab}
                                 onClick={(e) => openChat(e.currentTarget)}
                                 aria-haspopup="dialog"
@@ -129,10 +136,16 @@ const ChatProvider: FC<IChatProvider> = ({ tgButton, children }) => {
                                 // в угол прилетает большой шар страницы и передаёт ему место
                                 aria-hidden={fabMuted || undefined}
                                 tabIndex={fabMuted ? -1 : undefined}
-                                style={{ pointerEvents: fabMuted ? 'none' : undefined }}
+                                style={{ pointerEvents: fabMuted || fabAway ? 'none' : undefined }}
                                 initial={{ opacity: 0, scale: 0 }}
-                                // Пока окно открыто, шар прячется под ним
-                                animate={open ? { opacity: 0, scale: 0.5 } : fabMuted ? { opacity: 0, scale: 1 } : { opacity: 1, scale: 1 }}
+                                // Пока окно открыто, шар прячется под ним. Ушёл при прокрутке – гаснет быстро и на месте,
+                                // возвращается той же пружиной
+                                animate={
+                                    open ? { opacity: 0, scale: 0.5 }
+                                        : fabMuted ? { opacity: 0, scale: 1 }
+                                            : fabAway ? { opacity: 0, scale: 1, transition: { duration: 0.2, ease: 'easeOut' } }
+                                                : { opacity: 1, scale: 1 }
+                                }
                                 exit={{ opacity: 0, scale: 0 }}
                                 transition={{ type: 'spring', stiffness: 260, damping: 18 }}
                             >

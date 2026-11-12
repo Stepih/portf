@@ -1694,6 +1694,54 @@ for (const viewport of [{ width: 1400, height: 900 }, { width: 375, height: 740 
     });
 }
 
+// DESIGN_FIXES_8_PLAN Д44: на телефоне шар уходит, пока листают вниз (текст не проезжает под ним), и возвращается
+// после остановки или сразу при прокрутке вверх. В Tab и для скринридера он остаётся. Шире 600px – не уходит
+const fabOpacity = (page: Page) => fabLocator(page).evaluate((el) => Number(getComputedStyle(el).opacity));
+// Листаем вниз шагами по 40px каждые 50 мс, не дожидаясь конца
+const scrollDownFor = (page: Page, ms: number) => page.evaluate((ms) => {
+    const id = window.setInterval(() => window.scrollBy({ top: 40, behavior: 'instant' }), 50);
+    window.setTimeout(() => window.clearInterval(id), ms);
+}, ms);
+
+test('шар чата на 375 уходит при прокрутке вниз и возвращается', async ({ page }) => {
+    await page.setViewportSize({ width: 375, height: 740 });
+    await page.goto('/');
+    const fab = fabLocator(page);
+    await expect.poll(() => fabOpacity(page)).toBeGreaterThan(0.95);
+    // Середина страницы: до формы дальше, чем пролистает тест
+    await page.evaluate(() => window.scrollTo({ top: 4500, behavior: 'instant' }));
+    await expect.poll(() => fabOpacity(page)).toBeGreaterThan(0.95);
+
+    await scrollDownFor(page, 1500);
+    await expect.poll(() => fabOpacity(page), { timeout: 1000 }).toBeLessThan(0.05);
+    expect(await fab.evaluate((el) => getComputedStyle(el).pointerEvents)).toBe('none');
+    await expect(fab).not.toHaveAttribute('aria-hidden', 'true');
+    await expect(fab).not.toHaveAttribute('tabindex', '-1');
+
+    // Остановились – шар вернулся
+    await expect.poll(() => fabOpacity(page), { timeout: 4000 }).toBeGreaterThan(0.95);
+    expect(await fab.evaluate((el) => getComputedStyle(el).pointerEvents)).not.toBe('none');
+
+    // Вниз, потом вверх – сразу на месте, без паузы
+    await scrollDownFor(page, 300);
+    await expect.poll(() => fabOpacity(page), { timeout: 1000 }).toBeLessThan(0.05);
+    await page.waitForTimeout(350);
+    await page.evaluate(() => window.scrollBy({ top: -40, behavior: 'instant' }));
+    await expect.poll(() => fabOpacity(page), { timeout: 450 }).toBeGreaterThan(0.95);
+});
+
+test('шар чата на 1400 при прокрутке не уходит', async ({ page }) => {
+    await page.setViewportSize({ width: 1400, height: 900 });
+    await page.goto('/');
+    await page.evaluate(() => window.scrollTo({ top: 4500, behavior: 'instant' }));
+    await expect.poll(() => fabOpacity(page)).toBeGreaterThan(0.95);
+    await scrollDownFor(page, 800);
+    for (let i = 0; i < 4; i++) {
+        await page.waitForTimeout(150);
+        expect(await fabOpacity(page)).toBeGreaterThan(0.95);
+    }
+});
+
 // DESIGN_FIXES_7_PLAN Д39: клавиатура и цели касания.
 // Кольцо фокуса – у самого элемента или у карточки, к которой он растянут (`:has(.link:focus-visible)`)
 const ringOf = (el: Element) => {
