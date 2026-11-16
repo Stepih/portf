@@ -74,11 +74,13 @@
 // z-index: -1 – под карточкой: sticky-экран сам создаёт контекст наложения
 .bg {
     position: absolute;
+    top: 0;
+    left: 0;
     z-index: -1;
 
     background: var(--color-frost);
     box-shadow: vars.$shadow;
-    will-change: top, right, bottom, left;
+    will-change: transform;
 }
 
 // Портал: сплошной цвет страницы под полупрозрачным фоном карточки

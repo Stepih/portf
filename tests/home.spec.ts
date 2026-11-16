@@ -931,6 +931,46 @@ const scrollIndustries = async (page: Page) => {
     await scrollInstant(page, path.top + path.len * (tm.burstTo + tm.portalFrom) / 2);
 };
 
+// Фон карточки растёт до краёв экрана transform-ом, а не top/left/right/bottom: прокрутка сцены не даёт сдвигов раскладки.
+// Было ~0,22 на 1400 и ~0,31 на 375 (DESIGN_FIXES_8_PLAN Д46)
+for (const viewport of [{ width: 1400, height: 900 }, { width: 375, height: 667 }]) {
+    test.describe(`сцена без CLS, ${viewport.width}px`, () => {
+        test.use({ viewport });
+
+        test('прокрутка через раскрытие фона: сдвигов раскладки нет, фон дорастает до краёв', async ({ page }) => {
+            await page.addInitScript(() => {
+                (window as unknown as { cls: number }).cls = 0;
+                new PerformanceObserver((list) => list.getEntries().forEach((e) => {
+                    (window as unknown as { cls: number }).cls += (e as unknown as { value: number }).value;
+                })).observe({ type: 'layout-shift', buffered: true });
+            });
+            await page.goto('/');
+            await page.waitForTimeout(800);
+            // Фон – второй слой экрана, за сплошной подложкой
+            const bg = sceneScreen(page).locator(':scope > [aria-hidden="true"]').nth(1);
+            const start = await bg.boundingBox();
+            const screen = await sceneScreen(page).boundingBox();
+            expect(start!.width).toBeLessThan(screen!.width);
+            const clsBefore = await page.evaluate(() => (window as unknown as { cls: number }).cls);
+            await page.mouse.move(viewport.width / 2, viewport.height / 2);
+            const [path, tm] = [await scenePath(page), await sceneTiming(page)];
+            const target = path.top + path.len * tm.expandTo + 100;
+            while (await page.evaluate(() => window.scrollY) < target) {
+                await page.mouse.wheel(0, 80);
+                await page.waitForTimeout(30);
+            }
+            await page.waitForTimeout(700);
+            const cls = await page.evaluate(() => (window as unknown as { cls: number }).cls);
+            expect(cls - clsBefore).toBeLessThan(.01);
+            const end = await bg.boundingBox();
+            expect(end!.x).toBeLessThanOrEqual(screen!.x + 1);
+            expect(end!.width).toBeGreaterThanOrEqual(screen!.width - 1);
+            expect(end!.height).toBeGreaterThanOrEqual(screen!.height - 1);
+            await expect(bg).toHaveCSS('border-radius', /^0px/);
+        });
+    });
+}
+
 for (const viewport of [{ width: 1400, height: 900 }, { width: 375, height: 667 }]) {
     test.describe(`быстрый скролл за конец сцены, ${viewport.width}px`, () => {
         test.use({ viewport });

@@ -18,9 +18,18 @@ const SelectThemeButton:FC = () => {
     const [theme, setTheme] = useState<Theme>("light");
 
     // Тему на <html> уже поставил inline-скрипт из layout.tsx, кнопка только подхватывает её.
-    // Сам атрибут здесь не пишем, иначе до чтения сохранённой темы мелькнёт светлая.
+    // Тему по умолчанию здесь не пишем, иначе до чтения сохранённой мелькнёт светлая.
+    // Исключение – 404 из notFound() страницы (скрытая /music): Next отдаёт пустую оболочку, React рисует <html> заново,
+    // атрибут теряется, а скрипт из layout второй раз не исполняется. Тогда ставим сохранённую тему сами (Д46)
     useEffect(() => {
-        if (document.documentElement.dataset.theme === "dark") setTheme("dark")
+        const root = document.documentElement;
+        if (!root.dataset.theme) {
+            try {
+                const saved = localStorage.getItem("theme");
+                if (saved === "light" || saved === "dark") root.setAttribute("data-theme", saved);
+            } catch {}
+        }
+        if (root.dataset.theme === "dark") setTheme("dark")
     }, [])
 
     const toggleTheme = () => {

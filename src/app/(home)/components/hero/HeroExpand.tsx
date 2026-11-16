@@ -43,9 +43,13 @@ const LAG_CAP = .8;
 
 const clamp01 = (v: number) => Math.min(1, Math.max(0, v));
 
-// Отступ края фона: от отступа карточки при t = 0 до нуля при t = 1
-const useInset = (t: MotionValue<number>, edge: MotionValue<number>) =>
-    useTransform([t, edge], ([p, e]: number[]) => e * (1 - p));
+// Фон карточки растёт до краёв экрана только transform: размер элемента – размер карточки, он сдвигается
+// и масштабируется. Раньше росли top/left/right/bottom – сдвиг раскладки, CLS при прокрутке ~0,22 на 1400 и ~0,31 на 375 (Д46).
+// Масштаб по осям при t: от 1 до экрана, делённого на карточку
+const scaleAt = (p: number, screenSide: number, near: number, far: number) => {
+    const side = screenSide - near - far;
+    return side > 0 ? 1 + (screenSide / side - 1) * p : 1;
+};
 
 // Кадр от значений и времени сцены: пересчитывается и при скролле, и когда замер меняет время
 const useTimed = <T,>(tmv: MotionValue<ISceneTiming>, inputs: MotionValue<number>[], fn: (v: number[], tm: ISceneTiming) => T) =>
@@ -286,6 +290,9 @@ const HeroExpand: FC<HeroExpandProps> = ({ chips, worksCount, children }) => {
     const right = useMotionValue(0);
     const bottom = useMotionValue(0);
     const left = useMotionValue(0);
+    // Размер липкого экрана: до него растёт фон карточки
+    const screenW = useMotionValue(0);
+    const screenH = useMotionValue(0);
     // Куда едет фото: сдвиг до кружка над заголовком и масштаб под его размер
     const photoDx = useMotionValue(0);
     const photoDy = useMotionValue(0);
@@ -300,11 +307,17 @@ const HeroExpand: FC<HeroExpandProps> = ({ chips, worksCount, children }) => {
 
     // Объявлены до замера: useTransform подписывается на края в своём эффекте,
     // и замер, сделанный раньше подписки, фон бы не увидел
-    const bgTop = useInset(t, top);
-    const bgRight = useInset(t, right);
-    const bgBottom = useInset(t, bottom);
-    const bgLeft = useInset(t, left);
-    const radius = useTransform(t, [0, 1], [13, 0]);
+    const bgW = useTransform([screenW, left, right], ([w, l, r]: number[]) => Math.max(0, w - l - r));
+    const bgH = useTransform([screenH, top, bottom], ([h, tp, b]: number[]) => Math.max(0, h - tp - b));
+    const bgX = useTransform([t, left], ([p, l]: number[]) => l * (1 - p));
+    const bgY = useTransform([t, top], ([p, tp]: number[]) => tp * (1 - p));
+    const bgScaleX = useTransform([t, screenW, left, right], ([p, w, l, r]: number[]) => scaleAt(p, w, l, r));
+    const bgScaleY = useTransform([t, screenH, top, bottom], ([p, h, tp, b]: number[]) => scaleAt(p, h, tp, b));
+    // Скругление 13 → 0 в экранных px: делится на масштаб по каждой оси, чтобы угол не вытягивался
+    const radius = useTransform([t, bgScaleX, bgScaleY], ([p, sx, sy]: number[]) => {
+        const r = 13 * (1 - p);
+        return `${r / sx}px / ${r / sy}px`;
+    });
     const towardX = useToward(t, photoDx);
     const towardY = useToward(t, photoDy);
     const towardScale = useToward(t, photoScale, 1);
@@ -326,6 +339,8 @@ const HeroExpand: FC<HeroExpandProps> = ({ chips, worksCount, children }) => {
             left.set(c.offsetLeft);
             right.set(box.width - c.offsetLeft - c.offsetWidth);
             bottom.set(box.height - c.offsetTop - c.offsetHeight);
+            screenW.set(box.width);
+            screenH.set(box.height);
 
             if (!slot.current) return;
             const p = photoBox.current.getBoundingClientRect();
@@ -405,7 +420,7 @@ const HeroExpand: FC<HeroExpandProps> = ({ chips, worksCount, children }) => {
         [scene.current, path.current, screen.current, card.current, photoBox.current, slot.current, root.current, lead.current, nextEl.current]
             .forEach((el) => el && observer.observe(el));
         return () => observer.disconnect();
-    }, [reduceMotion, sceneTop, sceneLen, lagCap, top, right, bottom, left, photoDx, photoDy, photoScale, cx, cy, r0, diskMax, diskDy, rMax, applyTiming]);
+    }, [reduceMotion, sceneTop, sceneLen, lagCap, top, right, bottom, left, screenW, screenH, photoDx, photoDy, photoScale, cx, cy, r0, diskMax, diskDy, rMax, applyTiming]);
 
     // Тач-экран: экран сцены не ниже наибольшего innerHeight при этой ширине окна (--screen-max-h в стилях).
     // Только растёт – панели браузера сворачиваются и разворачиваются на скролле; при смене ширины (поворот) – заново.
@@ -709,7 +724,7 @@ const HeroExpand: FC<HeroExpandProps> = ({ chips, worksCount, children }) => {
                     <motion.div className={s.base} style={{ opacity: baseOpacity }} aria-hidden="true" />
                     <motion.div
                         className={s.bg}
-                        style={{ top: bgTop, right: bgRight, bottom: bgBottom, left: bgLeft, borderRadius: radius }}
+                        style={{ width: bgW, height: bgH, x: bgX, y: bgY, scaleX: bgScaleX, scaleY: bgScaleY, originX: 0, originY: 0, borderRadius: radius }}
                         aria-hidden="true"
                     />
 
