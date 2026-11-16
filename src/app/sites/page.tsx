@@ -29,7 +29,7 @@ import SitesCta from "./components/SitesCta";
 // Тексты – src/data/sitesPage.ts (marketing:draft-content). Не в поиске и не в sitemap (next-sitemap.config.js) –
 // до команды владельца после финальной проверки
 const title = 'Сайты под ключ: лендинг, сайт компании, магазин – Степан Картузов';
-const description = 'Лендинг от 8 000 ₽ за 3–4 дня, сайт компании от 30 000 ₽, магазин от 50 000 ₽. Что входит, опции с ценами, макет до оплаты';
+const description = 'Лендинг от 8 000 ₽ (3–4 дня разработки), сайт компании от 30 000 ₽, магазин от 50 000 ₽. Что входит, опции с ценами, макет до оплаты';
 
 export const metadata: Metadata = {
     title,

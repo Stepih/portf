@@ -201,6 +201,23 @@ test('услуги и цены на главной', async ({ page }) => {
     expect(requests[0]).toMatchObject({ name: 'Иван', service: 'shop' });
 });
 
+// Д48 (DESIGN_FIXES_9_PLAN): у сайтов срок – разработки, а не весь путь с макетом и правками
+for (const width of [1400, 375]) {
+    test(`срок в карточках сайтов – срок разработки, ${width}px`, async ({ page }) => {
+        await page.setViewportSize({ width, height: 900 });
+        await page.goto('/');
+        const section = page.getByRole('region', { name: 'Услуги и цены' });
+        for (const service of services.filter((item) => item.term)) {
+            expect(service.term).toMatch(/^\d–\d \S+ разработки$/);
+            const term = section.getByText(service.term!, { exact: true });
+            await expect(term).toHaveCount(1);
+            // «3–4 дня» не разрывается между строками
+            const lines = await term.evaluate((el) => { const range = document.createRange(); range.selectNodeContents(el); return new Set([...range.getClientRects()].map((r) => Math.round(r.top))).size; });
+            expect(lines).toBe(1);
+        }
+    });
+}
+
 // Ссылка с услугой из чата или мессенджера открывает главную сразу у формы с выбранной услугой (Д13, 4.2)
 test('прямая ссылка /?service=ai#contact – у формы с выбранной услугой', async ({ page }) => {
     await page.goto('/?service=ai#contact');
