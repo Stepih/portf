@@ -333,6 +333,26 @@ test('/sites: FAQ на липком экране – вопросы по одн�
     await expect(page.getByRole('region', { name: sections.cta.title })).toBeAttached();
 });
 
+// Д47: заголовок FAQ въезжает вместе со страницей, как у «Ещё делаю» (Д41), – пока экран сцены поднимается,
+// перед FAQ нет пустого экрана
+for (const [width, height] of [[1400, 900], [820, 1180]]) {
+    test(`/sites: заголовок FAQ виден, пока экран сцены поднимается, ${width}`, async ({ page }) => {
+        await page.setViewportSize({ width, height });
+        await page.goto('/sites');
+        await page.waitForTimeout(800);
+        const top = await page.evaluate((name) => {
+            const section = [...document.querySelectorAll('h2')].find((h) => h.textContent === name)!.closest('section')!;
+            return section.getBoundingClientRect().top + window.scrollY;
+        }, sections.faq.title);
+        // Верх раздела – на середине экрана: липкий экран ещё не встал
+        await page.evaluate((y) => window.scrollTo(0, y), Math.round(top - height / 2));
+        await page.waitForTimeout(600);
+        const heading = page.getByRole('heading', { level: 2, name: sections.faq.title });
+        await expect(heading).toBeInViewport();
+        await expect(heading.locator('..')).toHaveCSS('opacity', '1');
+    });
+}
+
 test('/sites: FAQ на телефоне – по своему скроллу, без прокрутки вбок', async ({ page }) => {
     await page.setViewportSize({ width: 375, height: 812 });
     await page.goto('/sites');

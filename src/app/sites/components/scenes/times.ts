@@ -214,7 +214,6 @@ export const moreTimes = (counts: number[], phone: boolean, col: number, wide: n
 export const ASK_SHIFT = .3;
 export const ASK_GAP = .85;
 export interface IFaqTimes {
-    head: number,
     // Въезд вопроса i и таяние его пузыря
     ask: W[],
     melt: W[],
@@ -228,7 +227,7 @@ export const faqTimes = (count: number, w: number, h: number): IFaqTimes => {
     const step = Math.max(.1, dur * ASK_GAP);
     const ask = Array.from({ length: count }, (_, i): W => [.12 + i * step, dur]);
     const melt = ask.map(([a, d]): W => [a + d * .8, fade]);
-    return { head: 0, ask, melt, path: end(melt[count - 1]) + READ };
+    return { ask, melt, path: end(melt[count - 1]) + READ };
 };
 
 // ---------- Финал (У5б, 5б) ----------

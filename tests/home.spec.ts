@@ -1988,3 +1988,19 @@ for (const viewport of [{ width: 1400, height: 900 }, { width: 375, height: 812 
         expect(toTrust).toBeLessThan(toNote);
     });
 }
+
+// Финальный проход (DESIGN_FIXES_8_PLAN Д47): карточка при раздаче кейсов перелетает место (~3%) и на 820
+// выходила за край окна на 1px – у страницы появлялась прокрутка вбок. Ни в одном кадре прокрутки её нет
+test('без прокрутки вбок во всех кадрах главной, 820px', async ({ page }) => {
+    await page.setViewportSize({ width: 820, height: 1180 });
+    await page.goto('/');
+    await page.waitForTimeout(800);
+    const total = await page.evaluate(() => document.documentElement.scrollHeight);
+    let worst = 0;
+    for (let y = 0; y < Math.min(total, 4000); y += 60) {
+        await page.evaluate((yy) => window.scrollTo(0, yy), y);
+        await page.waitForTimeout(40);
+        worst = Math.max(worst, await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth));
+    }
+    expect(worst).toBe(0);
+});

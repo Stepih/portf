@@ -76,7 +76,6 @@ interface IBody {
 
 const FaqBody: FC<IBody> = ({ time, mode, t, bodyRef }) => {
     const sticky = mode === 'scene';
-    const headOn = useTransform(time, (v) => easeOut(span(v, t.head, .1)));
     // Нижняя линия списка – с последним вопросом
     const last = t.ask[t.ask.length - 1];
     // Стык с финалом: линию забрал экран финала (SitesCta) – у списка она прячется
@@ -92,13 +91,15 @@ const FaqBody: FC<IBody> = ({ time, mode, t, bodyRef }) => {
 
     return (
         <div ref={bodyRef} className={`${ralewayRegular.className} ${f.faq} ${s.body} ${sticky ? s.compact : ''}`}>
-            <motion.div className={s.head} style={sticky ? { opacity: headOn } : undefined}>
+            {/* Заголовок не проявляется после остановки, а въезжает вместе со страницей, как у «Ещё делаю» (Д41):
+                перед FAQ нет пустого экрана прокрутки (Д47) */}
+            <div className={s.head}>
                 <h2 id={`${faqId}-title`} className={`${ralewayBold.className} ${f.title}`}>{sections.faq.title}</h2>
                 <p className={f.description} data-goal-place="sites_faq">
                     {sections.faq.text}{' '}
                     <ContactLink className={f.link}>{sections.faq.link}</ContactLink>
                 </p>
-            </motion.div>
+            </div>
 
             <motion.div
                 ref={list}
