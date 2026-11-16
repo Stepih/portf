@@ -1,7 +1,7 @@
 import { expect, Locator, Page, test } from '@playwright/test';
 import { ServiceId } from '../src/interfaces/offer';
 import { hiddenPages } from '../src/constants/urls';
-import { contactTitle, faqContactLink, industriesOtherQuestion, industryChipCount, faqTitle, formButton, heroPrice, heroTitleSlide, moreLinks, moreTitle, offerButtonsNote, offerFaq, offerReasons, offerSteps, offerTgButton, offerTitle, offerTrustLine, services, servicesMoreLabel, servicesTitle, stepsContactLink } from '../src/data/offer';
+import { contactTitle, faqContactLink, faqMoreLabel, faqTopCount, industriesOtherQuestion, industryChipCount, faqTitle, formButton, heroPrice, heroTitleSlide, moreLinks, moreTitle, offerButtonsNote, offerFaq, offerReasons, offerSteps, offerTgButton, offerTitle, offerTrustLine, services, servicesMoreLabel, servicesTitle, stepsContactLink } from '../src/data/offer';
 import { contactIncomplete, formSuccessText, formSuccessTitle, inputsListFeedback } from '../src/data/inputsFeedBack';
 import { chatButtonText, chatButtonTitle, chatFabLabel, chatLeadOpen, chatLeadSuccess } from '../src/data/chat';
 import { footerName, footerSince, footerTg } from '../src/data/footer';
@@ -600,7 +600,7 @@ test('FAQ, шаги и подпись блока услуг после У7', asy
     await page.goto('/');
 
     const faq = page.getByRole('region', { name: faqTitle });
-    await expect(faq.locator('details')).toHaveCount(12);
+    await expect(faq.locator('summary').filter({ hasNotText: faqMoreLabel })).toHaveCount(12);
     for (const question of ['Что, если вы пропадёте с предоплатой?', 'Как понять до оплаты, что агент подойдёт?']) {
         await expect(faq.locator('summary', { hasText: question })).toHaveCount(1);
     }
@@ -686,19 +686,33 @@ for (const path of ['/', '/popup']) {
     });
 }
 
-// FAQ на <details>: первый вопрос раскрыт, клик раскрывает следующий (SALES_PLAN 3.8)
+// FAQ на <details>: первый вопрос раскрыт, клик раскрывает следующий (SALES_PLAN 3.8).
+// Д45: сразу видны 5 вопросов о страхах, «пропадёте с предоплатой» – первый; остальные – за «Ещё вопросы», в HTML с начала
 test('FAQ на главной', async ({ page }) => {
     await page.goto('/');
 
     const section = page.getByRole('region', { name: 'Что спрашивают перед заказом' });
-    const items = section.locator('details');
+    const items = section.locator('details').filter({ hasNot: page.locator('details') });
     await expect(items).toHaveCount(offerFaq.length);
+    await expect(items.first().locator('summary')).toHaveText('Что, если вы пропадёте с предоплатой?');
     await expect(items.first()).toHaveAttribute('open', '');
     await expect(items.nth(1)).not.toHaveAttribute('open');
 
     await items.nth(1).locator('summary').click();
     await expect(items.nth(1)).toHaveAttribute('open', '');
     await expect(items.nth(1).getByText(offerFaq[1].answer)).toBeVisible();
+
+    for (let i = 0; i < offerFaq.length; i++) {
+        if (i < faqTopCount) await expect(items.nth(i).locator('summary')).toBeVisible();
+        else await expect(items.nth(i).locator('summary')).toBeHidden();
+    }
+    // Скрытые вопросы уже в HTML (для поиска), «Ещё вопросы» раскрывает их и сворачивает обратно
+    await expect(section).toContainText(offerFaq[offerFaq.length - 1].question, { useInnerText: false });
+    const more = section.locator('summary', { hasText: faqMoreLabel });
+    await more.click();
+    for (let i = faqTopCount; i < offerFaq.length; i++) await expect(items.nth(i).locator('summary')).toBeVisible();
+    await more.press('Enter');
+    await expect(items.nth(faqTopCount).locator('summary')).toBeHidden();
 });
 
 // Единое кольцо фокуса (DESIGN_FIXES_2_PLAN Д8): чернила 2px и голубой ореол – у шапки, черт слайдов, FAQ и кнопок
@@ -1662,7 +1676,10 @@ for (const viewport of [{ width: 1400, height: 900 }, { width: 375, height: 740 
         await aiPrice.evaluate((el) => el.scrollIntoView({ block: 'end', behavior: 'instant' }));
         await checkClear(aiPrice, '«Узнать цену» ИИ');
 
-        const summaries = page.getByRole('region', { name: faqTitle }).locator('summary');
+        // Д45: часть вопросов – за «Ещё вопросы», раскрываем их, чтобы проверить все
+        const faqSection = page.getByRole('region', { name: faqTitle });
+        await faqSection.locator('details', { has: page.locator(':scope > summary', { hasText: faqMoreLabel }) }).evaluate((el) => { (el as HTMLDetailsElement).open = true; });
+        const summaries = faqSection.locator('summary');
         const count = await summaries.count();
         for (let i = 0; i < count; i++) {
             await summaries.nth(i).evaluate((el) => el.scrollIntoView({ block: 'end', behavior: 'instant' }));
@@ -1733,7 +1750,8 @@ test('шар чата на 375 уходит при прокрутке вниз �
 test('шар чата на 1400 при прокрутке не уходит', async ({ page }) => {
     await page.setViewportSize({ width: 1400, height: 900 });
     await page.goto('/');
-    await page.evaluate(() => window.scrollTo({ top: 4500, behavior: 'instant' }));
+    // Старт – за 2000px до формы: у формы шар гаснет нарочно (Д38), а страница меняет длину (Д45 укоротил FAQ)
+    await page.evaluate(() => window.scrollTo({ top: document.getElementById('contact')!.getBoundingClientRect().top + window.scrollY - 2000, behavior: 'instant' }));
     await expect.poll(() => fabOpacity(page)).toBeGreaterThan(0.95);
     await scrollDownFor(page, 800);
     for (let i = 0; i < 4; i++) {

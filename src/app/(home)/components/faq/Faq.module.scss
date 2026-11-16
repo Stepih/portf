@@ -104,6 +104,61 @@ $icon: 14px;
         }
     }
 
+    // «Ещё вопросы» (Д45): строка того же ритма, что вопрос, но вторичная – приглушённый цвет и стрелка вместо плюса,
+    // чтобы не читалась шестым вопросом. Открыта – стрелка вверх, остальные вопросы идут ниже с теми же линиями
+    .more {
+        border-top: 1.5px solid $line;
+
+        &[open] .moreToggle::after {
+            transform: rotate(-135deg);
+            margin-top: -2px;
+        }
+    }
+
+    .moreToggle {
+        position: relative;
+
+        padding: 18px calc($icon + 20px) 18px 0;
+
+        font-size: 1.05rem;
+        color: var(--color-text-muted);
+        list-style: none;
+
+        cursor: pointer;
+        transition: vars.$transition;
+
+        &::-webkit-details-marker {
+            display: none;
+        }
+
+        // Стрелка вниз из двух сторон квадрата
+        &::after {
+            content: '';
+
+            position: absolute;
+            top: 50%;
+            right: 6px;
+
+            width: 9px;
+            height: 9px;
+            margin-top: -7px;
+
+            border-right: 2px solid currentColor;
+            border-bottom: 2px solid currentColor;
+            transform: rotate(45deg);
+
+            transition: transform 0.2s ease, margin-top 0.2s ease;
+        }
+
+        &:hover {
+            color: var(--color-text-100);
+        }
+
+        &:focus-visible {
+            @include vars.focus-ring(4px);
+        }
+    }
+
     .answer {
         margin: 0;
         padding: 0 calc($icon + 20px) 20px 0;
@@ -118,7 +173,8 @@ $icon: 14px;
     .faq {
         margin-top: 70px;
 
-        .question {
+        .question,
+        .moreToggle {
             font-size: 1rem;
         }
 
