@@ -631,9 +631,14 @@ test('почему я на главной', async ({ page }) => {
 
     const section = page.getByRole('region', { name: 'Почему я' });
     const reasons = section.getByRole('listitem');
-    await expect(reasons).toHaveCount(3);
-    await expect(reasons.first().getByRole('heading', { level: 3 })).toHaveText('Чек на каждую оплату');
+    await expect(reasons).toHaveCount(2);
+    await expect(reasons.first().getByRole('heading', { level: 3 })).toHaveText('Не привязаны ко мне');
     await expect(reasons.first()).toContainText(offerReasons[0].text);
+    // Д52: про чек и ИП/ООО – только в FAQ, в «Почему я» дубля нет
+    await expect(section).not.toContainText('Мой налог');
+    await expect(page.getByRole('region', { name: faqTitle })).toContainText('Мой налог');
+    // Текст пунктов – body-compact 1.05rem, как в карточках услуг, а не кеглем сносок
+    expect(await reasons.first().locator('p').evaluate((el) => parseFloat(getComputedStyle(el).fontSize))).toBeCloseTo(16.8, 1);
     for (const repeat of ['Предоплата', 'Гарантия', 'менеджер']) await expect(section).not.toContainText(repeat);
     await expect(section.locator(':scope > p')).toHaveCount(0);
 
@@ -1409,7 +1414,6 @@ for (const width of [375, 320]) {
         const texts = [
             page.getByRole('region', { name: faqTitle }).getByText(offerFaq[0].answer),
             page.getByText(offerSteps[0].text),
-            // Тот же текст – в ответе FAQ про оплату (SERVICES_PLAN У1)
             page.getByRole('region', { name: 'Почему я' }).getByText(offerReasons[0].text),
             contact.getByText(offerButtonsNote),
             contact.getByText(offerTrustLine()),

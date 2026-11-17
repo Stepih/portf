@@ -5,7 +5,7 @@ import { ralewayBold, ralewayRegular } from "@/app/fonts/fonts";
 import { offerReasons, reasonsTitle } from "@/data/offer";
 
 // «Почему я» (SALES_PLAN 3.6, DESIGN_FIXES_2_PLAN Д5): три отличия списком без фона, чтобы не путались
-// с карточками услуг. На компьютере в 3 колонки, над каждым пунктом – тонкая линия
+// с карточками услуг. Два пункта (Д52) – в 2 колонки шириной FAQ, над каждым пунктом – тонкая линия
 const Reasons: FC = () => {
     return (
         <section className={`${ralewayRegular.className} ${s.reasons}`} aria-labelledby="reasons-title">
