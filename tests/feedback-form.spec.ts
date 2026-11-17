@@ -272,6 +272,39 @@ test('без сети – плашка, введённое сохраняетс�
     await expectNoFieldError(form.contact);
 });
 
+
+// Форма главной: сервер ответил ошибкой – тост, введённое на месте, кнопка снова доступна, повтор уходит (DESIGN_FIXES_9_PLAN Д53)
+test('форма главной: ответ 500 – тост, повторная отправка проходит', async ({ page }) => {
+    let status = 500;
+    const requests: Request[] = [];
+    await page.route('**/api/sendMessage', route => {
+        requests.push(route.request());
+        return route.fulfill({ status, json: status === 200 ? { message: 'ok' } : { error: 'mock' } });
+    });
+    await page.goto('/#contact');
+    const contact = page.locator('#contact');
+    const name = contact.getByRole('textbox', { name: 'Имя', exact: true });
+    const phone = contact.getByLabel('Телефон или Telegram');
+    const submit = contact.getByRole('button', { name: formSubmitButton });
+
+    await name.fill('Иван');
+    await phone.fill('+7 999 123-45-67');
+    await submit.click();
+
+    const toast = page.getByRole('alert').filter({ hasText: 'Не удалось отправить заявку, попробуйте позже' }).locator('div');
+    await expect(toast).toBeVisible();
+    await expect(name).toHaveValue('Иван');
+    await expect(phone).toHaveValue('+7 999 123-45-67');
+    await expectNoFieldError(name);
+    await expectNoFieldError(phone);
+    await expect(submit).toBeEnabled();
+
+    status = 200;
+    await submit.click();
+    await expect(contact.getByRole('status')).toContainText(formSuccessText);
+    expect(requests).toHaveLength(2);
+});
+
 // Относительная яркость цвета rgb(a) – для контраста по WCAG
 const luminance = (rgb: string) => {
     const [r, g, b] = rgb.match(/[\d.]+/g)!.slice(0, 3).map(Number).map(v => {

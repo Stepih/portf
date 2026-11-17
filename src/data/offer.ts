@@ -71,7 +71,8 @@ const industryShort: Record<PortfolioIndustry, string> = {
     medicine: 'медицина',
     construction: 'стройка',
     beauty: 'бьюти',
-    outsourcing: 'юристы и бухгалтеры',
+    // Через запятую: в строке доверия «… и др.» не даёт двойного «и» (Д53, вариант A владельца, 17.11.2026)
+    outsourcing: 'юристы, бухгалтеры',
     b2b: 'производство и B2B',
     realty: 'недвижимость',
     education: 'онлайн-школы',
@@ -82,7 +83,7 @@ const industryShort: Record<PortfolioIndustry, string> = {
 // Сколько отраслей влезает в строку доверия (финальный блок, 3.9), остальные – «и др.» (выбор владельца, 3.1)
 const trustIndustries = 3
 
-// «10 проектов · 2023–2026 · стройка, бьюти, юристы и бухгалтеры и др.» – считается из портфолио
+// «10 проектов · 2023–2026 · стройка, бьюти, юристы, бухгалтеры и др.» – считается из портфолио
 export const offerTrustLine = (stats = portfolioStats(), maxIndustries = trustIndustries): string => {
     const names = stats.industries.map((i) => industryShort[i.id])
     const shown = names.slice(0, maxIndustries).join(', ')

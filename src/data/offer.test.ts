@@ -50,6 +50,13 @@ describe("offer", () => {
         expect(offerTrustLine(stats, 3)).toBe('5 проектов · 2023–2026 · стройка, бьюти, туризм');
     });
 
+    it("в строке доверия одно «и» перед «др.» (Д53)", () => {
+        const industries = (['construction', 'beauty', 'outsourcing', 'travel'] as const).map((id) => ({ id, label: '', audience: '' }));
+        const line = offerTrustLine({ count: 5, years: { from: 2023, to: 2026 }, industries });
+        expect(line).toBe('5 проектов · 2023–2026 · стройка, бьюти, юристы, бухгалтеры и др.');
+        expect(line.match(/ и /g)).toHaveLength(1);
+    });
+
     it("в FAQ нет цен и вопросы не повторяются: цены – в «Услугах и ценах» (3.8)", () => {
         for (const item of offerFaq) expect(item.answer).not.toMatch(/₽/);
         const questions = offerFaq.map((f) => f.question);
