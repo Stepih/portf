@@ -1,5 +1,5 @@
 import { expect, test, type Locator, type Page, type Request } from '@playwright/test';
-import { formButton } from '../src/data/offer';
+import { formSubmitButton } from '../src/data/inputsFeedBack';
 import { contactEmptyError, contactFormatError, contactIncomplete, formServiceOther, formServiceTitle, formSuccessText, formSuccessTitle, nameEmptyError, nameFormatError } from '../src/data/inputsFeedBack';
 import { breadCrumbLabels } from '../src/data/breadCrumbs';
 import { services } from '../src/data/offer';
@@ -32,7 +32,7 @@ const fields = (page: Page) => ({
     name: page.getByRole('textbox', { name: 'Имя', exact: true }),
     contact: page.getByLabel('Телефон или Telegram'),
     message: page.getByLabel('Комментарий'),
-    submit: page.getByRole('button', { name: formButton }),
+    submit: page.getByRole('button', { name: formSubmitButton }),
 });
 
 test.beforeEach(async ({ page }) => {

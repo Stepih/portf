@@ -2,8 +2,8 @@ import { expect, Locator, Page, test } from '@playwright/test';
 import { ServiceId } from '../src/interfaces/offer';
 import { hiddenPages } from '../src/constants/urls';
 import { contactTitle, faqContactLink, faqMoreLabel, faqTopCount, industriesOtherQuestion, industryChipCount, faqTitle, formButton, heroFirstHeadline, heroHeadlines, heroInterval, heroPrice, moreLinks, moreTitle, offerButtonsNote, offerFaq, offerReasons, offerSteps, offerTgButton, offerTitle, offerTrustLine, services, servicesMoreLabel, servicesTitle, stepsContactLink } from '../src/data/offer';
-import { contactIncomplete, formSuccessText, formSuccessTitle, inputsListFeedback } from '../src/data/inputsFeedBack';
-import { chatButtonText, chatButtonTitle, chatFabLabel, chatLeadOpen, chatLeadSuccess } from '../src/data/chat';
+import { contactIncomplete, formSubmitButton, formSuccessText, formSuccessTitle, inputsListFeedback } from '../src/data/inputsFeedBack';
+import { chatButtonText, chatButtonTitle, chatFabLabel, chatLeadOpen, chatLeadSubmit, chatLeadSuccess } from '../src/data/chat';
 import { footerName, footerSince, footerTg } from '../src/data/footer';
 import { skipToContent } from '../src/data/layout';
 
@@ -213,7 +213,7 @@ test('услуги и цены на главной', async ({ page }) => {
 
     await contact.getByRole('textbox', { name: 'Имя', exact: true }).fill('Иван');
     await contact.getByLabel('Телефон или Telegram').fill('79990001122');
-    await contact.getByRole('button', { name: formButton }).click();
+    await contact.getByRole('button', { name: formSubmitButton }).click();
     await expect(contact.getByRole('heading', { name: formSuccessTitle('Иван') })).toBeVisible();
     expect(requests).toHaveLength(1);
     expect(requests[0]).toMatchObject({ name: 'Иван', service: 'shop' });
@@ -262,6 +262,21 @@ test('ссылка «Другая сфера» ведёт к форме глав
     await page.goto('/');
     const other = page.getByRole('region', { name: 'Каким может быть сайт для вашего бизнеса' }).getByRole('link', { name: formButton });
     await expect(other).toHaveAttribute('href', '/#contact');
+});
+
+// Д51 (DESIGN_FIXES_9_PLAN): ссылки к форме – «Обсудить проект», отправка самой формы – своя подпись,
+// чтобы со скринридером переход и отправка не путались
+test('ссылки к форме и отправка формы подписаны по-разному', async ({ page }) => {
+    await page.goto('/');
+    const contact = page.getByRole('region', { name: contactTitle });
+    const submit = contact.getByRole('button', { name: formSubmitButton, exact: true });
+    await expect(submit).toHaveAttribute('type', 'submit');
+    await expect(contact.getByRole('button', { name: formButton })).toHaveCount(0);
+
+    // Все «Обсудить проект» на странице – ссылки к форме, кнопки отправки среди них нет
+    const links = page.getByRole('link', { name: formButton, exact: true });
+    expect(await links.count()).toBeGreaterThanOrEqual(2);
+    for (const href of await links.evaluateAll((els) => els.map((el) => el.getAttribute('href')))) expect(href).toBe('/#contact');
 });
 
 // Отрасли строкой под кейсами (DESIGN_FIXES_4_PLAN Д19): на телефоне чипы в сцене кликабельны лишь на ~40px прокрутки,
@@ -722,7 +737,7 @@ for (const path of ['/', '/popup']) {
         await page.goto(path);
 
         const form = page.locator('form', { has: page.getByRole('textbox', { name: 'Имя', exact: true }) });
-        const submit = form.getByRole('button', { name: formButton });
+        const submit = form.getByRole('button', { name: formSubmitButton });
         expect(await submit.evaluate((el) => getComputedStyle(el).fontWeight)).toBe('700');
         // Начертание Raleway Bold, а не синтетический жирный из Regular, которым набраны поля
         const family = (el: Element) => getComputedStyle(el).fontFamily;
@@ -804,7 +819,7 @@ test('форма заявки и Telegram на главной', async ({ page })
     await section.getByRole('textbox', { name: 'Имя', exact: true }).pressSequentially('Анна-Мария');
     await expect(section.getByRole('textbox', { name: 'Имя', exact: true })).toHaveValue('Анна-Мария');
     await section.getByLabel('Телефон или Telegram').fill('79990001122');
-    await section.getByRole('button', { name: formButton }).click();
+    await section.getByRole('button', { name: formSubmitButton }).click();
 
     await expect(section.getByRole('heading', { name: formSuccessTitle('Анна-Мария') })).toBeVisible();
     expect(requests).toHaveLength(1);
@@ -819,15 +834,15 @@ test('после заявки на главной – плашка «что да
     const section = page.getByRole('region', { name: contactTitle });
     await section.getByRole('textbox', { name: 'Имя', exact: true }).fill('Иван');
     await section.getByLabel('Телефон или Telegram').fill('123');
-    await section.getByRole('button', { name: formButton }).click();
+    await section.getByRole('button', { name: formSubmitButton }).click();
     await expect(page.getByText(contactIncomplete)).toBeVisible();
     await expect(page.getByRole('alert').filter({ hasText: contactIncomplete })).toHaveCount(1);
 
     await section.getByLabel('Телефон или Telegram').fill('+7 999 123-45-67');
-    await section.getByRole('button', { name: formButton }).click();
+    await section.getByRole('button', { name: formSubmitButton }).click();
 
     await expect(section.getByRole('status')).toContainText(formSuccessText);
-    await expect(section.getByRole('button', { name: formButton })).toHaveCount(0);
+    await expect(section.getByRole('button', { name: formSubmitButton })).toHaveCount(0);
     await expect(page.getByRole('alert').filter({ hasText: contactIncomplete })).toHaveCount(0);
 });
 
@@ -1288,7 +1303,7 @@ test('кнопка «Связаться» в шапке чата открыва�
 
     await dialog.getByRole('textbox', { name: 'Имя' }).fill('Иван');
     await dialog.getByRole('textbox', { name: 'Телефон' }).fill('+7 999 000-11-22');
-    await dialog.getByRole('button', { name: 'Отправить' }).click();
+    await dialog.getByRole('button', { name: chatLeadSubmit }).click();
 
     await expect(dialog.getByText(chatLeadSuccess)).toBeVisible();
     // Контакт оставлен – кнопка в шапке больше не нужна

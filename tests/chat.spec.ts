@@ -1,5 +1,5 @@
 import { expect, test, type Page, type Request } from '@playwright/test';
-import { chatButtonTitle, chatClose, chatFabLabel, chatLeadSuccess, chatLimitText, chatPlaceholder, chatStarters, chatStartersLabel, chatSubtitle, chatTitle } from '../src/data/chat';
+import { chatButtonTitle, chatClose, chatFabLabel, chatLeadSubmit, chatLeadSuccess, chatLimitText, chatPlaceholder, chatStarters, chatStartersLabel, chatSubtitle, chatTitle } from '../src/data/chat';
 import { formButton, offerTgButton } from '../src/data/offer';
 import { contactIncomplete } from '../src/data/inputsFeedBack';
 import { hiddenPages, musicPageURL } from '../src/constants/urls';
@@ -142,12 +142,12 @@ test('контакт из чата уходит заявкой с вопроса
     await dialog.getByRole('textbox', { name: 'Имя' }).fill('Иван');
     // Обрывок номера не уходит (DESIGN_FIXES_2_PLAN Д6)
     await dialog.getByRole('textbox', { name: 'Телефон' }).fill('123');
-    await dialog.getByRole('button', { name: 'Отправить' }).click();
+    await dialog.getByRole('button', { name: chatLeadSubmit }).click();
     await expect(dialog.getByRole('alert')).toHaveText(contactIncomplete);
     expect(leads).toHaveLength(0);
 
     await dialog.getByRole('textbox', { name: 'Телефон' }).fill('+7 999 000-11-22');
-    await dialog.getByRole('button', { name: 'Отправить' }).click();
+    await dialog.getByRole('button', { name: chatLeadSubmit }).click();
 
     await expect(dialog.getByText(chatLeadSuccess)).toBeVisible();
     expect(leads).toHaveLength(1);

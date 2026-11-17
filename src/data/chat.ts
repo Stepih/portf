@@ -43,7 +43,8 @@ export const chatErrorText = {
 // Кнопка заявки в шапке окна: видна с первого открытия (DESIGN_FIXES_2_PLAN, Д7)
 export const chatLeadOpen = 'Связаться'
 export const chatLeadTitle = 'Оставьте контакт – Степан свяжется в течение часа, пн–пт 9–18'
-export const chatLeadSubmit = 'Отправить'
+// Как у формы главной (Д51, вариант A владельца): отправка подписана иначе, чем кнопка «Обсудить проект», открывающая форму
+export { formSubmitButton as chatLeadSubmit } from "./inputsFeedBack"
 export const chatLeadSending = 'Отправляется...'
 export const chatLeadBack = 'Вернуться к чату'
 export const chatLeadSuccess = 'Контакт отправлен. Степан свяжется с вами в течение часа, пн–пт 9–18.'

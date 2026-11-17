@@ -12,7 +12,7 @@ import { HONEYPOT_FIELD, isContactComplete, isContactInput, isNameInput } from "
 import { LeadSource, leadSourceFromSearch } from "@/scripts/leadSource";
 import { reachGoal } from "@/scripts/metrika";
 import { GOALS } from "@/constants/analytics";
-import { contactEmptyError, contactFormatError, contactIncomplete, formButton, formSuccessText, formSuccessTitle, nameEmptyError, nameFormatError } from "@/data/inputsFeedBack";
+import { contactEmptyError, contactFormatError, contactIncomplete, formSubmitButton, formSuccessText, formSuccessTitle, nameEmptyError, nameFormatError } from "@/data/inputsFeedBack";
 import { ralewayBold } from "@/app/fonts/fonts";
 import { ILeadService, LeadServiceId } from "@/interfaces/offer";
 import { SERVICE_PARAM } from "@/scripts/services";
@@ -151,7 +151,7 @@ const LeadForm: FC<ILeadForm> = ({ className, services }) => {
             <TextAreaInput setValue={handleSetTextAreaValue} value={textAreaValue} />
             {/* Обёртка задаёт жирный Raleway, как у остальных кнопок-действий: ActionButton общий (design-sync) */}
             <div className={`${ralewayBold.className} ${s.submit}`}>
-                <ActionButton type='submit' disabled={isSending} text={isSending ? "Отправляется..." : formButton}/>
+                <ActionButton type='submit' disabled={isSending} text={isSending ? "Отправляется..." : formSubmitButton}/>
             </div>
         </form>
     )
