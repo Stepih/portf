@@ -1,7 +1,7 @@
 import { expect, Locator, Page, test } from '@playwright/test';
 import { ServiceId } from '../src/interfaces/offer';
 import { hiddenPages } from '../src/constants/urls';
-import { contactTitle, faqContactLink, faqMoreLabel, faqTopCount, industriesOtherQuestion, industryChipCount, faqTitle, formButton, heroFirstHeadline, heroHeadlines, heroInterval, heroPrice, moreLinks, moreTitle, offerButtonsNote, offerFaq, offerReasons, offerSteps, offerTgButton, offerTitle, offerTrustLine, services, servicesMoreLabel, servicesTitle, stepsContactLink } from '../src/data/offer';
+import { contactTitle, faqContactLink, faqMoreLabel, faqTopCount, industriesOtherQuestion, industryChipCount, faqTitle, formButton, heroFirstHeadline, heroHeadlines, heroInterval, heroPrice, moreLinks, moreTitle, offerButtonsNote, offerFaq, offerReasons, offerSteps, offerTgButton, offerTitle, offerTrustLine, services, servicesCommon, servicesMoreLabel, servicesTitle, stepsContactLink } from '../src/data/offer';
 import { contactIncomplete, formSubmitButton, formSuccessText, formSuccessTitle, inputsListFeedback } from '../src/data/inputsFeedBack';
 import { chatButtonText, chatButtonTitle, chatFabLabel, chatLeadOpen, chatLeadSubmit, chatLeadSuccess } from '../src/data/chat';
 import { footerName, footerSince, footerTg } from '../src/data/footer';
@@ -1562,7 +1562,7 @@ for (const width of [1400, 375]) {
 }
 
 // SERVICES_PLAN У3: у каждой карточки сайта есть уточнение (обычная сумма, число страниц, каталог дешевле),
-// заявки – в Telegram или на почту, на карточке не больше двух кейсов
+// на карточке не больше двух кейсов. Куда приходят заявки – в общей строке над карточками (Д55)
 for (const width of [1400, 375]) {
     test(`карточки сайтов: уточнения и два кейса, ${width}`, async ({ page }) => {
         await page.setViewportSize({ width, height: 900 });
@@ -1598,6 +1598,25 @@ for (const width of [1400, 375]) {
         await expect(corporate.getByRole('link', { name: 'ИКЦ «Презентация»' })).toHaveCount(0);
         await expect(section.getByRole('listitem').filter({ has: page.getByRole('heading', { name: serviceTitle('shop') }) }))
             .toContainText('Каталог без корзины – от 35 000 ₽');
+    });
+}
+
+// Д55: ответ на страх «сайт не принесёт заявок» – одной строкой над карточками, без нового блока; в карточке лендинга не повторяется
+for (const width of [1400, 375]) {
+    test(`услуги: заявки сразу в Telegram или на почту – одной строкой, ${width}`, async ({ page }) => {
+        await page.setViewportSize({ width, height: 900 });
+        await page.goto('/');
+
+        const section = page.getByRole('region', { name: servicesTitle });
+        const common = section.getByText(servicesCommon, { exact: true });
+        await expect(common).toBeVisible();
+        await expect(common).toContainText('сразу в Telegram или на почту');
+        // CRM – платная связка, Метрика – по желанию: в общей строке их нет
+        await expect(common).not.toContainText('CRM');
+        await expect(common).not.toContainText('Метрик');
+        const landing = section.getByRole('listitem').filter({ has: page.getByRole('heading', { name: serviceTitle('landing') }) });
+        await expect(landing).toContainText('чтобы получать заявки');
+        await expect(landing).not.toContainText('Telegram');
     });
 }
 

@@ -101,7 +101,9 @@ export const offerTrustLine = (stats = portfolioStats(), maxIndustries = trustIn
 export const servicesTitle = 'Услуги и цены'
 // У7 (выбор владельца): подпись говорит, где состав, – ссылка «Что входит» в карточке
 export const servicesDescription = 'Что входит и что можно добавить – по ссылке в каждой карточке. Точную сумму и срок назову на бесплатном созвоне'
-export const servicesCommon = 'В каждом сайте: дизайн под вас и удобная версия для телефона'
+// DESIGN_FIXES_10_PLAN Д55 (marketing:draft-content, вариант A2 владельца, 18.11.2026): ответ на страх «сайт не принесёт заявок» –
+// куда и когда приходят заявки. CRM – платная связка (services_list_approved.md, раздел 5, Ж), поэтому здесь её нет; Метрики – тоже
+export const servicesCommon = 'В каждом сайте: дизайн под вас, удобная версия для телефона и заявки – сразу в Telegram или на почту'
 export const servicesCasesLabel = 'Так уже сделано:'
 export const servicesButton = 'Узнать цену'
 export const servicesExamplesLabel = 'Например:'
@@ -112,9 +114,9 @@ export const services: IService[] = [
     {
         id: 'landing',
         title: 'Лендинг',
-        // SERVICES_PLAN У3, marketing:draft-content, вариант A: заявки – в Telegram или на почту, а не «куда удобно».
-        // «С предоплаты» – только на /sites и в FAQ (владелец)
-        summary: 'Одна страница под рекламу или услугу. Заявки приходят в Telegram или на почту',
+        // Д55 (вариант Л1 владельца, 18.11.2026): куда приходят заявки, говорит строка servicesCommon над карточками – здесь цель
+        // лендинга (services_list_approved.md, раздел 2, «Для кого»). «С предоплаты» – только на /sites и в FAQ (владелец)
+        summary: 'Одна страница под рекламу или услугу – чтобы получать заявки',
         price: 'от 8 000 ₽',
         term: '3–4 дня разработки',
         note: 'Обычно 8 000–20 000 ₽ с опциями',
