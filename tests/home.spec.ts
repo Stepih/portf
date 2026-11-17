@@ -1620,6 +1620,41 @@ for (const width of [1400, 375]) {
     });
 }
 
+// Д56: в карточках сайтов в ряд «Что входит» на одной высоте, даже если уточнение или кейсы соседней карточки в две строки
+// (на 1100 было 419/419/401, на 1400 – 399/381/381); от кейсов – не меньше 10px, у кнопки – прежний промежуток
+for (const width of [1400, 1100, 960]) {
+    test(`услуги: «Что входит» на одной высоте, ${width}`, async ({ page }) => {
+        await page.setViewportSize({ width, height: 900 });
+        await page.goto('/');
+
+        const section = page.getByRole('region', { name: servicesTitle });
+        // Замер после загрузки шрифтов (до неё переносы другие) и в одном кадре от верха карточки: страница со сценой
+        // сдвигается между отдельными boundingBox
+        await page.evaluate(() => document.fonts.ready);
+        const titles = services.filter((service) => !service.wide).map((service) => service.title);
+        const cards = await section.evaluate((el, [titles, moreLabel]) => (titles as string[]).map((title) => {
+            const card = [...el.querySelectorAll('li')].find((li) => li.querySelector('h3')?.textContent === title)!;
+            const top = card.getBoundingClientRect().top;
+            const box = (node: Element) => { const r = node.getBoundingClientRect(); return { top: r.top - top, bottom: r.bottom - top }; };
+            const links = [...card.querySelectorAll('a')];
+            const cases = [...card.querySelectorAll('p')].find((p) => p.textContent?.startsWith('Так уже сделано'))!;
+            return {
+                more: box(links.find((a) => a.getAttribute('aria-label') === `${moreLabel}: ${title}`)!),
+                button: box(links.find((a) => a.getAttribute('aria-label') === `Узнать цену: ${title}`)!),
+                cases: box(cases),
+            };
+        }), [titles, servicesMoreLabel] as const);
+
+        for (const { more, button, cases } of cards) {
+            expect(more.top - cases.bottom).toBeGreaterThanOrEqual(10);
+            expect(button.top - more.bottom).toBeGreaterThanOrEqual(14);
+        }
+        const tops = cards.map(({ more }) => more.top);
+        // Доли пикселя – округление координат, а не сдвиг строки
+        expect(Math.max(...tops) - Math.min(...tops)).toBeLessThan(1);
+    });
+}
+
 // ИКЦ «Презентация» – лендинг, а не сайт компании (владелец, SERVICES_PLAN У3)
 test('кейс ИКЦ: тип – лендинг', async ({ page }) => {
     await page.goto('/portfolio/icc');
