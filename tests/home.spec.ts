@@ -218,6 +218,18 @@ for (const width of [1400, 375]) {
     });
 }
 
+// Д49 (DESIGN_FIXES_9_PLAN): в карточке ИИ по примеру на ступень, в порядке ступеней
+test('карточка ИИ: пример у каждой ступени', async ({ page }) => {
+    await page.goto('/');
+    const ai = services.find((item) => item.id === 'ai')!;
+    expect(ai.examples?.map((example) => example.title)).toEqual(['Заявки и запись', 'Контроль качества']);
+    const card = page.getByRole('region', { name: 'Услуги и цены' }).getByRole('listitem').filter({ has: page.getByRole('heading', { name: ai.title }) });
+    // Первый список карточки – примеры, второй – ступени
+    const examples = card.getByRole('list').first().getByRole('listitem');
+    await expect(examples).toHaveCount(2);
+    await expect(examples.first()).toContainText('Заявки и запись – отвечает клиенту');
+});
+
 // Ссылка с услугой из чата или мессенджера открывает главную сразу у формы с выбранной услугой (Д13, 4.2)
 test('прямая ссылка /?service=ai#contact – у формы с выбранной услугой', async ({ page }) => {
     await page.goto('/?service=ai#contact');
