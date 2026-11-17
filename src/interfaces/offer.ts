@@ -9,12 +9,6 @@ export interface ILeadService {
     title: string
 }
 
-// Слайд первого экрана: крупная надпись латиницей и подпись под ней
-export interface IHeroSlide {
-    headline: string,
-    caption: string
-}
-
 export interface IOfferButton {
     title: string,
     href: string

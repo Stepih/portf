@@ -2,7 +2,7 @@
 // формулировки выбрал владелец.
 // Факты – только из решений владельца и ответов на вопросы в SALES_PLAN.md
 
-import { IFaqItem, IHeroSlide, IMoreLink, IOfferButton, IOfferReason, IOfferStep, IService } from "@/interfaces/offer"
+import { IFaqItem, IMoreLink, IOfferButton, IOfferReason, IOfferStep, IService } from "@/interfaces/offer"
 import { PortfolioIndustry } from "@/interfaces/portfolio"
 import { aiPageURL, hiddenPages, sitesPageURL, mediaPageURL, musicPageURL, myTg, portfolioTg } from "@/constants/urls"
 import { plural, portfolioStats, yearsRange } from "@/scripts/portfolioStats"
@@ -10,16 +10,13 @@ import { plural, portfolioStats, yearsRange } from "@/scripts/portfolioStats"
 // h1 главной. «⁠» после дефиса не даёт строке разорваться на «ИИ-» (на телефоне)
 export const offerTitle = 'Сайты под ключ и ИИ-⁠агенты для вашего бизнеса'
 
-// Сменяющиеся слайды первого экрана (3.1.1, выбор владельца – набор 2 скилла, подпись слайда 1 поправлена).
-// Надпись – шрифт Allerta Stencil, только латиница. Подпись – одна строка от первого лица
-export const heroSlides: IHeroSlide[] = [
-    { headline: 'Stepan Kartuzov', caption: 'Делаю всё сам – от макета до запуска' },
-    { headline: 'Websites & AI agents', caption: offerTitle },
-    { headline: 'Part of your team', caption: 'Вникаю в ваш бизнес, а не просто сдаю сайт' }
-]
+// Сменяющиеся надписи первого экрана (3.1.1, выбор владельца – набор 2 скилла). Шрифт Allerta Stencil – только латиница.
+// Д50 (вариант A владельца, 17.11.2026): сменяются только надписи, h1 (offerTitle) стоит под ними постоянно;
+// подписи «Делаю всё сам…» и «Вникаю в ваш бизнес…» с первого экрана убраны
+export const heroHeadlines = ['Stepan Kartuzov', 'Websites & AI agents', 'Part of your team']
 
-// Подпись этого слайда – h1: в HTML он есть всегда, даже когда на экране другой слайд
-export const heroTitleSlide = 1
+// С этой надписи показ начинается и на ней останавливается после одного круга (Д50, WCAG 2.2.2)
+export const heroFirstHeadline = 1
 
 // Сколько показывается слайд, мс
 export const heroInterval = 4000

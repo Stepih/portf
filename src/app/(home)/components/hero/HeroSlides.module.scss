@@ -23,8 +23,7 @@ $ease: cubic-bezier(.7, 0, .2, 1);
 }
 
 // Маска: надпись въезжает снизу и уходит вверх за край
-.headlines,
-.captions {
+.headlines {
     overflow: hidden;
 }
 
@@ -46,14 +45,6 @@ $ease: cubic-bezier(.7, 0, .2, 1);
     }
 }
 
-// Подпись идёт следом за надписью
-.captions .item {
-    &.active,
-    &.leaving {
-        transition-delay: .1s;
-    }
-}
-
 .headline {
     font-size: 4rem;
     line-height: 1.15;
@@ -62,6 +53,7 @@ $ease: cubic-bezier(.7, 0, .2, 1);
     color: var(--color-text-100);
 }
 
+// h1 под надписями стоит постоянно (Д50)
 .caption {
     margin: 0;
 
@@ -70,6 +62,7 @@ $ease: cubic-bezier(.7, 0, .2, 1);
     line-height: 1.4;
     text-wrap: balance;
     color: var(--color-text-muted);
+    transition: vars.$transition;
 }
 
 // Черты: в активной заполняется полоска времени до смены слайда

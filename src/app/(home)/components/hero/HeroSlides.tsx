@@ -5,27 +5,32 @@ import { FC, useCallback, useEffect, useRef, useState } from "react";
 import s from './HeroSlides.module.scss'
 import { allerta } from "@/app/fonts/fonts";
 import { usePrefersReducedMotion } from "@/hooks/usePrefersReducedMotion";
-import { IHeroSlide } from "@/interfaces/offer";
 
 interface HeroSlidesProps {
-    slides: IHeroSlide[],
-    // Подпись этого слайда рендерится как h1
-    titleSlide: number,
-    // Сколько показывается слайд, мс
+    // Крупные надписи латиницей, сменяют друг друга
+    headlines: string[],
+    // С какой надписи показ начинается и на какой останавливается
+    first: number,
+    // h1 под надписями – не сменяется
+    title: string,
+    // Сколько показывается надпись, мс
     interval: number
 }
 
-// Сменяющиеся надпись и подпись первого экрана (SALES_PLAN 3.1.1): старый слайд уходит вверх,
-// новый въезжает снизу. Все слайды лежат в одной ячейке grid, поэтому блок не прыгает по высоте.
-// Показ начинается со слайда с h1, чтобы оффер был виден сразу (CONVERSION_PLAN К1.1).
-// Наведение и фокус ставят паузу. При «уменьшить движение» смены нет, виден слайд с h1
-const HeroSlides: FC<HeroSlidesProps> = ({ slides, titleSlide, interval }) => {
+// Первый экран (SALES_PLAN 3.1.1): крупная надпись уходит вверх, новая въезжает снизу; h1 под ними стоит
+// постоянно (Д50). Все надписи лежат в одной ячейке grid, поэтому блок не прыгает по высоте.
+// Показ – один круг: надписи проходят по разу и останавливаются на первой (Д50, WCAG 2.2.2), дальше –
+// только по клику на черту. Наведение и фокус ставят паузу. При «уменьшить движение» смены нет
+const HeroSlides: FC<HeroSlidesProps> = ({ headlines, first, title, interval }) => {
     const reduceMotion = usePrefersReducedMotion();
-    const [active, setActive] = useState(titleSlide);
+    const [active, setActive] = useState(first);
     const [leaving, setLeaving] = useState<number | null>(null);
+    // Круг пройден (или движение отключено): таймера нет, активная черта залита целиком
+    const [stopped, setStopped] = useState(false);
 
-    const activeRef = useRef(titleSlide);
+    const activeRef = useRef(first);
     const elapsed = useRef(0);
+    const steps = useRef(0);
     const paused = useRef(false);
     const fills = useRef<(HTMLSpanElement | null)[]>([]);
 
@@ -38,12 +43,12 @@ const HeroSlides: FC<HeroSlidesProps> = ({ slides, titleSlide, interval }) => {
     }, []);
 
     useEffect(() => {
-        if (reduceMotion) go(titleSlide);
-    }, [reduceMotion, titleSlide, go]);
+        if (reduceMotion) go(first);
+    }, [reduceMotion, first, go]);
 
     // Таймер на requestAnimationFrame: он же двигает полоску в активной черте без ре-рендеров
     useEffect(() => {
-        if (reduceMotion) return;
+        if (reduceMotion || stopped) return;
         let raf = 0;
         let last = performance.now();
         const tick = (now: number) => {
@@ -52,7 +57,14 @@ const HeroSlides: FC<HeroSlidesProps> = ({ slides, titleSlide, interval }) => {
             last = now;
             if (!paused.current) {
                 elapsed.current += dt;
-                if (elapsed.current >= interval) go((activeRef.current + 1) % slides.length);
+                if (elapsed.current >= interval) {
+                    steps.current += 1;
+                    go((activeRef.current + 1) % headlines.length);
+                    if (steps.current >= headlines.length) {
+                        setStopped(true);
+                        return;
+                    }
+                }
             }
             fills.current.forEach((fill, i) => {
                 if (fill) fill.style.transform = `scaleX(${i === activeRef.current ? Math.min(elapsed.current / interval, 1) : 0})`;
@@ -61,44 +73,46 @@ const HeroSlides: FC<HeroSlidesProps> = ({ slides, titleSlide, interval }) => {
         };
         raf = requestAnimationFrame(tick);
         return () => cancelAnimationFrame(raf);
-    }, [reduceMotion, interval, slides.length, go]);
+    }, [reduceMotion, stopped, interval, headlines.length, go]);
 
+    // Клик по черте останавливает показ: дальше листает только посетитель
+    const pick = (n: number) => {
+        setStopped(true);
+        go(n);
+    };
+
+    const still = reduceMotion || stopped;
     const stateClass = (i: number) => i === active ? s.active : i === leaving ? s.leaving : '';
     const pause = () => { paused.current = true };
     const resume = () => { paused.current = false };
 
     return (
-        <div className={s.slides} onMouseEnter={pause} onMouseLeave={resume} onFocus={pause} onBlur={resume}>
+        <div className={s.slides} onMouseEnter={pause} onMouseLeave={resume}>
             {/* Надписи на английском – оформление, скринридеру хватает h1 */}
             <div className={`${s.stack} ${s.headlines}`} aria-hidden="true">
-                {slides.map((slide, i) => (
-                    <p key={slide.headline} className={`${allerta.className} ${s.item} ${s.headline} ${stateClass(i)}`} lang="en">
-                        {slide.headline}
+                {headlines.map((headline, i) => (
+                    <p key={headline} className={`${allerta.className} ${s.item} ${s.headline} ${stateClass(i)}`} lang="en">
+                        {headline}
                     </p>
                 ))}
             </div>
 
-            <div className={`${s.stack} ${s.captions}`}>
-                {slides.map((slide, i) => i === titleSlide
-                    ? <h1 key={slide.caption} id="hero-title" className={`${s.item} ${s.caption} ${stateClass(i)}`}>{slide.caption}</h1>
-                    : <p key={slide.caption} className={`${s.item} ${s.caption} ${stateClass(i)}`} aria-hidden="true">{slide.caption}</p>
-                )}
-            </div>
+            <h1 id="hero-title" className={s.caption}>{title}</h1>
 
-            <div className={s.dots}>
-                {slides.map((slide, i) => (
+            {/* Черты листают только оформление: с клавиатуры и скринридеру они не нужны (Д50) */}
+            <div className={s.dots} aria-hidden="true">
+                {headlines.map((headline, i) => (
                     <button
-                        key={slide.headline}
+                        key={headline}
                         type="button"
+                        tabIndex={-1}
                         className={s.dot}
-                        aria-label={`Слайд ${i + 1}`}
-                        aria-current={i === active}
-                        onClick={() => go(i)}
+                        onClick={() => pick(i)}
                     >
                         <span
                             className={s.fill}
                             ref={(el) => { fills.current[i] = el }}
-                            style={reduceMotion ? { transform: `scaleX(${i === active ? 1 : 0})` } : undefined}
+                            style={still ? { transform: `scaleX(${i === active ? 1 : 0})` } : undefined}
                         />
                     </button>
                 ))}

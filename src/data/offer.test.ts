@@ -1,15 +1,14 @@
 import { describe, expect, it } from "vitest";
-import { heroSlides, heroTitleSlide, industryChipCount, offerFaq, offerTitle, offerTrustLine, services } from "./offer";
+import { heroFirstHeadline, heroHeadlines, industryChipCount, offerFaq, offerTrustLine, services } from "./offer";
 import { portfolioWorks } from "./portfolio";
 
 describe("offer", () => {
-    it("надписи слайдов – только латиница: у Allerta Stencil нет кириллицы", () => {
-        for (const slide of heroSlides) expect(slide.headline).toMatch(/^[\x20-\x7E’]+$/);
+    it("надписи первого экрана – только латиница: у Allerta Stencil нет кириллицы", () => {
+        for (const headline of heroHeadlines) expect(headline).toMatch(/^[\x20-\x7E’]+$/);
     });
 
-    it("подпись слайда h1 – оффер, подписи в одну строку", () => {
-        expect(heroSlides[heroTitleSlide].caption).toBe(offerTitle);
-        for (const slide of heroSlides) expect(slide.caption.length).toBeLessThanOrEqual(50);
+    it("показ начинается с существующей надписи", () => {
+        expect(heroHeadlines[heroFirstHeadline]).toBeDefined();
     });
 
     it("кейсы-примеры услуг есть в портфолио", () => {

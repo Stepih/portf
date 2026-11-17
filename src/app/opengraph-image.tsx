@@ -1,6 +1,6 @@
 import { ImageResponse } from "next/og";
 
-import { heroSlides, heroTitleSlide, offerTitle, offerTrustLine } from "@/data/offer";
+import { heroFirstHeadline, heroHeadlines, offerTitle, offerTrustLine } from "@/data/offer";
 import { OgWords, ogColors, ogContentType, ogFonts, ogImage, ogSize, ogText } from "@/lib/og";
 
 // Превью ссылки на сайт (SALES_PLAN 5.6): оффер как на первом экране главной, строка доверия и фото.
@@ -32,7 +32,7 @@ const OpengraphImage = async () => {
             >
                 <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 26 }}>
                     <div style={{ fontFamily: 'Allerta Stencil', fontSize: 34, letterSpacing: 2, textTransform: 'uppercase' }}>
-                        {heroSlides[heroTitleSlide].headline}
+                        {heroHeadlines[heroFirstHeadline]}
                     </div>
                     <OgWords text={offerTitle} style={{ fontSize: 64, fontWeight: 700, lineHeight: 1.1 }} />
                     <div style={{ fontSize: 28, color: ogColors.muted }}>{offerTrustLine()}</div>

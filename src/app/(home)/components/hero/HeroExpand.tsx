@@ -15,7 +15,7 @@ import { drop, move } from "@/app/ai/components/speed";
 import { ralewayBold, ralewayRegular } from "@/app/fonts/fonts";
 import { portfolioPageURL } from "@/constants/urls";
 import ContactLink from "../contact-link/ContactLink";
-import { formButton, heroInterval, heroPrice, heroPriceNote, heroSlides, heroTitleSlide, industriesDescription, industriesOther, industriesOtherQuestion, industriesTitle, industryChipCount } from "@/data/offer";
+import { formButton, heroInterval, heroPrice, heroPriceNote, heroFirstHeadline, heroHeadlines, industriesDescription, industriesOther, industriesOtherQuestion, industriesTitle, industryChipCount, offerTitle } from "@/data/offer";
 import { usePrefersReducedMotion } from "@/hooks/usePrefersReducedMotion";
 import { IIndustryChip } from "@/interfaces/portfolio";
 import { withIndustry } from "@/scripts/portfolioIndustry";
@@ -692,7 +692,7 @@ const HeroExpand: FC<HeroExpandProps> = ({ chips, worksCount, children }) => {
                 <section className={s.static} aria-labelledby="hero-title">
                     <Image className={s.photo} src={photo} alt="Степан Картузов" priority />
                     <div className={`${ralewayRegular.className} ${s.card} ${s.cardStatic}`}>
-                        <HeroSlides slides={heroSlides} titleSlide={heroTitleSlide} interval={heroInterval} />
+                        <HeroSlides headlines={heroHeadlines} first={heroFirstHeadline} title={offerTitle} interval={heroInterval} />
                         {cta}
                     </div>
                     {industries}
@@ -738,7 +738,7 @@ const HeroExpand: FC<HeroExpandProps> = ({ chips, worksCount, children }) => {
                         <div ref={card} className={`${ralewayRegular.className} ${s.card}`} onFocus={focusHero}>
                             <motion.div style={{ y: slidesY }}>
                                 <motion.div style={{ opacity: slidesOpacity }}>
-                                    <HeroSlides slides={heroSlides} titleSlide={heroTitleSlide} interval={heroInterval} />
+                                    <HeroSlides headlines={heroHeadlines} first={heroFirstHeadline} title={offerTitle} interval={heroInterval} />
                                 </motion.div>
                                 <motion.div style={{ opacity: ctaOpacity }}>{cta}</motion.div>
                             </motion.div>

@@ -1,7 +1,7 @@
 import { expect, Locator, Page, test } from '@playwright/test';
 import { ServiceId } from '../src/interfaces/offer';
 import { hiddenPages } from '../src/constants/urls';
-import { contactTitle, faqContactLink, faqMoreLabel, faqTopCount, industriesOtherQuestion, industryChipCount, faqTitle, formButton, heroPrice, heroTitleSlide, moreLinks, moreTitle, offerButtonsNote, offerFaq, offerReasons, offerSteps, offerTgButton, offerTitle, offerTrustLine, services, servicesMoreLabel, servicesTitle, stepsContactLink } from '../src/data/offer';
+import { contactTitle, faqContactLink, faqMoreLabel, faqTopCount, industriesOtherQuestion, industryChipCount, faqTitle, formButton, heroFirstHeadline, heroHeadlines, heroInterval, heroPrice, moreLinks, moreTitle, offerButtonsNote, offerFaq, offerReasons, offerSteps, offerTgButton, offerTitle, offerTrustLine, services, servicesMoreLabel, servicesTitle, stepsContactLink } from '../src/data/offer';
 import { contactIncomplete, formSuccessText, formSuccessTitle, inputsListFeedback } from '../src/data/inputsFeedBack';
 import { chatButtonText, chatButtonTitle, chatFabLabel, chatLeadOpen, chatLeadSuccess } from '../src/data/chat';
 import { footerName, footerSince, footerTg } from '../src/data/footer';
@@ -11,21 +11,39 @@ import { skipToContent } from '../src/data/layout';
 const pickedService = (form: Locator) => form.locator('[aria-pressed=true]');
 const serviceTitle = (id: ServiceId) => services.find((service) => service.id === id)?.title ?? id;
 
-// Слайды первого экрана сменяются, а h1 с оффером в HTML один и есть всегда (SALES_PLAN 3.1.1).
-// Первым показывается слайд с h1 (CONVERSION_PLAN К1.1): проверяем по HTML с сервера, до смены слайда
-test('на главной один h1 с оффером, черта переключает слайд', async ({ page }) => {
+// Активная крупная надпись первого экрана
+const activeHeadline = (page: Page) => page.locator('section[aria-labelledby="hero-title"] p[lang="en"][class*="active"]');
+
+// Д50: h1 с оффером стоит постоянно, сменяются только латинские надписи – один круг, потом стоп на первой
+// (WCAG 2.2.2). Первая надпись – уже в HTML с сервера. Черты – оформление: вне фокуса и дерева доступности
+test('h1 стоит постоянно, надписи – один круг и стоп', async ({ page }) => {
+    await page.clock.install();
     await page.goto('/');
 
-    await expect(page.locator('h1')).toHaveCount(1);
-    await expect(page.locator('h1')).toHaveText(offerTitle);
+    const h1 = page.locator('h1');
+    await expect(h1).toHaveCount(1);
+    await expect(h1).toHaveText(offerTitle);
+    await expect(h1).toBeVisible();
 
     const html = await (await page.request.get('/')).text();
-    expect(html).toMatch(/<h1[^>]*class="[^"]*active/);
-    expect(html).toMatch(new RegExp(`aria-label="Слайд ${heroTitleSlide + 1}" aria-current="true"`));
+    expect(html).toContain(`>${heroHeadlines[heroFirstHeadline].replace('&', '&amp;')}</p>`);
+    await expect(page.getByRole('button', { name: /Слайд/ })).toHaveCount(0);
 
-    const third = page.getByRole('button', { name: 'Слайд 3' });
-    await third.click();
-    await expect(third).toHaveAttribute('aria-current', 'true');
+    await expect(activeHeadline(page)).toHaveText(heroHeadlines[heroFirstHeadline]);
+    for (let step = 1; step <= heroHeadlines.length; step++) {
+        await page.clock.runFor(heroInterval + 200);
+        await expect(activeHeadline(page)).toHaveText(heroHeadlines[(heroFirstHeadline + step) % heroHeadlines.length]);
+        await expect(h1).toHaveText(offerTitle);
+        await expect(h1).toBeVisible();
+    }
+
+    // Круг пройден: надпись больше не меняется
+    await page.clock.runFor(heroInterval * 3);
+    await expect(activeHeadline(page)).toHaveText(heroHeadlines[heroFirstHeadline]);
+
+    // Клик по черте листает вручную
+    await page.locator('section[aria-labelledby="hero-title"] [aria-hidden="true"] > button').nth(2).click();
+    await expect(activeHeadline(page)).toHaveText(heroHeadlines[2]);
 });
 
 // Кнопка формы и цена видны на первом экране без прокрутки, и на телефоне тоже (DESIGN_FIXES_PLAN Д2)
@@ -744,7 +762,7 @@ test('FAQ на главной', async ({ page }) => {
     await expect(items.nth(faqTopCount).locator('summary')).toBeHidden();
 });
 
-// Единое кольцо фокуса (DESIGN_FIXES_2_PLAN Д8): чернила 2px и голубой ореол – у шапки, черт слайдов, FAQ и кнопок
+// Единое кольцо фокуса (DESIGN_FIXES_2_PLAN Д8): чернила 2px и голубой ореол – у шапки, FAQ и кнопок (черты слайдов вне фокуса с Д50)
 for (const theme of ['light', 'dark'] as const) {
     test(`одно кольцо фокуса, ${theme === 'light' ? 'светлая' : 'тёмная'} тема`, async ({ page }) => {
         await page.addInitScript((t) => localStorage.setItem('theme', t), theme);
@@ -753,7 +771,6 @@ for (const theme of ['light', 'dark'] as const) {
         const ink = theme === 'light' ? 'rgb(19, 19, 19)' : 'rgb(255, 255, 255)';
         const targets = [
             page.locator('header').getByRole('link', { name: 'Telegram' }),
-            page.getByRole('button', { name: 'Слайд 2' }),
             page.getByRole('region', { name: 'Что спрашивают перед заказом' }).locator('summary').first(),
             page.getByRole('region', { name: offerTitle }).getByRole('link', { name: formButton }).first(),
         ];
@@ -951,7 +968,7 @@ const recordFrames = (page: Page, ms: number) => sceneScreen(page).evaluate((el,
 }), ms);
 const scrollInstant = (page: Page, y: number) => page.evaluate((v) => window.scrollTo({ top: v, behavior: 'instant' }), y);
 // Время сцены на этом экране (HeroExpand: data-timing, расчёт – timing.ts): доли пути этапов, путь портала и после него, экраны
-interface ISceneTiming { length: number, portal: number, after: number, expandTo: number, burstFrom: number, burstTo: number, landAt: number, landSec: number, portalFrom: number, clearTo: number, diskTo: number, openAt: number }
+interface ISceneTiming { length: number, portal: number, after: number, expandTo: number, slidesOut: number, burstFrom: number, burstTo: number, landAt: number, landSec: number, portalFrom: number, clearTo: number, diskTo: number, openAt: number }
 const sceneTiming = (page: Page) => page.locator('section[aria-labelledby="hero-title"]')
     .evaluate((el) => JSON.parse((el as HTMLElement).dataset.timing!) as ISceneTiming);
 // Кадр отраслей: брызги кончились, портал ещё не начался – середина между ними
@@ -1156,8 +1173,9 @@ for (const viewport of [{ width: 1400, height: 900 }, { width: 375, height: 667 
             await page.goto('/');
             await page.waitForTimeout(800);
             const at = await sceneAt(page);
-            // Фото летит в кружок, надпись слайда уже погасла, волны заголовка ещё нет
-            await scrollPath(page, at.burst(0) * .6);
+            // Фото летит в кружок, надписи и h1 уже погасли, волны заголовка ещё нет. До Д50 точка была burst(0) × 0,6 –
+            // раньше конца затухания (slidesOut), и проверка h1 проходила только потому, что слайд с ним уходил в ротацию
+            await scrollPath(page, (at.tm.slidesOut + at.burst(0)) / 2);
             const cta = page.locator('[data-goal-place="hero"]');
             await expect.poll(() => cta.evaluate(opacityOf)).toBeGreaterThan(.98);
             await expect(cta).toBeInViewport({ ratio: 1 });
