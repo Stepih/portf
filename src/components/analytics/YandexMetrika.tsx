@@ -1,11 +1,11 @@
 "use client";
 
-import { FC, Suspense, useEffect, useRef } from "react";
+import { FC, Suspense, useEffect, useRef, useSyncExternalStore } from "react";
 import Script from "next/script";
 import { usePathname, useSearchParams } from "next/navigation";
 
 import { YM_ID } from "@/constants/analytics";
-import { reachGoal, ym } from "@/scripts/metrika";
+import { isMetrikaHost, reachGoal, ym } from "@/scripts/metrika";
 import { linkGoal } from "@/scripts/metrikaGoals";
 
 // webvisor – записи визитов и карта скроллинга (SALES_PLAN 6.2); поля формы скрыты классом ym-hide-content в LeadForm
@@ -58,25 +58,35 @@ const GoalTracker: FC = () => {
   return null;
 };
 
-// Подключается один раз в layout.tsx: template.tsx перемонтируется на каждой навигации
-const YandexMetrika: FC = () => (
-  <>
-    <Script id="yandex-metrika" strategy="afterInteractive">
-      {`(function(m,e,t,r,i,k,a){m[i]=m[i]||function(){(m[i].a=m[i].a||[]).push(arguments)};
+// Хост не меняется, подписка не нужна. На сервере хоста нет – false, загрузчик ставится уже на клиенте
+const noSubscribe = () => () => {};
+const useMetrikaHost = () => useSyncExternalStore(noSubscribe, () => isMetrikaHost(window.location.hostname), () => false);
+
+// Подключается один раз в layout.tsx: template.tsx перемонтируется на каждой навигации.
+// tag.js и init – только на проде (Д54): на localhost и прочих хостах сети к mc.yandex.ru нет, window.ym не появляется,
+// и ym/reachGoal ниже ничего не шлют. noscript-пиксель хост не проверит (без JS) – оставлен, с localhost без JS не заходят
+const YandexMetrika: FC = () => {
+  const enabled = useMetrikaHost();
+
+  return (
+    <>
+      {enabled && <Script id="yandex-metrika" strategy="afterInteractive">
+        {`(function(m,e,t,r,i,k,a){m[i]=m[i]||function(){(m[i].a=m[i].a||[]).push(arguments)};
       m[i].l=1*new Date();
       for (var j = 0; j < document.scripts.length; j++) {if (document.scripts[j].src === r) { return; }}
       k=e.createElement(t),a=e.getElementsByTagName(t)[0],k.async=1,k.src=r,a.parentNode.insertBefore(k,a)})
       (window, document, "script", "https://mc.yandex.ru/metrika/tag.js", "ym");
-      ym(${YM_ID}, "init", ${JSON.stringify(initParams)});`}
-    </Script>
-    <noscript>
-      <img src={`https://mc.yandex.ru/watch/${YM_ID}`} style={{ position: 'absolute', left: '-9999px' }} alt="" />
-    </noscript>
-    <Suspense fallback={null}>
-      <RouteTracker />
-    </Suspense>
-    <GoalTracker />
-  </>
-);
+        ym(${YM_ID}, "init", ${JSON.stringify(initParams)});`}
+      </Script>}
+      <noscript>
+        <img src={`https://mc.yandex.ru/watch/${YM_ID}`} style={{ position: 'absolute', left: '-9999px' }} alt="" />
+      </noscript>
+      <Suspense fallback={null}>
+        <RouteTracker />
+      </Suspense>
+      <GoalTracker />
+    </>
+  );
+};
 
 export default YandexMetrika;

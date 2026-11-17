@@ -6,6 +6,7 @@ import { contactIncomplete, formSubmitButton, formSuccessText, formSuccessTitle,
 import { chatButtonText, chatButtonTitle, chatFabLabel, chatLeadOpen, chatLeadSubmit, chatLeadSuccess } from '../src/data/chat';
 import { footerName, footerSince, footerTg } from '../src/data/footer';
 import { skipToContent } from '../src/data/layout';
+import { collectErrors } from './errors';
 
 // Выбранный чип типа проекта в форме (SALES_PLAN 4.2): услуга из ссылки «Узнать цену»
 const pickedService = (form: Locator) => form.locator('[aria-pressed=true]');
@@ -84,6 +85,28 @@ test('чип отрасли открывает портфолио с фильт�
     await chips.first().click();
     await expect(page).toHaveURL(href!);
     await expect(page.getByRole('button', { pressed: true })).not.toHaveText(/^Все/);
+});
+
+// Д54: Метрика только на проде. На localhost tag.js не грузится, init нет: ни одного запроса к mc.yandex.ru –
+// ни при загрузке, ни при клике по цели и клиентском переходе; window.ym не появляется, ошибок в консоли нет
+test('на localhost Метрика не шлёт запросов', async ({ page }) => {
+    const errors = collectErrors(page);
+    const metrika: string[] = [];
+    page.on('request', (request) => { if (/mc.yandex.|yandex.net/.test(request.url())) metrika.push(request.url()) });
+
+    await page.goto('/');
+    await page.waitForLoadState('networkidle');
+    await scrollIndustries(page);
+    const chip = page.getByRole('region', { name: 'Каким может быть сайт для вашего бизнеса' }).getByRole('listitem').getByRole('link').first();
+    const href = await chip.getAttribute('href');
+    await chip.click();
+    await expect(page).toHaveURL(href!);
+    await page.waitForLoadState('networkidle');
+
+    expect(await page.evaluate(() => typeof (window as unknown as { ym?: unknown }).ym)).toBe('undefined');
+    expect(await page.locator('script[src*="mc.yandex.ru"]').count()).toBe(0);
+    expect(metrika).toEqual([]);
+    expect(errors).toEqual([]);
 });
 
 // Избранные кейсы ведут на страницы кейсов, кнопка – на всё портфолио (SALES_PLAN 3.3).

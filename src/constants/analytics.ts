@@ -1,5 +1,7 @@
 // ID счётчика Яндекс Метрики
 export const YM_ID = 99704852
+// Домен прода: только на нём (и на www) счётчик грузится и шлёт хиты (DESIGN_FIXES_10_PLAN Д54)
+export const YM_HOST = 'showmyworks.ru'
 
 // Цели Метрики (SALES_PLAN 6.1). В интерфейсе Метрики цели заводятся с теми же id, тип «JavaScript-событие»
 export const GOALS = {
